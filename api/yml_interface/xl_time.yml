@@ -1,0 +1,9 @@
+OutputFile : auto_gen_time.cpp
+RegFile : auto_gen_time_reg_fns.h
+RegPreFix : time
+Category: oxl_time
+HeaderFiles:
+-
+  Filename: time_xl.h
+Functions:
+  
