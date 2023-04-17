@@ -25,7 +25,7 @@ def header_reg_func(num_func, prefix_reg):
     
     print("Finished registration header creation for " + prefix_reg)
 
-    return x
+    return xl_reg_hdr
 
 def regsiter_function(yml_defintion):
     rfs = header_reg_func(len(yml_defintion["Functions"]), yml_defintion["RegPreFix"])
