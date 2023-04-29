@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\src\unit_test\bond_math_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\calendar_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\date_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\pch.cpp" />
+    <ClCompile Include="..\..\src\unit_test\tenor_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\time\date_adjust\date_adjust_following_test.cpp">
+      <Filter>time\date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\date_adjust\date_adjust_preceding_test.cpp">
+      <Filter>time\date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\date_adjust\date_adjust_modified_following.cpp">
+      <Filter>time\date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\helpers\business_logic_check_test.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\helpers\enum_test.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\date_adjust\date_adjust_plain_test.cpp">
+      <Filter>time\date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_30_360_bond_basis_test.cpp">
+      <Filter>time\day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_30_e_360_eurobond_basis_test.cpp">
+      <Filter>time\day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_30_360_e_isda_test.cpp">
+      <Filter>time\day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_act_360_test.cpp">
+      <Filter>time\day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\date_adjust\adjustment_factory_test.cpp">
+      <Filter>time\date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\day_count\day_count_act_365_fixed_test.cpp">
+      <Filter>time\day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\dao\calendar_dao_test.cpp">
+      <Filter>daos</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\unit_test\pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="time">
+      <UniqueIdentifier>{038d67db-692f-4ab4-af56-ca10a649e32e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="time\date_adjust">
+      <UniqueIdentifier>{447bc70e-b698-423e-afbe-ea57dfe62785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{b76952a7-71ef-4ce0-9331-dac35a37e154}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="time\day_count">
+      <UniqueIdentifier>{1e9a8af3-ee82-4d28-ac27-34f3829155ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="daos">
+      <UniqueIdentifier>{141fdd0c-21f6-4b9d-8daa-ce3dd635a4db}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

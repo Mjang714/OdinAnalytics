@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="xl_api">
+      <UniqueIdentifier>{a72caa12-2f25-4bf9-8979-2f375ceb6b6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="auto_gen">
+      <UniqueIdentifier>{541e890a-bcbc-4945-b688-21f72979137b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="api">
+      <UniqueIdentifier>{b6ea7a88-b321-48b6-91ee-573b001f495f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="api\yml_interface">
+      <UniqueIdentifier>{544146a1-7e07-48ed-8781-b8f161eca2db}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\oxl\excel_functions.cpp" />
+    <ClCompile Include="..\..\src\oxl\xl_api\cache_xl_obj.cpp">
+      <Filter>xl_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\oxl\xl_api\excel_base.cpp">
+      <Filter>xl_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\oxl\xl_api\xl_array.cpp">
+      <Filter>xl_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\oxl\xl_api\xloper_converter.cpp">
+      <Filter>xl_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\oxl\auto_gen\autogen_excel.cpp">
+      <Filter>auto_gen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\oxl\excel_base_funcs.cpp" />
+    <ClCompile Include="..\..\src\oxl\xl_api\xl_dictionary.cpp">
+      <Filter>xl_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\oxl\xl_api\xl_converter_funcs.cpp">
+      <Filter>xl_api</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="..\..\api\yml_interface\xl_base.yml">
+      <Filter>api\yml_interface</Filter>
+    </None>
+    <None Include="..\..\api\yml_interface\xl_time.yml">
+      <Filter>api\yml_interface</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\oxl\xl_api\cache_xl_obj.h">
+      <Filter>xl_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\xl_api\excel_base.h">
+      <Filter>xl_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\xl_api\xl_array.h">
+      <Filter>xl_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\xl_api\xl_uitls.h">
+      <Filter>xl_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\xl_api\xl_variant.h">
+      <Filter>xl_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\xl_api\xloper_converter.h">
+      <Filter>xl_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\auto_gen\autogen_excel_reg_funcs.h">
+      <Filter>auto_gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\excel_base_funcs.h" />
+    <ClInclude Include="..\..\src\oxl\xl_api\xl_dictionary.h">
+      <Filter>xl_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\xl_api\xl_converter_funcs.h">
+      <Filter>xl_api</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

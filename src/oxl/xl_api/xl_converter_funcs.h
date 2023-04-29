@@ -13,6 +13,11 @@ namespace oxl::xl_api
 	/// <returns></returns>
 	XlDictionary XlArrayToXlDictionary(const XlArray& xl_array);
 
+	/// <summary>
+	/// converts a dictionary to array 
+	/// </summary>
+	/// <param name="xl_dictionary"></param>
+	/// <returns></returns>
 	XlArray XlDictionaryToXlArray(const XlDictionary& xl_dictionary);
 }
 #endif // !OXL_XL_API_XL_CONVERTER_FUNCS_H_

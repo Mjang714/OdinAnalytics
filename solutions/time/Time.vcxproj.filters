@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="date_adjust">
+      <UniqueIdentifier>{72b45bf5-7bfc-4ab7-92ca-212ce142db53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="day_count">
+      <UniqueIdentifier>{0ee57585-2df1-44bd-afda-74ecdcdebb2e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\time\calendar.cpp" />
+    <ClCompile Include="..\..\src\time\date.cpp" />
+    <ClCompile Include="..\..\src\time\tenor.cpp" />
+    <ClCompile Include="..\..\src\time\date_adjust\date_adjust_following.cpp">
+      <Filter>date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\date_adjust\date_adjust_preceding.cpp">
+      <Filter>date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\date_adjust\date_adjust_modified_following.cpp">
+      <Filter>date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\date_adjust\adjustment_factory.cpp">
+      <Filter>date_adjust</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\day_count\day_count_30_360_bond_basis.cpp">
+      <Filter>day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\day_count\day_count_30_e_360_eurobond_basis.cpp">
+      <Filter>day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\day_count\day_count_30_360e_isda.cpp">
+      <Filter>day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\day_count\day_count_act_360.cpp">
+      <Filter>day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\day_count\day_count_act_365_fixed.cpp">
+      <Filter>day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\day_count\day_counter_factory.cpp">
+      <Filter>day_count</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\day_count\day_count_act_act.cpp">
+      <Filter>day_count</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\time\calendar.h" />
+    <ClInclude Include="..\..\src\time\calendar_data_struct.h" />
+    <ClInclude Include="..\..\src\time\date.h" />
+    <ClInclude Include="..\..\src\time\tenor.h" />
+    <ClInclude Include="..\..\src\time\time_enums.h" />
+    <ClInclude Include="..\..\src\time\date_adjust\date_adjust_base.h">
+      <Filter>date_adjust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\date_adjust\date_adjust_following.h">
+      <Filter>date_adjust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\date_adjust\date_adjust_preceding.h">
+      <Filter>date_adjust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\date_adjust\date_adjust_modified_following.h">
+      <Filter>date_adjust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\date_adjust\date_adjust_plain.h">
+      <Filter>date_adjust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\date_adjust\adjustment_factory.h">
+      <Filter>date_adjust</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\day_count\day_count_30_360_bond_basis.h">
+      <Filter>day_count</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\day_count\day_count_30_e_360_eurobond_basis.h">
+      <Filter>day_count</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\day_count\day_count_30_360e_isda.h">
+      <Filter>day_count</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\day_count\day_count_act_360.h">
+      <Filter>day_count</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\day_count\day_count_act_365_fixed.h">
+      <Filter>day_count</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\day_count\day_counter_factory.h">
+      <Filter>day_count</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\day_count\day_count_act_act.h">
+      <Filter>day_count</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
