@@ -1,5 +1,7 @@
 #include<string>
+#include<stdlib.h>
 #include<vector>
+
 
 #ifndef ODINANALYTICS_HELPERS_STR_UTILS_STR_UTILS_H_
 #define ODINANALYTICS_HELPERS_STR_UTILS_STR_UTILS_H_

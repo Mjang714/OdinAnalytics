@@ -21,7 +21,7 @@ namespace oa::utils::str_utils
 		{
 			for (auto digit_char : str_to_parse)
 			{
-				digits.push_back(digit_char - '0');
+				digits.push_back(digit_char- '0');
 			}
 		}
 

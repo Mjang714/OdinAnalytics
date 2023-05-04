@@ -70,6 +70,7 @@ namespace oxl::xl_api
 		auto start = cell_loc.find_first_of("[");
 		auto end = cell_loc.find_first_of("]");
 
+		//erase workbook name
 		std::string base_str = cell_loc.erase(start, end + 1);
 		std::string prefix = "";
 		if (std::holds_alternative<std::shared_ptr<XlArray>>(cached_obj))

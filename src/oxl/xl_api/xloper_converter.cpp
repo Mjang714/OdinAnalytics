@@ -243,9 +243,11 @@ namespace oxl::xl_api {
 	{
 		xloper12 cell_loc;
 		xloper12 sheet_name;
+		xloper12 sheet_id;
 
 		Excel12(xlfCaller, &cell_loc, 0);
 		Excel12(xlSheetNm, &sheet_name,1, &cell_loc);
+		Excel12(xlSheetId, &sheet_id, 1,sheet_name);
 
 		std::string sheet_name_str = LPXloperToStr(&sheet_name);
 

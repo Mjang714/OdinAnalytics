@@ -13,7 +13,7 @@ namespace oa::dao
 	cal_struct::CalendarDataStruct CalendarDao::GetCalendartData(const std::string& region)
 	{
 		cal_struct::CalendarDataStruct calendar_struct{};
-		std::string calendar_file_path_str = std::getenv("OdinBaseDir") + std::string("//static_data//calendars\\");
+		std::string calendar_file_path_str = std::getenv("OdinBaseDir") + std::string("//static_data//calendars//");
 		std::filesystem::path cal_file_path{ calendar_file_path_str + region + ".hol" };
 		if (!std::filesystem::is_regular_file(cal_file_path))
 		{
