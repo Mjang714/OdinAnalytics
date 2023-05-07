@@ -19,6 +19,7 @@ namespace oa
 			public:
 				Calendar() = default;
 				explicit Calendar(const std::vector<ds::CalendarDataStruct>& calendar_data);
+				explicit Calendar(const ds::CalendarDataStruct& calendar_data);
 				
 				/// <summary>
 				/// Checks to see if a given date is a holiday 

@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\src\unit_test\dao\calendar_dao_test.cpp">
       <Filter>daos</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\static_data_cache\static_data_cache.cpp">
+      <Filter>static_data_cache</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\unit_test\pch.h" />
@@ -64,6 +67,9 @@
     </Filter>
     <Filter Include="daos">
       <UniqueIdentifier>{141fdd0c-21f6-4b9d-8daa-ce3dd635a4db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="static_data_cache">
+      <UniqueIdentifier>{9a6c4162-3e4b-4f34-bc6c-db4f5a9fd129}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

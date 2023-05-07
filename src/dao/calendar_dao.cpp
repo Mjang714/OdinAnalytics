@@ -3,16 +3,16 @@
 
 namespace oa::dao
 {
-
+	
 	CalendarDao& CalendarDao::GetInstance()
 	{
 		static CalendarDao calendar_dao_instance{};
 		return calendar_dao_instance;
 	}
 
-	cal_struct::CalendarDataStruct CalendarDao::GetCalendartData(const std::string& region)
+	CalStruct::CalendarDataStruct CalendarDao::GetCalendartData(const std::string& region)
 	{
-		cal_struct::CalendarDataStruct calendar_struct{};
+		CalStruct::CalendarDataStruct calendar_struct{};
 		std::string calendar_file_path_str = std::getenv("OdinBaseDir") + std::string("//static_data//calendars//");
 		std::filesystem::path cal_file_path{ calendar_file_path_str + region + ".hol" };
 		if (!std::filesystem::is_regular_file(cal_file_path))
@@ -39,11 +39,11 @@ namespace oa::dao
 			{
 				//get eh next line of the file
 				std::getline(raw_calendar_data, file_line);
-				for (auto weekend_integer : str_helpers::StrToDigits(file_line))
+				for (auto weekend_integer : StrHelpers::StrToDigits(file_line))
 				{
 					if (weekend_integer > -1 && weekend_integer < 7)
 					{
-						calendar_struct.weekends.push_back(helpers::ValueToEnum<oa::time::Weekdays>(weekend_integer));
+						calendar_struct.weekends.push_back(Helpers::ValueToEnum<oa::time::Weekdays>(weekend_integer));
 					}
 					else
 					{

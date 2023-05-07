@@ -13,6 +13,11 @@ namespace oa
 
 		}
 
+		Calendar::Calendar(const ds::CalendarDataStruct& calendar_data)
+		{
+			PopulateHolidays(std::vector<ds::CalendarDataStruct>{calendar_data});
+		}
+
 		void Calendar::PopulateHolidays(const std::vector<ds::CalendarDataStruct>& calendar_data)
 		{
 			for (auto calendar : calendar_data)

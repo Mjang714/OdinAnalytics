@@ -15,11 +15,14 @@
 
 namespace oa::dao
 {
-	namespace str_helpers = oa::utils::str_utils;
-	namespace helpers = oa::utils;
-	namespace cal_struct = oa::ds;
+	namespace StrHelpers = oa::utils::str_utils;
+	namespace Helpers = oa::utils;
+	namespace CalStruct = oa::ds;
+
 	class CalendarDao
 	{
+		
+
 		public:
 			/// <summary>
 			/// remove the copy constrcutor

@@ -67,6 +67,9 @@
     <ProjectReference Include="..\helpers\Helpers.vcxproj">
       <Project>{0be2b5d3-70ff-4c20-8c7e-24cf4938ad9d}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\static_data_cache\static_data_cache.vcxproj">
+      <Project>{36138a7e-afdd-4e53-8ad6-71bdd427031f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\time\Time.vcxproj">
       <Project>{452ac1ac-81b2-4b5f-929f-e4b79d23d5f1}</Project>
     </ProjectReference>
@@ -80,6 +83,7 @@
     <ClCompile Include="..\..\src\unit_test\helpers\business_logic_check_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\enum_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\pch.cpp" />
+    <ClCompile Include="..\..\src\unit_test\static_data_cache\static_data_cache.cpp" />
     <ClCompile Include="..\..\src\unit_test\tenor_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\time\date_adjust\adjustment_factory_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\time\date_adjust\date_adjust_following_test.cpp" />
