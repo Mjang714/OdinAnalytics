@@ -4,6 +4,20 @@ RegPreFix : time
 Category: oxl_time
 HeaderFiles:
 -
-  Filename: time_xl.h
-Functions:
-  
+ FileName : time_xl.h
+Functions :
+  -
+   ExcelName : oxlIsBusinessDay
+   OxlName : OxlIsBizDay
+   Type : Vanilla
+   Args :
+    -
+     Name : Date
+     Help : Given date
+     Type : LPXLOPER|Date
+    -
+     Name : Centers
+     Help : Business centers (NYB = NY Fed, LNB for London)
+     Type : String
+   ReturnType : Bool
+   Help : Determines if a date given is a business day

@@ -65,8 +65,8 @@ def XlType():
     return "LPXLOPER12"
 
 def try_block():
-    xfs = ["  try"]
-    return xfs
+    auto_gen_try = ["  try"]
+    return auto_gen_try
 
 def split_type(return_type):
 
@@ -111,12 +111,21 @@ def OxlType(arg_type, ptr_type):
         return ""       
 
 def create_excel_cpp(yml_defintiion):
-    xfs = excel_function_header(yml_defintiion)
+    auto_gen = excel_function_header(yml_defintiion)
     for func_desc in yml_defintiion["Functions"]:
         func_type = func_desc["Type"]
         if(func_type == "Excel"):
-            xfs += excel_functions_base(func_desc)
-    return xfs        
+            auto_gen += excel_functions_base(func_desc)
+        elif(func_type == "Vanilla"):
+            auto_gen += vanilla_functions_base(func_desc)
+        auto_gen += ["       return xloper_result;"]
+        # create another else here for return type that is Array for the line above  
+        auto_gen += ["   }"]
+        auto_gen += [" "]
+        auto_gen += catch_block()
+        auto_gen += ["}"]
+
+    return auto_gen        
 
 def excel_function_header(yml_defintion):
     header = []
@@ -167,6 +176,47 @@ def create_generic_xloper(yml_definition):
     auto_gen_code += ["       oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);"]
     return auto_gen_code   
 
+def create_function_declaration(name, yml_definition):
+    line = name + "("
+    if yml_definition["Args"]:
+        for argument in yml_definition["Args"]:
+            arg_type = argument["Type"]
+            (rt, pt) = split_type(arg_type)
+            line += XlType()
+            line += " "
+            line += argument["Name"] + "_input"
+            line += ", "
+        line = line[:-2]
+    line += ")" 
+
+    return line
+
+
+def vanilla_functions_base(yml_definition):
+    vanilla_code = []
+    name = yml_definition["ExcelName"]
+    line = "extern \"C\" __declspec(dllexport) \nLPXLOPER12  "
+    line += create_function_declaration(name, yml_definition)
+    vanilla_code += [line]
+    vanilla_code += ["{ "]
+    vanilla_code += ["  LPXLOPER12 xloper_result = static_cast<LPXLOPER12> (calloc(1, sizeof(xloper12)));"] 
+    vanilla_code += [" "]
+    vanilla_code += try_block()
+    vanilla_code += ["  {"]
+    (return_type, pointer_type) = split_type(yml_definition["ReturnType"])
+    if(return_type == "Bool"):
+        vanilla_code += create_generic_xloper(yml_definition)
+        
+    # vanilla_code += ["       return xloper_result;"]
+    # # create another else here for return type that is Array for the line above  
+    # vanilla_code += ["   }"]
+    # vanilla_code += [" "]
+    # vanilla_code += catch_block()
+    # vanilla_code += ["}"]    
+
+    return vanilla_code
+
+
 def excel_functions_base(yml_definition):
     auto_gen = []
     name = yml_definition["ExcelName"]
@@ -198,13 +248,7 @@ def excel_functions_base(yml_definition):
 
     elif((return_type == "LPXLOPER") &  (pointer_type == "XlArray")):
         auto_gen += create_generic_xloper(yml_definition)    
-
-    auto_gen += ["       return xloper_result;"]
-    # create another else here for return type that is Array for the line above  
-    auto_gen += ["   }"]
-    auto_gen += [" "]
-    auto_gen += catch_block()
-    auto_gen += ["}"]
+    
     return auto_gen
 
 def write_file(text, file_name):

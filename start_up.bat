@@ -30,7 +30,7 @@ GOTO :End
 :Build_Sucessful
 ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ECHO *** ODIN ANALYTICS Local Build Setup Sucessful ***
-ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 GOTO:Environment_Var_Check
 
 :Excel_Start_Up_Sucessful

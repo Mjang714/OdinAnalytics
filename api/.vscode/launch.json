@@ -12,6 +12,15 @@
             "console": "integratedTerminal",
             "args":["yml_interface\\xl_base.yml", "C:\\projects\\ExcelPy\\OdinAnalytics\\src\\oxl\\auto_gen"],
             "justMyCode" : true
-        }
+        },
+        {
+            "name": "Time Autogen",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\projects\\ExcelPy\\OdinAnalytics\\api\\xl_autogen.py",
+            "console": "integratedTerminal",
+            "args":["yml_interface\\xl_time.yml", "C:\\projects\\ExcelPy\\OdinAnalytics\\src\\oxl\\auto_gen"],
+            "justMyCode" : true
+        },
     ]
 }

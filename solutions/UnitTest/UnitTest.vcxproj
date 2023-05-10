@@ -83,7 +83,7 @@
     <ClCompile Include="..\..\src\unit_test\helpers\business_logic_check_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\enum_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\pch.cpp" />
-    <ClCompile Include="..\..\src\unit_test\static_data_cache\static_data_cache.cpp" />
+    <ClCompile Include="..\..\src\unit_test\static_data_cache\static_data_cache_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\tenor_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\time\date_adjust\adjustment_factory_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\time\date_adjust\date_adjust_following_test.cpp" />

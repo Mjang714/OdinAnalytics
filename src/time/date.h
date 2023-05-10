@@ -4,9 +4,15 @@
 #include<chrono>
 #include<string>
 #include<tuple>
+#include<vector>
+
+#include <boost/algorithm/string.hpp>
 
 #include "tenor.h"
 #include "time_enums.h"
+
+#include "../helpers/utils.h"
+
 
 //OA = Odin Analytics Date Class
 
@@ -92,6 +98,14 @@ namespace oa::time
 		/// <returns></returns>
 		static int GetDOWInt(int julian_date);
 
+
+		/// <summary>
+		/// this is the julian date offest to take in excel double date  
+		/// and convert it to a proper julian
+		/// </summary>
+		static constexpr int kXlJulianOffSet {2415019};
+
+
 		/// <summary>
 		/// converts a date object to time point object 
 		/// https://stackoverflow.com/questions/66537237/how-to-get-chrono-time-point-from-year-month-day-hour-minute-second-millis
@@ -145,21 +159,21 @@ namespace oa::time
 		const static int kChronoYearOffset = 1900;
 		const static int kMonthOffset = 1;
 
-			Date AddDays(const int& time_length);
+			Date AddDays(const int& time_length) const;
 
-			Date AddWeeks(const int& time_length);
+			Date AddWeeks(const int& time_length) const;
 
-			Date AddMonths(const int& time_length);
+			Date AddMonths(const int& time_length) const;
 
-			Date AddYears(const int& time_length);
+			Date AddYears(const int& time_length) const;
 
-			Date SubDays(const int& time_length);
+			Date SubDays(const int& time_length) const;
 
-			Date SubWeeks(const int& time_length);
+			Date SubWeeks(const int& time_length) const;
 
-			Date SubMonths(const int& time_length);
+			Date SubMonths(const int& time_length) const;
 
-			Date SubYears(const int& time_length);
+			Date SubYears(const int& time_length) const;
 
 		/// <summary>
 		/// converts the julian day to its year month and day and returns it as a tuple 

@@ -45,7 +45,7 @@
     <ClCompile Include="..\..\src\unit_test\dao\calendar_dao_test.cpp">
       <Filter>daos</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\unit_test\static_data_cache\static_data_cache.cpp">
+    <ClCompile Include="..\..\src\unit_test\static_data_cache\static_data_cache_test.cpp">
       <Filter>static_data_cache</Filter>
     </ClCompile>
   </ItemGroup>

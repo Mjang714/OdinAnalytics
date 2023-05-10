@@ -20,8 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\oxl\auto_gen\autogen_excel.cpp" />
+    <ClCompile Include="..\..\src\oxl\auto_gen\auto_gen_time.cpp" />
     <ClCompile Include="..\..\src\oxl\excel_base_funcs.cpp" />
     <ClCompile Include="..\..\src\oxl\excel_functions.cpp" />
+    <ClCompile Include="..\..\src\oxl\time_xl.cpp" />
     <ClCompile Include="..\..\src\oxl\xl_api\cache_xl_obj.cpp" />
     <ClCompile Include="..\..\src\oxl\xl_api\excel_base.cpp" />
     <ClCompile Include="..\..\src\oxl\xl_api\xloper_converter.cpp" />
@@ -36,7 +38,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\oxl\auto_gen\autogen_excel_reg_funcs.h" />
+    <ClInclude Include="..\..\src\oxl\auto_gen\auto_gen_time_reg_fns.h" />
     <ClInclude Include="..\..\src\oxl\excel_base_funcs.h" />
+    <ClInclude Include="..\..\src\oxl\time_xl.h" />
     <ClInclude Include="..\..\src\oxl\xl_api\cache_xl_obj.h" />
     <ClInclude Include="..\..\src\oxl\xl_api\excel_base.h" />
     <ClInclude Include="..\..\src\oxl\xl_api\xloper_converter.h" />
@@ -45,6 +49,20 @@
     <ClInclude Include="..\..\src\oxl\xl_api\xl_dictionary.h" />
     <ClInclude Include="..\..\src\oxl\xl_api\xl_uitls.h" />
     <ClInclude Include="..\..\src\oxl\xl_api\xl_variant.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\dao\dao.vcxproj">
+      <Project>{14aa39ed-815a-4e2b-a8b5-631cad5762e3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\helpers\Helpers.vcxproj">
+      <Project>{0be2b5d3-70ff-4c20-8c7e-24cf4938ad9d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\static_data_cache\static_data_cache.vcxproj">
+      <Project>{36138a7e-afdd-4e53-8ad6-71bdd427031f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\time\Time.vcxproj">
+      <Project>{452ac1ac-81b2-4b5f-929f-e4b79d23d5f1}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

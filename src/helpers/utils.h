@@ -17,7 +17,7 @@ namespace oa::utils
 	/// </summary>
 	/// <param name="input_string"></param>
 	/// <returns> boolean </returns>
-	inline bool CheckTenorStr(std::string input_string)
+	inline bool CheckTenorStr(const std::string& input_string)
 	{
 		std::regex target_str("([-]?[0-9]*\\d{1}[YMDWymdw])");
 		return std::regex_match(input_string, target_str);
@@ -28,7 +28,7 @@ namespace oa::utils
 	/// </summary>
 	/// <param name="input_string"></param>
 	/// <returns>boolean</returns>
-	inline bool CheckDateStr(std::string input_string)
+	inline bool CheckDateStr(const std::string& input_string)
 	{
 		std::regex target_str("(\\d{4}[\\-\\/:](0?[1-9]|1[012])[\\-\\/:](0?[1-9]|[12][0-9]|3[01]))");
 		return std::regex_match(input_string, target_str);

@@ -42,6 +42,10 @@
     <ClCompile Include="..\..\src\oxl\xl_api\xl_converter_funcs.cpp">
       <Filter>xl_api</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\oxl\time_xl.cpp" />
+    <ClCompile Include="..\..\src\oxl\auto_gen\auto_gen_time.cpp">
+      <Filter>auto_gen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -80,6 +84,10 @@
     </ClInclude>
     <ClInclude Include="..\..\src\oxl\xl_api\xl_converter_funcs.h">
       <Filter>xl_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\oxl\time_xl.h" />
+    <ClInclude Include="..\..\src\oxl\auto_gen\auto_gen_time_reg_fns.h">
+      <Filter>auto_gen</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

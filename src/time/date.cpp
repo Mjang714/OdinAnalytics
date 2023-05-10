@@ -1,12 +1,5 @@
 #include "date.h"
 
-#include <vector>
-#include <tuple>
-
-#include <boost/algorithm/string.hpp>
-
-#include "../helpers/utils.h"
-
 namespace oa::time
 {
 
@@ -19,27 +12,21 @@ namespace oa::time
 	Date::Date(const std::string& date_str)
 	{
 		std::vector <std::string> split_date_str{};
-		try
-		{
-			if (oa::utils::CheckDateStr(date_str))
-			{
-				boost::split(split_date_str, date_str, boost::is_any_of("\\-\\/:"));
-				this->m_years_ = std::stoi(split_date_str.at(0)); 
-				this->m_months_ = std::stoi(split_date_str.at(1)); 
-				this->m_days_ = std::stoi(split_date_str.at(2));
-				this->m_julian_int_ = ConvertToJulian(m_years_, m_months_, m_days_);
-			}
 
-			else
-			{
-				throw "Invalid date string please check your string input!: " + date_str;
-			}
+		if (oa::utils::CheckDateStr(date_str))
+		{
+			boost::split(split_date_str, date_str, boost::is_any_of("\\-\\/:"));
+			this->m_years_ = std::stoi(split_date_str.at(0)); 
+			this->m_months_ = std::stoi(split_date_str.at(1)); 
+			this->m_days_ = std::stoi(split_date_str.at(2));
+			this->m_julian_int_ = ConvertToJulian(m_years_, m_months_, m_days_);
 		}
 
-		catch (const std::exception& e)
+		else
 		{
-
+			throw "Invalid date string please check your string input!: " + date_str;
 		}
+
 	}
 
 	Date::Date(const int& julian_int)
@@ -207,17 +194,17 @@ namespace oa::time
 		}
 	}
 
-	Date Date::AddDays(const int& time_length) 
+	Date Date::AddDays(const int& time_length) const
 	{
 		return Date(GetJulian() + time_length);
 	}
 
-	Date Date::AddWeeks(const int& time_length) 
+	Date Date::AddWeeks(const int& time_length) const
 	{
 		return Date(GetJulian() + time_length * 7);
 	}
 
-	Date Date::AddMonths(const int& time_length) 
+	Date Date::AddMonths(const int& time_length) const
 	{
 		int new_day(0), new_month(0), new_year(0);
 			
@@ -255,7 +242,7 @@ namespace oa::time
 		return Date(new_year, new_month, new_day);
 	}
 
-	Date Date::AddYears(const int& time_length)
+	Date Date::AddYears(const int& time_length) const
 	{
 		int new_day(0), new_month(0), new_year(0);
 		new_year = m_years_ + time_length;
@@ -275,22 +262,22 @@ namespace oa::time
 		return Date(new_year, new_month, new_day);
 	}
 
-	Date Date::SubDays(const int& time_length)
+	Date Date::SubDays(const int& time_length) const
 	{
 		return AddDays(-time_length);
 	}
 
-	Date Date::SubWeeks(const int& time_length)
+	Date Date::SubWeeks(const int& time_length) const
 	{
 		return AddWeeks(-time_length);
 	}
 
-	Date Date::SubMonths(const int& time_length) 
+	Date Date::SubMonths(const int& time_length) const
 	{
 		return AddMonths(-time_length);
 	}
 
-	Date Date::SubYears(const int& time_length)
+	Date Date::SubYears(const int& time_length) const
 	{
 		return AddYears(-time_length);
 	}
