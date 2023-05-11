@@ -65,7 +65,7 @@ namespace oa::time
 		return std::tuple<int, int, int>(year,month,day);
 	}
 
-	std::tuple<int, int, int> Date::ConvertToGregInt(const int & julian_day)
+	std::tuple<int, int, int> Date::ConvertToGregInt(const int & julian_day) const
 	{
 			
 		int y = 4716, j = 1401, m = 2,   n = 12, r = 4,      p = 1461, 
@@ -134,8 +134,8 @@ namespace oa::time
 
 	std::string Date::ToString()
 	{
-		return std::to_string(this->m_years_) + "-" + std::to_string(this->m_months_) + "-" + std::to_string(this->m_days_) 
-			+ " : Julian Integer = " + std::to_string(this->m_julian_int_);
+		return std::to_string(m_years_) + "-" + std::to_string(m_months_) + "-" + std::to_string(m_days_) 
+			+ " : Julian Integer = " + std::to_string(m_julian_int_);
 	}
 
 	bool Date::IsLeap()

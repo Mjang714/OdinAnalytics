@@ -181,7 +181,7 @@ namespace oa::time
 		/// </summary>
 		/// <param name="julian_day">long long int</param>
 		/// <returns>a tuple where the first element is the year then month and day</returns>
-		std::tuple<int, int, int> ConvertToGregInt(const int&);
+		std::tuple<int, int, int> ConvertToGregInt(const int&) const;
 
 		/// <summary>
 		/// takes a time point obejct and converts it to year month and date using 

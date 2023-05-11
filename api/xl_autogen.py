@@ -206,13 +206,6 @@ def vanilla_functions_base(yml_definition):
     (return_type, pointer_type) = split_type(yml_definition["ReturnType"])
     if(return_type == "Bool"):
         vanilla_code += create_generic_xloper(yml_definition)
-        
-    # vanilla_code += ["       return xloper_result;"]
-    # # create another else here for return type that is Array for the line above  
-    # vanilla_code += ["   }"]
-    # vanilla_code += [" "]
-    # vanilla_code += catch_block()
-    # vanilla_code += ["}"]    
 
     return vanilla_code
 

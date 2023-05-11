@@ -77,6 +77,11 @@ namespace oa
 			return !IsHoliday(given_date);
 		}
 
+		bool Calendar::IsBusinessDay(const int given_date) const
+		{
+			return !IsHoliday(given_date);
+		}
+
 		oa::time::Date Calendar::GetNextBusinessDay(const oa::time::Date& base_date) const
 		{
 			return this->GetNextBusinessDay(base_date.GetJulian());

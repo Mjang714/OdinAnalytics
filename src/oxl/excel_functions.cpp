@@ -1,5 +1,6 @@
 #include "oxl/xl_api/xl_uitls.h"
 #include "oxl/auto_gen/autogen_excel_reg_funcs.h"
+#include "oxl/auto_gen/auto_gen_time_reg_fns.h"
 
 
 
@@ -15,6 +16,7 @@ namespace oxl
 		Excel12f(xlGetName, &xDLL, 0);
 
 		oxl::xl_api::RegisterXLFunctions(xDLL, excel_base_ngFuncs, excel_base_num_reg_functions_rows);
+		oxl::xl_api::RegisterXLFunctions(xDLL, time_ngFuncs, time_num_reg_functions_rows);
 
 		/* Free the XLL filename */
 		Excel12f(xlFree, 0, 1,   (LPXLOPER12)&xDLL);

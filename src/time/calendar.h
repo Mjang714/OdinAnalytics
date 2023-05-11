@@ -43,6 +43,13 @@ namespace oa
 				bool IsBusinessDay(const oa::time::Date& given_date) const;
 
 				/// <summary>
+				/// Checks to see if a given date is a Biz Day 
+				/// </summary>
+				/// <param name="given_date"></param>
+				/// <returns>boolean whether or not a given day is business day</returns>
+				bool IsBusinessDay(const int given_date) const;
+
+				/// <summary>
 				/// takes a date and returns the next business date
 				/// </summary>
 				/// <param name="base_date">Date object</param>
