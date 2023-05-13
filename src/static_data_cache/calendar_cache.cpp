@@ -11,23 +11,33 @@ namespace oa::static_cache
 		return calendar_cache;
 	}
 
-	std::shared_ptr<CalendarTypeAlias> CalendarCache::GetCalendar(const std::string& calendar_str)
+	std::shared_ptr<CalendarTypeAlias> CalendarCache::GetCalendar(const std::string& calendars_str)
 	{
-		if (IsCached(calendar_str))
+		std::vector<std::string> list_of_caledars{};
+		boost::split(list_of_caledars, calendars_str, boost::is_any_of(",:;"));
+		std::sort(list_of_caledars.begin(), list_of_caledars.end());
+		std::string str_key = boost::algorithm::join(list_of_caledars, ",");
+		
+		if (IsCached(calendars_str))
 		{
-			return calendar_cache.at(calendar_str);
+			return calendar_cache.at(calendars_str);
 		}
 
 		//if we can't find the calendar store it 
 		else 
 		{
-			oa::ds::CalendarDataStruct raw_calendar_data = 
-				DaoObj::GetInstance().GetCalendartData(calendar_str);
+			std::vector<oa::ds::CalendarDataStruct> raw_calendar_data;
+			for (const auto& calendar_file_name : list_of_caledars) 
+			{
+				raw_calendar_data.push_back(
+					DaoObj::GetInstance().GetCalendartData(calendar_file_name));
+			}
+			
 
 			auto new_calendar = 
 				std::make_shared<CalendarTypeAlias>(raw_calendar_data);
 
-			StoreCalendar(calendar_str, new_calendar);
+			StoreCalendar(calendars_str, new_calendar);
 			return new_calendar;
 
 		}

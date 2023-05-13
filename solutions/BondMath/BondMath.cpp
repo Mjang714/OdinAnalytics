@@ -131,7 +131,7 @@ std::vector<double> createCashFlowGen(double years, double principle, int paymen
     
     //here we assume the interest rate is given as continous yearly rate
     double cashFlow = (couponRate/paymentFreq) * principle;
-    int numberOfCashfows = int (years*paymentFreq);    
+    auto numberOfCashfows = int (years*paymentFreq);    
 
     //if the bond is less than a year default the number of cashflows to one 
 	if (numberOfCashfows < 1) {

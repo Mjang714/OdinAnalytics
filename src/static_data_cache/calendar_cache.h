@@ -1,10 +1,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <algorithm>
 
 #include "time/date.h"
 #include "time/calendar.h"
 #include "dao/calendar_dao.h"
+
+#include <boost/algorithm/string.hpp>
 
 #ifndef ODINANALYTICS_STATIC_DATA_CACHE_CALENDAR_CACHE_H_
 #define ODINANALYTICS_STATIC_DATA_CACHE_CALENDAR_CACHE_H_
@@ -35,7 +38,7 @@ namespace oa::static_cache
 			/// </summary>
 			/// <param name="calendar_str"></param>
 			/// <returns></returns>
-			static std::shared_ptr<oa::time::Calendar> GetCalendar(const std::string& calendar_str);
+			static std::shared_ptr<oa::time::Calendar> GetCalendar(const std::string& calendars_str);
 
 			/// <summary>
 			/// retrieves the singleton instnace of the cache 

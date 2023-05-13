@@ -8,7 +8,7 @@ namespace
 {
 	class DayCountAct365FixedTest : public::testing::Test
 	{
-		protected:
+		public:
 			oa::time::DayCountAct365Fixed day_counter_act_365_fixed;
 
 			void SetUp() override

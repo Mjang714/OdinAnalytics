@@ -20,7 +20,7 @@ namespace oa
 
 		void Calendar::PopulateHolidays(const std::vector<ds::CalendarDataStruct>& calendar_data)
 		{
-			for (auto calendar : calendar_data)
+			for (const auto& calendar : calendar_data)
 			{
 				this->m_regions_ = calendar.regions;
 
