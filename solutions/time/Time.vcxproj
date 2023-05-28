@@ -59,6 +59,7 @@
     <ClInclude Include="..\..\src\time\day_count\day_count_act_360.h" />
     <ClInclude Include="..\..\src\time\day_count\day_count_act_365_fixed.h" />
     <ClInclude Include="..\..\src\time\day_count\day_count_act_act.h" />
+    <ClInclude Include="..\..\src\time\day_count\day_count_base.h" />
     <ClInclude Include="..\..\src\time\tenor.h" />
     <ClInclude Include="..\..\src\time\time_enums.h" />
   </ItemGroup>
@@ -211,14 +212,14 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\packages\magic_enum.0.8.1\build\native\magic_enum.targets" Condition="Exists('..\..\packages\magic_enum.0.8.1\build\native\magic_enum.targets')" />
     <Import Project="..\..\packages\boost.1.82.0\build\boost.targets" Condition="Exists('..\..\packages\boost.1.82.0\build\boost.targets')" />
+    <Import Project="..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets" Condition="Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\magic_enum.0.8.1\build\native\magic_enum.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\magic_enum.0.8.1\build\native\magic_enum.targets'))" />
     <Error Condition="!Exists('..\..\packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost.1.82.0\build\boost.targets'))" />
+    <Error Condition="!Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets'))" />
   </Target>
 </Project>

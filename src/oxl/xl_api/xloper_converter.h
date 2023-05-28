@@ -68,6 +68,7 @@ namespace oxl::xl_api
 			/// <returns></returns>
 			static void ConvertToLPXloper(double value, LPXLOPER12 xl_oper_res);
 			static void ConvertToLPXloper(bool value, LPXLOPER12 xl_oper_res);
+			static void ConvertToLPXloper(int value, LPXLOPER12 xl_oper_res);
 			static void ConvertToLPXloper(const std::string& value, LPXLOPER12 xl_oper_res);
 			static void ConvertToLPXloper(const XlArray& value, LPXLOPER12 xl_oper_res);
 

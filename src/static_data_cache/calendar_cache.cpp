@@ -14,13 +14,13 @@ namespace oa::static_cache
 	std::shared_ptr<CalendarTypeAlias> CalendarCache::GetCalendar(const std::string& calendars_str)
 	{
 		std::vector<std::string> list_of_caledars{};
-		boost::split(list_of_caledars, calendars_str, boost::is_any_of(",:;"));
+		boost::split(list_of_caledars, calendars_str, boost::is_any_of(",:;."));
 		std::sort(list_of_caledars.begin(), list_of_caledars.end());
 		std::string str_key = boost::algorithm::join(list_of_caledars, ",");
 		
-		if (IsCached(calendars_str))
+		if (IsCached(str_key))
 		{
-			return calendar_cache.at(calendars_str);
+			return calendar_cache.at(str_key);
 		}
 
 		//if we can't find the calendar store it 
@@ -37,7 +37,7 @@ namespace oa::static_cache
 			auto new_calendar = 
 				std::make_shared<CalendarTypeAlias>(raw_calendar_data);
 
-			StoreCalendar(calendars_str, new_calendar);
+			StoreCalendar(str_key, new_calendar);
 			return new_calendar;
 
 		}

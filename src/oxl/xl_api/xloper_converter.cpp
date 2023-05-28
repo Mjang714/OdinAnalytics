@@ -79,6 +79,13 @@ namespace oxl::xl_api {
 		xl_oper_res->val.num = value;
 	}
 
+
+	void XLoperObj::ConvertToLPXloper(int value, LPXLOPER12 xl_oper_res)
+	{
+		xl_oper_res->xltype = xltypeNum;
+		xl_oper_res->val.num = static_cast<double> (value);
+	}
+
 	void XLoperObj::ConvertToLPXloper(bool value, LPXLOPER12 xl_oper_res)
 	{
 		

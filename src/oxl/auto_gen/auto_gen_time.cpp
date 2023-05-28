@@ -38,3 +38,82 @@ LPXLOPER12  oxlIsBusinessDay(LPXLOPER12 Date_input, LPXLOPER12 Centers_input)
        return xloper_result;
    }
 }
+ 
+extern "C" __declspec(dllexport) 
+LPXLOPER12  oxlIsHolidayDay(LPXLOPER12 Date_input, LPXLOPER12 Centers_input)
+{ 
+  LPXLOPER12 xloper_result = static_cast<LPXLOPER12> (calloc(1, sizeof(xloper12)));
+ 
+  try
+  {
+       auto intermediate_result = oxl::OxlIsHolDay( Date_input,Centers_input );
+       oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);
+       return xloper_result;
+   }
+ 
+   catch(std::exception& e)
+   {
+       oxl::xl_api::XLoperObj::ConvertToLPXloper("ERROR:" + std::string(e.what()), xloper_result);
+       return xloper_result;
+   }
+
+   catch(...)
+   {
+       xloper_result->xltype = xltypeErr;
+       xloper_result->val.err = xlerrValue;
+       return xloper_result;
+   }
+}
+ 
+extern "C" __declspec(dllexport) 
+LPXLOPER12  oxlComputeDayCount(LPXLOPER12 Start_Date_input, LPXLOPER12 End_Date_input, LPXLOPER12 Day_Count_Convention_input)
+{ 
+  LPXLOPER12 xloper_result = static_cast<LPXLOPER12> (calloc(1, sizeof(xloper12)));
+ 
+  try
+  {
+       auto intermediate_result = oxl::OxlComputeDayCount( Start_Date_input,End_Date_input,Day_Count_Convention_input );
+       oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);
+       return xloper_result;
+   }
+ 
+   catch(std::exception& e)
+   {
+       oxl::xl_api::XLoperObj::ConvertToLPXloper("ERROR:" + std::string(e.what()), xloper_result);
+       return xloper_result;
+   }
+
+   catch(...)
+   {
+       xloper_result->xltype = xltypeErr;
+       xloper_result->val.err = xlerrValue;
+       return xloper_result;
+   }
+}
+ 
+extern "C" __declspec(dllexport) 
+LPXLOPER12  oxlComputeYearFraction(LPXLOPER12 Start_Date_input, LPXLOPER12 End_Date_input, LPXLOPER12 Day_Count_Convention_input)
+{ 
+  LPXLOPER12 xloper_result = static_cast<LPXLOPER12> (calloc(1, sizeof(xloper12)));
+ 
+  try
+  {
+       auto intermediate_result = oxl::OxlComputeYearFraction( Start_Date_input,End_Date_input,Day_Count_Convention_input );
+       oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);
+       return xloper_result;
+   }
+ 
+   catch(std::exception& e)
+   {
+       oxl::xl_api::XLoperObj::ConvertToLPXloper("ERROR:" + std::string(e.what()), xloper_result);
+       return xloper_result;
+   }
+
+   catch(...)
+   {
+       xloper_result->xltype = xltypeErr;
+       xloper_result->val.err = xlerrValue;
+       return xloper_result;
+   }
+}
+ 

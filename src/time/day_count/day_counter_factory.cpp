@@ -11,10 +11,14 @@ namespace oa::time
 				return std::make_unique<DayCountAct360>();
 			case DayCountRule::kACT_365_FIXED:
 				return std::make_unique<DayCountAct365Fixed>();
-			case DayCountRule::k30_360_E_EUROBOND:
-				return std::make_unique<DayCount30E360EuroBondBasis>();
 			case DayCountRule::kACT_ACT:
 				return std::make_unique<DayCountActAct>();
+			case DayCountRule::k30_360_E_EUROBOND:
+				return std::make_unique<DayCount30E360EuroBondBasis>();
+			case DayCountRule::k30_E_360_ISDA:
+				return std::make_unique<DayCount30360EISDA>();
+			case DayCountRule::k30_360_BOND_BASIS:
+				return std::make_unique<DayCount30360BondBasis>();
 			default:
 				return nullptr;
 		}

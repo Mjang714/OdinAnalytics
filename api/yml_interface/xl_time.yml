@@ -21,3 +21,59 @@ Functions :
      Type : String
    ReturnType : Bool
    Help : Determines if a date given is a business day
+  -
+   ExcelName : oxlIsHolidayDay
+   OxlName : OxlIsHolDay
+   Type : Vanilla
+   Args :
+    -
+     Name : Date
+     Help : Given date
+     Type : LPXLOPER|Date
+    -
+     Name : Centers
+     Help : Business centers (NYB = NY Fed, LNB for London)
+     Type : String
+   ReturnType : Bool
+   Help : Determines if a date given is a Holiday day
+  -
+   ExcelName : oxlComputeDayCount
+   OxlName : OxlComputeDayCount
+   Type : Vanilla
+   Args :
+    -
+     Name : Start_Date
+     Help : Start date
+     Type : LPXLOPER|Date
+    -
+     Name : End_Date
+     Help : End date
+     Type : LPXLOPER|Date
+    -
+     Name : Day_Count_Convention
+     Help : Day Count Convetion(i.e ACT/ACT, 30/360)
+     Type : String
+   ReturnType :  Double
+   Help : compute the number of business days
+  -
+   ExcelName : oxlComputeYearFraction
+   OxlName : OxlComputeYearFraction
+   Type : Vanilla
+   Args :
+    -
+     Name : Start_Date
+     Help : Start date
+     Type : LPXLOPER|Date
+    -
+     Name : End_Date
+     Help : End date
+     Type : LPXLOPER|Date
+    -
+     Name : Day_Count_Convention
+     Help : Day Count Convetion(i.e ACT/ACT, 30/360)
+     Type : String
+   ReturnType :  Double
+   Help : compute the year fractions  
+
+     
+    

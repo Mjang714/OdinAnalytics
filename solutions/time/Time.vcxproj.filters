@@ -98,5 +98,8 @@
     <ClInclude Include="..\..\src\time\day_count\day_count_act_act.h">
       <Filter>day_count</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\time\day_count\day_count_base.h">
+      <Filter>day_count</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

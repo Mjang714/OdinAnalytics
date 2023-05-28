@@ -124,6 +124,7 @@ def create_excel_cpp(yml_defintiion):
         auto_gen += [" "]
         auto_gen += catch_block()
         auto_gen += ["}"]
+        auto_gen += [" "]
 
     return auto_gen        
 
@@ -206,6 +207,8 @@ def vanilla_functions_base(yml_definition):
     (return_type, pointer_type) = split_type(yml_definition["ReturnType"])
     if(return_type == "Bool"):
         vanilla_code += create_generic_xloper(yml_definition)
+    elif(return_type == "Double"):
+        vanilla_code += create_generic_xloper(yml_definition)    
 
     return vanilla_code
 

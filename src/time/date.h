@@ -58,7 +58,7 @@ namespace oa::time
 		/// <param name="month"></param>
 		/// <param name="day"></param>
 		/// <returns>a long int of the julian date number</returns>
-		static int ConvertToJulian(const int& year, const int& month, const int& day);
+		static int ConvertToJulian(int year,int month,int day);
 
 		/// <summary>
 		///  this function takes the date class internal parameters and creates a string form of the date

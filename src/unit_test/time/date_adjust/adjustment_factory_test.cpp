@@ -17,7 +17,7 @@ namespace
 			std::unique_ptr<oa::time::DateAdjustBase> adj_base_p;
 			oa::time::Calendar test_calendar;
 
-			virtual void SetUp() override
+			void SetUp() override
 			{
 				oa::ds::CalendarDataStruct raw_calendar_data{};
 				//populate some New York Banking holidays 
@@ -46,7 +46,7 @@ namespace
 				adj_base_p = oa::time::AdjustmentFactory::CreateDateAdjust(oa::time::AdjRule::kPreceding, test_calendar);
 			}
 
-			virtual void TearDown() override
+			void TearDown() override
 			{
 
 			}

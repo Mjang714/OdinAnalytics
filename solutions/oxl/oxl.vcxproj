@@ -54,6 +54,9 @@
     <ProjectReference Include="..\dao\dao.vcxproj">
       <Project>{14aa39ed-815a-4e2b-a8b5-631cad5762e3}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\enum_mappers\enum_mappers.vcxproj">
+      <Project>{cd5ba075-6a85-46a7-af26-ace5f7a203b7}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\helpers\Helpers.vcxproj">
       <Project>{0be2b5d3-70ff-4c20-8c7e-24cf4938ad9d}</Project>
     </ProjectReference>
@@ -116,28 +119,34 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros">
-    <SonarQubeExclude>True</SonarQubeExclude>
-  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetExt>.xll</TargetExt>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
     <TargetExt>.xll</TargetExt>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
     <TargetExt>.xll</TargetExt>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
     <TargetExt>.xll</TargetExt>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -157,6 +166,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <CustomBuildStep>
+      <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
+      <Message>Auto Gen Code is running</Message>
+      <TreatOutputAsContent>false</TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -180,6 +194,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <CustomBuildStep>
+      <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
+      <Message>Auto Gen Code is running</Message>
+      <TreatOutputAsContent>false</TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -199,6 +218,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <CustomBuildStep>
+      <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
+      <Message>Auto Gen Code is running</Message>
+      <TreatOutputAsContent>false</TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -222,19 +246,24 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <CustomBuildStep>
+      <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
+      <Message>Auto Gen Code is running</Message>
+      <TreatOutputAsContent>false</TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets" Condition="Exists('..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets')" />
-    <Import Project="..\..\packages\magic_enum.0.8.1\build\native\magic_enum.targets" Condition="Exists('..\..\packages\magic_enum.0.8.1\build\native\magic_enum.targets')" />
     <Import Project="..\..\packages\boost.1.82.0\build\boost.targets" Condition="Exists('..\..\packages\boost.1.82.0\build\boost.targets')" />
+    <Import Project="..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets" Condition="Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets'))" />
-    <Error Condition="!Exists('..\..\packages\magic_enum.0.8.1\build\native\magic_enum.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\magic_enum.0.8.1\build\native\magic_enum.targets'))" />
     <Error Condition="!Exists('..\..\packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost.1.82.0\build\boost.targets'))" />
+    <Error Condition="!Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets'))" />
   </Target>
 </Project>
