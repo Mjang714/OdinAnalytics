@@ -5,6 +5,7 @@
 #include<string>
 #include<tuple>
 #include<vector>
+#include<compare>
 
 #include <boost/algorithm/string.hpp>
 
@@ -147,11 +148,9 @@ namespace oa::time
 
 		//operator overloads
 		bool operator==(const Date& right_value) const;
-		bool operator!=(const Date& right_value) const;
-		bool operator<=(const Date& right_value) const;
-		bool operator>=(const Date& right_value) const;
-		bool operator>(const Date& right_value) const;
-		bool operator<(const Date& right_value) const;
+		std::strong_ordering operator<=>(const Date& right_value) const;
+
+
 
 	private:
 		int m_days_ = 0, m_months_= 0, m_years_ = 0, m_julian_int_ = 0;

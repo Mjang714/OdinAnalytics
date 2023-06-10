@@ -285,32 +285,13 @@ namespace oa::time
 	//defining operator overlaoding 
 	bool Date::operator==(const Date& right_value) const
 	{
-		return m_julian_int_ == right_value.m_julian_int_;
+		//return m_julian_int_ == right_value.m_julian_int_;
+		return std::is_eq(m_julian_int_ <=> right_value.m_julian_int_);
 	}
 
-	bool Date::operator!=(const Date& right_value) const
+	std::strong_ordering Date::operator<=>(const Date& right_value) const
 	{
-		return m_julian_int_ != right_value.m_julian_int_;
-	}
-
-	bool Date::operator<=(const Date& right_value) const
-	{
-		return m_julian_int_ <= right_value.m_julian_int_;
-	}
-
-	bool Date::operator>=(const Date& right_value) const
-	{
-		return m_julian_int_ >= right_value.m_julian_int_;
-	}
-
-	bool Date::operator<(const Date& right_value) const
-	{
-		return m_julian_int_ < right_value.m_julian_int_;
-	}
-
-	bool Date::operator>(const Date& right_value) const
-	{
-		return m_julian_int_ > right_value.m_julian_int_;
+		return m_julian_int_ <=> right_value.m_julian_int_;
 	}
 	
 }
