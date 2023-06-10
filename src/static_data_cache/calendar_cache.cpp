@@ -15,7 +15,7 @@ namespace oa::static_cache
 	{
 		std::vector<std::string> list_of_caledars{};
 		boost::split(list_of_caledars, calendars_str, boost::is_any_of(",:;."));
-		std::sort(list_of_caledars.begin(), list_of_caledars.end());
+		std::ranges::sort(list_of_caledars.begin(), list_of_caledars.end());
 		std::string str_key = boost::algorithm::join(list_of_caledars, ",");
 		
 		if (IsCached(str_key))
@@ -54,6 +54,7 @@ namespace oa::static_cache
 
 	void CalendarCache::StoreCalendar(const std::string& calendar_str, const std::shared_ptr<time::Calendar> calendar_data)
 	{
-		calendar_cache.insert({ calendar_str, calendar_data });
+		//we dont need duplicates of the calendar just one 
+		calendar_cache.try_emplace( calendar_str, calendar_data );
 	}
 }

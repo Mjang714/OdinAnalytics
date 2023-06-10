@@ -23,7 +23,6 @@ namespace oa::utils::str_utils
 	/// <returns></returns>
 	std::vector<int> StrToDigits(const std::string& str_to_parse) noexcept;
 
-	std::string ToUpper(const std::string& inpute_str);
 }
 
 

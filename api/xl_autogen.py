@@ -38,7 +38,7 @@ def regsiter_function(yml_defintion):
         line += "Q"
         if args:
             for arg in args:
-                line+="Q"
+                line+=XlRegType(arg["Type"])
         line += "\", L\""
         line += func_desc["ExcelName"]
         line += "\", L\""
@@ -176,6 +176,9 @@ def create_generic_xloper(yml_definition):
     auto_gen_code += [line]
     auto_gen_code += ["       oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);"]
     return auto_gen_code   
+
+
+
 
 def create_function_declaration(name, yml_definition):
     line = name + "("

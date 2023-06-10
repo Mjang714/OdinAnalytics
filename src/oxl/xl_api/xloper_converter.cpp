@@ -122,12 +122,12 @@ namespace oxl::xl_api {
 
 	void XLoperObj::ConvertToLPXloper(const XlArray& value, LPXLOPER12 xl_oper_res)
 	{
-		size_t rows = value.rows();
-		size_t cols = value.cols();
+		auto rows = value.rows();
+		auto cols = value.cols();
 
 		xl_oper_res->xltype = xltypeMulti | xlbitDLLFree;
-		xl_oper_res->val.array.rows = rows;
-		xl_oper_res->val.array.columns = cols;
+		xl_oper_res->val.array.rows = static_cast<int> (rows);
+		xl_oper_res->val.array.columns = static_cast<int> (cols);
 		xl_oper_res->val.array.lparray = static_cast<LPXLOPER12> (malloc((sizeof(XLOPER12) * rows * cols)));
 
 		for (size_t i = 0; i < rows; i++)
@@ -220,7 +220,7 @@ namespace oxl::xl_api {
 
 	std::wstring XLoperObj::ToWString(const std::string& value)
 	{
-		size_t size = MultiByteToWideChar(CP_UTF8, 0, value.c_str(), value.length(), NULL, 0);
+		int size = MultiByteToWideChar(CP_UTF8, 0, value.c_str(), value.length(), NULL, 0);
 		std::wstring wstr_value(size, 0);
 		MultiByteToWideChar(CP_UTF8, 0, value.c_str(), value.length(), &wstr_value[0], size);
 		return wstr_value;
@@ -229,7 +229,7 @@ namespace oxl::xl_api {
 
 	std::string XLoperObj::ToUTF8String(const std::wstring& value)
 	{
-		size_t size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), value.length(), NULL, 0, NULL, NULL);
+		int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), value.length(), NULL, 0, NULL, NULL);
 		std::string utf8_str(size, 0);
 		WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, &utf8_str[0], size, NULL, NULL);
 		return utf8_str;

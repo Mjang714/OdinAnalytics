@@ -6,7 +6,7 @@ namespace oa::enum_mappers
 	oa::time::DayCountRule MapInputToDayCountEnum(const std::string& input_str)
 	{
 		std::string key_str = input_str;
-		std::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
 
 		if (TimeEnumMap().day_count_mappers.contains(key_str))
 		{

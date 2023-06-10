@@ -9,17 +9,18 @@ namespace
 {
 	class CalendarCacheTest : public ::testing::Test 
 	{
-		protected:
+		public:
 			std::string ny_calendar_str= "NYB";
 			std::string lon_calendar_str = "LNB";
 			virtual void SetUp() override
 			{
-
+				//do some heap allocated stuff
 			}
 
+			
 			virtual void TearDown() override
 			{
-
+				//remove any heap allocated memory
 			}
 	};
 
