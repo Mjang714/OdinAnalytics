@@ -37,25 +37,25 @@
     <IncludePath>$(IncludePath)</IncludePath>
     <ExternalIncludePath>..\OdinAnalytics\src;$(ExternalIncludePath)</ExternalIncludePath>
     <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)</IntDir>
+    <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
     <ExternalIncludePath>..\OdinAnalytics\src;$(ExternalIncludePath)</ExternalIncludePath>
     <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)</IntDir>
+    <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
     <ExternalIncludePath>..\OdinAnalytics\src;$(ExternalIncludePath)</ExternalIncludePath>
     <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)</IntDir>
+    <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
     <ExternalIncludePath>..\OdinAnalytics\src;$(ExternalIncludePath)</ExternalIncludePath>
     <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)</IntDir>
+    <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\BondMath\BondMath.vcxproj">
@@ -94,6 +94,7 @@
     <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_30_360_e_isda_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_30_e_360_eurobond_basis_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_act_360_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_act_act.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\unit_test\pch.h" />

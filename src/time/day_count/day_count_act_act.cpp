@@ -10,7 +10,7 @@ namespace oa::time
 	
 	int DayCountActAct::ComputeDayCountActAct(const Date& start_date, const Date& end_date)
 	{
-		return start_date.GetJulian() - end_date.GetJulian();
+		return end_date.GetJulian() - start_date.GetJulian();
 	}
 
 	double DayCountActAct::YearFraction(const Date& start_date, const Date& end_date) const

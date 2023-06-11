@@ -48,6 +48,9 @@
     <ClCompile Include="..\..\src\unit_test\static_data_cache\static_data_cache_test.cpp">
       <Filter>static_data_cache</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_act_act.cpp">
+      <Filter>time\day_count</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\unit_test\pch.h" />
