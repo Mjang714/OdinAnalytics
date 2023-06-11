@@ -24,7 +24,7 @@ namespace oxl::xl_api
 
 	bool XlCacheObj::IsHandle(const std::string& handle)
 	{
-		auto& map = XlCacheObj::GetCache();
+		const auto& map = XlCacheObj::GetCache();
 		std::string key = GetKeyFromHandle(handle);
 
 		if (map.contains(key))
