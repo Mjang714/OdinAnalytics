@@ -28,7 +28,7 @@ namespace oa::time
 		Date() = default;
 
 		//we will make this constructor private to prevent someone from trying to create a whacky date that makes no sense 
-		Date(const int& year, const int& month, const int& day);
+		explicit Date(const int& year, const int& month, const int& day);
 
 		/// <summary>
 		/// This function will be the main interface for the date class and takes a date as a stringd 
@@ -37,20 +37,20 @@ namespace oa::time
 		/// string representation of the date that 
 		/// will be checked for correctness and fed into the private construtor Date(const long long julian_date)
 		/// </param>
-		Date(const std::string& date_str);
+		explicit Date(const std::string& date_str);
 
 		/// <summary>
 		/// constructor will take in julian date number and convert it back into it constitute YEAR MONTH and DATE
 		/// by calling ConvertToGreg
 		/// </summary>
 		/// <param name="julian_date"></param>
-		Date(const int& julian_int);
+		explicit Date(const int& julian_int);
 
 		/// <summary>
 		/// takes a time point and returns a time Date representation 
 		/// </summary>
 		/// <param name="time_point">takes in time_point object</param>
-		Date(const std::chrono::system_clock::time_point& time_point);
+		explicit Date(const std::chrono::system_clock::time_point& time_point);
 
 		/// <summary>
 		/// the algorithm to convert gregorian Calendar date to Julian date is from this    
@@ -65,13 +65,13 @@ namespace oa::time
 		///  this function takes the date class internal parameters and creates a string form of the date
 		/// </summary>
 		/// <returns>a string of the date formatted "YYYY-MM-DD : Julian Integer = ######"</returns>
-		std::string ToString();
+		std::string ToString() const;
 
 		/// <summary>
 		/// return wether or not a year is IsLeapYear
 		/// </summary>
 		/// <returns>boolean value if a year is leap</returns>
-		bool IsLeap(void);
+		bool IsLeap(void) const;
 
 		/// <summary>
 		///  return wether or not a year is IsLeapYear
@@ -90,7 +90,7 @@ namespace oa::time
 		///  return an integer that represents what day of the week it is (0 for Monday - 6 for Sunday)
 		/// </summary>
 		/// <returns>integer representation of what day of the week it is</returns>
-		int GetDOWInt();
+		int GetDOWInt() const;
 
 		/// <summary>
 		/// static function that returst the DOW as an integer
@@ -113,7 +113,7 @@ namespace oa::time
 		/// </summary>
 		/// <param name="given_date"></param>
 		/// <returns>time point object where seconds are defaulted to zero</returns>
-		std::chrono::system_clock::time_point ConvertToTimePt(void);
+		std::chrono::system_clock::time_point ConvertToTimePt(void) const;
 
 		static std::chrono::system_clock::time_point ConvertToTimePt(const Date& given_date);
 
@@ -129,14 +129,14 @@ namespace oa::time
 		/// </summary>
 		/// <param name="tenor">given a year</param>
 		/// <returns>a new date that has the tenor added</returns>
-		Date AddTenor(const oa::time::Tenor& tenor);
+		Date AddTenor(const oa::time::Tenor& tenor) const;
 
 		/// <summary>
 		///  takes in a tenor and subtracts it from the date object
 		/// </summary>
 		/// <param name="tenor"></param>
 		/// <returns>a new date that has the tenor subtracted</returns>
-		Date SubTenor(const oa::time::Tenor& tenor);
+		Date SubTenor(const oa::time::Tenor& tenor) const;
 
 		/// <summary>
 		/// methods to return days, months, and year 
@@ -146,7 +146,8 @@ namespace oa::time
 		int m_months() const { return m_months_; };
 		int m_days() const { return m_days_; };
 
-		//operator overloads
+		//operator overloads leveraging c++ 20 sapceship operator
+		// Since we are basing comparisons on julian dates we will most likely be using strong ordering
 		bool operator==(const Date& right_value) const;
 		std::strong_ordering operator<=>(const Date& right_value) const;
 
@@ -158,21 +159,21 @@ namespace oa::time
 		const static int kChronoYearOffset = 1900;
 		const static int kMonthOffset = 1;
 
-			Date AddDays(const int& time_length) const;
+		Date AddDays(const int& time_length) const;
 
-			Date AddWeeks(const int& time_length) const;
+		Date AddWeeks(const int& time_length) const;
 
-			Date AddMonths(const int& time_length) const;
+		Date AddMonths(const int& time_length) const;
 
-			Date AddYears(const int& time_length) const;
+		Date AddYears(const int& time_length) const;
 
-			Date SubDays(const int& time_length) const;
+		Date SubDays(const int& time_length) const;
 
-			Date SubWeeks(const int& time_length) const;
+		Date SubWeeks(const int& time_length) const;
 
-			Date SubMonths(const int& time_length) const;
+		Date SubMonths(const int& time_length) const;
 
-			Date SubYears(const int& time_length) const;
+		Date SubYears(const int& time_length) const;
 
 		/// <summary>
 		/// converts the julian day to its year month and day and returns it as a tuple 
@@ -188,7 +189,7 @@ namespace oa::time
 		/// </summary>
 		/// <param name="time_point">input into the </param>
 		/// <returns>a tuple where the first element is the year then month and day</returns>
-		std::tuple<int, int, int> ConvertToGregInt(const std::chrono::system_clock::time_point& time_point);
+		std::tuple<int, int, int> ConvertToGregInt(const std::chrono::system_clock::time_point& time_point) const;
 
 		/// <summary>
 		/// takes in a tuple and populates year month and date 

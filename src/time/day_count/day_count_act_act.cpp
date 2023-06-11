@@ -10,7 +10,7 @@ namespace oa::time
 	
 	int DayCountActAct::ComputeDayCountActAct(const Date& start_date, const Date& end_date)
 	{
-		return end_date.GetJulian() - end_date.GetJulian();
+		return start_date.GetJulian() - end_date.GetJulian();
 	}
 
 	double DayCountActAct::YearFraction(const Date& start_date, const Date& end_date) const
@@ -31,9 +31,9 @@ namespace oa::time
 		int days_in_start_year = Date::IsLeap(start_year) ? 366 : 365;
 		int days_in_end_year = Date::IsLeap(end_year) ? 366 : 365;
 
-		double year_fraction = end_year - start_year;
-		year_fraction += ComputeDayCountActAct(start_date, Date(start_year, 12, 31)) / days_in_start_year;
-		year_fraction += ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year;
+		auto year_fraction = static_cast<double> (end_year - start_year);
+		year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, Date(start_year, 12, 31)) / days_in_start_year);
+		year_fraction += static_cast<double> (ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year);
 
 		return year_fraction;
 

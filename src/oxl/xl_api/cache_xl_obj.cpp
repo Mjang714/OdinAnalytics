@@ -9,8 +9,8 @@ namespace oxl::xl_api
 
 		if (map.contains(key))
 		{
-			auto data_pair = LoadPair(key);
-			version = data_pair.second + 1;
+			auto& [old_cached_obj, version] = LoadPair(key);
+			version++;
 		}
 
 		map[key] = std::pair<CachedObjVar, int> (cached_obj, version);
@@ -24,7 +24,7 @@ namespace oxl::xl_api
 
 	bool XlCacheObj::IsHandle(const std::string& handle)
 	{
-		auto map = XlCacheObj::GetCache();
+		auto& map = XlCacheObj::GetCache();
 		std::string key = GetKeyFromHandle(handle);
 
 		if (map.contains(key))
@@ -47,10 +47,8 @@ namespace oxl::xl_api
 
 	std::string XlCacheObj::CacheName() const
 	{
-		auto cache_data(LoadPair(cache_name_));
-		int version = cache_data.second;
+		auto [cache_variant, version] = LoadPair(cache_name_);
 
-		//used std::format in the future do while on vacation
 		std::string handle_name = std::format("{}:{}", cache_name_, version);
 
 		return handle_name;
@@ -58,7 +56,7 @@ namespace oxl::xl_api
 
 	std::string XlCacheObj::GetKeyFromHandle(const std::string& handle_str)
 	{
-		int colon_index = handle_str.find(":");
+		size_t colon_index = handle_str.find(":");
 		return handle_str.substr(0, colon_index);
 	}
 

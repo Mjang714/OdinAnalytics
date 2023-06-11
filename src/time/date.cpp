@@ -29,10 +29,8 @@ namespace oa::time
 
 	}
 
-	Date::Date(const int& julian_int)
+	Date::Date(const int& julian_int) : m_julian_int_(julian_int)
 	{
-
-		this->m_julian_int_ = julian_int;
 		std::tuple<int, int, int> results = this->ConvertToGregInt(julian_int);
 		PopulateYMDFromTuple(results);
 
@@ -52,15 +50,15 @@ namespace oa::time
 		this->m_days_ = std::get<2>(results);
 	}
 
-	std::tuple<int, int, int> Date::ConvertToGregInt(const std::chrono::system_clock::time_point& time_point)
+	std::tuple<int, int, int> Date::ConvertToGregInt(const std::chrono::system_clock::time_point& time_point) const
 	{
 		auto days_point = floor<std::chrono::days> (time_point);
 		std::chrono::year_month_day ymd{ days_point };
 
 		//this will do an implicit cast of unsigned ints to int which is not ideal....  
-		int year = static_cast<int> (ymd.year());
-		int month = static_cast<unsigned> (ymd.month());
-		int day = static_cast<unsigned> (ymd.day());
+		auto year = static_cast<int> (ymd.year());
+		auto month = static_cast<unsigned> (ymd.month());
+		auto day = static_cast<unsigned> (ymd.day());
 			
 		return std::tuple<int, int, int>(year,month,day);
 	}
@@ -99,7 +97,7 @@ namespace oa::time
 		return m_julian_int_;
 	}
 
-	int Date::GetDOWInt()
+	int Date::GetDOWInt() const
 	{
 		return GetDOWInt(m_julian_int_);
 	}
@@ -112,7 +110,7 @@ namespace oa::time
 
 
 		
-	std::chrono::system_clock::time_point Date::ConvertToTimePt(void)
+	std::chrono::system_clock::time_point Date::ConvertToTimePt(void) const
 	{
 		return ConvertToTimePt(*this);
 	}
@@ -132,18 +130,19 @@ namespace oa::time
 		return std::chrono::system_clock::from_time_t(std::mktime(&time_point_result));
 	}
 
-	std::string Date::ToString()
+	std::string Date::ToString() const
 	{
-		return std::to_string(m_years_) + "-" + std::to_string(m_months_) + "-" + std::to_string(m_days_) 
-			+ " : Julian Integer = " + std::to_string(m_julian_int_);
+
+		return std::format("{}-{}-{} : Julian Integer = {}", std::to_string(m_years_),
+			std::to_string(m_months_), std::to_string(m_days_), std::to_string(m_julian_int_));
 	}
 
-	bool Date::IsLeap()
+	bool Date::IsLeap() const
 	{
 		return IsLeap(m_years_);
 	}
 
-	bool Date::IsLeap( int year) 
+	bool Date::IsLeap( int year)
 	{
 		return  (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0));
 	}
@@ -166,31 +165,31 @@ namespace oa::time
 		}
 	}
 
-	Date Date::SubTenor(const oa::time::Tenor& tenor)
+	Date Date::SubTenor(const oa::time::Tenor& tenor) const
 	{
 		return AddTenor(tenor.FlipSign());
 	}
 
-	Date Date::AddTenor(const oa::time::Tenor& tenor)
+	Date Date::AddTenor(const oa::time::Tenor& tenor) const
 	{
-		auto values = tenor.GetValues();
+		auto [lenght_of_time, tenor_enum] = tenor.GetValues();
 	
-		switch(values.second)
+		switch(tenor_enum)
 		{
 			case oa::time::Tenors::kDays:
-				return AddDays(values.first);
+				return AddDays(lenght_of_time);
 
 			case oa::time::Tenors::kWeeks:
-				return AddWeeks(values.first);
+				return AddWeeks(lenght_of_time);
 
 			case oa::time::Tenors::kMonths:
-				return AddMonths(values.first);
+				return AddMonths(lenght_of_time);
 
 			case oa::time::Tenors::kYears:
-				return AddYears(values.first);
+				return AddYears(lenght_of_time);
 
 			default:
-				throw "Not a valid Tenor please check input tenor of:" + oa::utils::GetCleanName(values.second);
+				throw "Not a valid Tenor please check input tenor of:" + oa::utils::GetCleanName(tenor_enum);
 		}
 	}
 
@@ -250,13 +249,11 @@ namespace oa::time
 		new_day = m_days_;
 
 		//if it is not leap year then check to see if this 
-		if (!IsLeap(new_year))
+		if (!IsLeap(new_year) && (new_month == 2))
 		{
-			//if it's february check we have teh right 
-			if (new_month == 2)
-			{
-				new_day = (new_day > DaysInMonth(new_month, new_year)) ? DaysInMonth(new_month, new_year) : new_day;
-			}
+			
+			new_day = (new_day > DaysInMonth(new_month, new_year)) ? DaysInMonth(new_month, new_year) : new_day;
+
 		}
 
 		return Date(new_year, new_month, new_day);
@@ -285,7 +282,6 @@ namespace oa::time
 	//defining operator overlaoding 
 	bool Date::operator==(const Date& right_value) const
 	{
-		//return m_julian_int_ == right_value.m_julian_int_;
 		return std::is_eq(m_julian_int_ <=> right_value.m_julian_int_);
 	}
 

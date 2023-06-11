@@ -56,7 +56,7 @@ namespace oa::static_cache
 			/// </summary>
 			/// <param name="calendar_str"></param>
 			/// <returns></returns>
-			bool IsCached(const std::string& calendar_str);
+			bool IsCached(const std::string& calendar_str) const;
 			
 			/// <summary>
 			/// stores the calendar within the static map and saves it

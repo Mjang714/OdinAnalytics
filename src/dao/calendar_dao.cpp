@@ -37,7 +37,7 @@ namespace oa::dao
 		{
 			if (file_line == weekend_delimiter)
 			{
-				//get eh next line of the file
+				//get the next line of the file
 				std::getline(raw_calendar_data, file_line);
 				for (auto weekend_integer : StrHelpers::StrToDigits(file_line))
 				{

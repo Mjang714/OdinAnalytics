@@ -64,11 +64,6 @@ namespace oa::dao
 			CalendarDao() = default;
 	};
 
-
-	//std::string HelloWorld(void)
-	//{
-	//	return std::string{"Hello World!"};
-	//};
 }
 
 #endif // !ODINANALYTICS_DAO_CALENDAR_DAO_H_

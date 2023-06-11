@@ -38,7 +38,11 @@ namespace oa::enum_mappers
 			{"ACTACT", oa::time::DayCountRule::kACT_ACT},
 		};
 	};
-	
+	/// <summary>
+	/// returns an DayCountRule enum from a given string
+	/// </summary>
+	/// <param name="input_str"></param>
+	/// <returns></returns>
 	oa::time::DayCountRule MapInputToDayCountEnum(const std::string& input_str);
 }
 #endif // !OPENANALYTICS_ENUM_MAPPERS_TIME_ENUM_MAPPERS_H_

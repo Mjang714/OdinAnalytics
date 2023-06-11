@@ -43,7 +43,7 @@ namespace oa::static_cache
 		}
 	}
 
-	bool CalendarCache::IsCached(const std::string& calendar_str)
+	bool CalendarCache::IsCached(const std::string& calendar_str) const
 	{
 		if (calendar_cache.contains(calendar_str))
 		{

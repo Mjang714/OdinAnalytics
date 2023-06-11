@@ -220,7 +220,7 @@ namespace oxl::xl_api {
 
 	std::wstring XLoperObj::ToWString(const std::string& value)
 	{
-		int size = MultiByteToWideChar(CP_UTF8, 0, value.c_str(), value.length(), NULL, 0);
+		int size = MultiByteToWideChar(CP_UTF8, 0, value.c_str(), value.length(), nullptr, 0);
 		std::wstring wstr_value(size, 0);
 		MultiByteToWideChar(CP_UTF8, 0, value.c_str(), value.length(), &wstr_value[0], size);
 		return wstr_value;
@@ -229,9 +229,9 @@ namespace oxl::xl_api {
 
 	std::string XLoperObj::ToUTF8String(const std::wstring& value)
 	{
-		int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), value.length(), NULL, 0, NULL, NULL);
+		int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), value.length(), nullptr, 0, nullptr, nullptr);
 		std::string utf8_str(size, 0);
-		WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, &utf8_str[0], size, NULL, NULL);
+		WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, &utf8_str[0], size, nullptr, nullptr);
 		return utf8_str;
 	}
 

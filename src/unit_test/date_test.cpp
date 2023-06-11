@@ -48,25 +48,14 @@ namespace
 	TEST(DateClassTest, DateTimePointConstructor)
 	{
 		//Test the tinme_point epoch gives us 1970-1-1
-		oa::time::Date epoch_date_expected = oa::time::Date(1970, 1, 1);
+		auto epoch_date_expected = oa::time::Date(1970, 1, 1);
 
 		std::chrono::system_clock::time_point tp_epoch;
-		oa::time::Date tp_epoch_result = oa::time::Date(tp_epoch);
+		auto tp_epoch_result = oa::time::Date(tp_epoch);
 
 		EXPECT_TRUE(epoch_date_expected == tp_epoch_result);
 
 	}
-
-	//TODO: finish figuring out how to return timepoint 
-	//TEST(DateClassTest, ToTimePointTest)
-	//{
-	//	oa::Date expected_date = oa::Date(1970, 1, 1);
-	//	std::chrono::system_clock::time_point tp_epoch = std::chrono::system_clock::time_point() + ;
- //		std::chrono::system_clock::time_point tp_epoch_result = expected_date.ConvertToTimePt();
-
-	//	EXPECT_EQ(tp_epoch, tp_epoch_result);
-
-	//}
 
 	TEST(DateClassTest, IsLeap)
 	{
