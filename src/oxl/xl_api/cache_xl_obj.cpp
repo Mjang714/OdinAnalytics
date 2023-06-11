@@ -9,8 +9,8 @@ namespace oxl::xl_api
 
 		if (map.contains(key))
 		{
-			auto& [old_cached_obj, version] = LoadPair(key);
-			version++;
+			auto& [old_cached_obj, stored_version] = LoadPair(key);
+			version = ++stored_version;
 		}
 
 		map[key] = std::pair<CachedObjVar, int> (cached_obj, version);
@@ -47,7 +47,7 @@ namespace oxl::xl_api
 
 	std::string XlCacheObj::CacheName() const
 	{
-		auto [cache_variant, version] = LoadPair(cache_name_);
+		const auto& [cache_variant, version] = LoadPair(cache_name_);
 
 		std::string handle_name = std::format("{}:{}", cache_name_, version);
 
