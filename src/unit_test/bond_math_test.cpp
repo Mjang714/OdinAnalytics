@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "../BondMathLib/BondMath.h"
 
-namespace
+namespace 
 {
 	TEST(BondMathTest, YieldWithNumber) {
 		EXPECT_GT(getYield(.5, 0, 99.5, 1), .01);

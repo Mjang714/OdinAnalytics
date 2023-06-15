@@ -121,7 +121,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)</OutDir>
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetExt>.xll</TargetExt>
     <CustomBuildBeforeTargets>
@@ -129,21 +129,21 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)</OutDir>
     <TargetExt>.xll</TargetExt>
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)</OutDir>
     <TargetExt>.xll</TargetExt>
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)</OutDir>
     <TargetExt>.xll</TargetExt>
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>

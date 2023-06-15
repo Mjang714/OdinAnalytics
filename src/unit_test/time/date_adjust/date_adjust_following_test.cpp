@@ -8,7 +8,7 @@
 #include "time/time_enums.h"
 #include "time/date_adjust/date_adjust_following.h"
 
-namespace 
+namespace
 {
 	class DateAdjustFollowingTest : public ::testing::Test
 	{

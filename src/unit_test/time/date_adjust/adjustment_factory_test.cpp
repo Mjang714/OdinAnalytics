@@ -12,7 +12,7 @@ namespace
 {
 	class AdjustmentFactoryTest : public ::testing::Test 
 	{
-		protected:
+		public:
 			std::unique_ptr<oa::time::DateAdjustBase> adj_base_mf;
 			std::unique_ptr<oa::time::DateAdjustBase> adj_base_p;
 			oa::time::Calendar test_calendar;
@@ -48,7 +48,7 @@ namespace
 
 			void TearDown() override
 			{
-
+				//this is to remove any heap allocated memory if there was any
 			}
 	};
 

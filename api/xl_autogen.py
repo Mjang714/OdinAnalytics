@@ -160,7 +160,7 @@ def create_cached_handle(yml_definition):
         line += " );"
     auto_gen_code += [line]     
     auto_gen_code += ["       std::string base_name = oxl::xl_api::XlCacheObj::GenHandleStr(cache_obj);"]
-    auto_gen_code += ["       oxl::xl_api::XlCacheObj cached_obj = oxl::xl_api::XlCacheObj(cache_obj, base_name);"]
+    auto_gen_code += ["       auto cached_obj = oxl::xl_api::XlCacheObj(cache_obj, base_name);"]
     auto_gen_code += ["       oxl::xl_api::XLoperObj::ConvertToLPXloper(cached_obj.CacheName(), xloper_result);"]
     return auto_gen_code
 
