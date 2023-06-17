@@ -12,7 +12,7 @@
 
 namespace
 {
-	class DayCountFactoryTest : public::testing::Test
+	class FactoryTestDayCount : public::testing::Test
 	{
 		public: 
 			std::unique_ptr <oa::time::DayCounterBase> day_count_act_act;
@@ -44,7 +44,7 @@ namespace
 			}
 	};
 
-	TEST_F(DayCountFactoryTest, DayCount)
+	TEST_F(FactoryTestDayCount, DayCountTest)
 	{
 		//check normal dates work
 		EXPECT_EQ(31, day_count_act_act->DayCount(start_date, end_date));
@@ -58,12 +58,12 @@ namespace
 		EXPECT_EQ(-31, day_count_act_act->DayCount(end_date, start_date));
 		EXPECT_EQ(-31, day_count_act_360->DayCount(end_date, start_date));
 		EXPECT_EQ(-31, day_count_act_365f->DayCount(end_date, start_date));
-		EXPECT_EQ(-32, day_count_30_360->DayCount(end_date, start_date));
+		EXPECT_EQ(-33, day_count_30_360->DayCount(end_date, start_date));
 		EXPECT_EQ(-32, day_count_30E_360->DayCount(end_date, start_date));
 		EXPECT_EQ(-30, day_count_30E_360_isda->DayCount(end_date, start_date));
 	}
 
-	TEST_F(DayCountFactoryTest, YearFraction)
+	TEST_F(FactoryTestDayCount, YearFractionTest)
 	{
 		EXPECT_DOUBLE_EQ(31 / 360.0, day_count_act_360->YearFraction(start_date, end_date));
 		EXPECT_DOUBLE_EQ(31 / 365.0, day_count_act_365f->YearFraction(start_date, end_date));

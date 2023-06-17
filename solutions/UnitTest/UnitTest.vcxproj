@@ -36,25 +36,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)</OutDir>
+    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)</OutDir>
+    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)</OutDir>
+    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)</OutDir>
+    <OutDir>..\..\builds\$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <ItemGroup>

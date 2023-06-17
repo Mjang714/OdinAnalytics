@@ -9,6 +9,11 @@ namespace oa::time
 
 	int DayCount30360BondBasis::ComputeDayCount30360(const Date& date1, const Date& date2)
 	{
+		if (date2 < date1)
+		{
+			return -ComputeDayCount30360(date2, date1);
+		}
+		
 		int day1 = date1.m_days();
 		int	day2 = date2.m_days();
 
