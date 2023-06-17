@@ -11,7 +11,7 @@ namespace oa::static_cache
 		return calendar_cache;
 	}
 
-	std::shared_ptr<CalendarTypeAlias> CalendarCache::GetCalendar(const std::string& calendars_str)
+	std::shared_ptr<const CalendarTypeAlias> CalendarCache::GetCalendar(const std::string& calendars_str)
 	{
 		std::vector<std::string> list_of_caledars{};
 		boost::split(list_of_caledars, calendars_str, boost::is_any_of(",:;."));
@@ -35,7 +35,7 @@ namespace oa::static_cache
 			
 
 			auto new_calendar = 
-				std::make_shared<CalendarTypeAlias>(raw_calendar_data);
+				std::make_shared<const CalendarTypeAlias>(raw_calendar_data);
 
 			StoreCalendar(str_key, new_calendar);
 			return new_calendar;
@@ -52,9 +52,9 @@ namespace oa::static_cache
 		return false;
 	}
 
-	void CalendarCache::StoreCalendar(const std::string& calendar_str, const std::shared_ptr<time::Calendar> calendar_data)
+	void CalendarCache::StoreCalendar(const std::string& calendar_str, const std::shared_ptr<const time::Calendar> calendar_data)
 	{
-		//we dont need duplicates of the calendar just one 
+		//we dont need duplicates of the calendar just one so us try_emplace
 		calendar_cache.try_emplace( calendar_str, calendar_data );
 	}
 }

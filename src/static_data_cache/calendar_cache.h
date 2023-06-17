@@ -38,7 +38,7 @@ namespace oa::static_cache
 			/// </summary>
 			/// <param name="calendar_str"></param>
 			/// <returns></returns>
-			std::shared_ptr<oa::time::Calendar> GetCalendar(const std::string& calendars_str);
+			std::shared_ptr<const oa::time::Calendar> GetCalendar(const std::string& calendars_str);
 
 			/// <summary>
 			/// retrieves the singleton instance of the cache 
@@ -48,7 +48,7 @@ namespace oa::static_cache
 			static CalendarCache& RetrieveCache(void);
 
 		private:
-			std::unordered_map<std::string, std::shared_ptr<time::Calendar>> calendar_cache{};
+			std::unordered_map<std::string, std::shared_ptr<const time::Calendar>> calendar_cache{};
 			CalendarCache() = default;
 			
 			/// <summary>
@@ -63,7 +63,7 @@ namespace oa::static_cache
 			/// </summary>
 			/// <param name="calendar_str">sorted conjoined string that is a unique key</param>
 			/// <param name="calendar_data">a </param>
-			void StoreCalendar(const std::string& calendar_str, const std::shared_ptr<time::Calendar> calendar_data);
+			void StoreCalendar(const std::string& calendar_str, const std::shared_ptr<const time::Calendar> calendar_data);
 
 	};
 }
