@@ -13,8 +13,9 @@ if(MSVC)
     # disable warnings about insecure functions, C code is naturally unsafe
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     add_compile_options(
-        # preferred warning level
-        /Wall
+        # preferred warning level + enable parallel compilaton. the CMake
+        # -j, --parallel flag only builds *projects* in parallel
+        /Wall /MP
         # typically don't care if unreferenced inline functions are removed
         /wd4514
         # silence warnings about padding (we don't care for this project)
