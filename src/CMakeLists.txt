@@ -6,7 +6,7 @@ add_subdirectory(enum_mappers)
 add_subdirectory(helpers)
 # only available for Windows
 if(WIN32)
-    # add_subdirectory(oxl)
+    add_subdirectory(oxl)
 else()
     message(STATUS "Skipping oxl, on non-Windows platform")
 endif()

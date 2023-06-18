@@ -9,7 +9,7 @@ namespace oxl::xl_api
 
 		if (map.contains(key))
 		{
-			auto& [old_cached_obj, stored_version] = LoadPair(key);
+			auto [old_cached_obj, stored_version] = LoadPair(key);
 			version = ++stored_version;
 		}
 
