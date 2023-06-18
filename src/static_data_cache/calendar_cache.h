@@ -1,7 +1,8 @@
-#include <unordered_map>
-#include <memory>
-#include <string>
 #include <algorithm>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
 
 #include "time/date.h"
 #include "time/calendar.h"
@@ -48,7 +49,9 @@ namespace oa::static_cache
 			static CalendarCache& RetrieveCache(void);
 
 		private:
-			std::unordered_map<std::string, std::shared_ptr<const time::Calendar>> calendar_cache{};
+			std::unordered_map<std::string, std::shared_ptr<const time::Calendar>> m_calendar_cache_{};
+			std::mutex m_cache_mutex_;
+			
 			CalendarCache() = default;
 			
 			/// <summary>
