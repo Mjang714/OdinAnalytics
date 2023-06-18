@@ -8,11 +8,11 @@ if(BUILD_SHARED_LIBS)
         add_compile_definitions(ODIN_DLL)
     endif()
 endif()
-# set compiler-specific options
+# set compiler-specific definitions and options
 if(MSVC)
+    # disable warnings about insecure functions, C code is naturally unsafe
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     add_compile_options(
-        # add additional SDL security checks
-        /sdl
         # preferred warning level
         /Wall
         # typically don't care if unreferenced inline functions are removed

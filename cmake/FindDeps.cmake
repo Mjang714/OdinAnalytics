@@ -25,8 +25,6 @@ if(NOT Boost_FOUND)
     if(DEFINED ENV{ODIN_BOOST_ROOT})
         message(STATUS "Using ODIN_BOOST_ROOT $ENV{ODIN_BOOST_ROOT} from env")
         set(ODIN_BOOST_ROOT $ENV{ODIN_BOOST_ROOT})
-        # official hint variable to set
-        set(BOOST_ROOT ${ODIN_BOOST_ROOT})
     endif()
     # must be defined unless BOOST_ROOT already defined
     if(DEFINED ODIN_BOOST_ROOT)
@@ -34,6 +32,7 @@ if(NOT Boost_FOUND)
             STATUS
             "Using BOOST_ROOT from ODIN_BOOST_ROOT ${ODIN_BOOST_ROOT}"
         )
+        # official hint variable to set
         set(BOOST_ROOT ${ODIN_BOOST_ROOT})
     elseif(DEFINED BOOST_ROOT)
         message(STATUS "BOOST_ROOT already defined as ${BOOST_ROOT}")
@@ -56,11 +55,16 @@ if(NOT GTest_FOUND)
     if(DEFINED ENV{ODIN_GTEST_ROOT})
         message(STATUS "Using ODIN_GTEST_ROOT $ENV{ODIN_GTEST_ROOT} from env")
         set(ODIN_GTEST_ROOT $ENV{ODIN_GTEST_ROOT})
-        # official hint variable to set
-        set(GTEST_ROOT ${ODIN_GTEST_ROOT})
     endif()
     # must be defined unless GTEST_ROOT already defined
     if(DEFINED ODIN_GTEST_ROOT)
+        message(
+            STATUS
+            "Using GTEST_ROOT from ODIN_GTEST_ROOT ${ODIN_GTEST_ROOT}"
+        )
+        # official hint variable to set
+        set(GTEST_ROOT ${ODIN_GTEST_ROOT})
+    elseif(DEFINED GTEST_ROOT)
         message(STATUS "GTEST_ROOT already defined as ${GTEST_ROOT}")
     else()
         message(FATAL_ERROR "ODIN_GTEST_ROOT, GTEST_ROOT not defined")

@@ -1,23 +1,26 @@
-#include "gtest/gtest.h"
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "static_data_cache/calendar_cache.h"
 
-
-
 namespace
 {
-	class CalendarCacheTest : public ::testing::Test 
+	class CalendarCacheTest : public ::testing::Test
 	{
 		public:
 			std::string ny_calendar_str= "NYB";
 			std::string lon_calendar_str = "LNB";
+
 			virtual void SetUp() override
 			{
-				//do some heap allocated stuff
+				// skip test if OdinBaseDir was not set correctly
+				// TODO: make this a macro to allow reuse
+				if (!std::getenv("OdinBaseDir"))
+					GTEST_SKIP() << "OdinBaseDir was not set";
 			}
 
-			
+
 			virtual void TearDown() override
 			{
 				//remove any heap allocated memory
