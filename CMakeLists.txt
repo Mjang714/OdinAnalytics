@@ -14,7 +14,8 @@ cmake_minimum_required(VERSION 3.21)
 #   cmake build_windows_[arch] -j
 #
 # Build driver scripts build.bat and build.sh will be contributed later. To
-# build shared libraries, add -DBUILD_SHARED_LIBS to the cmake config command.
+# build shared libs, add -DBUILD_SHARED_LIBS=1 to the cmake config command. To
+# build static libs, add -DBUILD_SHARED_LIBS=0 instead.
 #
 # Note that ODIN_BOOST_ROOT and ODIN_MAGIC_ENUM_ROOT need to be set either in
 # the environment or passed using -D to the cmake config command.
@@ -49,20 +50,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# eliminate per-configuration subdirs from being appended to build artifact
-# output dirs for multi-config generators, e.g. Visual Studio
-set(
-    CMAKE_RUNTIME_OUTPUT_DIRECTORY
-    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}$<$<CONFIG:Debug>:>
-)
-set(
-    CMAKE_LIBRARY_OUTPUT_DIRECTORY
-    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}$<$<CONFIG:Debug>:>
-)
-set(
-    CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-    ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}$<$<CONFIG:Debug>:>
-)
+# write the binary objects into the top-level build directory. use of generator
+# expression is to prevent multi-config generators, e.g. Visual Studio, from
+# appending per-configuration subdirs to the specified output dir.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}$<$<CONFIG:Debug>:>)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}$<$<CONFIG:Debug>:>)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}$<$<CONFIG:Debug>:>)
 
 # update CMake module path to allow inclusion of custom CMake code
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
