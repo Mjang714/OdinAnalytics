@@ -8,17 +8,34 @@ cmake_minimum_required(VERSION 3.21)
 #   cmake -S . -B build && cmake --build build -j
 #
 # Windows:
-#   arch: Win32, x64
 #
-#   cmake -S . -B build_windows_[arch] -A [arch] && ^
-#   cmake build_windows_[arch] -j8
+#   cmake -S . -B build_windows_(x86|x64) -A (Win32|x64)) && ^
+#   cmake build_windows_(x86|x64)) -j8
 #
 # Build driver scripts build.bat and build.sh will be contributed later. To
 # build shared libs, add -DBUILD_SHARED_LIBS=1 to the cmake config command. To
 # build static libs, add -DBUILD_SHARED_LIBS=0 instead.
 #
-# Note that ODIN_BOOST_ROOT and ODIN_MAGIC_ENUM_ROOT need to be set either in
-# the environment or passed using -D to the cmake config command.
+# The following env/CMake variables can be used to find dependencies:
+#
+#   ODIN_BOOST_ROOT
+#       Boost install root. Can use BOOST_ROOT instead and does not need to be
+#       set if Boost is already installed in the system (e.g. through apt)
+#
+#   ODIN_MAGIC_ENUM_ROOT
+#       magic_enum install root
+#
+#   ODIN_GTEST_ROOT
+#       Google Test install root. Can use GTEST_ROOT instead and does not need
+#       to be set if Google Test is already installed in the system
+#
+#   ODIN_EXCELSDK_ROOT
+#       Excel SDK install root, i.e. should contain INCLUDE, LIB diretories.
+#       This need only be available for Windows builds and the user must use
+#       SAMPLES\MAKE.bat to build the samples, in particular frmwrk32.lib.
+#
+# These can be defined either in the environment or passed to the CMake config
+# command directly by using the -D flag.
 #
 
 # major, minor, patch version also defined as macros in OdinAnalytics
