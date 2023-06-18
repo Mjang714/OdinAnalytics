@@ -48,7 +48,7 @@ namespace oa
 				{
 					for (auto given_weekend : calendar.weekends)
 					{
-						// suppress signed/unsigned mismatch that MSVC complains
+// suppress signed/unsigned mismatch that MSVC complains
 OA_MSVC_WARNING_PUSH()
 OA_MSVC_WARNING_DISABLE(4365)
 						m_weekends_[oa::utils::EnumToInt(given_weekend)] = 1;
@@ -68,10 +68,10 @@ OA_MSVC_WARNING_POP()
 
 		bool Calendar::IsHoliday(int julian_date) const
 		{
-			// check to see if the given date is a weekend
-			// suppress signed/unsigned mismatch that MSVC complains about
+// suppress signed/unsigned mismatch that MSVC complains about
 OA_MSVC_WARNING_PUSH()
 OA_MSVC_WARNING_DISABLE(4365)
+			// check to see if the given date is a weekend
 			if (m_weekends_[oa::time::Date::GetDOWInt(julian_date)])
 				return true;
 OA_MSVC_WARNING_POP()
