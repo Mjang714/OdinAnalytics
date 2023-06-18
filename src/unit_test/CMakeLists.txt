@@ -27,6 +27,10 @@ add_executable(
     time/day_count/day_count_act_act_test.cpp
     time/day_count/day_count_factory_test.cpp
 )
+# MSVC emits C4265 a lot for Google Test fixtures
+if(MSVC)
+    target_compile_options(unit_test PRIVATE /wd5264)
+endif()
 target_link_libraries(
     unit_test
     PRIVATE GTest::gtest_main dao enum_mappers helpers static_data_cache time
