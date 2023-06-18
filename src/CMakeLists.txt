@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
-# handle each source directory
+# add library targets
 add_subdirectory(dao)
 add_subdirectory(enum_mappers)
 add_subdirectory(helpers)
@@ -12,3 +12,5 @@ else()
 endif()
 add_subdirectory(static_data_cache)
 add_subdirectory(time)
+# add unit test target
+add_subdirectory(unit_test)

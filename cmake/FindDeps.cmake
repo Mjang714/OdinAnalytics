@@ -33,4 +33,22 @@ else()
 endif()
 # actual Boost find_package command + add to includes
 find_package(Boost 1.79 REQUIRED COMPONENTS)
-include_directories(SYSTEM ${ODIN_BOOST_ROOT})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
+# find Google Test. can set ODIN_GTEST_ROOT in environment or define
+if(DEFINED ENV{ODIN_GTEST_ROOT})
+    message(STATUS "Using ODIN_GTEST_ROOT $ENV{ODIN_GTEST_ROOT} from env")
+    set(ODIN_GTEST_ROOT $ENV{ODIN_GTEST_ROOT})
+    # official hint variable to set
+    set(GTEST_ROOT ${ODIN_GTEST_ROOT})
+endif()
+# must be defined unless GTEST_ROOT already defined
+if(DEFINED ODIN_GTEST_ROOT)
+    message(STATUS "GTEST_ROOT already defined as ${GTEST_ROOT}")
+else()
+    message(FATAL_ERROR "ODIN_GTEST_ROOT, GTEST_ROOT not defined")
+endif()
+# actual Google Test find_package command
+find_package(GTest 1.8 REQUIRED)
+# not really necessary, but by using SYSTEM we suppress external warnings
+include_directories(SYSTEM ${GTest_INCLUDE_DIRS})
