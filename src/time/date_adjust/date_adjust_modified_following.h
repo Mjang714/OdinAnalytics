@@ -2,7 +2,8 @@
 #define ODINANALYTICS_TIME_DATEADJUST_DATEADJUSTMODIFIEDFOLLOWING_H
 
 #include "date_adjust_base.h"
-#include "../calendar.h"
+
+#include "time/calendar.h"
 
 namespace oa::time
 {
@@ -27,7 +28,4 @@ namespace oa::time
 	};
 }
 
-
 #endif // ODINANALYTICS_TIME_DATEADJUST_DATEADJUSTMODIFIEDFOLLOWING_H
-
-
