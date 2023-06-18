@@ -16,7 +16,7 @@ namespace oa::enum_mappers {
 	 */
 	const auto& TimeEnumMap()
 	{
-		const std::unordered_map<std::string, time::DayCountRule> map{
+		static const std::unordered_map<std::string, time::DayCountRule> dc_map{
 			{"ACT/360", time::DayCountRule::kACT_360},
 			{"ACT:360", time::DayCountRule::kACT_360},
 			{"ACT_360", time::DayCountRule::kACT_360},
@@ -38,7 +38,7 @@ namespace oa::enum_mappers {
 			{"ACT_ACT", time::DayCountRule::kACT_ACT},
 			{"ACTACT", time::DayCountRule::kACT_ACT},
 		};
-		return map;
+		return dc_map;
 	}
 
 	/// <summary>
