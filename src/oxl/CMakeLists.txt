@@ -6,6 +6,7 @@ add_library(
         auto_gen/autogen_excel.cpp
         auto_gen/auto_gen_time.cpp
         excel_base_funcs.cpp
+        excel_functions.cpp
         time_xl.cpp
         xl_api/cache_xl_obj.cpp
         xl_api/excel_base.cpp
