@@ -11,7 +11,7 @@
 #include "framewrk.h"
 #define time_num_reg_functions_rows 4
  
-static LPWSTR time_ngFuncs[time_num_reg_functions_rows][12] = {
+static const WCHAR* time_ngFuncs[time_num_reg_functions_rows][12] = {
 { L"oxlIsBusinessDay", L"QQQ", L"oxlIsBusinessDay", L"Date,Centers", L"1",L"oxl_time",L"",L"",L"Determines if a date given is a business day",},
 { L"oxlIsHolidayDay", L"QQQ", L"oxlIsHolidayDay", L"Date,Centers", L"1",L"oxl_time",L"",L"",L"Determines if a date given is a Holiday day",},
 { L"oxlComputeDayCount", L"QQQQ", L"oxlComputeDayCount", L"Start_Date,End_Date,Day_Count_Convention", L"1",L"oxl_time",L"",L"",L"compute the number of business days",},

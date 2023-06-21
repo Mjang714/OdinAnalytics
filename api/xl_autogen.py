@@ -21,7 +21,7 @@ def header_reg_func(num_func, prefix_reg):
    
     xl_reg_hdr.append("#define " + prefix_reg + "_num_reg_functions_rows "+ str(num_func))
     xl_reg_hdr.append(" ")
-    xl_reg_hdr.append("static LPWSTR "+ prefix_reg + "_ngFuncs[" + prefix_reg + "_num_reg_functions_rows][12] = {")
+    xl_reg_hdr.append("static const WCHAR* "+ prefix_reg + "_ngFuncs[" + prefix_reg + "_num_reg_functions_rows][12] = {")
     
     print("Finished registration header creation for " + prefix_reg)
 

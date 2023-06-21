@@ -1,7 +1,7 @@
 #include "cache_xl_obj.h"
 
 namespace oxl::xl_api
-{
+{	
 	XlCacheObj::XlCacheObj(const CachedObjVar& cached_obj, const std::string& key) : cache_name_(key)
 	{
 		auto &map = GetCache();
@@ -9,7 +9,7 @@ namespace oxl::xl_api
 
 		if (map.contains(key))
 		{
-			auto& [old_cached_obj, stored_version] = LoadPair(key);
+			auto [old_cached_obj, stored_version] = LoadPair(key);
 			version = ++stored_version;
 		}
 

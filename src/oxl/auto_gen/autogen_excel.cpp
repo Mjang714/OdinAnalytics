@@ -22,7 +22,7 @@ LPXLOPER12  oxlArray(LPXLOPER12 Data_input)
    {
        oxl::xl_api::CachedObjVar cache_obj = oxl::OxlCreateArray( Data_input );
        std::string base_name = oxl::xl_api::XlCacheObj::GenHandleStr(cache_obj);
-       oxl::xl_api::XlCacheObj cached_obj = oxl::xl_api::XlCacheObj(cache_obj, base_name);
+       auto cached_obj = oxl::xl_api::XlCacheObj(cache_obj, base_name);
        oxl::xl_api::XLoperObj::ConvertToLPXloper(cached_obj.CacheName(), xloper_result);
        return xloper_result;
    }
@@ -40,6 +40,7 @@ LPXLOPER12  oxlArray(LPXLOPER12 Data_input)
        return xloper_result;
    }
 }
+ 
 extern "C" __declspec(dllexport) 
 LPXLOPER12  oxlDictionary(LPXLOPER12 Keys_input, LPXLOPER12 Value_input)
 { 
@@ -49,7 +50,7 @@ LPXLOPER12  oxlDictionary(LPXLOPER12 Keys_input, LPXLOPER12 Value_input)
    {
        oxl::xl_api::CachedObjVar cache_obj = oxl::OxlCreateDict( Keys_input,Value_input );
        std::string base_name = oxl::xl_api::XlCacheObj::GenHandleStr(cache_obj);
-       oxl::xl_api::XlCacheObj cached_obj = oxl::xl_api::XlCacheObj(cache_obj, base_name);
+       auto cached_obj = oxl::xl_api::XlCacheObj(cache_obj, base_name);
        oxl::xl_api::XLoperObj::ConvertToLPXloper(cached_obj.CacheName(), xloper_result);
        return xloper_result;
    }
@@ -67,6 +68,7 @@ LPXLOPER12  oxlDictionary(LPXLOPER12 Keys_input, LPXLOPER12 Value_input)
        return xloper_result;
    }
 }
+ 
 extern "C" __declspec(dllexport) 
 LPXLOPER12  oxlDisplay(LPXLOPER12 Handle_input)
 { 
@@ -92,3 +94,4 @@ LPXLOPER12  oxlDisplay(LPXLOPER12 Handle_input)
        return xloper_result;
    }
 }
+ 
