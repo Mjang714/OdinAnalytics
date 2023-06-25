@@ -18,6 +18,9 @@ namespace oa::static_cache
 		std::ranges::sort(list_of_caledars.begin(), list_of_caledars.end());
 		std::string str_key = boost::algorithm::join(list_of_caledars, ",");
 		
+		//call scope mutex lock to lock down the cache member variable 
+		std::scoped_lock<std::mutex> lock(m_cache_mutex_);
+
 		if (IsCached(str_key))
 		{
 			return m_calendar_cache_.at(str_key);
@@ -54,10 +57,7 @@ namespace oa::static_cache
 
 	void CalendarCache::StoreCalendar(const std::string& calendar_str, const std::shared_ptr<const time::Calendar> calendar_data)
 	{
-		//call scope mutex lock to lock down the cache member variable 
-		std::scoped_lock lock(m_cache_mutex_);
-
-
+		
 		//we dont need duplicates of the calendar just one so us try_emplace
 		m_calendar_cache_.try_emplace( calendar_str, calendar_data );
 	}

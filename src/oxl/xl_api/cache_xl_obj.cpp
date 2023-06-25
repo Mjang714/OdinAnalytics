@@ -1,7 +1,7 @@
 #include "cache_xl_obj.h"
 
 namespace oxl::xl_api
-{
+{	
 	XlCacheObj::XlCacheObj(const CachedObjVar& cached_obj, const std::string& key) : cache_name_(key)
 	{
 		auto &map = GetCache();

@@ -9,6 +9,9 @@
 #include "xlcall.h"
 #include "framewrk.h"
 
+#ifndef OXL_TIME_XL_H_
+#define OXL_TIME_XL_H_
+
 #include "time/date.h"
 #include "time/calendar.h"
 #include "time/day_count/day_counter_factory.h"
@@ -25,6 +28,7 @@
 
 #include <boost/algorithm/string.hpp>
 
+
 namespace oxl
 {
 	bool OxlIsBizDay(LPXLOPER12 date, LPXLOPER12 centers);
@@ -32,3 +36,4 @@ namespace oxl
 	int OxlComputeDayCount(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count);
 	double OxlComputeYearFraction(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count);
 }
+#endif //OXL_TIME_XL_H_
