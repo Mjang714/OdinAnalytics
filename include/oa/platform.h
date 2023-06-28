@@ -9,11 +9,11 @@
 #define OA_PLATFORM_H_
 
 // accurate C++ version integer, no need to use /Zc:__cplusplus with MSVC
-#if defined(__cplusplus)
-#define OA_CPLUSPLUS __cplusplus
-#elif defined(_MSC_VER) && defined(_MSVC_LANG)
+#if defined(_MSC_VER) && defined(_MSVC_LANG)
 #define OA_CPLUSPLUS _MSVC_LANG
-#endif  // !defined(__cplusplus) && (!defined(_MSC_VER) || !defined(_MSVC_LANG))
+#elif defined(__cplusplus)
+#define OA_CPLUSPLUS __cplusplus
+#endif  // (!defined(_MSC_VER) || !defined(_MSVC_LANG)) && !defined(__cplusplus)
 
 // check if we are compiling under C++20 or above. always define when compiling
 // under C++ so we could use this in standard C++ expressions
