@@ -1,11 +1,15 @@
 #include "time_enum_mappers.h"
 
 #include <algorithm>
-#include <format>
 #include <fstream>
 #include <unordered_map>
 
+#include "oa/platform.h"
 #include "oa/warnings.h"
+
+#if OA_HAS_CPP20_FORMAT
+#include <format>
+#endif  // !OA_HAS_CPP20_FORMAT
 
 namespace oa::enum_mappers {
 
@@ -52,10 +56,20 @@ OA_MSVC_WARNING_POP()
 			return TimeEnumMap().at(key_str);
 		else
 		{
-			throw std::invalid_argument(
-				std::format("{}:{}",
-				"Not a Valid day count convention please check input of: "+  input_str,
-					"time_enum_mappers.cpp line 19 MapInputToDayCountEnum()"));
+			throw std::invalid_argument{
+#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}",
+					"Not a Valid day count convention please check input of: " + input_str,
+					"time_enum_mappers.cpp line 19 MapInputToDayCountEnum()"
+				)
+#else
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::string{__LINE__} + ":" +
+				std::string{__func__} + ": " + input_str +
+				" is not a valid day count convention"
+#endif  // !OA_HAS_CPP20_FORMAT
+			};
 		}
 
 	}
