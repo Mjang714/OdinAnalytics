@@ -83,13 +83,11 @@ include(ConfigCompile)
 include(FindDeps)
 
 # path to include directory (include is a reserved CMake keyword)
-# TODO: consider using separate include directory, commented out for now
-# set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-# include_directories(${ODIN_INCLUDE_DIR})
+set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # path to src directory (we use this later when adding files to test runner)
 set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 # also used as include directory, consider using separate ./include dir
-include_directories(${ODIN_SOURCE_DIR})
+include_directories(${ODIN_INCLUDE_DIR} ${ODIN_SOURCE_DIR})
 
 # enables test discovery if you wish to use ctest
 enable_testing()
