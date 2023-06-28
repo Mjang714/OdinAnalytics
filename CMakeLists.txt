@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.21)
 # Windows:
 #
 #   cmake -S . -B build_windows_(x86|x64) -A (Win32|x64) && ^
-#   cmake --build build_windows_(x86|x64) -j8
+#   cmake --build build_windows_(x86|x64) -j
 #
 # Build driver scripts build.bat and build.sh will be contributed later. To
 # build shared libs, add -DBUILD_SHARED_LIBS=1 to the cmake config command. To
