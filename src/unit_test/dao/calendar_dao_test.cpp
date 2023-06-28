@@ -2,9 +2,8 @@
 #include <string>
 #include <vector>
 
-#include <gtest/gtest.h>
-
 #include "dao/calendar_dao.h"
+#include "oa/testing/gtest.h"
 #include "time/time_enums.h"
 #include "time/calendar_data_struct.h"
 
@@ -24,7 +23,7 @@ namespace
 			// skip test if OdinBaseDir was not set correctly
 			// TODO: make this a macro to allow reuse
 			if (!std::getenv("OdinBaseDir"))
-				GTEST_SKIP() << "OdinBaseDir was not set";
+				OA_GTEST_SKIP() << "OdinBaseDir was not set";
 			data_struct = oa::dao::CalendarDao::GetInstance().GetCalendartData(region_str);
 		}
 
