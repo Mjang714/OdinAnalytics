@@ -10,8 +10,13 @@
 #include <boost/algorithm/string.hpp>
 
 #include "helpers/utils.h"
+#include "oa/platform.h"
 #include "time/tenor.h"
 #include "time/time_enums.h"
+
+#if OA_HAS_CPP20_FORMAT
+#include <format>
+#endif  // !OA_HAS_CPP20_FORMAT
 
 namespace oa::time
 {
@@ -140,13 +145,20 @@ namespace oa::time
 
 	std::string Date::ToString() const
 	{
-
-		// return std::format("{}-{}-{} : Julian Integer = {}", std::to_string(m_years_),
-		// 	std::to_string(m_months_), std::to_string(m_days_), std::to_string(m_julian_int_));
+#if OA_HAS_CPP20_FORMAT
+		return std::format(
+			"{}-{}-{} : Julian Integer = {}",
+			std::to_string(m_years_),
+			std::to_string(m_months_),
+			std::to_string(m_days_),
+			std::to_string(m_julian_int_)
+		);
+#else
 		return
 			std::to_string(m_years_) + "-" + std::to_string(m_months_) + "-" +
 			std::to_string(m_days_) + " : Julian Integer = " +
 			std::to_string(m_julian_int_);
+#endif  // !OA_HAS_CPP20_FORMAT
 	}
 
 	bool Date::IsLeap() const
