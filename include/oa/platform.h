@@ -33,6 +33,6 @@
 #else
 #define OA_HAS_CPP20_FORMAT 0
 #endif  // !OA_CPLUSPLUS || !__has_include(<format>)
-#endif  // !defined(OA_CPLUSLPUS) || !defined(__has_include)
+#endif  // !defined(OA_CPLUSPLUS) || !defined(__has_include)
 
 #endif  // OA_PLATFORM_H_
