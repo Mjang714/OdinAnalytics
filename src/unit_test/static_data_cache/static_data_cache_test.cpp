@@ -1,7 +1,6 @@
 #include <string>
 
-#include <gtest/gtest.h>
-
+#include "oa/testing/gtest.h"
 #include "static_data_cache/calendar_cache.h"
 
 namespace
@@ -17,7 +16,7 @@ namespace
 				// skip test if OdinBaseDir was not set correctly
 				// TODO: make this a macro to allow reuse
 				if (!std::getenv("OdinBaseDir"))
-					GTEST_SKIP() << "OdinBaseDir was not set";
+					OA_GTEST_SKIP() << "OdinBaseDir was not set";
 			}
 
 
