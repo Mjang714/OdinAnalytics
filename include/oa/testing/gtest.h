@@ -1,17 +1,23 @@
 /**
  * @file testing/gtest.h
  * @author Derek Huang
- * @brief Google Test compatibility header
+ * @brief Google Test compatibility + extension header
  * @copyright MIT License
  *
  * Intended for compatibility with older Google Test versions. Defines some of
- * its own symbols as well for compatibility reasons.
+ * its own symbols as well for compatibility reasons and provides extensions.
  */
 
 #ifndef OA_TESTING_GTEST_H_
 #define OA_TESTING_GTEST_H_
 
+#include <iomanip>
+#include <ostream>
+
 #include <gtest/gtest.h>
+
+// TODO: refactor include path when namespacing is implemented
+#include "time/date.h"
 
 // GTEST_SKIP compatibility macro for pre-1.10 Google Test versions
 #ifdef GTEST_SKIP
@@ -42,5 +48,27 @@
 #ifndef INSTANTIATE_TYPED_TEST_SUITE_P
 #define INSTANTIATE_TYPED_TEST_SUITE_P INSTANTIATE_TYPED_TEST_CASE_P
 #endif  // INSTANTIATE_TYPED_TEST_SUITE_P
+
+namespace oa {
+namespace time {
+
+/**
+ * Custom Google Test printer for `oa::time::Date`.
+ *
+ * The print format is `YYYY/MM/DD ([0-9]+)`, where the integer portion in
+ * parentheses is the Julian date integer value of the date object.
+ *
+ * @param date Date to print
+ * @param stream Stream to write to
+ */
+inline void PrintTo(const Date& date, std::ostream* stream)
+{
+	*stream << std::setw(4) << date.m_years() << "/" <<
+    std::setw(2) << date.m_months() << "/" <<
+    std::setw(2) << date.m_days() << " (" << date.GetJulian() << ")";
+}
+
+}  // namespace time
+}  // namespace oa
 
 #endif  // OA_TESTING_GTEST_H_
