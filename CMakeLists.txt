@@ -23,14 +23,14 @@ cmake_minimum_required(VERSION 3.21)
 #       set if Boost is already installed in the system (e.g. through apt)
 #
 #   ODIN_MAGIC_ENUM_ROOT
-#       magic_enum install root
+#       magic_enum install root, i.e. should contain include directory.
 #
 #   ODIN_GTEST_ROOT
 #       Google Test install root. Can use GTEST_ROOT instead and does not need
 #       to be set if Google Test is already installed in the system
 #
 #   ODIN_EXCELSDK_ROOT
-#       Excel SDK install root, i.e. should contain INCLUDE, LIB diretories.
+#       Excel SDK install root, i.e. should contain INCLUDE, LIB directories.
 #       This need only be available for Windows builds and the user must use
 #       SAMPLES\MAKE.bat to build the samples, in particular frmwrk32.lib.
 #

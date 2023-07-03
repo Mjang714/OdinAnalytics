@@ -13,7 +13,7 @@ if(NOT DEFINED ODIN_MAGIC_ENUM_ROOT)
     message(FATAL_ERROR "ODIN_MAGIC_ENUM_ROOT not defined")
 endif()
 # otherwise, add to include directories (SYSTEM ignores warnings)
-include_directories(SYSTEM ${ODIN_MAGIC_ENUM_ROOT})
+include_directories(SYSTEM ${ODIN_MAGIC_ENUM_ROOT}/include)
 
 # minimum Boost version
 set(ODIN_BOOST_VERSION 1.71)
