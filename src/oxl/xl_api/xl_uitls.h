@@ -16,8 +16,8 @@ namespace oxl::xl_api
 {
 	/// <summary>
 	/// This is function that will unregister xll functions
-	/// Note: it is important for this work correctly that you set 
-	/// Conformance Mode to No (/permissive) 
+	/// Note: it is important for this work correctly that you set
+	/// Conformance Mode to No (/permissive)
 	/// </summary>
 	/// <param name="function_arr"></param>
 	/// <param name="number_funcs"></param>
@@ -31,7 +31,7 @@ namespace oxl::xl_api
 
 	/// <summary>
 	/// this is a function that is used to register excel functions
-	/// Note: it is important for this work correctly that you set 
+	/// Note: it is important for this work correctly that you set
 	/// Conformance Mode to No (/permissive)
 	/// </summary>
 	/// <param name="DLL"></param>

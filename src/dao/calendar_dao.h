@@ -1,8 +1,7 @@
-#define _CRT_SECURE_NO_WARNINGS
+// TODO: move unneeded headers into calendar_dao.cpp
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include <format>
 #include <mutex>
 #include <string>
 
@@ -21,7 +20,7 @@ namespace oa::dao
 
 	class CalendarDao
 	{
-		
+
 
 		public:
 			/// <summary>
@@ -38,7 +37,7 @@ namespace oa::dao
 			CalendarDao& operator=(const CalendarDao& ) = delete;
 
 			/// <summary>
-			/// retrieve the static instance of the Calendar Dao that can be used 
+			/// retrieve the static instance of the Calendar Dao that can be used
 			/// this design pattern follows Meyer's singleton
 			/// this provides us with 2 features
 			/// 1. thread safe intialization
@@ -55,7 +54,7 @@ namespace oa::dao
 			static oa::ds::CalendarDataStruct GetCalendartData(const std::string& region);
 
 		private:
-			
+
 			//for static member variables these must be inlined
 			//static inline std::string calendar_file_path_str;
 			static inline const std::string weekend_delimiter{ "#Weekend" };

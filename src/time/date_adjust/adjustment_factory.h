@@ -1,9 +1,8 @@
 #ifndef ODINANALYTICS_TIME_DATEADJUST_ADJUSTMENTFACTORY_H
 #define ODINANALYTICS_TIME_DATEADJUST_ADJUSTMENTFACTORY_H
 
-
-#include "../time_enums.h"
-#include "../calendar.h"
+#include "time/calendar.h"
+#include "time/time_enums.h"
 #include "date_adjust_base.h"
 #include "date_adjust_preceding.h"
 #include "date_adjust_following.h"
