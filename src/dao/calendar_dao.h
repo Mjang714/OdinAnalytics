@@ -7,6 +7,7 @@
 
 #include "helpers/str_utils/str_utils.h"
 #include "helpers/utils.h"
+#include "oa/dllexport.h"
 #include "time/calendar_data_struct.h"
 
 #ifndef ODINANALYTICS_DAO_CALENDAR_DAO_H_
@@ -18,7 +19,7 @@ namespace oa::dao
 	namespace Helpers = oa::utils;
 	namespace CalStruct = oa::ds;
 
-	class CalendarDao
+	class OA_DAO_API CalendarDao
 	{
 
 
