@@ -1,18 +1,17 @@
+#include "time/date.h"
+
 #ifndef ODINANALYTICS_TIME_DAYCOUNTBASE_H
 #define ODINANALYTICS_TIME_DAYCOUNTBASE_H
-
-#include "oa/dllexport.h"
-#include "time/date.h"
 
 namespace oa::time
 {
 	/// <summary>
-	/// the base class where all day count conventions are derived from
-	/// sources for these day counts are
+	/// the base class where all day count conventions are derived from 
+	/// sources for these day counts are 
 	/// https://strata.opengamma.io/apidocs/com/opengamma/strata/basics/date/DayCounts.html#:~:text=final%20DayCount%20ACT_ACT_ISDA-,The%20'Act%2FAct%20ISDA'%20day%20count%2C%20which%20divides,year%20is%20divided%20by%20366.
-	///
+	/// 
 	/// </summary>
-	class OA_TIME_API DayCounterBase
+	class DayCounterBase
 	{
 		public:
 
@@ -33,7 +32,7 @@ namespace oa::time
 			/// <param name="Date2">second date</param>
 			/// <returns>double that represents the time in years</returns>
 			virtual double YearFraction(const Date& date1, const Date& date2) const = 0;
-	};
+	};	
 }
 
 #endif //ODINANALYTICS_TIME_DAYCOUNTBASE_H

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <map>
 #include <vector>
-
 #include "oxl/xl_api/xl_variant.h"
 
 namespace oxl::xl_api
@@ -17,7 +16,7 @@ namespace oxl::xl_api
 			XlDictionary(std::vector<XlVariant> keys, std::vector<XlVariant> values);
 
 			/// <summary>
-			/// return XlVariant that is mutable and is associated with the key
+			/// return XlVariant that is mutable and is associated with the key 
 			/// </summary>
 			/// <param name="key"></param>
 			/// <returns></returns>
@@ -31,7 +30,7 @@ namespace oxl::xl_api
 			const XlVariant& operator[](const std::string& key) const;
 
 			/// <summary>
-			/// return wether a value exist within the underlying map
+			/// return wether a value exist within the underlying map 
 			/// </summary>
 			/// <param name="key"></param>
 			/// <returns>bool</returns>
@@ -40,7 +39,7 @@ namespace oxl::xl_api
 			std::vector<std::pair<std::string, XlVariant>> GetKeyValuePair(void) const;
 
 			void ApplyOverrides(const XlDictionary& overrides_dict);
-
+		
 		private:
 			std::map<std::string, XlVariant> m_dict_;
 			std::map<std::string, XlVariant> dict(void) { return m_dict_; };
