@@ -1,6 +1,8 @@
 #ifndef OPENANALYTICS_TIME_DATES_H
 #define OPENANALYTICS_TIME_DATES_H
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <chrono>
 #include <compare>
 #include <string>
