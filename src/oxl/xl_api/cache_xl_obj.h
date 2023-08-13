@@ -11,7 +11,6 @@
 #include "xl_dictionary.h"
 #include "xloper_converter.h"
 
-
 namespace oxl::xl_api
 {
 	//use namspace for varaint types that can be stored within the caching component
@@ -40,7 +39,7 @@ namespace oxl::xl_api
 			static CachedObjVar GetVariant(const std::string& key );
 
 			/// <summary>
-			/// retireves the cached item name and the iteration of the cached object 
+			/// retireves the cached item name and the iteration of the cached object
 			/// </summary>
 			/// <returns></returns>
 			std::string CacheName() const;
