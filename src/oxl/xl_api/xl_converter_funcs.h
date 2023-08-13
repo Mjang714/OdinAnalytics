@@ -14,7 +14,7 @@ namespace oxl::xl_api
 	XlDictionary XlArrayToXlDictionary(const XlArray& xl_array);
 
 	/// <summary>
-	/// converts a dictionary to array
+	/// converts a dictionary to array 
 	/// </summary>
 	/// <param name="xl_dictionary"></param>
 	/// <returns></returns>

@@ -1,16 +1,16 @@
 #ifndef XL_UTILS_H_
 #define XL_UTILS_H_
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include "xl_uitls.h"
 
 #include <stdlib.h>
-
+#define NOMINMAX
+#include <Windows.h>
 #include <string>
 
 #include "xlcall.h"
 #include "framewrk.h"
+
 
 namespace oxl::xl_api
 {
@@ -21,7 +21,7 @@ namespace oxl::xl_api
 	/// </summary>
 	/// <param name="function_arr"></param>
 	/// <param name="number_funcs"></param>
-	inline void UnregisterXLFunctions(const WCHAR* function_arr[][12], size_t number_funcs)
+	void UnregisterXLFunctions(const WCHAR* function_arr[][12], size_t number_funcs)
 	{
 		for (size_t index = 0; index <number_funcs; index++)
 		{
@@ -38,7 +38,7 @@ namespace oxl::xl_api
 	/// <param name="DLL"></param>
 	/// <param name="function_arr"></param>
 	/// <param name="number_funcs"></param>
-	inline void RegisterXLFunctions(XLOPER12& xDLL, const WCHAR* function_arr[][12], size_t number_funcs)
+	void RegisterXLFunctions(XLOPER12& xDLL, const WCHAR* function_arr[][12], size_t number_funcs)
 	{
 		for (size_t index = 0; index < number_funcs; index++)
 		{
