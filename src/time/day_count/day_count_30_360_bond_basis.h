@@ -2,7 +2,6 @@
 #define ODINANALYTICS_TIME_DAYCOUNT_30_360_BOND_BASIS_H
 
 #include "day_count_base.h"
-#include "oa/dllexport.h"
 #include "time/date.h"
 
 namespace oa::time
@@ -11,7 +10,7 @@ namespace oa::time
 	/// this class implements 30/360 (Bond Basis) described in 2006 ISDA Definitions, Sec 4.16 (f)
 	/// note this verions is not the same as the one used by excel
 	/// </summary>
-	class OA_TIME_API DayCount30360BondBasis : public DayCounterBase
+	class DayCount30360BondBasis : public DayCounterBase
 	{
 		public:
 			DayCount30360BondBasis() = default;

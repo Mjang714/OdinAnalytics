@@ -7,17 +7,18 @@
 #include "time/date.h"
 #include "time/calendar.h"
 #include "dao/calendar_dao.h"
-#include "oa/dllexport.h"
 
 #include <boost/algorithm/string.hpp>
 
 #ifndef ODINANALYTICS_STATIC_DATA_CACHE_CALENDAR_CACHE_H_
 #define ODINANALYTICS_STATIC_DATA_CACHE_CALENDAR_CACHE_H_
 
+
+
 namespace oa::static_cache
 {
-
-	class OA_STATIC_DATA_CACHE_API CalendarCache
+	
+	class CalendarCache
 	{
 		public:
 			/// <summary>
@@ -27,21 +28,21 @@ namespace oa::static_cache
 			CalendarCache(const CalendarCache&) = delete;
 
 			/// <summary>
-			/// delete the assignment operator
+			/// delete the assignment operator 
 			/// </summary>
 			/// <param name=""></param>
 			/// <returns></returns>
 			void operator=(const CalendarCache&) = delete;
 
 			/// <summary>
-			/// Returns a shared ptr of the Calendar that was
+			/// Returns a shared ptr of the Calendar that was 
 			/// </summary>
 			/// <param name="calendar_str"></param>
 			/// <returns></returns>
 			std::shared_ptr<const oa::time::Calendar> GetCalendar(const std::string& calendars_str);
 
 			/// <summary>
-			/// retrieves the singleton instance of the cache
+			/// retrieves the singleton instance of the cache 
 			/// </summary>
 			/// <param name=""></param>
 			/// <returns></returns>
@@ -50,22 +51,23 @@ namespace oa::static_cache
 		private:
 			std::unordered_map<std::string, std::shared_ptr<const time::Calendar>> m_calendar_cache_{};
 			std::mutex m_cache_mutex_;
-
+			
 			CalendarCache() = default;
-
+			
 			/// <summary>
 			/// checks to see if a calendar is cached
 			/// </summary>
 			/// <param name="calendar_str"></param>
 			/// <returns></returns>
 			bool IsCached(const std::string& calendar_str) const;
-
+			
 			/// <summary>
 			/// stores the calendar within the static map and saves it
 			/// </summary>
 			/// <param name="calendar_str">sorted conjoined string that is a unique key</param>
 			/// <param name="calendar_data">a </param>
 			void StoreCalendar(const std::string& calendar_str, const std::shared_ptr<const time::Calendar> calendar_data);
+
 	};
 }
 
