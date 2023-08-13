@@ -6,7 +6,7 @@
 #include "time/day_count/day_count_30_360e_isda.h"
 #include "time/day_count/day_count_30_e_360_eurobond_basis.h"
 #include "time/day_count/day_count_act_360.h"
-#include "time/day_count/day_count_act_act.h  "
+#include "time/day_count/day_count_act_act.h"
 #include "time/day_count/day_count_act_365_fixed.h"
 #include "time/day_count/day_counter_factory.h"
 
@@ -14,14 +14,14 @@ namespace
 {
 	class FactoryTestDayCount : public::testing::Test
 	{
-		public: 
+		public:
 			std::unique_ptr <oa::time::DayCounterBase> day_count_act_act;
 			std::unique_ptr <oa::time::DayCounterBase> day_count_act_360;
 			std::unique_ptr <oa::time::DayCounterBase> day_count_act_365f;
 			std::unique_ptr <oa::time::DayCounterBase> day_count_30_360;
 			std::unique_ptr <oa::time::DayCounterBase> day_count_30E_360;
 			std::unique_ptr <oa::time::DayCounterBase> day_count_30E_360_isda;
-		
+
 			oa::time::Date start_date;
 			oa::time::Date end_date;
 
