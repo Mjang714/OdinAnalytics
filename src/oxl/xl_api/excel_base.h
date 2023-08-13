@@ -14,12 +14,9 @@
 #include "xl_array.h"
 #include "cache_xl_obj.h"
 
-
-
-
 namespace oxl::xl_api
 {
 	std::shared_ptr<XlArray> ToXLArrayPtr(const LPXLOPER12& data_range);
 }
-#endif // !OXL_XL_API_EXCEL_BASE_H_
 
+#endif // !OXL_XL_API_EXCEL_BASE_H_
