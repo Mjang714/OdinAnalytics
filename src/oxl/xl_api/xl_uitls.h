@@ -42,7 +42,7 @@ namespace oxl::xl_api
 	{
 		for (size_t index = 0; index < number_funcs; index++)
 		{
-			Excel12f(xlfRegister,	0,12,
+			Excel12f(xlfRegister,0,12,
 				(LPXLOPER12) &xDLL,
 				(LPXLOPER12)TempStr12(function_arr[index][0]),
 				(LPXLOPER12)TempStr12(function_arr[index][1]),

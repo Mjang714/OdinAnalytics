@@ -19,8 +19,6 @@ namespace oa::time
 				return std::make_unique<DayCount30360EISDA>();
 			case DayCountRule::k30_360_BOND_BASIS:
 				return std::make_unique<DayCount30360BondBasis>();
-			// MSVC C4061 if we don't explicitly include a case
-			case DayCountRule::kACTB_ACTB:
 			default:
 				return nullptr;
 		}
