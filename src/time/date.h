@@ -5,13 +5,10 @@
 #include <compare>
 #include <string>
 #include <tuple>
-#include <vector>
-
-#include <boost/algorithm/string.hpp>
 
 #include "helpers/utils.h"
-#include "time/tenor.h"
-#include "time/time_enums.h"
+#include "tenor.h"
+#include "time_enums.h"
 
 
 //OA = Odin Analytics Date Class
@@ -21,7 +18,6 @@ namespace oa::time
 
 	class Date
 	{
-
 	public:
 		//constrcutors
 		Date() = default;
@@ -180,7 +176,7 @@ namespace oa::time
 		/// </summary>
 		/// <param name="julian_day">long long int</param>
 		/// <returns>a tuple where the first element is the year then month and day</returns>
-		std::tuple<int, int, int> ConvertToGregInt(const int&) const;
+		static std::tuple<int, int, int> ConvertToGregInt(const int);
 
 		/// <summary>
 		/// takes a time point obejct and converts it to year month and date using
@@ -188,7 +184,8 @@ namespace oa::time
 		/// </summary>
 		/// <param name="time_point">input into the </param>
 		/// <returns>a tuple where the first element is the year then month and day</returns>
-		std::tuple<int, int, int> ConvertToGregInt(const std::chrono::system_clock::time_point& time_point) const;
+		static std::tuple<int, int, int> ConvertToGregInt(
+			const std::chrono::system_clock::time_point& time_point);
 
 		/// <summary>
 		/// takes in a tuple and populates year month and date
@@ -198,5 +195,6 @@ namespace oa::time
 
 	};
 
-}
-#endif// OPENANALYTICS_TIME_DATES_H
+}  // namespace oa::time
+
+#endif  // OPENANALYTICS_TIME_DATES_H
