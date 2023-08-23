@@ -120,9 +120,6 @@ namespace oa::time
 		return julian_date % 7;
 	}
 
-
-
-
 	std::chrono::system_clock::time_point Date::ConvertToTimePt(void) const
 	{
 		return ConvertToTimePt(*this);
@@ -303,7 +300,7 @@ namespace oa::time
 		return AddYears(-time_length);
 	}
 
-	//defining operator overlaoding
+	// defining operator overloading
 	bool Date::operator==(const Date& right_value) const
 	{
 		return std::is_eq(m_julian_int_ <=> right_value.m_julian_int_);
