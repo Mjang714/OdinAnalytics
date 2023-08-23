@@ -1,15 +1,15 @@
 #ifndef OPENANALYTICS_TIME_TENOR_H
 #define OPENANALYTICS_TIME_TENOR_H
 
-#include <string>
+#include<string>
 
-#include "oa/dllexport.h"
 #include "time_enums.h"
+
 
 //tc = tenor class
 namespace oa::time
 {
-	class OA_TIME_API Tenor
+	class Tenor
 	{
 		public:
 			Tenor(const std::string& input_string);

@@ -1,17 +1,17 @@
 #ifndef ODINANALYTICS_HELPERS_UTILS_H_
 #define	ODINANALYTICS_HELPERS_UTILS_H_
 
-#include <regex>
-#include <string>
+#include<string>
+#include<regex>
 
 #include "magic_enum.hpp"
 
 /// <summary>
-/// This library provides basic utilities that will be used else where to do basic things like check if we have valid tenor string
+/// This library provides basic utilities that will be used else where to do basic things like check if we have valid tenor string 
 /// lcu = logic check utils
 /// </summary>
 namespace oa::utils
-{
+{ 
 	/// <summary>
 	/// This function returns a  boolean for a string if it is valid string type such as 12M, 3D, 6y,3w
 	/// </summary>
@@ -35,7 +35,7 @@ namespace oa::utils
 	}
 
 	/// <summary>
-	/// converts an Enum to integer value
+	/// converts an Enum to integer value 
 	/// </summary>
 	/// <typeparam name="enum_type"></typeparam>
 	/// <param name="given_enum"></param>
@@ -63,7 +63,7 @@ namespace oa::utils
 		}
 		else
 		{
-			//TODO: throw out the enum_type name as a string
+			//TODO: throw out the enum_type name as a string 
 			throw "invalid enum please check the given enum ";
 		}
 	}
@@ -81,7 +81,7 @@ namespace oa::utils
 	}
 
 	/// <summary>
-	/// this function will eturn the enum name with the first char removed
+	/// this function will eturn the enum name with the first char removed 
 	/// </summary>
 	/// <typeparam name="enum_type"></typeparam>
 	/// <param name="enum_value"></param>
@@ -89,10 +89,12 @@ namespace oa::utils
 	template <typename enum_type> requires std::is_enum_v<enum_type>
 	inline std::string GetCleanName(enum_type enum_value)
 	{
-
+			
 		return GetEnumName(enum_value).erase(0, 1);
 	}
 
-}
 
+}
 #endif // ODINANALYTICS_HELPERS_UTILS_H_
+
+
