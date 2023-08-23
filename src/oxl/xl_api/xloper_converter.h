@@ -1,29 +1,31 @@
-#ifndef OXL_XL_API_XLOPER_CONVERTER_H_
-#define OXL_XL_API_XLOPER_CONVERTER_H_
-
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-#include <stdlib.h>
-
 #include <format>
+#include <stdlib.h>
+#define NOMINMAX
 #include <iostream>
+#include <Windows.h>
 #include <string>
 
 #include "xlcall.h"
 #include "framewrk.h"
 
-#include "xl_variant.h"
+#include "xl_variant.h"  
 #include "xl_array.h"
 #include "xl_dictionary.h"
 #include "xl_converter_funcs.h"
+
+
+
+
+#ifndef OXL_XL_API_XLOPER_CONVERTER_H_
+#define OXL_XL_API_XLOPER_CONVERTER_H_
+
+
 
 namespace oxl::xl_api
 {
 	using XloperVar = std::variant<double, std::string, bool, LPXLOPER12>;
 
-	//this class is responsible for converting data types to LPXLOPER12 only!
+	//this class is responsible for converting data types to LPXLOPER12 only! 
 	class XLoperObj
 	{
 		public:
@@ -51,7 +53,7 @@ namespace oxl::xl_api
 			/// <param name="input"></param>
 			/// <returns></returns>
 			static bool IsMulti(const LPXLOPER12 input);
-
+			
 			/// <summary>
 			/// checks to see if the data is empty.
 			/// </summary>
@@ -60,7 +62,7 @@ namespace oxl::xl_api
 
 			/// <summary>
 			/// A class of static functions that will take a given LPXOPER12 that is already allocated as input and a value
-			/// and populates the value
+			/// and populates the value 
 			/// </summary>
 			/// <param name="value"></param>
 			/// <returns></returns>
@@ -71,7 +73,7 @@ namespace oxl::xl_api
 			static void ConvertToLPXloper(const XlArray& value, LPXLOPER12 xl_oper_res);
 
 			/// <summary>
-			/// takes in LPXLOPER12 and converts it XlArray
+			/// takes in LPXLOPER12 and converts it XlArray 
 			/// </summary>
 			/// <param name="xl_oper"></param>
 			/// <returns></returns>
@@ -86,7 +88,7 @@ namespace oxl::xl_api
 			static std::string CellName(void);
 
 			/// <summary>
-			/// Takes in a utf8 string (wtd::string) and converts it to wide string
+			/// Takes in a utf8 string (wtd::string) and converts it to wide string 
 			/// resource: https://stackoverflow.com/questions/6693010/how-do-i-use-multibytetowidechar
 			/// </summary>
 			/// <param name="value_str"></param>

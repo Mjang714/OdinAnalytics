@@ -1,48 +1,47 @@
 #ifndef OPENANALYTICS_TIME_CALENDAR_H
 #define OPENANALYTICS_TIME_CALENDAR_H
 
-#include <bitset>
-#include <string>
-#include <unordered_set>
-#include <vector>
+#include<bitset>
+#include<string>
+#include<unordered_set>
+#include<vector>
 
 #include "calendar_data_struct.h"
 #include "date.h"
-#include "oa/dllexport.h"
 
 namespace oa::time
 {
-
-	class OA_TIME_API Calendar
+		
+	class Calendar
 	{
 		public:
 			Calendar() = default;
 			explicit Calendar(const std::vector<ds::CalendarDataStruct>& calendar_data);
 			explicit Calendar(const ds::CalendarDataStruct& calendar_data);
-
+				
 			/// <summary>
-			/// Checks to see if a given date is a holiday
+			/// Checks to see if a given date is a holiday 
 			/// </summary>
 			/// <param name="given_date"></param>
 			/// <returns>boolean value</returns>
 			bool IsHoliday(const oa::time::Date& given_date) const;
 
 			/// <summary>
-			/// This is function to take in julian date repsenation of a date
+			/// This is function to take in julian date repsenation of a date 
 			/// </summary>
 			/// <param name="julian_date"></param>
 			/// <returns>boolean whether or not a given day is business day</returns>
 			bool IsHoliday( int julian_date) const;
 
 			/// <summary>
-			/// Checks to see if a given date is a Biz Day
+			/// Checks to see if a given date is a Biz Day 
 			/// </summary>
 			/// <param name="given_date"></param>
 			/// <returns>boolean whether or not a given day is business day</returns>
 			bool IsBusinessDay(const oa::time::Date& given_date) const;
 
 			/// <summary>
-			/// Checks to see if a given date is a Biz Day
+			/// Checks to see if a given date is a Biz Day 
 			/// </summary>
 			/// <param name="given_date"></param>
 			/// <returns>boolean whether or not a given day is business day</returns>
@@ -64,7 +63,7 @@ namespace oa::time
 
 		private:
 			/// <summary>
-			/// populate the regions and the related data fields
+			/// populate the regions and the related data fields 
 			/// </summary>
 			/// <param name="holidays"></param>
 			void PopulateHolidays(const std::vector<ds::CalendarDataStruct>& calendar_data);
@@ -87,7 +86,7 @@ namespace oa::time
 			std::string m_regions_ = "";
 			std::unordered_set<int> m_holidays_ {};
 	};
-
+	
 }
 
 
