@@ -7,12 +7,14 @@
 #include "date.h"
 #include "time_enums.h"
 
+#include "oa/dllexport.h"
+
 namespace oa::ds
 {
-	
-	// this struct is used as a data container for the constructor of the calendar constructor 
+
+	// this struct is used as a data container for the constructor of the calendar constructor
 	// and follows google style sheet for structs hence no trailing _
-	struct CalendarDataStruct
+	struct OA_TIME_API CalendarDataStruct
 	{
 		std::vector<oa::time::Date> list_of_holidays;
 		std::vector<oa::time::Weekdays> weekends;

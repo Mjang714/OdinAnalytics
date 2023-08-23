@@ -8,10 +8,11 @@
 #include "date_adjust_following.h"
 #include "date_adjust_plain.h"
 #include "date_adjust_modified_following.h"
+#include "oa/dllexport.h"
 
 namespace oa::time
 {
-	class AdjustmentFactory
+	class OA_TIME_API AdjustmentFactory
 	{
 		public:
 			static std::unique_ptr<DateAdjustBase> CreateDateAdjust(const AdjRule biz_day_convnetion, const Calendar& given_calendar);
