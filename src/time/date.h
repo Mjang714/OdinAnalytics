@@ -9,16 +9,16 @@
 #include <tuple>
 
 #include "helpers/utils.h"
+#include "oa/dllexport.h"
 #include "tenor.h"
 #include "time_enums.h"
-
 
 //OA = Odin Analytics Date Class
 
 namespace oa::time
 {
 
-	class Date
+	class OA_TIME_API Date
 	{
 	public:
 		//constrcutors

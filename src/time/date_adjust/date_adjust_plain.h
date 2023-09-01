@@ -3,11 +3,12 @@
 
 #include "date_adjust_base.h"
 
+#include "oa/dllexport.h"
 #include "time/calendar.h"
 
 namespace oa::time
 {
-	class DateAdjustPlain : public DateAdjustBase
+	class OA_TIME_API DateAdjustPlain : public DateAdjustBase
 	{
 		public:
 			DateAdjustPlain() = default;
