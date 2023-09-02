@@ -4,5 +4,5 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 add_library(helpers utils.cpp str_utils/str_utils.cpp)
 # ensure symbols are correctly exported and resolved
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(helpers PRIVATE OA_BUILD_HELPERS_DLL)
+    target_compile_definitions(helpers PRIVATE OA_DLL OA_BUILD_HELPERS_DLL)
 endif()

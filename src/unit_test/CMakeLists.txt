@@ -27,6 +27,10 @@ add_executable(
     time/day_count/day_count_act_act_test.cpp
     time/day_count/day_count_factory_test.cpp
 )
+# need OA_DLL definition for correct __declspec(dllimport) annotation
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(unit_test PRIVATE OA_DLL)
+endif()
 # MSVC emits C4265 a lot for Google Test fixtures
 if(MSVC)
     target_compile_options(unit_test PRIVATE /wd5264)

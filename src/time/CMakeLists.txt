@@ -19,7 +19,7 @@ add_library(
 )
 # ensure symbols are correctly exported and resolved
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(time PRIVATE OA_BUILD_TIME_DLL)
+    target_compile_definitions(time PRIVATE OA_DLL OA_BUILD_TIME_DLL)
     # note: only uses some inline helpers so this step doesn't do anything
     target_link_libraries(time PRIVATE helpers)
 endif()

@@ -23,3 +23,7 @@ target_link_libraries(
     oxl
     PRIVATE dao enum_mappers frmwrk32 helpers static_data_cache time xlcall32
 )
+# need OA_DLL definition for correct __declspec(dllimport) annotation
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(oxl PRIVATE OA_DLL)
+endif()
