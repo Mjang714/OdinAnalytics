@@ -8,3 +8,5 @@
 /builds
 # ignore output directory from Visual Studio
 /out
+# ignore NuGet packages directory
+/packages
