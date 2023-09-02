@@ -6,3 +6,5 @@
 /.vscode
 # ignore builds directory (from Visual Studio?)
 /builds
+# ignore output directory from Visual Studio
+/out
