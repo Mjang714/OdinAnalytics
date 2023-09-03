@@ -17,9 +17,7 @@ add_library(
     day_count/day_count_act_365_fixed.cpp
     day_count/day_count_act_act.cpp
 )
-# ensure symbols are correctly exported and resolved
-if(BUILD_SHARED_LIBS)
-    target_compile_definitions(time PRIVATE OA_DLL OA_BUILD_TIME_DLL)
-    # note: only uses some inline helpers so this step doesn't do anything
-    target_link_libraries(time PRIVATE helpers)
-endif()
+# ensures that the specified macro is defined when building shared
+set_target_properties(time PROPERTIES DEFINE_SYMBOL OA_BUILD_TIME_DLL)
+# even if not building dynamic, keeps CMake aware of dependencies
+target_link_libraries(time PRIVATE helpers)
