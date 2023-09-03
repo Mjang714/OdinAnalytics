@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
+# build shared libraries by default
+option(BUILD_SHARED_LIBS "Build shared libraries." ON)
+
 # set compile definitions
 if(BUILD_SHARED_LIBS)
     message(STATUS "Building ${ODIN_PROJECT_NAME} dynamic libraries")
-    # TODO: remove if we are always going to build as dynamic
-    if(MSVC)
-        add_compile_definitions(ODIN_DLL)
-    endif()
+    # indicate that Odin libraries are all being used as dynamic libraries
+    add_compile_definitions(OA_DLL)
 endif()
 # set compiler-specific definitions and options
 if(MSVC)
@@ -31,10 +32,14 @@ if(MSVC)
         # /Wall enables warning about 32-bit floats being stored in memory,
         # which is performance loss compared to storing in register
         /wd4738
-        # /Od applied by default when using Debug configuration. this generates
-        # debug info for all configs that are not Release config
-        $<$<NOT:$<CONFIG:Release>>:/DEBUG>
+        # /Od applied by default when using Debug configuration
     )
+    # if building as DLL, C4251 is emitted a lot. this is because exporting C++
+    # classes from DLLs is fraught with ABI issues, but this is fine for more
+    # recent versions of MSVC which are all ABI-compatible.
+    if(BUILD_SHARED_LIBS)
+        add_compile_options(/wd4251)
+    endif()
 else()
     add_compile_options(
         -Wall

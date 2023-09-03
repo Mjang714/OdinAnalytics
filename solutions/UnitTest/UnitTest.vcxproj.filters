@@ -1,10 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\src\unit_test\bond_math_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\calendar_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\date_test.cpp" />
-    <ClCompile Include="..\..\src\unit_test\pch.cpp" />
     <ClCompile Include="..\..\src\unit_test\tenor_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\time\date_adjust\date_adjust_following_test.cpp">
       <Filter>time\date_adjust</Filter>
@@ -54,9 +52,6 @@
     <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_factory_test.cpp">
       <Filter>time\day_count</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\unit_test\pch.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="time">

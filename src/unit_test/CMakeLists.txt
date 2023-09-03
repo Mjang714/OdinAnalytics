@@ -27,7 +27,7 @@ add_executable(
     time/day_count/day_count_act_act_test.cpp
     time/day_count/day_count_factory_test.cpp
 )
-# MSVC emits C4265 a lot for Google Test fixtures
+# MSVC emits C5264 a lot for Google Test fixtures
 if(MSVC)
     target_compile_options(unit_test PRIVATE /wd5264)
 endif()

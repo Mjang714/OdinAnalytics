@@ -3,12 +3,13 @@
 
 #include "date_adjust_base.h"
 
+#include "oa/dllexport.h"
 #include "time/calendar.h"
 
 namespace oa::time
 {
 
-	class DateAdjustFollowing : public DateAdjustBase
+	class OA_TIME_API DateAdjustFollowing : public DateAdjustBase
 	{
 		public:
 			DateAdjustFollowing() = default;

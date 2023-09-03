@@ -1,14 +1,13 @@
-#include "date_adjust_base.h"
-
-#include "time/calendar.h"
-
 #ifndef ODINANALYTICS_TIME_DATEADJUST_DATEADJUSTPRECEDING_H
 #define ODINANALYTICS_TIME_DATEADJUST_DATEADJUSTPRECEDING_H
 
+#include "date_adjust_base.h"
+#include "oa/dllexport.h"
+#include "time/calendar.h"
 
 namespace oa::time
 {
-	class DateAdjustPreceding : public DateAdjustBase
+	class OA_TIME_API DateAdjustPreceding : public DateAdjustBase
 	{
 		public:
 			DateAdjustPreceding() = default;
