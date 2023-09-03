@@ -44,7 +44,7 @@
 #else
 #define OA_DAO_API __declspec(dllimport)
 #endif  // !defined(OA_BUILD_DAO_DLL)
-// non-Windows. if we were compiling using GCC/Clang with -fvisiblity=hidden
+// non-Windows. if we were compiling using GCC/Clang with -fvisibility=hidden
 // then we can define OA_DAO_API here as __attribute__((visibility("default")))
 #else
 #define OA_DAO_API
