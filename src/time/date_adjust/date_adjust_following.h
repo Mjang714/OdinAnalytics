@@ -2,14 +2,14 @@
 #define ODINANALYTICS_TIME_DATEADJUST_DATEADJUSTFOLLOWING_H
 
 #include "date_adjust_base.h"
-#include "../calendar.h"
 
-
+#include "oa/dllexport.h"
+#include "time/calendar.h"
 
 namespace oa::time
 {
 
-	class DateAdjustFollowing : public DateAdjustBase
+	class OA_TIME_API DateAdjustFollowing : public DateAdjustBase
 	{
 		public:
 			DateAdjustFollowing() = default;
@@ -21,7 +21,7 @@ namespace oa::time
 			oa::time::Calendar m_holidays_;
 
 			/// <summary>
-			/// return the next Business day 
+			/// return the next Business day
 			/// </summary>
 			/// <param name="given_date">comes from the user given as a date</param>
 			/// <param name="given_calendar">member variable oof the class passed to a static function</param>

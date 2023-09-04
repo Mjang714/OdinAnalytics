@@ -1,12 +1,13 @@
 #include "calendar.h"
-#include "../helpers/utils.h"
 
+#include "helpers/utils.h"
+#include "oa/warnings.h"
 
 namespace oa
 {
 	namespace time
 	{
-	
+
 		Calendar::Calendar(const std::vector<ds::CalendarDataStruct>& calendar_data)
 		{
 			PopulateHolidays(calendar_data);
@@ -26,8 +27,8 @@ namespace oa
 				{
 					m_regions_ += calendar.regions;
 				}
-				
-				else 
+
+				else
 				{
 					m_regions_ += ("," + calendar.regions);
 
@@ -47,11 +48,15 @@ namespace oa
 				{
 					for (auto given_weekend : calendar.weekends)
 					{
+// suppress signed/unsigned mismatch that MSVC complains
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4365)
 						m_weekends_[oa::utils::EnumToInt(given_weekend)] = 1;
+OA_MSVC_WARNING_POP()
 					}
 				}
 			}
-			
+
 
 		}
 
@@ -63,18 +68,20 @@ namespace oa
 
 		bool Calendar::IsHoliday(int julian_date) const
 		{
-			//check to see if the given date is a weekend
+// suppress signed/unsigned mismatch that MSVC complains about
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4365)
+			// check to see if the given date is a weekend
 			if (m_weekends_[oa::time::Date::GetDOWInt(julian_date)])
-			{
 				return true;
-			}
+OA_MSVC_WARNING_POP()
 
-			//check to see if it is in the 
+			//check to see if it is in the
 			else if (m_holidays_.contains(julian_date))
 			{
 				return true;
 			}
-			//if it is not return false cause it must be valid business day 
+			//if it is not return false cause it must be valid business day
 			else
 			{
 				return false;

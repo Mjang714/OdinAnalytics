@@ -1,40 +1,35 @@
 #ifndef OPENANALYTICS_TIME_DATES_H
 #define OPENANALYTICS_TIME_DATES_H
 
-#include<chrono>
-#include<string>
-#include<tuple>
-#include<vector>
-#include<compare>
+#include <chrono>
+#include <compare>
+#include <string>
+#include <tuple>
 
-#include <boost/algorithm/string.hpp>
-
+#include "helpers/utils.h"
+#include "oa/dllexport.h"
 #include "tenor.h"
 #include "time_enums.h"
-
-#include "../helpers/utils.h"
-
 
 //OA = Odin Analytics Date Class
 
 namespace oa::time
 {
-	
-	class Date
-	{
 
+	class OA_TIME_API Date
+	{
 	public:
 		//constrcutors
 		Date() = default;
 
-		//we will make this constructor private to prevent someone from trying to create a whacky date that makes no sense 
+		//we will make this constructor private to prevent someone from trying to create a whacky date that makes no sense
 		explicit Date(const int& year, const int& month, const int& day);
 
 		/// <summary>
-		/// This function will be the main interface for the date class and takes a date as a stringd 
+		/// This function will be the main interface for the date class and takes a date as a stringd
 		/// </summary>
 		/// <param name="date_string">
-		/// string representation of the date that 
+		/// string representation of the date that
 		/// will be checked for correctness and fed into the private construtor Date(const long long julian_date)
 		/// </param>
 		explicit Date(const std::string& date_str);
@@ -47,13 +42,13 @@ namespace oa::time
 		explicit Date(const int& julian_int);
 
 		/// <summary>
-		/// takes a time point and returns a time Date representation 
+		/// takes a time point and returns a time Date representation
 		/// </summary>
 		/// <param name="time_point">takes in time_point object</param>
 		explicit Date(const std::chrono::system_clock::time_point& time_point);
 
 		/// <summary>
-		/// the algorithm to convert gregorian Calendar date to Julian date is from this    
+		/// the algorithm to convert gregorian Calendar date to Julian date is from this
 		/// </summary>
 		/// <param name="year"></param>
 		/// <param name="month"></param>
@@ -101,14 +96,14 @@ namespace oa::time
 
 
 		/// <summary>
-		/// this is the julian date offest to take in excel double date  
+		/// this is the julian date offest to take in excel double date
 		/// and convert it to a proper julian
 		/// </summary>
 		static constexpr int kXlJulianOffSet {2415019};
 
 
 		/// <summary>
-		/// converts a date object to time point object 
+		/// converts a date object to time point object
 		/// https://stackoverflow.com/questions/66537237/how-to-get-chrono-time-point-from-year-month-day-hour-minute-second-millis
 		/// </summary>
 		/// <param name="given_date"></param>
@@ -118,7 +113,7 @@ namespace oa::time
 		static std::chrono::system_clock::time_point ConvertToTimePt(const Date& given_date);
 
 		/// <summary>
-		/// this is function that is public that will take a month enum 
+		/// this is function that is public that will take a month enum
 		/// and get the number of the days in the month
 		/// </summary>
 		/// <returns>the number of days within a month as an integer </returns>
@@ -139,7 +134,7 @@ namespace oa::time
 		Date SubTenor(const oa::time::Tenor& tenor) const;
 
 		/// <summary>
-		/// methods to return days, months, and year 
+		/// methods to return days, months, and year
 		/// </summary>
 		/// <returns>int value</returns>
 		int m_years() const { return m_years_; };
@@ -176,28 +171,30 @@ namespace oa::time
 		Date SubYears(const int& time_length) const;
 
 		/// <summary>
-		/// converts the julian day to its year month and day and returns it as a tuple 
-		/// using the algorithm desscribed in https://en.wikipedia.org/wiki/Julian_day 
+		/// converts the julian day to its year month and day and returns it as a tuple
+		/// using the algorithm desscribed in https://en.wikipedia.org/wiki/Julian_day
 		/// </summary>
 		/// <param name="julian_day">long long int</param>
 		/// <returns>a tuple where the first element is the year then month and day</returns>
-		std::tuple<int, int, int> ConvertToGregInt(const int&) const;
+		static std::tuple<int, int, int> ConvertToGregInt(const int);
 
 		/// <summary>
-		/// takes a time point obejct and converts it to year month and date using 
+		/// takes a time point obejct and converts it to year month and date using
 		/// https://stackoverflow.com/questions/15957805/extract-year-month-day-etc-from-stdchronotime-point-in-c
 		/// </summary>
 		/// <param name="time_point">input into the </param>
 		/// <returns>a tuple where the first element is the year then month and day</returns>
-		std::tuple<int, int, int> ConvertToGregInt(const std::chrono::system_clock::time_point& time_point) const;
+		static std::tuple<int, int, int> ConvertToGregInt(
+			const std::chrono::system_clock::time_point& time_point);
 
 		/// <summary>
-		/// takes in a tuple and populates year month and date 
+		/// takes in a tuple and populates year month and date
 		/// </summary>
 		/// <param name="result"></param>
 		void PopulateYMDFromTuple(const std::tuple<int, int, int>& results);
 
 	};
 
-}
-#endif// OPENANALYTICS_TIME_DATES_H
+}  // namespace oa::time
+
+#endif  // OPENANALYTICS_TIME_DATES_H

@@ -1,9 +1,16 @@
 #include "calendar_dao.h"
 
+#include <string>
+
+#include "oa/platform.h"
+
+#if OA_HAS_CPP20_FORMAT
+#include <format>
+#endif  // !OA_HAS_CPP20_FORMAT
 
 namespace oa::dao
 {
-	
+
 	CalendarDao& CalendarDao::GetInstance()
 	{
 		static CalendarDao calendar_dao_instance{};
@@ -17,21 +24,40 @@ namespace oa::dao
 		std::filesystem::path cal_file_path{ calendar_file_path_str + region + ".hol" };
 		if (!std::filesystem::is_regular_file(cal_file_path))
 		{
-			throw std::invalid_argument(
-				std::format("{}:{}", "File not found "+ 
-					region + ".hol", "calendar_dao.cpp line 22 GetCalendarData()"));
+			throw std::invalid_argument{
+#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}",
+					"File not found "+ region + ".hol",
+					"calendar_dao.cpp line 22 GetCalendarData()"
+				)
+#else
+				"File not found " + region + ".hol:" + std::string{__FILE__} +
+				"line " + std::to_string(__LINE__) + " " + std::string{__func__}
+#endif  // !OA_HAS_CPP20_FORMAT
+			};
 		}
 
 		std::ifstream raw_calendar_data{ cal_file_path};
 
 		if (!raw_calendar_data.is_open())
 		{
-			throw std::runtime_error(
-				std::format("{}:{}", "Calendar file cannot be open " +
-					region + ".hol", "calendar_dao.cpp line 31 GetCalendarData()"));
+			throw std::runtime_error{
+#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}",
+					"Calendar file cannot be open " + region + ".hol",
+					"calendar_dao.cpp line 31 GetCalendarData()"
+				)
+#else
+				"Calendar file cannot be open " + region + ".hol:" +
+				std::string{__FILE__} + " line " + std::to_string(__LINE__) +
+				" " + std::string{__func__}
+#endif  // !OA_HAS_CPP20_FORMAT
+			};
 		}
 
-		std::string file_line{}; 
+		std::string file_line{};
 
 		while (std::getline(raw_calendar_data, file_line))
 		{
@@ -47,9 +73,19 @@ namespace oa::dao
 					}
 					else
 					{
-						throw std::runtime_error(
-								std::format("{}:{}", region + ".hol has an invalid weekend integer "
-									+ file_line, "calendar_dao.cpp line 52 GetCalendarData()"));
+						throw std::runtime_error{
+#if OA_HAS_CPP20_FORMAT
+							std::format(
+								"{}:{}",
+								region + ".hol has an invalid weekend integer " + file_line,
+								"calendar_dao.cpp line 52 GetCalendarData()"
+							)
+#else
+							region + ".hol has an invalid weekend integer " + file_line +
+							std::string{__FILE__} + " line " + std::to_string(__LINE__) +
+							" " + std::string{__func__}
+#endif  // !OA_HAS_CPP20_FORMAT
+						};
 					}
 				}
 			}
@@ -66,4 +102,5 @@ namespace oa::dao
 		calendar_struct.regions = region;
 		return calendar_struct;
 	}
-}
+
+}  // namespace oa::dao

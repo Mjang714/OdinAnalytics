@@ -1,6 +1,6 @@
 // This is the registration funcition header that excel will use expose the function outwards.
 // This auto generated header registration file that leverages the yaml file.
-  
+
 #include <format>
 #include <stdlib.h>
 #define NOMINMAX
@@ -10,7 +10,7 @@
 #include "xlcall.h"
 #include "framewrk.h"
 #define excel_base_num_reg_functions_rows 3
- 
+
 static const WCHAR* excel_base_ngFuncs[excel_base_num_reg_functions_rows][12] = {
 { L"oxlArray", L"QQ", L"oxlArray", L"Data", L"1",L"Oxl - Excel - Tools",L"",L"",L"Creates a Array of the data from a given range",},
 { L"oxlDictionary", L"QQQ", L"oxlDictionary", L"Keys,Value", L"1",L"Oxl - Excel - Tools",L"",L"",L"Creates a Dictionary of the data from a given range",},

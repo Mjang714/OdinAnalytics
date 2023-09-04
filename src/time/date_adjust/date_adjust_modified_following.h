@@ -2,11 +2,13 @@
 #define ODINANALYTICS_TIME_DATEADJUST_DATEADJUSTMODIFIEDFOLLOWING_H
 
 #include "date_adjust_base.h"
-#include "../calendar.h"
+
+#include "oa/dllexport.h"
+#include "time/calendar.h"
 
 namespace oa::time
 {
-	class DateAdjustModFollowing : public DateAdjustBase
+	class OA_TIME_API DateAdjustModFollowing : public DateAdjustBase
 	{
 		public:
 			DateAdjustModFollowing() = default;
@@ -27,7 +29,4 @@ namespace oa::time
 	};
 }
 
-
 #endif // ODINANALYTICS_TIME_DATEADJUST_DATEADJUSTMODIFIEDFOLLOWING_H
-
-

@@ -5,7 +5,6 @@
 
 #include "xl_variant.h"
 
-
 namespace oxl::xl_api
 {
 	/// <summary>
@@ -28,7 +27,7 @@ namespace oxl::xl_api
 			/// <param name="i"></param>
 			/// <returns></returns>
 			const std::vector<XlVariant>& operator [](const size_t i) const;
-			
+
 			/// <summary>
 			/// operation to retrieve an element of an array that is mutable
 			/// </summary>
@@ -36,7 +35,7 @@ namespace oxl::xl_api
 			/// <param name="col"></param>
 			/// <returns></returns>
 			XlVariant& operator () (size_t row,  size_t col);
-			
+
 			/// <summary>
 			/// operation to retrieve an element of an array that is inmutable
 			/// </summary>
@@ -46,7 +45,7 @@ namespace oxl::xl_api
 			const XlVariant& operator () (const size_t row, const size_t col) const;
 
 			std::vector<XlVariant> ToVector();
-			
+
 			size_t rows() const { return m_rows_; };
 			size_t cols() const { return m_cols_; };
 

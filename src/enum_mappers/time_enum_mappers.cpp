@@ -1,5 +1,16 @@
 #include "time_enum_mappers.h"
 
+#include <algorithm>
+#include <fstream>
+#include <unordered_map>
+
+#include "oa/platform.h"
+#include "oa/warnings.h"
+
+#if OA_HAS_CPP20_FORMAT
+#include <format>
+#endif  // !OA_HAS_CPP20_FORMAT
+
 namespace oa::enum_mappers {
 
 	/**
@@ -35,16 +46,30 @@ namespace oa::enum_mappers {
 	oa::time::DayCountRule MapInputToDayCountEnum(const std::string& input_str)
 	{
 		std::string key_str = input_str;
+// disable C4242, C4244 warnings about int being narrowed to char
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4242 4244)
 		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+OA_MSVC_WARNING_POP()
 
 		if (TimeEnumMap().contains(key_str))
 			return TimeEnumMap().at(key_str);
 		else
 		{
-			throw std::invalid_argument(
-				std::format("{}:{}",
-				"Not a Valid day count convention please check input of: "+  input_str,
-					"time_enum_mappers.cpp line 19 MapInputToDayCountEnum()"));
+			throw std::invalid_argument{
+#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}",
+					"Not a Valid day count convention please check input of: " + input_str,
+					"time_enum_mappers.cpp line 19 MapInputToDayCountEnum()"
+				)
+#else
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::string{__LINE__} + ":" +
+				std::string{__func__} + ": " + input_str +
+				" is not a valid day count convention"
+#endif  // !OA_HAS_CPP20_FORMAT
+			};
 		}
 
 	}

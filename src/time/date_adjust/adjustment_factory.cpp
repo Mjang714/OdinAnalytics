@@ -1,6 +1,5 @@
 #include "adjustment_factory.h"
 
-
 namespace oa::time
 {
 	std::unique_ptr<DateAdjustBase> AdjustmentFactory::CreateDateAdjust(const AdjRule biz_day_convnetion, const Calendar& given_calendar)
@@ -13,6 +12,8 @@ namespace oa::time
 				return std::make_unique<DateAdjustPreceding>(given_calendar);
 			case AdjRule::kModifiedFollowing:
 				return std::make_unique<DateAdjustModFollowing>(given_calendar);
+			// MSVC C4061 if we don't explicitly include a case
+			case AdjRule::kPlainAdjustment:
 			default:
 				return CreateDateAdjust(biz_day_convnetion);
 		}
