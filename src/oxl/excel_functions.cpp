@@ -24,7 +24,7 @@ namespace oxl
 		return 1;
 	}
 
-	// Unregisters the functions whent eh xll is unloaded
+	// Unregisters the functions whent the xll is unloaded
 	extern "C" __declspec(dllexport)
 	int WINAPI xlAutoClose(void)
 	{

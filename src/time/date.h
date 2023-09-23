@@ -146,8 +146,6 @@ namespace oa::time
 		bool operator==(const Date& right_value) const;
 		std::strong_ordering operator<=>(const Date& right_value) const;
 
-
-
 	private:
 		int m_days_ = 0, m_months_= 0, m_years_ = 0, m_julian_int_ = 0;
 
