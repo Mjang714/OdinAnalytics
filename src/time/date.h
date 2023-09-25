@@ -1,5 +1,5 @@
-#ifndef OPENANALYTICS_TIME_DATES_H
-#define OPENANALYTICS_TIME_DATES_H
+#ifndef ODINANALYTICS_TIME_DATES_H_
+#define ODINANALYTICS_TIME_DATES_H_
 
 #include <chrono>
 #include <compare>
@@ -195,4 +195,4 @@ namespace oa::time
 
 }  // namespace oa::time
 
-#endif  // OPENANALYTICS_TIME_DATES_H
+#endif  // ODINANALYTICS_TIME_DATES_H_

@@ -171,7 +171,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\packages\Excel2013XLLSDK.2013.0.0\lib\native\$(PlatformShortName)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;derived_time.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
@@ -206,7 +206,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\packages\Excel2013XLLSDK.2013.0.0\lib\native\$(PlatformShortName)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;derived_time.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
@@ -237,7 +237,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\packages\Excel2013XLLSDK.2013.0.0\lib\native\$(PlatformShortName)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;derived_time.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
@@ -272,7 +272,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\packages\Excel2013XLLSDK.2013.0.0\lib\native\$(PlatformShortName)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;derived_time.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>

@@ -179,4 +179,30 @@
 #define OA_TIME_API
 #endif // !defined(OA_DLL) && !defined(OA_TIME_DLL)
 
+
+// derived_time
+// OA_DLL or OA_BUILD_TIME_DLL implies OA_TIME_DLL
+#if defined(OA_DLL) || defined(OA_BUILD_DERIVED_TIME_DLL)
+#ifndef OA_DERIVED_TIME_DLL
+#define OA_DERIVED_TIME_DLL
+#endif  // OA_DERIVED_TIME_DLL
+#endif  // !defined(OA_DLL) && !defined(OA_DERIVED_TIME_DLL)
+// building dynamic
+#if defined(OA_DLL) || defined(OA_DERIVED_TIME_DLL)
+// Windows
+#if defined(_WIN32)
+#if defined(OA_BUILD_DERIVED_TIME_DLL)
+#define OA_DERIVED_TIME_API __declspec(dllexport)
+#else
+#define OA_DERIVED_TIME_API __declspec(dllimport)
+#endif  // !defined(OA_BUILD_TIME_DLL)
+// non-Windows
+#else
+#define OA_DERIVED_TIME_API
+#endif // !defined(_WIN32)
+// building static
+#else
+#define OA_DERIVED_TIME_API
+#endif // !defined(OA_DLL) && !defined(OA_DERIVED_TIME_DLL)
+
 #endif  // OA_DLLEXPORT_H_
