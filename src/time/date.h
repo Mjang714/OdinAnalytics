@@ -23,7 +23,7 @@ namespace oa::time
 		Date() = default;
 
 		//we will make this constructor private to prevent someone from trying to create a whacky date that makes no sense
-		explicit Date(const int& year, const int& month, const int& day);
+		explicit Date(const int year, const int month, const int day);
 
 		/// <summary>
 		/// This function will be the main interface for the date class and takes a date as a stringd

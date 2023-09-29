@@ -64,6 +64,9 @@
     <ProjectReference Include="..\dao\dao.vcxproj">
       <Project>{14aa39ed-815a-4e2b-a8b5-631cad5762e3}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\derived_time\derived_time.vcxproj">
+      <Project>{36696965-ba1c-4307-9c62-022f13a768f8}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\helpers\Helpers.vcxproj">
       <Project>{0be2b5d3-70ff-4c20-8c7e-24cf4938ad9d}</Project>
     </ProjectReference>
@@ -78,6 +81,7 @@
     <ClCompile Include="..\..\src\time\day_count\day_count_act_365_fixed_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\calendar_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\dao\calendar_dao_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\date_formula\date_formula_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\date_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\business_logic_check_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\enum_test.cpp" />
