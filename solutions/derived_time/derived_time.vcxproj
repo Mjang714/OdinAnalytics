@@ -173,6 +173,9 @@
     <ProjectReference Include="..\helpers\Helpers.vcxproj">
       <Project>{0be2b5d3-70ff-4c20-8c7e-24cf4938ad9d}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\static_data_cache\static_data_cache.vcxproj">
+      <Project>{36138a7e-afdd-4e53-8ad6-71bdd427031f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\time\Time.vcxproj">
       <Project>{452ac1ac-81b2-4b5f-929f-e4b79d23d5f1}</Project>
     </ProjectReference>
