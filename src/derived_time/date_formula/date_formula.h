@@ -14,7 +14,7 @@ namespace oa::derived_time
 	class OA_DERIVED_TIME_API DateFormula
 	{
 		public:
-			DateFormula(void);
+			DateFormula();
 			DateFormula(const oa::time::Tenor& tenor_obj, oa::time::AdjRule adjustment_rule, const oa::time::Calendar& calendar);
 			DateFormula(const std::string& tenor_obj,  oa::time::AdjRule adjustment_rule, const oa::time::Calendar& calendar);
 			DateFormula(const std::string& tenor_obj, oa::time::AdjRule adjustment_rule, const std::string& calendar);

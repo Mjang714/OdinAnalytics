@@ -5,7 +5,7 @@
 
 namespace oa::derived_time
 {
-	DateFormula::DateFormula(void) : m_tenor_("0D"), 
+	DateFormula::DateFormula() : m_tenor_("0D"), 
 		m_holiday_adjuster_(oa::time::AdjustmentFactory::CreateDateAdjust(oa::time::AdjRule::kPlainAdjustment))
 	{
 
