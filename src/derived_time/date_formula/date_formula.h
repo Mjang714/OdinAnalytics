@@ -9,15 +9,11 @@
 #include "time/tenor.h"
 #include "time/date_adjust/date_adjust_base.h"
 
-
-
-
 namespace oa::derived_time
 {
 	class OA_DERIVED_TIME_API DateFormula
 	{
 		public:
-
 			DateFormula(void);
 			DateFormula(const oa::time::Tenor& tenor_obj, oa::time::AdjRule adjustment_rule, const oa::time::Calendar& calendar);
 			DateFormula(const std::string& tenor_obj,  oa::time::AdjRule adjustment_rule, const oa::time::Calendar& calendar);
@@ -33,13 +29,7 @@ namespace oa::derived_time
 		private:
 			oa::time::Tenor m_tenor_;
 			std::unique_ptr<oa::time::DateAdjustBase> m_holiday_adjuster_;  
-
 	};
 }
 
 #endif // !ODINANALYTICS_DERIVED_TIME_DATE_FORMULA_H_
-
-
-
-
-

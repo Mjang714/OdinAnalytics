@@ -3,11 +3,10 @@
 #include "time/date_adjust/adjustment_factory.h"
 #include "static_data_cache/calendar_cache.h"
 
-
 namespace oa::derived_time
 {
 	DateFormula::DateFormula(void) : m_tenor_("0D"), 
-		m_holiday_adjuster_(nullptr)
+		m_holiday_adjuster_(oa::time::AdjustmentFactory::CreateDateAdjust(oa::time::AdjRule::kPlainAdjustment))
 	{
 
 	}
