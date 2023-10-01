@@ -1,5 +1,5 @@
-#ifndef ODINANALYTICS_DERIVED_TIME_DATE_FORMULA_H_
-#define ODINANALYTICS_DERIVED_TIME_DATE_FORMULA_H_
+#ifndef OA_DERIVED_TIME_DATE_FORMULA_H_
+#define OA_DERIVED_TIME_DATE_FORMULA_H_
 
 #include <memory>
 #include <string>
@@ -32,4 +32,4 @@ namespace oa::derived_time
 	};
 }
 
-#endif // !ODINANALYTICS_DERIVED_TIME_DATE_FORMULA_H_
+#endif // !OA_DERIVED_TIME_DATE_FORMULA_H_
