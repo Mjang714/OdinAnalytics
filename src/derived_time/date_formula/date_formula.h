@@ -27,8 +27,8 @@ class OA_DERIVED_TIME_API DateFormula
 
 	private:
 		oa::time::Tenor m_tenor_;
-		std::unique_ptr<oa::time::DateAdjustBase> m_holiday_adjuster_;  
+		std::unique_ptr<oa::time::DateAdjustBase> m_holiday_adjuster_;
 };
 }
 
-#endif // !OA_DERIVED_TIME_DATE_FORMULA_H_
+#endif //!OA_DERIVED_TIME_DATE_FORMULA_H_
