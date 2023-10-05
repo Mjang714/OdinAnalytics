@@ -64,6 +64,9 @@
     <ProjectReference Include="..\dao\dao.vcxproj">
       <Project>{14aa39ed-815a-4e2b-a8b5-631cad5762e3}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\derived_time\derived_time.vcxproj">
+      <Project>{36696965-ba1c-4307-9c62-022f13a768f8}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\helpers\Helpers.vcxproj">
       <Project>{0be2b5d3-70ff-4c20-8c7e-24cf4938ad9d}</Project>
     </ProjectReference>
@@ -78,6 +81,7 @@
     <ClCompile Include="..\..\src\time\day_count\day_count_act_365_fixed_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\calendar_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\dao\calendar_dao_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\date_formula\date_formula_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\date_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\business_logic_check_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\enum_test.cpp" />
@@ -101,9 +105,9 @@
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\packages\boost.1.82.0\build\boost.targets" Condition="Exists('..\..\packages\boost.1.82.0\build\boost.targets')" />
     <Import Project="..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets" Condition="Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" />
     <Import Project="..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
+    <Import Project="..\..\packages\boost.1.82.0\build\boost.targets" Condition="Exists('..\..\packages\boost.1.82.0\build\boost.targets')" />
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -219,8 +223,8 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost.1.82.0\build\boost.targets'))" />
     <Error Condition="!Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\..\packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost.1.82.0\build\boost.targets'))" />
   </Target>
 </Project>

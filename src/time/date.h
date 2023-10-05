@@ -1,5 +1,5 @@
-#ifndef OPENANALYTICS_TIME_DATES_H
-#define OPENANALYTICS_TIME_DATES_H
+#ifndef ODINANALYTICS_TIME_DATES_H_
+#define ODINANALYTICS_TIME_DATES_H_
 
 #include <chrono>
 #include <compare>
@@ -23,7 +23,7 @@ namespace oa::time
 		Date() = default;
 
 		//we will make this constructor private to prevent someone from trying to create a whacky date that makes no sense
-		explicit Date(const int& year, const int& month, const int& day);
+		explicit Date(const int year, const int month, const int day);
 
 		/// <summary>
 		/// This function will be the main interface for the date class and takes a date as a stringd
@@ -195,4 +195,4 @@ namespace oa::time
 
 }  // namespace oa::time
 
-#endif  // OPENANALYTICS_TIME_DATES_H
+#endif  // ODINANALYTICS_TIME_DATES_H_

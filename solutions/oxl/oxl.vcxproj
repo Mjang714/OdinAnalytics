@@ -171,7 +171,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\packages\Excel2013XLLSDK.2013.0.0\lib\native\$(PlatformShortName)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;derived_time.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
@@ -206,7 +206,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\packages\Excel2013XLLSDK.2013.0.0\lib\native\$(PlatformShortName)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;derived_time.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
@@ -237,7 +237,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\packages\Excel2013XLLSDK.2013.0.0\lib\native\$(PlatformShortName)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;derived_time.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
@@ -272,7 +272,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\packages\Excel2013XLLSDK.2013.0.0\lib\native\$(PlatformShortName)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dao.lib;enum_mappers.lib;frmwrk32.lib;helpers.lib;static_data_cache.lib;time.lib;xlcall32.lib;derived_time.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>CD ..\..\api  python xl_autogen.py yml_interface\xl_%(FileName).yml src\oxl\auto_gen</Command>
@@ -283,15 +283,15 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets" Condition="Exists('..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets')" />
-    <Import Project="..\..\packages\boost.1.82.0\build\boost.targets" Condition="Exists('..\..\packages\boost.1.82.0\build\boost.targets')" />
     <Import Project="..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets" Condition="Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" />
+    <Import Project="..\..\packages\boost.1.82.0\build\boost.targets" Condition="Exists('..\..\packages\boost.1.82.0\build\boost.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets'))" />
-    <Error Condition="!Exists('..\..\packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost.1.82.0\build\boost.targets'))" />
     <Error Condition="!Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets'))" />
+    <Error Condition="!Exists('..\..\packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost.1.82.0\build\boost.targets'))" />
   </Target>
 </Project>

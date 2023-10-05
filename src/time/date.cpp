@@ -21,7 +21,7 @@
 namespace oa::time
 {
 
-	Date::Date(const int& year, const int& month, const int& day) : m_days_(day), m_months_(month), m_years_(year), m_julian_int_(ConvertToJulian(year, month, day))
+	Date::Date(const int year, const int month, const int day) : m_days_(day), m_months_(month), m_years_(year), m_julian_int_(ConvertToJulian(year, month, day))
 	{
 
 	}

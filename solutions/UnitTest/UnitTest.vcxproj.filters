@@ -52,6 +52,9 @@
     <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_factory_test.cpp">
       <Filter>time\day_count</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\date_formula\date_formula_test.cpp">
+      <Filter>date_formula</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="time">
@@ -71,6 +74,9 @@
     </Filter>
     <Filter Include="static_data_cache">
       <UniqueIdentifier>{9a6c4162-3e4b-4f34-bc6c-db4f5a9fd129}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="date_formula">
+      <UniqueIdentifier>{e2fd977f-96c6-47f8-997f-c129d7ac4e45}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
