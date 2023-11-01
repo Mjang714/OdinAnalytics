@@ -16,13 +16,29 @@ namespace oxl::xl_api
 	//use namspace for varaint types that can be stored within the caching component
 	using CachedObjVar = std::variant<std::shared_ptr<XlArray>, std::shared_ptr<XlDictionary>>;
 
+	/// <summary>
+	/// this needs to be thread safe cache implementation and needs a proper clearing mechanism
+	/// other wise this is memory leak waitting to happen
+	/// </summary>
 	class XlCacheObj
 	{
 		public:
 			XlCacheObj() = default;
 			XlCacheObj(const CachedObjVar& cached_obj, const std::string& key);
 
+			/// <summary>
+			/// Checks to see if the string given is valid handle
+			/// </summary>
+			/// <param name="handle"></param>
+			/// <returns></returns>
 			static bool IsHandle(const std::string& handle);
+
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <param name="handle"></param>
+			/// <returns></returns>
+			static bool IsDictionary(const std::string& handle);
 
 			/// <summary>
 			/// generated a unique handle for the cached object
