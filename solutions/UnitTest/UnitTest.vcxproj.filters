@@ -19,6 +19,9 @@
     <ClCompile Include="..\..\src\unit_test\helpers\enum_test.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\oxl\handle_prefixer_test.cpp">
+      <Filter>oxl</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\unit_test\time\date_adjust\date_adjust_plain_test.cpp">
       <Filter>time\date_adjust</Filter>
     </ClCompile>
