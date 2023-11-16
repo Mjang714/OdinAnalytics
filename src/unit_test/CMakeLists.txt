@@ -27,6 +27,10 @@ add_executable(
     time/day_count/day_count_act_act_test.cpp
     time/day_count/day_count_factory_test.cpp
 )
+# add oxl tests on Windows platforms
+if(WIN32)
+    target_sources(unit_test PRIVATE oxl/handle_prefixer_test.cpp)
+endif()
 # MSVC emits C5264 a lot for Google Test fixtures
 if(MSVC)
     target_compile_options(unit_test PRIVATE /wd5264)
