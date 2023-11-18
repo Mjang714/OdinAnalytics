@@ -10,6 +10,7 @@
 
 #include <gtest/gtest.h>
 
+#include "oa/testing/gtest.h"
 #include "oxl/xl_api/cache_xl_obj.h"
 #include "oxl/xl_api/xl_array.h"
 #include "oxl/xl_api/xl_dictionary.h"
