@@ -5,8 +5,8 @@ SET "OdinBaseDir=%ROOT%"
 SET "ODIN_MAGIC_ENUM_ROOT=%ROOT%\packages\magic_enum.0.8.2"
 SET "ODIN_BOOST_ROOT=%ROOT%\packages\boost.1.82.0"
 CALL:check_env_var "PreferredToolArchitecture" "x64"
-CALL:check_env_var "DevEnv" "DEBUG"
-
+CALL:check_env_var "DevEnv" "Debug"
+SET "PATH=%ROOT%\builds\intermediate\%PreferredToolArchitecture%\%DevEnv%;%ROOT%\builds\%PreferredToolArchitecture%\%DevEnv%;%PATH%"
 
 IF "%1"=="vs" (
     START /B devenv.exe "%ROOT%\OdinAnalytics.sln"

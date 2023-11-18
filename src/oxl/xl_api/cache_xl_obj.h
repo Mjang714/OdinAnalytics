@@ -1,76 +1,124 @@
 #ifndef OXL_XL_API_CACHE_XL_OBJ_H_
 #define OXL_XL_API_CACHE_XL_OBJ_H_
 
-#include <format>
-#include <memory>
+#include <cstdint>
 #include <map>
-#include <variant>
+#include <memory>
+#include <mutex>
 #include <string>
+#include <variant>
 
 #include "xl_array.h"
 #include "xl_dictionary.h"
 #include "xloper_converter.h"
 
-namespace oxl::xl_api
-{
-	//use namspace for varaint types that can be stored within the caching component
-	using CachedObjVar = std::variant<std::shared_ptr<XlArray>, std::shared_ptr<XlDictionary>>;
+namespace oxl::xl_api {
 
-	/// <summary>
-	/// this needs to be thread safe cache implementation and needs a proper clearing mechanism
-	/// other wise this is memory leak waitting to happen
-	/// </summary>
-	class XlCacheObj
+// type alias for variant storing within cache
+// TODO: consider using unique_ptr to allow the cache to uniquely own the
+// object, unless there is a compelling case for shared ownership
+using CachedObjVar = std::variant<
+	std::shared_ptr<XlArray>, std::shared_ptr<XlDictionary>
+>;
+using CachePair = std::pair<CachedObjVar, std::size_t>;
+
+/**
+ * Functor used to generate the cached object key prefix based on type.
+ *
+ * Can be used with `std::visit` via its `operator()` overloads.
+ */
+struct HandlePrefixer {
+	std::string operator()(const std::shared_ptr<XlArray>& /* val */) const
 	{
-		public:
-			XlCacheObj() = default;
-			XlCacheObj(const CachedObjVar& cached_obj, const std::string& key);
+		return "Array_";
+	}
 
-			/// <summary>
-			/// Checks to see if the string given is valid handle
-			/// </summary>
-			/// <param name="handle"></param>
-			/// <returns></returns>
-			static bool IsHandle(const std::string& handle);
+	std::string operator()(const std::shared_ptr<XlDictionary>& /* val */) const
+	{
+		return "Dictionary_";
+	}
 
-			/// <summary>
-			/// 
-			/// </summary>
-			/// <param name="handle"></param>
-			/// <returns></returns>
-			static bool IsDictionary(const std::string& handle);
+	template <typename T>
+	std::string operator()(const T& /* val */) const
+	{
+		return "Generic_";
+	}
+};
 
-			/// <summary>
-			/// generated a unique handle for the cached object
-			/// </summary>
-			/// <param name="cahced_obj"></param>
-			/// <returns></returns>
-			static std::string GenHandleStr(const CachedObjVar& cahced_obj);
+class XlCacheObj {
+public:
+	/**
+	 * Ctor.
+	 *
+	 * Inserts an object into the cache with an associated key name.
+	 */
+	XlCacheObj(const CachedObjVar& cached_obj, const std::string& key);
 
-			/// <summary>
-			/// retrieves the object from the cache as an std variant
-			/// </summary>
-			/// <param name="key"></param>
-			/// <returns></returns>
-			static CachedObjVar GetVariant(const std::string& key );
+	/**
+	 * Retrieve the cache handle associated with the object.
+	 *
+	 * Contains the key name and the unique hit count of the cached object.
+	 */
+	std::string CacheName() const;
 
-			/// <summary>
-			/// retireves the cached item name and the iteration of the cached object
-			/// </summary>
-			/// <returns></returns>
-			std::string CacheName() const;
+	/**
+	* checks to see if a handle given is valid dicitonary input
+	*/
+	static bool IsDictionary(const std::string& handle);
 
-			/// <summary>
-			/// Gets the key to retrieve the chaced obj var from the map absed ont eh handle name
-			/// </summary>
-			/// <param name="handle_str"></param>
-			/// <returns></returns>
-			static std::string GetKeyFromHandle(const std::string& handle_str);
+	/**
+	 * Return `true` if the string is a handle, `false` otherwise.
+	 */
+	static bool IsHandle(const std::string& handle);
 
-		private:
-			static std::pair<CachedObjVar, int> LoadPair(const std::string& key);
-			static std::map < std::string, std::pair<CachedObjVar, int>>& GetCache();
-			std::string cache_name_;
-	};
-}
-#endif //OXL_XL_API_CACHE_XL_OBJ_H_
+	/**
+	 * Generate a unique handle for the cache object.
+	 */
+	static std::string GenHandleStr(const CachedObjVar& cached_obj);
+
+	/**
+	 * Retrieve the object variant from the cache given the object key.
+	 */
+	static CachedObjVar GetVariant(const std::string& key);
+
+	/**
+	 * Return the key assocaited with the object based on the handle name.
+	 */
+	static std::string GetKeyFromHandle(const std::string& handle_str);
+
+private:
+	std::string cache_name_;
+
+	using CacheMap = std::map<std::string, CachePair>;
+
+	/**
+	 * Load the cache object pair without locking.
+	 *
+	 * @note Since no locking is done, this function is not thread-safe.
+	 */
+	static CachePair UnsafeLoadPair(const std::string& key);
+
+	/**
+	 * Load the cache object pair.
+	 */
+	static CachePair LoadPair(const std::string& key);
+
+	/**
+	 * Return a reference to the object cache.
+	 *
+	 * @note Locking of `CacheMutex()` must be done for any guarantee of
+	 * 	consistent state observation in the presence of multiple threads.
+	 */
+	static CacheMap& GetCache();
+
+	/**
+	 * Return a reference to the object cache's mutex.
+	 *
+	 * Must be locked in a multi-threaded context to ensure state consistency.
+	 */
+	static std::mutex& CacheMutex();
+};
+
+}  // namespace oxl::xl_api
+
+#endif  //OXL_XL_API_CACHE_XL_OBJ_H_

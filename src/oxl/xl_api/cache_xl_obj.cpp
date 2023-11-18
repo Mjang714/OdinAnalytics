@@ -1,38 +1,47 @@
 #include "cache_xl_obj.h"
 
-namespace oxl::xl_api {
-  
-XlCacheObj::XlCacheObj(const CachedObjVar& cached_obj, const std::string& key) : cache_name_(key)
-{
-	auto &map = GetCache();
-	int version = 0;
+#include <cstdint>
+#include <format>
+#include <map>
+#include <mutex>
+#include <string>
+#include <variant>
 
+namespace oxl::xl_api {
+
+XlCacheObj::XlCacheObj(const CachedObjVar& cached_obj, const std::string& key)
+  : cache_name_(key)
+{
+	auto& map = GetCache();
+	std::size_t version = 0;
+
+	std::lock_guard lock{CacheMutex()};
 	if (map.contains(key))
 	{
-		auto [old_cached_obj, stored_version] = LoadPair(key);
+		auto [old_cached_obj, stored_version] = UnsafeLoadPair(key);
 		version = ++stored_version;
 	}
 
-	map[key] = std::pair<CachedObjVar, int> (cached_obj, version);
+	map[key] = {cached_obj, version};
 }
 
-std::map < std::string, std::pair<CachedObjVar, int>>& XlCacheObj::GetCache()
+XlCacheObj::CacheMap& XlCacheObj::GetCache()
 {
-	static std::map<std::string, std::pair<CachedObjVar, int>> data_cache_;
+	static CacheMap data_cache_;
 	return data_cache_;
+}
+
+std::mutex& XlCacheObj::CacheMutex()
+{
+	static std::mutex mt;
+	return mt;
 }
 
 bool XlCacheObj::IsHandle(const std::string& handle)
 {
-	const auto& map = XlCacheObj::GetCache();
-	std::string key = GetKeyFromHandle(handle);
-
-	if (map.contains(key))
-	{
-		return true;
-	}
-
-	return false;
+	auto key = GetKeyFromHandle(handle);
+	std::lock_guard lock{CacheMutex()};
+	return GetCache().contains(key);
 }
 
 bool XlCacheObj::IsDictionary(const std::string& handle) {
@@ -54,52 +63,40 @@ CachedObjVar XlCacheObj::GetVariant(const std::string& key)
 	return LoadPair(key).first;
 }
 
-std::pair<CachedObjVar, int> XlCacheObj::LoadPair(const std::string& key)
+CachePair XlCacheObj::UnsafeLoadPair(const std::string& key)
 {
 	return GetCache().find(key)->second;
 }
 
+CachePair XlCacheObj::LoadPair(const std::string& key)
+{
+	std::lock_guard lock{CacheMutex()};
+	return UnsafeLoadPair(key);
+}
+
 std::string XlCacheObj::CacheName() const
 {
-	const auto& [cache_variant, version] = LoadPair(cache_name_);
-
-	std::string handle_name = std::format("{}:{}", cache_name_, version);
-
-	return handle_name;
+	std::lock_guard lock{CacheMutex()};
+	const auto& [cache_variant, version] = UnsafeLoadPair(cache_name_);
+	return std::format("{}:{}", cache_name_, version);
 }
 
 std::string XlCacheObj::GetKeyFromHandle(const std::string& handle_str)
 {
-	size_t colon_index = handle_str.find(":");
-	return handle_str.substr(0, colon_index);
+	return handle_str.substr(0, handle_str.find(":"));
 }
 
 std::string XlCacheObj::GenHandleStr(const CachedObjVar& cached_obj)
 {
-
 	std::string cell_loc = XLoperObj::CellName();
 
 	auto start = cell_loc.find_first_of("[");
 	auto end = cell_loc.find_first_of("]");
 
-	//erase workbook name
-	std::string base_str = cell_loc.erase(start, end + 1);
-	std::string prefix = "";
-	if (std::holds_alternative<std::shared_ptr<XlArray>>(cached_obj))
-	{
-		prefix = "Array_";
-	}
-
-	else if (std::holds_alternative<std::shared_ptr<XlDictionary>>(cached_obj))
-	{
-		prefix = "Dictionary_";
-	}
-
-	else
-	{
-		prefix = "Generic_";
-	}
-
-	return prefix + base_str;
+	// erase workbook name to get base string
+	auto base_str = cell_loc.erase(start, end + 1);
+	// return prefix + base string
+	return std::visit(HandlePrefixer{}, cached_obj) + base_str;
 }
-}
+
+}  // namespace oxl::xl_api

@@ -55,6 +55,7 @@
     <ClCompile Include="..\..\src\unit_test\date_formula\date_formula_test.cpp">
       <Filter>date_formula</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\oxl\handle_prefixer_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="time">
