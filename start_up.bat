@@ -53,9 +53,9 @@ ECHO DevEnv=%DevEnv%
 GOTO:End
 
 :Bad_Excel_Start_Up
-ECHO ###########################################################################
-ECHO !!!!! Please specify the build you want to use as the second argument !!!!!
-ECHO ###########################################################################
+ECHO #############################################################################################
+ECHO !!!!! Please specify the build (Debug or Release) you want to use as the second argument !!!!
+ECHO #############################################################################################
 GOTO:End
 
 

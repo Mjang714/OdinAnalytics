@@ -158,7 +158,7 @@ def create_cached_handle(yml_definition):
     argline = " "
     if (yml_definition["Args"]) :
         for arg in yml_definition["Args"]:
-            argline += arg["Name"] + "_input" + ","
+            argline += arg["Name"] + "_input,"
         line += argline[:-1]
         line += " );"
     auto_gen_code += [line]     
