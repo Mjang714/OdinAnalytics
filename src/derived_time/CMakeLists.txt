@@ -9,6 +9,6 @@ set_target_properties(
 # even if not building dynamic, keeps CMake aware of dependencies
 target_link_libraries(
     derived_time
-        PRIVATE helpers static_data_cache
+        PRIVATE enum_mappers helpers static_data_cache
         PUBLIC time
 )
