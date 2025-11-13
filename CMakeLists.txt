@@ -55,10 +55,14 @@ project(
 
 # check if we are using single of multi-config generator
 get_property(ODIN_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-
-# default build type Debug for single-config generators
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
+if(ODIN_MULTI_CONFIG)
+    message(STATUS "Build config: Multi")
+else()
+    # default build type Debug for single-config generators
+    if(NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE Debug)
+    endif()
+    message(STATUS "Build config: ${CMAKE_BUILD_TYPE}")
 endif()
 
 # C/C++ standards + require compiler support
