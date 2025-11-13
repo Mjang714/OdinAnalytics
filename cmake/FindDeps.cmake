@@ -71,6 +71,8 @@ if(NOT GTest_FOUND)
     endif()
     # actual Google Test find_package command
     find_package(GTest ${ODIN_GTEST_VERSION} REQUIRED)
+    # include GoogleTest module to enable testing
+    include(GoogleTest)
 endif()
 # not really necessary, but by using SYSTEM we suppress external warnings
 include_directories(SYSTEM ${GTest_INCLUDE_DIRS})

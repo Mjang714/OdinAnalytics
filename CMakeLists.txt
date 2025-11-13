@@ -67,18 +67,18 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# write the binary objects into the top-level build directory. use of generator
-# expression is to prevent multi-config generators, e.g. Visual Studio, from
-# appending per-configuration subdirs to the specified output dir.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}$<$<CONFIG:Debug>:>)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}$<$<CONFIG:Debug>:>)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}$<$<CONFIG:Debug>:>)
+# write the binary objects into the top-level build directory. multi-config
+# generators like Visual Studio will add per-config subdirectories
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 # update CMake module path to allow inclusion of custom CMake code
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # set custom compile options
 include(ConfigCompile)
+include(CTest)
 # find dependencies
 include(FindDeps)
 
@@ -87,9 +87,7 @@ set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # path to src directory (we use this later when adding files to test runner)
 set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 # also used as include directory, consider using separate ./include dir
+# TODO: should probably consider per-target include directory setting
 include_directories(${ODIN_INCLUDE_DIR} ${ODIN_SOURCE_DIR})
-
-# enables test discovery if you wish to use ctest
-enable_testing()
 
 add_subdirectory(${ODIN_SOURCE_DIR})
