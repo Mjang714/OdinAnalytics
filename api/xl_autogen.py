@@ -2,7 +2,7 @@ import sys
 import os
 import yaml
 
-
+#TODO: change yml_definition to yml_def
 #this function creates the the header function for the registration
 def header_reg_func(num_func, prefix_reg):
     print("Generating header file for " + prefix_reg)
@@ -27,7 +27,7 @@ def header_reg_func(num_func, prefix_reg):
 
     return xl_reg_hdr
 
-def regsiter_function(yml_defintion):
+def register_function(yml_defintion):
     rfs = header_reg_func(len(yml_defintion["Functions"]), yml_defintion["RegPreFix"])
 
     for func_desc in yml_defintion["Functions"]:
@@ -132,7 +132,7 @@ def create_excel_cpp(yml_defintiion):
 
 def excel_function_header(yml_defintion):
     header = []
-    header.append("// This is the registration funcition cpp that excel will use expose the function outwards.")
+    header.append("// This is the registration function cpp that excel will use expose the function outwards.")
     header.append("// This auto generated cpp registration file that leverages the yaml file.")
     header.append("  ")
     header.append("#include <format>")
@@ -173,7 +173,7 @@ def create_generic_xloper(yml_definition):
     argline = " "
     if (yml_definition["Args"]) :
         for arg in yml_definition["Args"]:
-            argline += arg["Name"] +"_input" + ","
+            argline += arg["Name"] +"_input,"
         line += argline[:-1]
         line += " );"
     auto_gen_code += [line]
@@ -331,7 +331,7 @@ def main():
         yaml_file_stream = yaml.safe_load(stream)
 
     CreateDir(output_path)
-    registered_funcs = regsiter_function(yaml_file_stream)
+    registered_funcs = register_function(yaml_file_stream)
     write_file(registered_funcs, output_path + "\\" + yaml_file_stream["RegFile"])
 
     excel_func_cpp =  create_excel_cpp(yaml_file_stream)
