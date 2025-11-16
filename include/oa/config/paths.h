@@ -26,6 +26,11 @@ std::filesystem::path library_path();
  *
  * Since all Odin libraries are packaged in the same build/install flat layout
  * this can be used to obtain the location of the rest of the libraries too.
+ *
+ * @note On Windows static libraries are installed in `lib` while the actual
+ *  DLLs are installed in `bin`. Since `oa_config` is always built shared, if
+ *  building Odin libraries as static on Windows, `library_dir()` will return
+ *  the location of DLLs, *not* of static libraries.
  */
 OA_CONFIG_API
 std::filesystem::path library_dir();
