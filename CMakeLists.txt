@@ -81,9 +81,24 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # set custom compile options
+# TODO: remove ConfigCompile.cmake since it doesn't add much benefit and just
+# put the contents directly in this top-level CMakeLists.txt
 include(ConfigCompile)
+
+# indicate if using unity build setting or not
+# note: unity builds decrease compile time and help reduce CPU compilation load
+# but result in larger individual TUs due to aggregation. incremental build
+# also suffers so it's best to use unity builds for clean builds, e.g. on CI
+if(CMAKE_UNITY_BUILD)
+    message(STATUS "Build unity: Yes")
+else()
+    message(STATUS "Build unity: No")
+endif()
+
 include(CTest)
 # find dependencies
+# TODO: consider removing FindDeps.cmake later when we refactor the logic for
+# dependency searching. we may have extra find modules anyways
 include(FindDeps)
 
 # path to include directory (include is a reserved CMake keyword)
