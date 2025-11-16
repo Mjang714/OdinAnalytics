@@ -8,6 +8,9 @@
     <Filter Include="date_formula">
       <UniqueIdentifier>{43ffadac-8b7e-4516-b557-6c43c6a01c76}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cashflow_gen">
+      <UniqueIdentifier>{8a577804-a989-47ad-b30a-e96a10243b51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -16,10 +19,16 @@
     <ClCompile Include="..\..\src\derived_time\date_formula\date_formula.cpp">
       <Filter>date_formula</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\derived_time\cashflow_gen\cashflow_gen.cpp">
+      <Filter>cashflow_gen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\derived_time\date_formula\date_formula.h">
       <Filter>date_formula</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\derived_time\cashflow_gen\cashflow_gen.h">
+      <Filter>cashflow_gen</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

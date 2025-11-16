@@ -2,12 +2,12 @@ import sys
 import os
 import yaml
 
-
+#TODO: change yml_definition to yml_def
 #this function creates the the header function for the registration
 def header_reg_func(num_func, prefix_reg):
     print("Generating header file for " + prefix_reg)
     xl_reg_hdr = []
-    xl_reg_hdr.append("// This is the registration funcition header that excel will use expose the function outwards.")
+    xl_reg_hdr.append("// This is the registration function header that excel will use expose the function outwards.")
     xl_reg_hdr.append("// This auto generated header registration file that leverages the yaml file.")
     xl_reg_hdr.append("  ")
     xl_reg_hdr.append("#include <format>")
@@ -27,7 +27,7 @@ def header_reg_func(num_func, prefix_reg):
 
     return xl_reg_hdr
 
-def regsiter_function(yml_defintion):
+def register_function(yml_defintion):
     rfs = header_reg_func(len(yml_defintion["Functions"]), yml_defintion["RegPreFix"])
 
     for func_desc in yml_defintion["Functions"]:
@@ -118,6 +118,8 @@ def create_excel_cpp(yml_defintiion):
             auto_gen += excel_functions_base(func_desc)
         elif(func_type == "Vanilla"):
             auto_gen += vanilla_functions_base(func_desc)
+        elif(func_type == "Dictionary"):
+            auto_gen += dictionary_functions_base(func_desc)     
         auto_gen += ["       return xloper_result;"]
         # create another else here for return type that is Array for the line above  
         auto_gen += ["   }"]
@@ -130,7 +132,7 @@ def create_excel_cpp(yml_defintiion):
 
 def excel_function_header(yml_defintion):
     header = []
-    header.append("// This is the registration funcition cpp that excel will use expose the function outwards.")
+    header.append("// This is the registration function cpp that excel will use expose the function outwards.")
     header.append("// This auto generated cpp registration file that leverages the yaml file.")
     header.append("  ")
     header.append("#include <format>")
@@ -143,6 +145,7 @@ def excel_function_header(yml_defintion):
     header.append("#include \"framewrk.h\"")
     header.append("#include \"oxl/xl_api/xloper_converter.h\"")
     header.append("#include \"oxl/xl_api/cache_xl_obj.h\"")
+    header.append("#include \"oxl/xl_api/xl_dictionary.h\"")
     if(yml_defintion["HeaderFiles"]):
         for header_file in yml_defintion["HeaderFiles"]:
             header.append("#include \"oxl/" + header_file["FileName"]+"\"")
@@ -170,14 +173,68 @@ def create_generic_xloper(yml_definition):
     argline = " "
     if (yml_definition["Args"]) :
         for arg in yml_definition["Args"]:
-            argline += arg["Name"] + "_input,"
+            argline += arg["Name"] +"_input,"
         line += argline[:-1]
         line += " );"
     auto_gen_code += [line]
     auto_gen_code += ["       oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);"]
     return auto_gen_code   
 
-
+def dictionary_functions_base(yml_definition):
+    dictionary_code = []
+    function_name = yml_definition["ExcelName"]
+    function_header = "extern \"C\" __declspec(dllexport) \nLPXLOPER12  "
+    function_header += create_function_declaration(function_name, yml_definition)
+    dictionary_code = [function_header]
+    dictionary_code += ["{"]
+    dictionary_code += ["  LPXLOPER12 xloper_result = static_cast<LPXLOPER12> (calloc(1, sizeof(xloper12)));"] 
+    dictionary_code += try_block()
+    dictionary_code += [" {"]
+    dictionary_code += ["    oxl::xl_api::XlDictionary dictionary_input;"] 
+    if(len(yml_definition["Args"]) > 1):
+        dictionary_code += ["    if (oxl::xl_api::XLoperObj::IsMulti(" + yml_definition["Args"][0]["Name"]+ "_input ) && (oxl::xl_api::XLoperObj::IsMulti(" + yml_definition["Args"][1]["Name"]+ "_input )))" ] 
+        dictionary_code += ["    {"]
+        dictionary_code += ["         dictionary_input = oxl::xl_api::XLoperObj::LPXloperToDictionary(" + yml_definition["Args"][0]["Name"] + "_input, "+ yml_definition["Args"][1]["Name"] +"_input);"]
+        dictionary_code += ["    }"]
+        dictionary_code += ["    else if (oxl::xl_api::XLoperObj::IsMulti(" + yml_definition["Args"][0]["Name"]+ "_input))" ] 
+        dictionary_code += ["    {"]
+        dictionary_code += ["         dictionary_input = oxl::xl_api::XLoperObj::LPXloperToDictionary(" + yml_definition["Args"][0]["Name"] + "_input);"]
+        dictionary_code += ["    }"]
+    else:
+        dictionary_code += ["    if (oxl::xl_api::XLoperObj::IsMulti(" + yml_definition["Args"][0]["Name"]+ "_input))" ] 
+        dictionary_code += ["    {"]
+        dictionary_code += ["         dictionary_input = oxl::xl_api::XLoperObj::LPXloperToDictionary(" + yml_definition["Args"][0]["Name"] + "_input);"]
+        dictionary_code += ["    }"]
+    dictionary_code += ["    else"] 
+    dictionary_code += ["    {"]
+    dictionary_code += ["         if(oxl::xl_api::XLoperObj::IsStr("+  yml_definition["Args"][0]["Name"] + "_input))"]
+    dictionary_code += ["         {"]
+    dictionary_code += ["            std::string handle_str = oxl::xl_api::XLoperObj::LPXloperToStr("+ yml_definition["Args"][0]["Name"] + "_input);"]
+    dictionary_code += ["            std::string key = oxl::xl_api::XlCacheObj::GetKeyFromHandle(handle_str);"]
+    dictionary_code += ["            if(oxl::xl_api::XlCacheObj::IsDictionary(key))"]
+    dictionary_code += ["            {"]
+    dictionary_code += ["              auto cache_variant = oxl::xl_api::XlCacheObj::GetVariant(key);"]
+    dictionary_code += ["              dictionary_input = *std::get<std::shared_ptr<oxl::xl_api::XlDictionary>>(cache_variant);"]
+    dictionary_code += ["            }"]
+    dictionary_code += ["         }"]
+    dictionary_code += ["         else"]
+    dictionary_code += ["         {"]
+    create_dictionary_line = ""
+    if(yml_definition["Args"]):
+        for arg in yml_definition["Args"]:
+            #print(arg["Name"])
+            create_dictionary_line +=  "           dictionary_input[\"" + arg["Name"] + "\"] = " 
+            if(arg["Type"] == "String"):
+                create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToStr(" + arg["Name"] + "_input); \n"
+            elif(arg["Type"] == "LPXLOPER|Date"):
+                create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"   
+    dictionary_code += [create_dictionary_line] 
+    dictionary_code += ["         }"]
+    dictionary_code += ["    }"]
+    line = "       auto intermediate_result = oxl::" + yml_definition["OxlName"]+ "(dictionary_input);"
+    dictionary_code += [line]
+    dictionary_code += ["       oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);"]
+    return dictionary_code    
 
 
 def create_function_declaration(name, yml_definition):
@@ -274,7 +331,7 @@ def main():
         yaml_file_stream = yaml.safe_load(stream)
 
     CreateDir(output_path)
-    registered_funcs = regsiter_function(yaml_file_stream)
+    registered_funcs = register_function(yaml_file_stream)
     write_file(registered_funcs, output_path + "\\" + yaml_file_stream["RegFile"])
 
     excel_func_cpp =  create_excel_cpp(yaml_file_stream)

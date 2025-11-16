@@ -36,6 +36,7 @@ namespace oxl
 	bool OxlIsHolDay(LPXLOPER12 date, LPXLOPER12 centers);
 	int OxlComputeDayCount(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count);
 	double OxlComputeYearFraction(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count);
+	double OxlComputeDate(const xl_api::XlDictionary& dictionary);
 }
 
 #endif //OXL_TIME_XL_H_

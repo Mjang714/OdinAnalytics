@@ -53,6 +53,13 @@ namespace oxl::xl_api
 			static bool IsMulti(const LPXLOPER12 input);
 
 			/// <summary>
+			/// checks to see if the xloper is a string type
+			/// </summary>
+			/// <param name="input"></param>
+			/// <returns></returns>
+			static bool IsStr(const LPXLOPER12 input);
+
+			/// <summary>
 			/// checks to see if the data is empty.
 			/// </summary>
 			/// <returns></returns>
@@ -80,7 +87,19 @@ namespace oxl::xl_api
 			static XlDictionary LPXloperToDictionary(const LPXLOPER12& xl_oper);
 			static XlDictionary LPXloperToDictionary(const LPXLOPER12& xl_oper_keys, const LPXLOPER12& xl_oper_values);
 
+			/// <summary>
+			/// converts xloper to a string
+			/// </summary>
+			/// <param name="xl_oper"></param>
+			/// <returns></returns>
 			static std::string LPXloperToStr(const LPXLOPER12& xl_oper);
+			
+			/// <summary>
+			/// convert teh xloper to a double 
+			/// </summary>
+			/// <param name="xl_oper"></param>
+			/// <returns></returns>
+			static double LPXloperToDouble(const LPXLOPER12& xl_oper);
 
 			//static std::string GenHandleName(const CachedObjVar& cached_obj);
 			static std::string CellName(void);
