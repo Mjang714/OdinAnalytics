@@ -62,6 +62,11 @@ public:
 	std::string CacheName() const;
 
 	/**
+	* checks to see if a handle given is valid dicitonary input
+	*/
+	static bool IsDictionary(const std::string& handle);
+
+	/**
 	 * Return `true` if the string is a handle, `false` otherwise.
 	 */
 	static bool IsHandle(const std::string& handle);

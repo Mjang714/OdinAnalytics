@@ -233,7 +233,12 @@ namespace oa::time
 		{
 			new_year = m_years_ + (m_months_ + time_length) / 12;
 			new_month = (m_months_ + time_length) % 12;
-
+			//added this for when you are in june add 6M then land in decmebr but the year counter increments :S
+			if (new_month <= 0)
+			{
+				new_month = new_month + 12;
+				new_year--;
+			}
 		}
 
 		else
@@ -244,12 +249,12 @@ namespace oa::time
 			{
 				new_year += -1;
 			}
-		}
 
-		//check for when we add negative dates
-		if (new_month <= 0)
-		{
-			new_month = new_month + 12;
+			//check for when we add negative dates
+			if (new_month <= 0)
+			{
+				new_month = new_month + 12;
+			}
 		}
 
 		//logic to check the day part is right

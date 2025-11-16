@@ -42,7 +42,27 @@ namespace oa::enum_mappers {
 		};
 		return dc_map;
 	}
+	const auto& DateAdjustMap()
 
+	{
+		static const std::unordered_map<std::string, time::AdjRule> da_map{
+			{"MF", time::AdjRule::kModifiedFollowing},
+			{"MODIFIEDFOLLOWING", time::AdjRule::kModifiedFollowing },
+			{"MODIFIED_FOLLOWING", time::AdjRule::kModifiedFollowing },
+			{"MODF", time::AdjRule::kModifiedFollowing },
+			{"MFOL", time::AdjRule::kModifiedFollowing },
+			{"P", time::AdjRule::kPreceding },
+			{"PRECEDING", time::AdjRule::kPreceding },
+			{"PRE", time::AdjRule::kPreceding },
+			{"F", time::AdjRule::kFollowing },
+			{"FOLLOWING", time::AdjRule::kFollowing },
+			{"FOL", time::AdjRule::kFollowing },
+			{ "NOADJ", time::AdjRule::kPlainAdjustment },
+			{ "NO_ADJ", time::AdjRule::kPlainAdjustment },
+			{ "NONE", time::AdjRule::kPlainAdjustment },
+		};
+		return da_map;
+	}
 	oa::time::DayCountRule MapInputToDayCountEnum(const std::string& input_str)
 	{
 		std::string key_str = input_str;
@@ -71,6 +91,37 @@ OA_MSVC_WARNING_POP()
 #endif  // !OA_HAS_CPP20_FORMAT
 			};
 		}
+
+	}
+
+	oa::time::AdjRule MapInputToDayAdjustEnum(const std::string& input_str)
+	{
+		std::string key_str = input_str;
+		// disable C4242, C4244 warnings about int being narrowed to char
+		OA_MSVC_WARNING_PUSH()
+			OA_MSVC_WARNING_DISABLE(4242 4244)
+			std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		OA_MSVC_WARNING_POP()
+
+			if (DateAdjustMap().contains(key_str))
+				return DateAdjustMap().at(key_str);
+			else
+			{
+				throw std::invalid_argument{
+#if OA_HAS_CPP20_FORMAT
+					std::format(
+						"{}:{}",
+						"Not a Valid day count convention please check input of: " + input_str,
+						"time_enum_mappers.cpp line 115 MapInputToDayAdjustEnum()"
+					)
+#else
+					// __FILE__, __LINE__, __func__ let us avoid hardcoding
+					std::string{__FILE__} + ":" + std::string{__LINE__} + ":" +
+						std::string{__func__} + ": " + input_str +
+						" is not a valid day count convention"
+#endif  // !OA_HAS_CPP20_FORMAT
+				};
+			}
 
 	}
 

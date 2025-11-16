@@ -54,6 +54,9 @@
     <ProjectReference Include="..\dao\dao.vcxproj">
       <Project>{14aa39ed-815a-4e2b-a8b5-631cad5762e3}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\derived_time\derived_time.vcxproj">
+      <Project>{36696965-ba1c-4307-9c62-022f13a768f8}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\enum_mappers\enum_mappers.vcxproj">
       <Project>{cd5ba075-6a85-46a7-af26-ace5f7a203b7}</Project>
     </ProjectReference>

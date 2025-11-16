@@ -4,7 +4,7 @@ RegPreFix : time
 Category: oxl_time
 HeaderFiles:
 -
- FileName : time_xl.h
+  FileName : time_xl.h
 Functions :
   -
    ExcelName : oxlIsBusinessDay
@@ -73,7 +73,27 @@ Functions :
      Help : Day Count Convetion(i.e ACT/ACT, 30/360)
      Type : String
    ReturnType :  Double
-   Help : compute the year fractions  
-
-     
-    
+   Help : compute the year fractions
+  -
+   ExcelName : oxlComputeDate
+   OxlName : OxlComputeDate
+   Type : Dictionary
+   Args:
+    -
+     Name : Base_Date
+     Help : base date to compute the new tenor from
+     Type : LPXLOPER|Date
+    -
+     Name : Tenor
+     Help : Tenor as 1Y, 1M, 6M, and etc
+     Type : String
+    -
+     Name : Adjustment_Rule
+     Help : Modified Following (MF), Following (F), Preceding (P), and etc
+     Type : String
+    -
+     Name : Calendar
+     Help : Business Calendar such as NYB(NY Fed), LNB(London Bank), NDQ (Nasdaq), and etc
+     Type : String
+   Return : Double
+   Help : Computes a new date from date, tenor, calendar, date modifier

@@ -12,7 +12,6 @@ namespace oa::enum_mappers {
 /**
  * Return the string to `DayCountRule` enum map.
  */
-OA_ENUM_MAPPERS_API
 const auto& TimeEnumMap();
 
 /// <summary>
@@ -22,6 +21,12 @@ const auto& TimeEnumMap();
 /// <returns></returns>
 OA_ENUM_MAPPERS_API
 time::DayCountRule MapInputToDayCountEnum(const std::string& input_str);
+
+
+const auto& DateAdjustMap();
+
+OA_ENUM_MAPPERS_API
+time::AdjRule MapInputToDayAdjustEnum(const std::string& input_str);
 
 }  // namespace oa::enum_mappers
 
