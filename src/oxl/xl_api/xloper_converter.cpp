@@ -39,6 +39,11 @@ namespace oxl::xl_api {
 		return false;
 	}
 
+	bool XLoperObj::IsStr(const LPXLOPER12 input)
+	{
+		return input->xltype == xltypeStr ? true : false;
+	}
+
 	bool XLoperObj::HasData(void)
 	{
 		if (std::holds_alternative<double>(m_data_))
@@ -241,13 +246,20 @@ namespace oxl::xl_api {
 	{
 		if (xl_oper->xltype != xltypeStr)
 		{
-			throw std::invalid_argument("Not an Excel String Type line check the input: xloper_converter.cpp line 209 LPXloperToStr()");
+			throw std::invalid_argument("Not an Excel String Type line check the input: xloper_converter.cpp line 244 LPXloperToStr()");
 		}
 
 		std::string str  = ToUTF8String(xl_oper->val.str + 1);
 		return str.substr(0, static_cast<int> (xl_oper->val.str[0]));
 	}
-
+	double XLoperObj::LPXloperToDouble(const LPXLOPER12& xl_oper)
+	{
+		if (xl_oper->xltype != xltypeNum)
+		{
+			throw std::invalid_argument("Not an Excel Double Type line check the input: xloper_converter.cpp line 254 LPXloperToDouble()");
+		}
+		return xl_oper->val.num;
+	}
 	std::string XLoperObj::CellName(void)
 	{
 		xloper12 cell_loc;

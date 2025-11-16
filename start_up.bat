@@ -4,9 +4,9 @@ SET "ROOT=%CD%"
 SET "OdinBaseDir=%ROOT%"
 SET "ODIN_MAGIC_ENUM_ROOT=%ROOT%\packages\magic_enum.0.8.2"
 SET "ODIN_BOOST_ROOT=%ROOT%\packages\boost.1.82.0"
-SET "BOOST_ROOT=%ROOT%\packages\boost.1.82.0"
 CALL:check_env_var "PreferredToolArchitecture" "x64"
-CALL:check_env_var "DevEnv" "DEBUG"
+CALL:check_env_var "DevEnv" "Debug"
+SET "PATH=%ROOT%\builds\intermediate\%PreferredToolArchitecture%\%DevEnv%;%ROOT%\builds\%PreferredToolArchitecture%\%DevEnv%;%PATH%"
 
 IF "%1"=="vs" (
     START /B devenv.exe "%ROOT%\OdinAnalytics.sln"
@@ -19,6 +19,8 @@ IF "%~1"=="excel" (
     START excel.exe /x %OdinBaseDir%\builds\%PreferredToolArchitecture%\%~2\oxl.xll
     GOTO:Excel_Start_Up_Sucessful    
 )
+
+GOTO:Environment_Var_Check
 
 :check_env_var
     IF NOT DEFINED %~1 (
@@ -51,9 +53,9 @@ ECHO DevEnv=%DevEnv%
 GOTO:End
 
 :Bad_Excel_Start_Up
-ECHO ###########################################################################
-ECHO !!!!! Please specify the build you want to use as the second argument !!!!!
-ECHO ###########################################################################
+ECHO #############################################################################################
+ECHO !!!!! Please specify the build (Debug or Release) you want to use as the second argument !!!!
+ECHO #############################################################################################
 GOTO:End
 
 
