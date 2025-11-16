@@ -51,7 +51,7 @@ namespace oa {
  */
 inline auto demangled_name(const std::type_info& info)
 {
-    return boost::core::demangle(info.name());
+  return boost::core::demangle(info.name());
 }
 
 }  // namespace oa
