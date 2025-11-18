@@ -58,9 +58,6 @@
     <IntDir>..\..\builds\intermediate\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BondMath\BondMath.vcxproj">
-      <Project>{ac1af42b-03df-4929-88fb-9b916379f34a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\dao\dao.vcxproj">
       <Project>{14aa39ed-815a-4e2b-a8b5-631cad5762e3}</Project>
     </ProjectReference>
