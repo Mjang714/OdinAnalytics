@@ -33,15 +33,15 @@ ECHO Argument given was not a valid argument
 GOTO :End
 
 :Build_Sucessful
-ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-ECHO *** ODIN ANALYTICS Local Build Setup Sucessful ***
-ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ECHO ****** ODIN ANALYTICS Local Build Setup Sucessful ******
+ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 GOTO:Environment_Var_Check
 
 :Excel_Start_Up_Sucessful
-ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-ECHO #### Excel start with oxl.xll loaded in  ####
-ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ECHO ######## Excel start with oxl.xll loaded in  ########
+ECHO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 GOTO:Environment_Var_Check
 
 
