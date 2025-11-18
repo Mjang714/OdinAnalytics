@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
+# TODO: consider using official magic_enum CMake integration
 # find magic_enum. can set ODIN_MAGIC_ENUM_ROOT in environment or define
 if(DEFINED ENV{ODIN_MAGIC_ENUM_ROOT})
     message(
@@ -43,7 +44,9 @@ if(NOT Boost_FOUND)
     find_package(Boost ${ODIN_BOOST_VERSION} REQUIRED)
 endif()
 # add to includes
+# TODO: don't do this and directly link against Boost::headers
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+message(STATUS "Boost version: ${Boost_VERSION}")
 
 # minimum Google Test version
 set(ODIN_GTEST_VERSION 1.8)
@@ -71,12 +74,17 @@ if(NOT GTest_FOUND)
     endif()
     # actual Google Test find_package command
     find_package(GTest ${ODIN_GTEST_VERSION} REQUIRED)
+    # include GoogleTest module to enable testing
+    include(GoogleTest)
 endif()
 # not really necessary, but by using SYSTEM we suppress external warnings
+# TODO: don't think SYSTEM really does anything here
 include_directories(SYSTEM ${GTest_INCLUDE_DIRS})
+message(STATUS "GoogleTest version: ${GTest_VERSION}")
 
 # need Excel SDK on Windows. can set ODIN_EXCELSDK_ROOT in environment or
 # define. this needs to be installed separately on a development machine
+# TODO: figure out a consistent layout for this and maybe write a find module
 if(WIN32)
     if(DEFINED ENV{ODIN_EXCELSDK_ROOT})
         message(

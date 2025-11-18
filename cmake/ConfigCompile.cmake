@@ -5,9 +5,11 @@ option(BUILD_SHARED_LIBS "Build shared libraries." ON)
 
 # set compile definitions
 if(BUILD_SHARED_LIBS)
-    message(STATUS "Building ${ODIN_PROJECT_NAME} dynamic libraries")
+    message(STATUS "Build libraries: Shared")
     # indicate that Odin libraries are all being used as dynamic libraries
     add_compile_definitions(OA_DLL)
+else()
+    message(STATUS "Build libraries: Static")
 endif()
 # set compiler-specific definitions and options
 if(MSVC)
