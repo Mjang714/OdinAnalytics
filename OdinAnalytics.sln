@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32112.339
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11205.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "time", "solutions\time\Time.vcxproj", "{452AC1AC-81B2-4B5F-929F-E4B79D23D5F1}"
 EndProject
@@ -26,12 +26,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "static_data_cache", "soluti
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enum_mappers", "solutions\enum_mappers\enum_mappers.vcxproj", "{CD5BA075-6A85-46A7-AF26-ACE5F7A203B7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "solutions\UnitTest\UnitTest.vcxproj", "{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}"
-	ProjectSection(ProjectDependencies) = postProject
-		{CD5BA075-6A85-46A7-AF26-ACE5F7A203B7} = {CD5BA075-6A85-46A7-AF26-ACE5F7A203B7}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "derived_time", "solutions\derived_time\derived_time.vcxproj", "{36696965-BA1C-4307-9C62-022F13A768F8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "solutions\UnitTest\UnitTest.vcxproj", "{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,18 +110,6 @@ Global
 		{CD5BA075-6A85-46A7-AF26-ACE5F7A203B7}.Release|x64.Build.0 = Release|x64
 		{CD5BA075-6A85-46A7-AF26-ACE5F7A203B7}.Release|x86.ActiveCfg = Release|Win32
 		{CD5BA075-6A85-46A7-AF26-ACE5F7A203B7}.Release|x86.Build.0 = Release|Win32
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|Any CPU.Build.0 = Debug|x64
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|x64.ActiveCfg = Debug|x64
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|x64.Build.0 = Debug|x64
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|x86.ActiveCfg = Debug|Win32
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|x86.Build.0 = Debug|Win32
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|Any CPU.ActiveCfg = Release|x64
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|Any CPU.Build.0 = Release|x64
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x64.ActiveCfg = Release|x64
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x64.Build.0 = Release|x64
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x86.ActiveCfg = Release|Win32
-		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x86.Build.0 = Release|Win32
 		{36696965-BA1C-4307-9C62-022F13A768F8}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{36696965-BA1C-4307-9C62-022F13A768F8}.Debug|Any CPU.Build.0 = Debug|x64
 		{36696965-BA1C-4307-9C62-022F13A768F8}.Debug|x64.ActiveCfg = Debug|x64
@@ -137,6 +122,18 @@ Global
 		{36696965-BA1C-4307-9C62-022F13A768F8}.Release|x64.Build.0 = Release|x64
 		{36696965-BA1C-4307-9C62-022F13A768F8}.Release|x86.ActiveCfg = Release|Win32
 		{36696965-BA1C-4307-9C62-022F13A768F8}.Release|x86.Build.0 = Release|Win32
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|Any CPU.Build.0 = Debug|x64
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|x64.ActiveCfg = Debug|x64
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|x64.Build.0 = Debug|x64
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|x86.ActiveCfg = Debug|Win32
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Debug|x86.Build.0 = Debug|Win32
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|Any CPU.ActiveCfg = Release|x64
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|Any CPU.Build.0 = Release|x64
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x64.ActiveCfg = Release|x64
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x64.Build.0 = Release|x64
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x86.ActiveCfg = Release|Win32
+		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
