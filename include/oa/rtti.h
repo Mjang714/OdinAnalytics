@@ -2,6 +2,7 @@
  * @file rtti.h
  * @author Derek Huang
  * @brief C++ header for RTTI helpers
+ * @copyright MIT License
  */
 
 #ifndef OA_RTTI_H_

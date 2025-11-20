@@ -49,3 +49,10 @@ target_link_libraries(
         static_data_cache
         time
 )
+
+# discover tests for CTest
+gtest_discover_tests(
+    unit_test
+    # ensure that OdinBaseDir is correctly set up
+    PROPERTIES ENVIRONMENT "OdinBaseDir=${PROJECT_SOURCE_DIR}"
+)

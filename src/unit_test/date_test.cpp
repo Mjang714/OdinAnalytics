@@ -1,3 +1,4 @@
+//if gtest/gtest.h cannot be fount than it is most likely the solution file cannot find it google test fixture  best to reolad the UnitTest project
 #include "gtest/gtest.h"
 #include "time/date.h" 
 
