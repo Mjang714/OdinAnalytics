@@ -30,5 +30,8 @@
     <ClInclude Include="..\..\src\derived_time\cashflow_gen\cashflow_gen.h">
       <Filter>cashflow_gen</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\derived_time\cashflow_gen\cashflow_struct.h">
+      <Filter>cashflow_gen</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
