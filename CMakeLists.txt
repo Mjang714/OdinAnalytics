@@ -5,12 +5,14 @@ cmake_minimum_required(VERSION 3.21)
 #
 # *nix (ELF 64-bit):
 #
-#   cmake -S . -B build && cmake --build build -j
+#   cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
 #
 # Windows:
 #
 #   cmake -S . -B build_windows_(x86|x64) -A (Win32|x64) && ^
-#   cmake --build build_windows_(x86|x64) -j
+#   cmake --build build_windows_(x86|x64) --config Release -j
+#
+# FIXME: Below content is all out of date
 #
 # Build driver scripts build.bat and build.sh will be contributed later. To
 # build shared libs, add -DBUILD_SHARED_LIBS=1 to the cmake config command. To
@@ -38,20 +40,26 @@ cmake_minimum_required(VERSION 3.21)
 # command directly by using the -D flag.
 #
 
-# major, minor, patch version also defined as macros in OdinAnalytics
+# major, minor, patch version
+# note: we could get them from PROJECT_VERSION_<level> as well
 set(ODIN_MAJOR_VERSION 0)
 set(ODIN_MINOR_VERSION 1)
 set(ODIN_PATCH_VERSION 0)
 
-# project name, in case we want to change it later
-set(ODIN_PROJECT_NAME OdinAnalytics)
-
 project(
-    ${ODIN_PROJECT_NAME}
+    OdinAnalytics
     VERSION ${ODIN_MAJOR_VERSION}.${ODIN_MINOR_VERSION}.${ODIN_PATCH_VERSION}
     DESCRIPTION "Nordic quantitative library sandbox"
     LANGUAGES C CXX
 )
+
+# find Git for build hash
+find_package(Git 2.34)
+if(Git_FOUND)
+    message(STATUS "Git version: ${GIT_VERSION_STRING}")
+else()
+    message(STATUS "Git version: None")
+endif()
 
 # check if we are using single of multi-config generator
 get_property(ODIN_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -77,13 +85,17 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-# update CMake module path to allow inclusion of custom CMake code
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-# set custom compile options
-# TODO: remove ConfigCompile.cmake since it doesn't add much benefit and just
-# put the contents directly in this top-level CMakeLists.txt
-include(ConfigCompile)
+# build shared libraries by default
+option(BUILD_SHARED_LIBS "Build shared libraries." ON)
+if(BUILD_SHARED_LIBS)
+    message(STATUS "Build libraries: Shared")
+    # indicate that Odin libraries are all being used as dynamic libraries
+    # TODO: remove, rely on fine-grained macros instead. this is more reserved
+    # for broad-stroke use by non-CMake consumers
+    add_compile_definitions(OA_DLL)
+else()
+    message(STATUS "Build libraries: Static")
+endif()
 
 # indicate if using unity build setting or not
 # note: unity builds decrease compile time and help reduce CPU compilation load
@@ -95,18 +107,108 @@ else()
     message(STATUS "Build unity: No")
 endif()
 
+# update CMake module path to allow inclusion of custom CMake code
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 include(CTest)
-# find dependencies
-# TODO: consider removing FindDeps.cmake later when we refactor the logic for
-# dependency searching. we may have extra find modules anyways
-include(FindDeps)
+
+# find Boost [headers]
+# TODO: we can decide to upgrade minimum Boost version later if necessary
+# enable ODIN_BOOST_ROOT env override
+if(DEFINED ENV{ODIN_BOOST_ROOT})
+    set(Boost_ROOT $ENV{ODIN_BOOST_ROOT} CACHE)
+endif()
+# find using OLD policy so working with non-CMake installs still works
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
+    cmake_policy(PUSH)
+    cmake_policy(SET CMP0167 OLD)
+endif()
+find_package(Boost 1.71 REQUIRED)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
+    cmake_policy(POP)
+endif()
+message(STATUS "Boost version: ${Boost_VERSION}")
+
+# find Magic Enum
+find_package(magic_enum 0.8.1 REQUIRED)
+message(STATUS "Magic Enum version: ${magic_enum_VERSION}")
+
+# find GoogleTest
+find_package(GTest 1.8)
+if(GTest_FOUND)
+    message(STATUS "GoogleTest version: ${GTest_VERSION}")
+else()
+    message(STATUS "GoogleTest version: None")
+endif()
+
+# look for Excel 2013 XLL SDK
+if(WIN32)
+    find_package(XLLSDK 15.0)
+endif()
+if(XLLSDK_FOUND)
+    message(STATUS "XLL SDK version: ${XLLSDK_VERSION}")
+else()
+    message(STATUS "XLL SDK version: None")
+endif()
+
+# set compiler-specific definitions and options
+# note: do this after looking for dependencies to avoid influencing deps
+if(MSVC)
+    # disable warnings about insecure functions, C code is naturally unsafe
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    add_compile_options(
+        # preferred warning level + enable parallel compilaton. the CMake
+        # -j, --parallel flag only builds *projects* in parallel
+        # TODO: may drop to /W4 to reduce lots of spurious warnings
+        /Wall /MP
+        # typically don't care if unreferenced inline functions are removed
+        /wd4514
+        # silence warnings about padding (we don't care for this project)
+        /wd4820
+        # for Google Test ::testing::Test subclasses, these are reported a lot,
+        # i.e. for implicitly deleted copy/move ctor + operator=
+        /wd4625 /wd4626 /wd5026 /wd5027
+        # Google Test gtest-param-util.h triggers these warnings (braced
+        # initialization list eval order, Spectre mitigation)
+        /wd4868 /wd5045
+        # /Wall enables excessive warnings about automatic inline expansion
+        /wd4710 /wd4711
+        # /Wall enables warning about 32-bit floats being stored in memory,
+        # which is performance loss compared to storing in register
+        /wd4738
+        # /Od applied by default when using Debug configuration
+    )
+    # if building as DLL, C4251 is emitted a lot. this is because exporting C++
+    # classes from DLLs is fraught with ABI issues, but this is fine for more
+    # recent versions of MSVC which are all ABI-compatible.
+    if(BUILD_SHARED_LIBS)
+        add_compile_options(/wd4251)
+    endif()
+else()
+    add_compile_options(
+        -Wall
+        # -O0 is default optimization level anyways, Clang ignores -ggdb
+        $<$<NOT:$<CONFIG:Release>>:-ggdb> $<IF:$<CONFIG:Release>,-O3,-O0>
+    )
+endif()
+
+# generation Odin version header
+set(ODIN_VERSION_H include/oa/version.h)
+# variables consumed:
+#
+#   ODIN_MAJOR_VERSION
+#   ODIN_MINOR_VERSION
+#   ODIN_PATCH_VERSION
+#   ODIN_VERSION
+#   ODIN_BUILD_INFO
+#
+configure_file(${ODIN_VERSION_H}.in ${ODIN_VERSION_H} @ONLY LF)
+message(STATUS "Generated ${ODIN_VERSION_H}")
 
 # path to include directory (include is a reserved CMake keyword)
 set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # path to src directory (we use this later when adding files to test runner)
+# TODO: stop using this as part of target include paths later on
 set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-# also used as include directory, consider using separate ./include dir
-# TODO: should probably consider per-target include directory setting
-include_directories(${ODIN_INCLUDE_DIR} ${ODIN_SOURCE_DIR})
 
-add_subdirectory(${ODIN_SOURCE_DIR})
+add_subdirectory(src)

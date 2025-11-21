@@ -1,8 +1,22 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
-add_library(enum_mappers time_enum_mappers.cpp)
+# oa_enum_mappers
+# TODO: need better descriptive comment
+add_library(oa_enum_mappers time_enum_mappers.cpp)
+add_library(OdinAnalytics::oa_enum_mappers ALIAS oa_enum_mappers)
+target_include_directories(
+    oa_enum_mappers PUBLIC
+    $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
+    $<BUILD_INTERFACE:${ODIN_SOURCE_DIR}>
+    # note: not installable just yet
+    $<INSTALL_INTERFACE:include>
+)
 # ensures that the specified macro is defined when building shared
 set_target_properties(
-    enum_mappers PROPERTIES
+    oa_enum_mappers PROPERTIES
     DEFINE_SYMBOL OA_BUILD_ENUM_MAPPERS_DLL
 )
+# set fine-grained visibility macro
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(oa_enum_mappers PUBLIC OA_ENUM_MAPPERS_DLL)
+endif()
