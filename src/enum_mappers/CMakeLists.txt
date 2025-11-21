@@ -18,5 +18,5 @@ set_target_properties(
 )
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(oa_enum_mappers PUBLIC OA_ENUM_MAPPERS_DLL)
+    target_compile_definitions(oa_enum_mappers INTERFACE OA_ENUM_MAPPERS_DLL)
 endif()

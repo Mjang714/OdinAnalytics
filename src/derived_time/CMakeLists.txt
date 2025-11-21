@@ -17,7 +17,7 @@ set_target_properties(
 )
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(oa_derived_time PUBLIC OA_DERIVED_TIME_DLL)
+    target_compile_definitions(oa_derived_time INTERFACE OA_DERIVED_TIME_DLL)
 endif()
 target_link_libraries(
     oa_derived_time

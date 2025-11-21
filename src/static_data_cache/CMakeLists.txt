@@ -19,7 +19,7 @@ set_target_properties(
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(
-        oa_static_data_cache PUBLIC
+        oa_static_data_cache INTERFACE
         OA_STATIC_DATA_CACHE_DLL
     )
 endif()
