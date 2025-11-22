@@ -81,8 +81,9 @@ jobs:
           sudo apt install googletest
           echo -n "GoogleTest version: "
           apt-cache show googletest | grep Version | sed -E 's/Version:\s+//g'
+      # note: need to first make build.sh executable
       - name: Build
-        run: ./build.sh -c Release
+        run: chmod 755 build.sh && ./build.sh -c Release
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: ctest --test-dir build -j$(nproc) --output-on-failure
