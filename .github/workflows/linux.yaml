@@ -51,6 +51,9 @@ jobs:
           show-progress: true
       - name: CPU Info
         run: lscpu
+      # needs to be run otherwise some packages won't be properly installed
+      - name: Update APT
+        run: apt update
       # note: the version of Boost here is a bit old. if we want a newer
       # version we'll have to directly download the headers
       - name: Install Boost
