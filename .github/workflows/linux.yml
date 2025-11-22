@@ -78,9 +78,9 @@ jobs:
           sudo cmake --install build
       - name: Install GoogleTest
         run: |
-          sudo apt install googletest
+          sudo apt install libgtest-dev
           echo -n "GoogleTest version: "
-          apt-cache show googletest | grep Version | sed -E 's/Version:\s+//g'
+          apt-cache show libgtest-dev | grep Version | sed -E 's/Version:\s+//g'
       # note: need to first make build.sh executable to use "./" otherwise we
       # have to directly invoke the bash shell to run the script
       - name: Build
