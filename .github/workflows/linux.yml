@@ -1,4 +1,6 @@
-# Odin GitHub Actions Linux CI workflow
+# linux.yml
+#
+# Odin GitHub Actions Linux CI workflow.
 #
 # This defines a Linux CMake build for Odin that runs on push + schedule.
 #
@@ -53,7 +55,7 @@ jobs:
         run: lscpu
       # needs to be run otherwise some packages won't be properly installed
       - name: Update APT
-        run: apt update
+        run: sudo apt update
       # note: the version of Boost here is a bit old. if we want a newer
       # version we'll have to directly download the headers
       - name: Install Boost
