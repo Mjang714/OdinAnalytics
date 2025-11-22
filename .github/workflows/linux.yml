@@ -81,12 +81,19 @@ jobs:
           sudo apt install libgtest-dev
           echo -n "GoogleTest version: "
           apt-cache show libgtest-dev | grep Version | sed -E 's/Version:\s+//g'
-      # note: need to first make build.sh executable to use "./" otherwise we
-      # have to directly invoke the bash shell to run the script
+      # note: build.sh script can't accept arguments like "Unix Makefiles" so
+      # we have problems using -Ca -G "Unix Makefiles" for example. also, if we
+      # use build.sh on GitHub Actions, we need chmod +x to make it executable
+      # therefore the following has been tested to work:
+      #
+      #   chmod +x build.sh
+      #   ./build.sh -c Release
+      #
       - name: Build
         run: |
-          chmod +x build.sh
-          ./build.sh -c Release
+          cmake -S . -B build -G "${{ matrix.generator }}" \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: ctest --test-dir build -j$(nproc) --output-on-failure
