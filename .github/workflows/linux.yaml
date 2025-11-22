@@ -1,0 +1,82 @@
+# Odin GitHub Actions Linux CI workflow
+#
+# This defines a Linux CMake build for Odin that runs on push + schedule.
+#
+# Author: Derek Huang
+# Copyright: MIT License
+#
+
+name: ci-linux
+
+on:
+  # run daily as 0000 UTC scheduled job or when any branch is pushed to
+  schedule:
+    - cron: "0 0 * * *"
+  # run on branch push
+  push:
+    # sheets + VS solution files don't affect the CMake build so ignore them
+    paths-ignore:
+      - "sheets/**"
+      - "solutions/**"
+  # run on manual request
+  workflow_dispatch:
+
+env:
+  # Magic Enum version
+  MAGIC_ENUM_VERSION: 0.9.7
+  # Boost version components
+  BOOST_MAJOR_VERSION: 1
+  BOOST_MINOR_VERSION: 83
+  BOOST_PATCH_VERSION: 0
+  # Boost artifacts home URL
+  BOOST_ARTIFACT_HOME: https://boostorg.jfrog.io/artifactory/main/release
+
+jobs:
+  # only one job which is the build job
+  build:
+    runs-on: ${{ matrix.os }}
+    name: CMake ${{ matrix.os }} ${{ matrix.generator }}
+    # strategy matrix
+    strategy:
+      matrix:
+        # note: ubuntu-latest is a moving target
+        os: [ubuntu-22.04, ubuntu-24.04]
+        # CMake build backend generator. we can add to this later
+        generator: ["Unix Makefiles", "Ninja Multi-Config"]
+    # job steps
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          show-progress: true
+      - name: CPU Info
+        run: lscpu
+      # note: the version of Boost here is a bit old. if we want a newer
+      # version we'll have to directly download the headers
+      - name: Install Boost
+        run: |
+          sudo apt install libboost-all-dev
+          echo -n "Boost version: "
+          apt-cache show libboost-all-dev | grep Version | sed -E 's/Version:\s+//g'
+      # note: don't need to build examples and tests for this
+      - name: Install Magic Enum
+        run: |
+          git clone https://github.com/Neargye/magic_enum.git
+          git checkout v${{ env.MAGIC_ENUM_VERSION }}
+          cd magic_enum
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF \
+            -DMAGIC_ENUM_OPT_BUILD_TESTS=OFF
+          cmake --build build -j
+          cmake --install build
+      - name: Install GoogleTest
+        run: |
+          sudo apt install googletest
+          echo -n "GoogleTest version: "
+          apt-cache show googletest | grep Version | sed -E 's/Version:\s+//g'
+      - name: Build
+        run: ./build.sh -c Release
+      # note: we don't have a nice wrapper script for this yet
+      - name: Test
+        run: ctest --test-dir build -j$(nproc) --output-on-failure
+      # TODO: add install stage when this is available
