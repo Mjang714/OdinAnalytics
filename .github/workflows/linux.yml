@@ -44,7 +44,8 @@ jobs:
         # note: ubuntu-latest is a moving target
         os: [ubuntu-22.04, ubuntu-24.04]
         # CMake build backend generator. we can add to this later
-        generator: ["Unix Makefiles", "Ninja Multi-Config"]
+        # note: currently no multi-config generators are supported
+        generator: ["Unix Makefiles", "Ninja"]
     # job steps
     # note: runners have password-less sudo
     steps:
