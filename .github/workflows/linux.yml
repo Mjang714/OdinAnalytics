@@ -16,10 +16,12 @@ on:
     - cron: "0 0 * * *"
   # run on branch push
   push:
-    # sheets + VS solution files don't affect the CMake build so ignore them
     paths-ignore:
+      # sheets + VS solution files don't affect the CMake build so ignore them
       - "sheets/**"
       - "solutions/**"
+      # README.md doesn't affect CMake build either
+      - README.md
   # run on manual request
   workflow_dispatch:
 
