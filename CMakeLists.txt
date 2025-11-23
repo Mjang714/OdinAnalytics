@@ -40,15 +40,9 @@ cmake_minimum_required(VERSION 3.21)
 # command directly by using the -D flag.
 #
 
-# major, minor, patch version
-# note: we could get them from PROJECT_VERSION_<level> as well
-set(ODIN_MAJOR_VERSION 0)
-set(ODIN_MINOR_VERSION 1)
-set(ODIN_PATCH_VERSION 0)
-
 project(
     OdinAnalytics
-    VERSION ${ODIN_MAJOR_VERSION}.${ODIN_MINOR_VERSION}.${ODIN_PATCH_VERSION}
+    VERSION 0.1.0
     DESCRIPTION "Nordic quantitative library sandbox"
     LANGUAGES C CXX
 )
@@ -87,12 +81,15 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 # build shared libraries by default
 option(BUILD_SHARED_LIBS "Build shared libraries." ON)
+option(ODIN_BUILD_RELEASE "Build official release" OFF)
+
+# indicate if building shared libs
 if(BUILD_SHARED_LIBS)
     message(STATUS "Build libraries: Shared")
     # indicate that Odin libraries are all being used as dynamic libraries
     # TODO: remove, rely on fine-grained macros instead. this is more reserved
     # for broad-stroke use by non-CMake consumers
-    add_compile_definitions(OA_DLL)
+    # add_compile_definitions(OA_DLL)
 else()
     message(STATUS "Build libraries: Static")
 endif()
@@ -159,8 +156,9 @@ if(MSVC)
     add_compile_options(
         # preferred warning level + enable parallel compilaton. the CMake
         # -j, --parallel flag only builds *projects* in parallel
-        # TODO: may drop to /W4 to reduce lots of spurious warnings
-        /Wall /MP
+        # TODO: should put this back up to /Wall when possible. do *not* remove
+        # the explicitly disabled warnings for now
+        /W4 /MP
         # typically don't care if unreferenced inline functions are removed
         /wd4514
         # silence warnings about padding (we don't care for this project)
@@ -192,7 +190,42 @@ else()
     )
 endif()
 
-# generation Odin version header
+# major, minor, patch version components
+set(ODIN_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
+set(ODIN_MINOR_VERSION ${PROJECT_VERSION_MINOR})
+set(ODIN_PATCH_VERSION ${PROJECT_VERSION_PATCH})
+# obtain short Git revision
+if(Git_FOUND)
+    execute_process(
+        COMMAND git rev-parse --short HEAD
+        RESULT_VARIABLE git_rev_res
+        OUTPUT_VARIABLE ODIN_REVISION
+        ERROR_VARIABLE git_rev_err
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_STRIP_TRAILING_WHITESPACE
+    )
+    # note: should not fail
+    if(git_rev_res)
+        message(FATAL_ERROR "git rev-parse --short HEAD error: ${git_rev_err}")
+    endif()
+endif()
+# set build info. this is the short revision or DEV for non-release builds
+if(ODIN_BUILD_RELEASE)
+    set(ODIN_BUILD_INFO "")
+else()
+    if(Git_FOUND)
+        set(ODIN_BUILD_INFO ${ODIN_REVISION})
+    else()
+        set(ODIN_BUILD_INFO "DEV")
+    endif()
+endif()
+# set version string
+set(ODIN_VERSION "${ODIN_MAJOR_VERSION}.${ODIN_MINOR_VERSION}.${ODIN_PATCH_VERSION}")
+if(NOT ODIN_BUILD_RELEASE)
+    string(APPEND ODIN_VERSION "-${ODIN_BUILD_INFO}")
+endif()
+
+# generate Odin version header
 set(ODIN_VERSION_H include/oa/version.h)
 # variables consumed:
 #
