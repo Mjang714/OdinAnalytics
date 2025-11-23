@@ -110,7 +110,8 @@ jobs:
           git clone https://github.com/google/googletest.git
           cd googletest
           git checkout v${{ env.GTEST_VERSION }}
-          cmake -S . -B build -A ${{ matrix.arch }}
+          # note: gtest_force_shared_crt needed otherwise uses static C runtime
+          cmake -S . -B build -A ${{ matrix.arch }} -Dgtest_force_shared_crt=ON
           cmake --build build --config Release -j
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
