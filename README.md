@@ -8,8 +8,6 @@
     This file is written in GitHub Flavored Markdown.
 -->
 
-## Overview
-
 Nordic front-office quantitative library sandbox.
 
 This project is inspired by the authors' work experience as front-office strats
