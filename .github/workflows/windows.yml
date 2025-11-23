@@ -86,7 +86,7 @@ jobs:
             -DBOOST_INCLUDE_LIBRARIES=${{ env.BOOST_CMAKE_LIBS }}
           cmake --build build --config Release -j
           cmake --install build `
-            --prefix {{ env.ODIN_VENDOR_ROOT }} `
+            --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
       # note: don't need to build examples and tests for this. installs into
       # /usr/local by default which is why we need sudo
