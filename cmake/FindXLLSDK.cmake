@@ -118,6 +118,7 @@ set(_xllsdk_root "${XLLSDK_INCLUDE_DIRS}/..")
 set(_xllsdk_frmwrk_srcdir "${_xllsdk_root}/samples/framewrk")
 
 # directly build frmwrk32 as part of the calling project
+# note: not defining _USRDLL during compilation. do we need to (for MFC)?
 add_library(
     frmwrk32 STATIC
     "${_xllsdk_frmwrk_srcdir}/framewrk.c"
@@ -125,14 +126,14 @@ add_library(
     "${_xllsdk_frmwrk_srcdir}/MemoryPool.cpp"
 )
 add_library(XLLSDK::frmwrk32 ALIAS frmwrk32)
-# note: not defining _USRDLL during compilation. do we need to (for MFC)?
+target_include_directories(frmwrk32 PUBLIC "${XLLSDK_INCLUDE_DIRS}")
+# need extra private include directories due to weird setup
 target_include_directories(
     frmwrk32 PRIVATE
     # needs to be able to include xlcall.cpp and xlcall.h
-    "${XLLSDK_INCLUDE_DIRS}"
     "${_xllsdk_root}/src"
     # note: explicitly include _xllsdk_frmwrk_srcdir due to use of
-    # <memorymanager.h> include and CMake won't be running in same directory
+    # <memorymanager.h> include + CMake won't be running in same directory
     "${_xllsdk_frmwrk_srcdir}"
 )
 # explicitly need to compile FRAMEWRK.C as C code
