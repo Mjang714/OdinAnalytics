@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.21)
 #   XLLSDK::xlcall32        Target for linking against xlcall32.lib
 #
 # On a typical Excel 2013 XLL SDK download there is a SAMPLES\FRAMEWRK
-# directory for the frmwrk32 library. If the directory it exists the following
+# directory for the frmwrk32 library. If this directory exists the following
 # CMake ALIAS static library target will also be defined:
 #
 #   XLLSDK::frmwrk32        Target for linking against frmwrk32.lib
@@ -27,7 +27,7 @@ cmake_minimum_required(VERSION 3.21)
 # Note that the frmwrk32 target itself will be an alias to an actual target
 # added to the calling project's build tree. This is because in 2025 the
 # Microsoft-provided NMake Makefiles in the Excel2013XLLSDK\SAMPLES subdirs
-# are out of date and won't built under newer Visual Studio compiler versions,
+# are out of date and won't build under newer Visual Studio compiler versions,
 # e.g. 2022. The BUILD.BAT and MAKE.BAT have the additional issue of looking
 # for vcvarsalls.bat in %VCINSTALLDIR% directly when this script has now been
 # moved to %VCINSTALLDIR%\Auxiliary\Build instead.
