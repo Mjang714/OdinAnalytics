@@ -1,0 +1,138 @@
+# windows.yml
+#
+# Odin GitHub Actions Windows CI workflow.
+#
+# This defines a Windows CMake build for Odin that runs on push + schedule.
+#
+# Author: Derek Huang
+# Copyright: MIT License
+#
+
+name: ci-windows
+
+on:
+  # run daily as 0000 UTC scheduled job or when any branch is pushed to
+  schedule:
+    - cron: "0 0 * * *"
+  # run on branch push
+  push:
+    # sheets + VS solution files don't affect the CMake build so ignore them
+    paths-ignore:
+      - "sheets/**"
+      - "solutions/**"
+  # run on manual request
+  workflow_dispatch:
+
+env:
+  # install root for dependencies
+  ODIN_VENDOR_ROOT: C:\odin_vendor
+  # Boost version + semicolon-separated list of libraries for Boost CMake build
+  BOOST_VERSION: 1.89.0
+  BOOST_CMAKE_LIBS: algorithm
+  # Magic Enum version
+  MAGIC_ENUM_VERSION: 0.9.7
+  # GoogleTest version
+  GTEST_VERSION: 1.14.0
+
+jobs:
+  # only one job which is the build job
+  build:
+    runs-on: ${{ matrix.os }}
+    name: CI ${{ matrix.os }} unity=${{ matrix.unity }}
+    # strategy matrix
+    strategy:
+      matrix:
+        # note: windows-latest is a moving target
+        os: [windows-2022, windows-2025]
+        # CMake build arch, i.e. what is passed to CMake's -A option
+        # TODO: haven't tested x64 all that much. also need to determine if we
+        # want to allow Win32 as another choice for build.bat
+        arch: [Win32]
+        # whether or not to use unity build
+        unity: [off, on]
+    # job steps
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          show-progress: true
+      # note: no way to easily show CPU feature flags. you could use __cpuid
+      # and __cpuidex directly in a C/C++ program but this is more complication
+      - name: CPU Info
+        run: systeminfo
+      # installs Boost and builds any libraries with CMake
+      # TODO: we can reduce the archive download speed by instead doing a
+      # shallow clone of just what is needed. see the section for this at
+      # https://www.boost.org/doc/user-guide/getting-started.html#_individual_modules
+      - name: Install Boost
+        run: |
+          # build URL for Boost GitHub release page
+          $BOOST_TAG = "boost-${{ env.BOOST_VERSION}}"
+          $BOOST_ARCHIVE = "$BOOST_TAG-cmake.tar.xz"
+          $BOOST_URL = "https://github.com/boostorg/boost/releases/download"
+          $BOOST_URL += "/$BOOST_TAG/$BOOST_ARCHIVE"
+          # get Boost. we need -L to follow the GitHub redirects. we choose to
+          # download the .tar.xz since it has highest compression ratio so we
+          # can minimize the network transfer time.
+          cd ${{ runner.temp }}
+          curl -L "$BOOST_URL" -o $BOOST_ARCHIVE
+          # inflate + cd to prepare for build
+          tar -xf $BOOST_ARCHIVE
+          cd $BOOST_TAG
+          # build just the required components we need. the entire Boost suite
+          # of libraries is huge so we don't want to build everything. in most
+          # cases the Boost libraries are header-only so nothing is built
+          cmake -S . -B build -A ${{ matrix.arch }} `
+            -DBOOST_INCLUDE_LIBRARIES=${{ env.BOOST_CMAKE_LIBS }}
+          cmake --build build --config Release -j
+          cmake --install build `
+            --prefix {{ env.ODIN_VENDOR_ROOT }} `
+            --config Release
+      # note: don't need to build examples and tests for this. installs into
+      # /usr/local by default which is why we need sudo
+      - name: Install Magic Enum
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/Neargye/magic_enum.git
+          cd magic_enum
+          git checkout v${{ env.MAGIC_ENUM_VERSION }}
+          cmake -S . -B build -A ${{ matrix.arch }} `
+            -DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF `
+            -DMAGIC_ENUM_OPT_BUILD_TESTS=OFF
+          cmake --build build --config Release -j
+          cmake --install build `
+            --prefix ${{ env.ODIN_VENDOR_ROOT }} `
+            --config Release
+      # note: build from source since we want to avoid NuGet's weird packaging
+      - name: Install GoogleTest
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/google/googletest.git
+          cd googletest
+          git checkout v${{ env.GTEST_VERSION }}
+          cmake -S . -B build -A ${{ matrix.arch }}
+          cmake --build build --config Release -j
+          cmake --install build `
+            --prefix ${{ env.ODIN_VENDOR_ROOT }} `
+            --config Release
+      # note: not sure if step-level env can use top-level env variables
+      - name: Build
+        run: |
+          # ToUpper() can be used on PowerShell strings for upper-casing
+          $ODIN_UNITY_BUILD = "${{ matrix.unity }}".ToUpper()
+          # handle conversion of Win32 -> x86 for build script
+          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
+            Else { "${{ matrix.arch }}" }
+          # run build command
+          # note: need explicit use of .\ here unlike with CMD
+          # note: need double quotes to be preserved for CMD script
+          .\build -a $BUILD_ARCH -c Release -Ca `
+            '"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}"' `
+            '"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD"'
+      # note: we don't have a nice wrapper script for this yet
+      - name: Test
+        run: |
+          # note: need double quotes for PowerShell
+          ctest --test-dir build_windows_x86 -C Release `
+            "-j$env:NUMBER_OF_PROCESSORS"
+      # TODO: add install stage when this is available
