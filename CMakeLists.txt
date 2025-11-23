@@ -217,6 +217,9 @@ if(NOT ODIN_BUILD_RELEASE)
     string(APPEND ODIN_VERSION "-${ODIN_BUILD_INFO}")
 endif()
 
+# print version info
+message(STATUS "Build version: ${ODIN_VERSION}")
+
 # generate Odin version header
 set(ODIN_VERSION_H include/oa/version.h)
 # variables consumed:
