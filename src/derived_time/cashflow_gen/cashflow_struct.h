@@ -22,7 +22,8 @@ namespace oa::derived_time {
 		double npv_cashflow_amount;
 		int days;
 		double day_count_fraction;
-		Currency curr;
+		Currency cf_curr;
+		CashflowType cf_type;
 	};
 }
 #endif //OA_DERIVED_TIME_CAHFLOW_STRUCT_H_
