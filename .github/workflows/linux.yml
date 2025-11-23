@@ -26,12 +26,6 @@ on:
 env:
   # Magic Enum version
   MAGIC_ENUM_VERSION: 0.9.7
-  # Boost version components
-  BOOST_MAJOR_VERSION: 1
-  BOOST_MINOR_VERSION: 83
-  BOOST_PATCH_VERSION: 0
-  # Boost artifacts home URL
-  BOOST_ARTIFACT_HOME: https://boostorg.jfrog.io/artifactory/main/release
 
 jobs:
   # only one job which is the build job
@@ -88,8 +82,8 @@ jobs:
       - name: Build
         run: |
           chmod +x build.sh
-          ./build.sh -c Release \
-            -Ca -DCMAKE_UNITY_BUILD=$(echo ${{ matrix.unity }} | tr a-z A-Z)
+          ./build.sh -c Release -Ca \
+            -DCMAKE_UNITY_BUILD=$(echo ${{ matrix.unity }} | tr a-z A-Z)
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: ctest --test-dir build -j$(nproc) --output-on-failure
