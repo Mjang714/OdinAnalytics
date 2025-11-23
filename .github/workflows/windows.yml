@@ -60,25 +60,25 @@ jobs:
       # and __cpuidex directly in a C/C++ program but this is more complication
       - name: CPU Info
         run: systeminfo
-      # installs Boost and builds any libraries with CMake
-      # TODO: we can reduce the archive download speed by instead doing a
-      # shallow clone of just what is needed. see the section for this at
+      # installs + builds required Boost libraries with CMake. see
       # https://www.boost.org/doc/user-guide/getting-started.html#_individual_modules
+      # note: originally we used curl to pull an entire Boost release but the
+      # Windows 2022 runners have really slow networks for some reason
       - name: Install Boost
         run: |
-          # build URL for Boost GitHub release page
           $BOOST_TAG = "boost-${{ env.BOOST_VERSION}}"
-          $BOOST_ARCHIVE = "$BOOST_TAG-cmake.tar.xz"
-          $BOOST_URL = "https://github.com/boostorg/boost/releases/download"
-          $BOOST_URL += "/$BOOST_TAG/$BOOST_ARCHIVE"
-          # get Boost. we need -L to follow the GitHub redirects. we choose to
-          # download the .tar.xz since it has highest compression ratio so we
-          # can minimize the network transfer time.
+          # clone Boost repo to specified tag
           cd ${{ runner.temp }}
-          curl -L "$BOOST_URL" -o $BOOST_ARCHIVE
-          # inflate + cd to prepare for build
-          tar -xf $BOOST_ARCHIVE
-          cd $BOOST_TAG
+          git clone https://github.com/boostorg/boost.git -b $BOOST_TAG --depth 1
+          cd boost
+          # init boostdep + any other required submodules
+          git submodule update --depth 1 -q --init tools\boostdep
+          ForEach ($module In "${{ env.BOOST_CMAKE_LIBS }}".Split(";"))
+          {
+            echo "Initializing Boost module $module"
+            git submodule update --depth 1 -q --init libs\$module
+            python tools\boostdep\depinst\depinst.py -X test -g "--depth 1"
+          }
           # build just the required components we need. the entire Boost suite
           # of libraries is huge so we don't want to build everything. in most
           # cases the Boost libraries are header-only so nothing is built
