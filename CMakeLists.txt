@@ -86,10 +86,6 @@ option(ODIN_BUILD_RELEASE "Build official release" OFF)
 # indicate if building shared libs
 if(BUILD_SHARED_LIBS)
     message(STATUS "Build libraries: Shared")
-    # indicate that Odin libraries are all being used as dynamic libraries
-    # TODO: remove, rely on fine-grained macros instead. this is more reserved
-    # for broad-stroke use by non-CMake consumers
-    # add_compile_definitions(OA_DLL)
 else()
     message(STATUS "Build libraries: Static")
 endif()
@@ -111,10 +107,6 @@ include(CTest)
 
 # find Boost [headers]
 # TODO: we can decide to upgrade minimum Boost version later if necessary
-# enable ODIN_BOOST_ROOT env override
-if(DEFINED ENV{ODIN_BOOST_ROOT})
-    set(Boost_ROOT $ENV{ODIN_BOOST_ROOT} CACHE)
-endif()
 # find using OLD policy so working with non-CMake installs still works
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
     cmake_policy(PUSH)
