@@ -31,7 +31,7 @@ jobs:
   # only one job which is the build job
   build:
     runs-on: ${{ matrix.os }}
-    name: CI ${{ matrix.os }} unity=${{ matrix.unity }}
+    name: ${{ matrix.os }} unity=${{ matrix.unity }}
     # strategy matrix
     strategy:
       matrix:
