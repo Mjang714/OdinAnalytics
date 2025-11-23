@@ -16,7 +16,9 @@ cmake_minimum_required(VERSION 3.21)
 #
 #   XLLSDK::xlcall32        Target for linking against xlcall32.lib
 #
-# The following CMake ALIAS static library target will also be defined:
+# On a typical Excel 2013 XLL SDK download there is a SAMPLES\FRAMEWRK
+# directory for the frmwrk32 library. If the directory it exists the following
+# CMake ALIAS static library target will also be defined:
 #
 #   XLLSDK::frmwrk32        Target for linking against frmwrk32.lib
 #
@@ -30,17 +32,32 @@ cmake_minimum_required(VERSION 3.21)
 # for vcvarsalls.bat in %VCINSTALLDIR% directly when this script has now been
 # moved to %VCINSTALLDIR%\Auxiliary\Build instead.
 #
-# TODO:
+# Example:
 #
-# Support COMPONENTS, e.g. enable find_package usage like the following:
+#   # require XLL SDK xlcall32
+#   find_package(XLLSDK 15.0 REQUIRED)
 #
-#   find_package(XLLSDK 15.0 COMPONENTS XLCALL32 FRMWRK32)
-#
-# This way we don't need to force consumers to have the SAMPLES\FRAMEWRK source
-# directory available if they have xlcall32.lib in a vendor install root.
+#   # require frmwrk32.lib as well
+#   find_package(XLLSDK 15.0 REQUIRED COMPONENTS frmwrk32)
 #
 
 include(FindPackageHandleStandardArgs)
+
+# supported components
+set(XLLSDK_SUPPORTED_COMPONENTS xlcall32 frmwrk32)
+# check that all specified components are valid
+foreach(_comp ${XLLSDK_FIND_COMPONENTS})
+    list(FIND XLLSDK_SUPPORTED_COMPONENTS ${_comp} _xllsdk_${_comp}_pos)
+    if(_xllsdk_${_comp}_pos EQUAL -1)
+        list(JOIN XLLSDK_SUPPORTED_COMPONENTS " " _xllsdk_components_str)
+        message(
+            FATAL_ERROR
+            "${_comp} is not one of the following valid XLL SDK components: "
+"${_xllsdk_components_str}"
+        )
+    endif()
+    unset(_xllsdk_${_comp}_pos)
+endforeach()
 
 # locate the xlcall.h header
 find_path(XLLSDK_INCLUDE_DIRS xlcall.h PATH_SUFFIXES include NO_CACHE)
@@ -112,6 +129,10 @@ set_target_properties(
     XLLSDK::xlcall32 PROPERTIES
     IMPORTED_LOCATION "${XLLSDK_XLCALL32}"
 )
+# mark as located + set XLLSDK_LIBRARIES
+# note: usually never need to pass xlcall32 to COMPONENTS
+set(XLLSDK_xlcall32_FOUND TRUE)
+set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}")
 
 # get root install directory + framework library source directory
 set(_xllsdk_root "${XLLSDK_INCLUDE_DIRS}/..")
@@ -119,33 +140,35 @@ set(_xllsdk_frmwrk_srcdir "${_xllsdk_root}/samples/framewrk")
 
 # directly build frmwrk32 as part of the calling project
 # note: not defining _USRDLL during compilation. do we need to (for MFC)?
-add_library(
-    frmwrk32 STATIC
-    "${_xllsdk_frmwrk_srcdir}/framewrk.c"
-    "${_xllsdk_frmwrk_srcdir}/MemoryManager.cpp"
-    "${_xllsdk_frmwrk_srcdir}/MemoryPool.cpp"
-)
-add_library(XLLSDK::frmwrk32 ALIAS frmwrk32)
-target_include_directories(frmwrk32 PUBLIC "${XLLSDK_INCLUDE_DIRS}")
-# need extra private include directories due to weird setup
-target_include_directories(
-    frmwrk32 PRIVATE
-    # needs to be able to include xlcall.cpp and xlcall.h
-    "${_xllsdk_root}/src"
-    # note: explicitly include _xllsdk_frmwrk_srcdir due to use of
-    # <memorymanager.h> include + CMake won't be running in same directory
-    "${_xllsdk_frmwrk_srcdir}"
-)
-# explicitly need to compile FRAMEWRK.C as C code
-set_source_files_properties(
-    "${_xllsdk_frmwrk_srcdir}/framewrk.c" PROPERTIES
-    LANGUAGE C
-)
-# ensure we *never* use unity build when building frmwrk32
-set_target_properties(frmwrk32 PROPERTIES UNITY_BUILD FALSE)
-
-# all library targets
-set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32};XLLSDK::frmwrk32")
+if(EXISTS "${_xllsdk_frmwrk_srcdir}")
+    add_library(
+        frmwrk32 STATIC
+        "${_xllsdk_frmwrk_srcdir}/framewrk.c"
+        "${_xllsdk_frmwrk_srcdir}/MemoryManager.cpp"
+        "${_xllsdk_frmwrk_srcdir}/MemoryPool.cpp"
+    )
+    add_library(XLLSDK::frmwrk32 ALIAS frmwrk32)
+    target_include_directories(frmwrk32 PUBLIC "${XLLSDK_INCLUDE_DIRS}")
+    # need extra private include directories due to weird setup
+    target_include_directories(
+        frmwrk32 PRIVATE
+        # needs to be able to include xlcall.cpp and xlcall.h
+        "${_xllsdk_root}/src"
+        # note: explicitly include _xllsdk_frmwrk_srcdir due to use of
+        # <memorymanager.h> include + CMake won't be running in same directory
+        "${_xllsdk_frmwrk_srcdir}"
+    )
+    # explicitly need to compile FRAMEWRK.C as C code
+    set_source_files_properties(
+        "${_xllsdk_frmwrk_srcdir}/framewrk.c" PROPERTIES
+        LANGUAGE C
+    )
+    # ensure we *never* use unity build when building frmwrk32
+    set_target_properties(frmwrk32 PROPERTIES UNITY_BUILD FALSE)
+    # mark as found + add target to XLLSDK_LIBRARIES
+    set(XLLSDK_frmwrk32_FOUND TRUE)
+    list(APPEND XLLSDK_LIBRARIES "XLLSDK::frmwrk32")
+endif()
 
 # clean up
 unset(_xllsdk_libdir)
@@ -160,4 +183,5 @@ find_package_handle_standard_args(
     REQUIRED_VARS XLLSDK_LIBRARIES XLLSDK_INCLUDE_DIRS
     VERSION_VAR XLLSDK_VERSION
     HANDLE_VERSION_RANGE
+    HANDLE_COMPONENTS
 )

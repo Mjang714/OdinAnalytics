@@ -132,7 +132,7 @@ endif()
 
 # look for Excel 2013 XLL SDK
 if(WIN32)
-    find_package(XLLSDK 15.0)
+    find_package(XLLSDK 15.0 COMPONENTS frmwrk32)
 endif()
 if(XLLSDK_FOUND)
     message(STATUS "XLL SDK version: ${XLLSDK_VERSION}")
