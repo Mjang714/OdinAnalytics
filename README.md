@@ -20,7 +20,7 @@ at various banks.
 | Linux | [![ci-linux](https://github.com/Mjang714/OdinAnalytics/actions/workflows/linux.yml/badge.svg)](https://github.com/Mjang714/OdinAnalytics/actions/workflows/linux.yml) |
 | Windows | [![ci-windows](https://github.com/Mjang714/OdinAnalytics/actions/workflows/windows.yml/badge.svg)](https://github.com/Mjang714/OdinAnalytics/actions/workflows/windows.yml) |
 
-Odin is built on with [CMake] >= 3.21 and requires the following:
+Odin is built with [CMake] >= 3.21 and requires the following:
 
 * A C++ compiler supporting C++20
 * [Boost] >= 1.71
