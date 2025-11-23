@@ -77,7 +77,7 @@ jobs:
           {
             echo "Initializing Boost module $module"
             git submodule update --depth 1 -q --init libs\$module
-            python tools\boostdep\depinst\depinst.py -X test -g "--depth 1"
+            python tools\boostdep\depinst\depinst.py -X test -g "--depth 1" $module
           }
           # build just the required components we need. the entire Boost suite
           # of libraries is huge so we don't want to build everything. in most
