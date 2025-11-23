@@ -50,11 +50,18 @@ If your dependencies are not installed in system locations the standard CMake
 
 ### \*nix
 
-To build Odin on a POSIX system a wrapper `build.sh` script is provided. For
-example, to build the Release config with Odin shared libraries, use
+To build Odin on a POSIX system a wrapper `build.sh` script is provided.
+
+For example, to build the Release config with Odin shared libraries, use
 
 ```bash
 ./build.sh -c Release
+```
+
+To build Release static libraries instead of shared libraries, use
+
+```bash
+./build.sh -c Release -Ca -DBUILD_SHARED_LIBS=OFF
 ```
 
 Unity builds are supported via [`CMAKE_UNITY_BUILD`][CMAKE_UNITY_BUILD], e.g.
@@ -78,11 +85,18 @@ ctest --test-dir build -j$(nproc)
 
 ### Windows
 
-To build Odin on Windows a wrapper `build.bat` script is provided. For example,
-to build the Release config with Odin shared libraries, use
+To build Odin on Windows a wrapper `build.bat` script is provided.
+
+For example, to build the Release config with Odin shared libraries, use
 
 ```shell
 build -c Release
+```
+
+To build Release static libraries instead of shared libraries, use
+
+```shell
+build -c Release -Ca "-DBUILD_SHARED_LIBS=OFF"
 ```
 
 Unity builds are supported via `CMAKE_UNITY_BUILD`, e.g. the following works:
