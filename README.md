@@ -8,9 +8,19 @@
     This file is written in GitHub Flavored Markdown.
 -->
 
-Michael Jang's Nordic quantitative library sandbox.
+## Overview
+
+Nordic front-office quantitative library sandbox.
+
+This project is inspired by the authors' work experience as front-office strats
+at various banks.
 
 ## Building
+
+| Platform | CI Status |
+| -------- | --------- |
+| Linux | [![ci-linux](https://github.com/Mjang714/OdinAnalytics/actions/workflows/linux.yml/badge.svg)](https://github.com/Mjang714/OdinAnalytics/actions/workflows/linux.yml) |
+| Windows | [![ci-windows](https://github.com/Mjang714/OdinAnalytics/actions/workflows/windows.yml/badge.svg)](https://github.com/Mjang714/OdinAnalytics/actions/workflows/windows.yml) |
 
 ### Requirements
 
