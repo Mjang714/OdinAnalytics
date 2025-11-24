@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
+# oa_time: Odin time library
 add_library(
-    time
+    oa_time
     calendar.cpp
     date.cpp
     tenor.cpp
@@ -17,7 +18,18 @@ add_library(
     day_count/day_count_act_365_fixed.cpp
     day_count/day_count_act_act.cpp
 )
+target_include_directories(
+    oa_time PUBLIC
+    $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
+    $<BUILD_INTERFACE:${ODIN_SOURCE_DIR}>
+    # note: not installable just yet
+    $<INSTALL_INTERFACE:include>
+)
 # ensures that the specified macro is defined when building shared
-set_target_properties(time PROPERTIES DEFINE_SYMBOL OA_BUILD_TIME_DLL)
-# even if not building dynamic, keeps CMake aware of dependencies
-target_link_libraries(time PRIVATE helpers)
+set_target_properties(oa_time PROPERTIES DEFINE_SYMBOL OA_BUILD_TIME_DLL)
+# set fine-grained visibility macro
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(oa_time INTERFACE OA_TIME_DLL)
+endif()
+# link against dependencies
+target_link_libraries(oa_time PUBLIC oa_helpers PRIVATE Boost::headers)

@@ -1,7 +1,7 @@
 :Description 
-This is the sifma calendar
+This is the sifma calendar format of the date is YYYY/MM/DD
 :Currency USD
-Version 2023/04/30
+Version 2025/10/23
 TimeToLive 
 #optional thing
 

@@ -1,0 +1,94 @@
+# linux.yml
+#
+# Odin GitHub Actions Linux CI workflow.
+#
+# This defines a Linux CMake build for Odin that runs on push + schedule.
+#
+# Author: Derek Huang
+# Copyright: MIT License
+#
+
+name: ci-linux
+
+on:
+  # run daily as 0000 UTC scheduled job or when any branch is pushed to
+  schedule:
+    - cron: "0 0 * * *"
+  # run on branch push
+  push:
+    paths-ignore:
+      # sheets + VS solution files don't affect the CMake build so ignore them
+      - "sheets/**"
+      - "solutions/**"
+      # README.md doesn't affect CMake build either
+      - README.md
+  # run on manual request
+  workflow_dispatch:
+
+env:
+  # Magic Enum version
+  MAGIC_ENUM_VERSION: 0.9.7
+
+jobs:
+  # only one job which is the build job
+  build:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} unity=${{ matrix.unity }}
+    # strategy matrix
+    strategy:
+      matrix:
+        # note: ubuntu-latest is a moving target
+        os: [ubuntu-22.04, ubuntu-24.04]
+        # whether or not to use unity build
+        unity: [off, on]
+    # job steps
+    # note: runners have password-less sudo
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          show-progress: true
+      - name: CPU Info
+        run: lscpu
+      # needs to be run otherwise some packages won't be properly installed
+      - name: APT Update
+        run: sudo apt update
+      # note: the version of Boost here is a bit old. if we want a newer
+      # version we'll have to directly download the headers
+      - name: Install Boost
+        run: |
+          sudo apt install libboost-all-dev
+          echo -n "Boost version: "
+          apt-cache show libboost-all-dev | grep Version | sed -E 's/Version:\s+//g'
+      # note: don't need to build examples and tests for this. installs into
+      # /usr/local by default which is why we need sudo
+      # note: do build in temp dir so we don't clutter up the workspace dir
+      - name: Install Magic Enum
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/Neargye/magic_enum.git
+          cd magic_enum
+          git checkout v${{ env.MAGIC_ENUM_VERSION }}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF \
+            -DMAGIC_ENUM_OPT_BUILD_TESTS=OFF
+          cmake --build build -j
+          sudo cmake --install build
+      - name: Install GoogleTest
+        run: |
+          sudo apt install libgtest-dev
+          echo -n "GoogleTest version: "
+          apt-cache show libgtest-dev | grep Version | sed -E 's/Version:\s+//g'
+      # note: build.sh script can't accept arguments like "Unix Makefiles" so
+      # we have problems using -Ca -G "Unix Makefiles" for example. also, if we
+      # use build.sh on GitHub Actions, we need chmod +x to make it executable.
+      # we use tr a-z A-Z to convert lowercase to uppercase
+      - name: Build
+        run: |
+          chmod +x build.sh
+          ./build.sh -c Release -Ca \
+            -DCMAKE_UNITY_BUILD=$(echo ${{ matrix.unity }} | tr a-z A-Z)
+      # note: we don't have a nice wrapper script for this yet
+      - name: Test
+        run: ctest --test-dir build -j$(nproc) --output-on-failure
+      # TODO: add install stage when this is available
