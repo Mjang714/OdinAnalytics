@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
-# strongly recommend name change to something like oa_test
+# oa_unit_test: Odin master unit test runner
 add_executable(
-    unit_test
-    # should put this test file in unit_test
+    oa_unit_test
+    # FIXME: should put this test file in unit_test
     ../time/day_count/day_count_act_365_fixed_test.cpp
     # broken, probably because bond math stuff is in solutions, not src
     # bond_math_test.cpp
@@ -27,29 +27,34 @@ add_executable(
     time/day_count/day_count_act_act_test.cpp
     time/day_count/day_count_factory_test.cpp
 )
-# add oxl tests on Windows platforms
-if(WIN32)
-    target_sources(unit_test PRIVATE oxl/handle_prefixer_test.cpp)
+# add oxl tests if oxl_api is available
+# note: no need to check if on Windows as oxl_api is Windows-only
+if(TARGET oxl_api)
+    target_sources(oa_unit_test PRIVATE oxl/handle_prefixer_test.cpp)
 endif()
 # MSVC emits C5264 a lot for Google Test fixtures
 if(MSVC)
-    target_compile_options(unit_test PRIVATE /wd5264)
+    target_compile_options(oa_unit_test PRIVATE /wd5264)
 endif()
 target_link_libraries(
-    unit_test
+    oa_unit_test
     PRIVATE
         GTest::gtest_main
-        dao
-        derived_time
-        enum_mappers
-        helpers
-        static_data_cache
-        time
+        oa_dao
+        oa_derived_time
+        oa_enum_mappers
+        oa_helpers
+        oa_static_data_cache
+        oa_time
 )
+# link against oxl_api as necessary
+if(TARGET oxl_api)
+    target_link_libraries(oa_unit_test PRIVATE oxl_api)
+endif()
 
 # discover tests for CTest
 gtest_discover_tests(
-    unit_test
+    oa_unit_test
     # ensure that OdinBaseDir is correctly set up
     PROPERTIES ENVIRONMENT "OdinBaseDir=${PROJECT_SOURCE_DIR}"
 )

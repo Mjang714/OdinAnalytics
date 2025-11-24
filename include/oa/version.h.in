@@ -1,0 +1,42 @@
+/**
+ * @file version.h
+ * @author Derek Huang
+ * @brief C/C++ header for Odin version info
+ * @copyright MIT License
+ */
+
+#ifndef OA_VERSION_H_
+#define OA_VERSION_H_
+
+/**
+ * @PROJECT_NAME@ major version.
+ */
+#define ODIN_MAJOR_VERSION @ODIN_MAJOR_VERSION@
+
+/**
+ * @PROJECT_NAME@ minor version.
+ */
+#define ODIN_MINOR_VERSION @ODIN_MINOR_VERSION@
+
+/**
+ * @PROJECT_NAME@ patch version.
+ */
+#define ODIN_PATCH_VERSION @ODIN_PATCH_VERSION@
+
+/**
+ * @PROJECT_NAME@ version string.
+ *
+ * Development builds will contain a trailing hyphen and the Git revision or
+ * DEV while release builds will not have this suffix.
+ */
+#define ODIN_VERSION "@ODIN_VERSION@"
+
+/**
+ * @PROJECT_NAME@ build info string.
+ *
+ * This will be the Git revision or DEV for development builds and empty for
+ * release builds. No hyphen is included in the string literal.
+ */
+#define ODIN_BUILD_INFO "@ODIN_BUILD_INFO@"
+
+#endif  // OA_VERSION_H_
