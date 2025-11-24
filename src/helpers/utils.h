@@ -81,7 +81,7 @@ namespace oa::utils
 	}
 
 	/// <summary>
-	/// this function will eturn the enum name with the first char removed
+	/// this function will return the enum name with the first char removed (which is k)
 	/// </summary>
 	/// <typeparam name="enum_type"></typeparam>
 	/// <param name="enum_value"></param>
