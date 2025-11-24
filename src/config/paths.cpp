@@ -50,7 +50,7 @@ std::filesystem::path library_path()
     throw std::system_error{
       // note: cast required to avoid narrowing conversion from DWORD
       {static_cast<int>(GetLastError()), std::system_category()},
-      "unable to get oa_config module handle"
+      OA_PRETTY_FUNCTION_NAME + std::string{": unable to get module handle"}
     };
   // get absolute path name
   char name[MAX_PATH];
@@ -59,7 +59,7 @@ std::filesystem::path library_path()
   if (!name_len)
     throw std::system_error{
       {static_cast<int>(GetLastError()), std::system_category()},
-      "unable to get oa_config module file name"
+      OA_PRETTY_FUNCTION_NAME + std::string{": unable to get module file name"}
     };
   // done, return absolute path
   // note: using {begin, end} ctor overload since Windows XP doesn't
