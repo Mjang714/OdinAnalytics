@@ -111,11 +111,17 @@ else()
     set(_xllsdk_libdir lib)
 endif()
 
-# locate xlcall32
+# get root install directory
+# note: had some issues with trailing / with cmake_path
+set(_xllsdk_root "${XLLSDK_INCLUDE_DIRS}/..")
+
+# locate xlcall32. search *only* the library root with NO_DEFAULT_PATH
 find_library(
     XLLSDK_XLCALL32 xlcall32.lib
+    HINTS "${_xllsdk_root}"
     PATH_SUFFIXES ${_xllsdk_libdir}
     NO_CACHE
+    NO_DEFAULT_PATH
 )
 if(NOT XLLSDK_XLCALL32)
     find_package_handle_standard_args(XLLSDK REQUIRED_VARS XLLSDK_XLCALL32)
@@ -134,8 +140,7 @@ set_target_properties(
 set(XLLSDK_xlcall32_FOUND TRUE)
 set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}")
 
-# get root install directory + framework library source directory
-set(_xllsdk_root "${XLLSDK_INCLUDE_DIRS}/..")
+# get framework library source directory
 set(_xllsdk_frmwrk_srcdir "${_xllsdk_root}/samples/framewrk")
 
 # directly build frmwrk32 as part of the calling project
