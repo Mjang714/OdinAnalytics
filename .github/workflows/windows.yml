@@ -40,16 +40,15 @@ jobs:
   # only one job which is the build job
   build:
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} unity=${{ matrix.unity }}
+    name: ${{ matrix.os }} arch=${{ matrix.arch }} unity=${{ matrix.unity }}
     # strategy matrix
     strategy:
       matrix:
         # note: windows-latest is a moving target
         os: [windows-2022, windows-2025]
         # CMake build arch, i.e. what is passed to CMake's -A option
-        # TODO: haven't tested x64 all that much. also need to determine if we
-        # want to allow Win32 as another choice for build.bat
-        arch: [Win32]
+        # TODO: maybe consider allowing build.bat to accept "Win32" as a choice
+        arch: [Win32, x64]
         # whether or not to use unity build
         unity: [off, on]
     # job steps
@@ -135,7 +134,10 @@ jobs:
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: |
+          # handle conversion of Win32 -> x86 for build script
+          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
+            Else { "${{ matrix.arch }}" }
           # note: need double quotes for PowerShell
-          ctest --test-dir build_windows_x86 -C Release `
+          ctest --test-dir build_windows_$BUILD_ARCH -C Release `
             "-j$env:NUMBER_OF_PROCESSORS"
       # TODO: add install stage when this is available
