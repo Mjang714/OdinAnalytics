@@ -8,6 +8,7 @@ add_executable(
     # broken, probably because bond math stuff is in solutions, not src
     # bond_math_test.cpp
     calendar_test.cpp
+    config/paths_test.cpp
     dao/calendar_dao_test.cpp
     date_test.cpp
     date_formula/date_formula_test.cpp
@@ -40,6 +41,7 @@ target_link_libraries(
     oa_unit_test
     PRIVATE
         GTest::gtest_main
+        oa_config
         oa_dao
         oa_derived_time
         oa_enum_mappers
