@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 # oxl_api: Odin XLL C++ headers
 # TODO: need to decide if this should be a "real" library or not. some of the
-# oxl sources code be compiled here instead
+# oxl sources (xl_api directory) should be compiled here instead
 if(XLLSDK_FOUND)
     add_library(oxl_api INTERFACE)
     add_library(OdinAnalytics::oxl_api ALIAS oxl_api)
@@ -23,7 +23,7 @@ endif()
 # TODO: generated code should be generated as part of build system
 if(XLLSDK_FOUND)
     add_library(
-        oxl SHARED
+        oxl MODULE
             auto_gen/autogen_excel.cpp
             auto_gen/auto_gen_time.cpp
             excel_base_funcs.cpp
@@ -36,8 +36,8 @@ if(XLLSDK_FOUND)
             xl_api/xl_dictionary.cpp
             xl_api/xloper_converter.cpp
     )
-    # make the extension .xll
-    set_target_properties(oxl PROPERTIES SUFFIX .xll)
+    # make the extension .xll + enable d suffix for debug builds
+    set_target_properties(oxl PROPERTIES SUFFIX .xll DEBUG_POSTFIX d)
     target_link_libraries(
         oxl PRIVATE
             XLLSDK::frmwrk32
@@ -50,6 +50,10 @@ if(XLLSDK_FOUND)
             oa_time
             oxl_api
     )
+    # install rule for oxl
+    # TODO: this only works for static builds because we don't yet have install
+    # rules for the rest of the library targets
+    install(TARGETS oxl EXPORT odin_exports DESTINATION bin COMPONENT Runtime)
 else()
     message(STATUS "Skipping oxl (requires XLL SDK)")
 endif()
