@@ -17,11 +17,13 @@
     <ClCompile Include="..\..\src\helpers\str_utils\str_utils.cpp">
       <Filter>str_utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\helpers\library_error_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\helpers\utils.h" />
     <ClInclude Include="..\..\src\helpers\str_utils\str_utils.h">
       <Filter>str_utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\helpers\library_error_utils.h" />
   </ItemGroup>
 </Project>
