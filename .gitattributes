@@ -1,3 +1,6 @@
+# by default text files should have LF endings
+* text=auto
+# specific settings
 *.sh text eol=lf
 *.bat text eol=crlf
 *.vcxproj text eol=crlf

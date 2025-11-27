@@ -135,7 +135,8 @@ main () {
         cmake -S . -B $BUILD_OUTPUT_DIR -DCMAKE_BUILD_TYPE=$BUILD_CONFIG \
             $CMAKE_ARGS && cmake --build $BUILD_OUTPUT_DIR -j $CMAKE_BUILD_ARGS
     fi
-    return 0
+    # propagate return status of last command
+    return $?
 }
 
 main "$@"
