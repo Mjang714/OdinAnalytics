@@ -12,6 +12,7 @@
 #if OA_HAS_CPP20_FORMAT
 #include <format>
 #endif  // !OA_HAS_CPP20_FORMAT
+namespace help_func = oa::helpers::library_error_utils;
 
 namespace oa::enum_mappers {
 
@@ -80,8 +81,8 @@ OA_MSVC_WARNING_POP()
 		{
 			// the code looks cleaner here with using your recommended straing stream wrapper.
 			auto s0 = std::source_location::current();
-			throw oa::helpers::library_error_utils::library_error::begin() << s0.function_name() << " at line: " <<
-				s0.line() << " Invalid input:"<< input_str << oa::helpers::library_error_utils::library_error::end();
+			throw help_func::library_error::begin() << s0.function_name() << " at line: " <<
+				s0.line() << " Invalid input:"<< input_str << help_func::library_error::end();
 		}
 
 	}
