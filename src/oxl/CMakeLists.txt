@@ -51,8 +51,6 @@ if(XLLSDK_FOUND)
             oxl_api
     )
     # install rule for oxl
-    # TODO: this only works for static builds because we don't yet have install
-    # rules for the rest of the library targets
     install(TARGETS oxl EXPORT odin_exports DESTINATION bin COMPONENT Runtime)
 else()
     message(STATUS "Skipping oxl (requires XLL SDK)")

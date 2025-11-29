@@ -10,10 +10,11 @@ target_include_directories(
     # note: not installable yet
     $<INSTALL_INTERFACE:include>
 )
-# ensures that the specified macro is defined when building shared
+# set export macro for shared build + use d suffix for debug builds
 set_target_properties(
     oa_derived_time PROPERTIES
     DEFINE_SYMBOL OA_BUILD_DERIVED_TIME_DLL
+    DEBUG_POSTFIX d
 )
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
@@ -23,4 +24,13 @@ target_link_libraries(
     oa_derived_time
         PRIVATE oa_enum_mappers oa_helpers oa_static_data_cache
         PUBLIC oa_time
+)
+# install rule for oa_derived_time
+# TODO: remove RUNTIME spec once we have Development headers. we currently
+# specify RUNTIME DESTINATION to prevent installing DLL import libs
+install(
+    TARGETS oa_derived_time
+    EXPORT odin_exports
+    COMPONENT Runtime
+    RUNTIME DESTINATION bin COMPONENT Runtime
 )

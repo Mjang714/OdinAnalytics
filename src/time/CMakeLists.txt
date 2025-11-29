@@ -25,11 +25,24 @@ target_include_directories(
     # note: not installable just yet
     $<INSTALL_INTERFACE:include>
 )
-# ensures that the specified macro is defined when building shared
-set_target_properties(oa_time PROPERTIES DEFINE_SYMBOL OA_BUILD_TIME_DLL)
+# set export macro for shared build + use d suffix for debug builds
+set_target_properties(
+    oa_time PROPERTIES
+    DEFINE_SYMBOL OA_BUILD_TIME_DLL
+    DEBUG_POSTFIX d
+)
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_time INTERFACE OA_TIME_DLL)
 endif()
 # link against dependencies
 target_link_libraries(oa_time PUBLIC oa_helpers PRIVATE Boost::headers)
+# install rule for oa_time
+# TODO: remove RUNTIME spec once we have Development headers. we currently
+# specify RUNTIME DESTINATION to prevent installing DLL import libs
+install(
+    TARGETS oa_time
+    EXPORT odin_exports
+    COMPONENT Runtime
+    RUNTIME DESTINATION bin COMPONENT Runtime
+)

@@ -11,10 +11,11 @@ target_include_directories(
     # note: not installable just yet
     $<INSTALL_INTERFACE:include>
 )
-# ensures that the specified macro is defined when building shared
+# set export macro for shared build + use d suffix for debug builds
 set_target_properties(
     oa_static_data_cache PROPERTIES
     DEFINE_SYMBOL OA_BUILD_STATIC_DATA_CACHE_DLL
+    DEBUG_POSTFIX d
 )
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
@@ -25,3 +26,12 @@ if(BUILD_SHARED_LIBS)
 endif()
 # even if not building dynamic, keeps CMake aware of dependencies
 target_link_libraries(oa_static_data_cache PUBLIC Boost::headers oa_dao oa_time)
+# install rule for oa_static_data_cache
+# TODO: remove RUNTIME spec once we have Development headers. we currently
+# specify RUNTIME DESTINATION to prevent installing DLL import libs
+install(
+    TARGETS oa_static_data_cache
+    EXPORT odin_exports
+    COMPONENT Runtime
+    RUNTIME DESTINATION bin COMPONENT Runtime
+)
