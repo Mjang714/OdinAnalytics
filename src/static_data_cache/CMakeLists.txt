@@ -27,11 +27,10 @@ endif()
 # even if not building dynamic, keeps CMake aware of dependencies
 target_link_libraries(oa_static_data_cache PUBLIC Boost::headers oa_dao oa_time)
 # install rule for oa_static_data_cache
-# TODO: remove RUNTIME spec once we have Development headers. we currently
-# specify RUNTIME DESTINATION to prevent installing DLL import libs
+# TODO: add ARCHIVE COMPONENT Development once we have development headers
 install(
     TARGETS oa_static_data_cache
     EXPORT odin_exports
-    COMPONENT Runtime
-    RUNTIME DESTINATION bin COMPONENT Runtime
+    LIBRARY COMPONENT Runtime
+    RUNTIME COMPONENT Runtime
 )

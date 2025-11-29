@@ -21,11 +21,9 @@ else()
     target_link_libraries(oa_config PRIVATE dl)
 endif()
 # install rule for oa_config
-# TODO: remove RUNTIME spec once we have Development headers. we currently
-# specify RUNTIME DESTINATION to prevent installing DLL import libs
 install(
     TARGETS oa_config
     EXPORT odin_exports
-    COMPONENT Runtime
-    RUNTIME DESTINATION bin COMPONENT Runtime
+    LIBRARY COMPONENT Runtime
+    RUNTIME COMPONENT Runtime
 )

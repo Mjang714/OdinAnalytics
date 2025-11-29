@@ -22,11 +22,10 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_enum_mappers INTERFACE OA_ENUM_MAPPERS_DLL)
 endif()
 # install rule for oa_enum_mappers
-# TODO: remove RUNTIME spec once we have Development headers. we currently
-# specify RUNTIME DESTINATION to prevent installing DLL import libs
+# TODO: add ARCHIVE COMPONENT Development once we have development headers
 install(
     TARGETS oa_enum_mappers
     EXPORT odin_exports
-    COMPONENT Runtime
-    RUNTIME DESTINATION bin COMPONENT Runtime
+    LIBRARY COMPONENT Runtime
+    RUNTIME COMPONENT Runtime
 )

@@ -26,11 +26,10 @@ target_link_libraries(
         PUBLIC oa_time
 )
 # install rule for oa_derived_time
-# TODO: remove RUNTIME spec once we have Development headers. we currently
-# specify RUNTIME DESTINATION to prevent installing DLL import libs
+# TODO: add ARCHIVE COMPONENT Development once we have development headers
 install(
     TARGETS oa_derived_time
     EXPORT odin_exports
-    COMPONENT Runtime
-    RUNTIME DESTINATION bin COMPONENT Runtime
+    LIBRARY COMPONENT Runtime
+    RUNTIME COMPONENT Runtime
 )
