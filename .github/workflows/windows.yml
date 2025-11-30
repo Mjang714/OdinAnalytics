@@ -26,8 +26,9 @@ on:
   workflow_dispatch:
 
 env:
-  # install root for dependencies
+  # install root for dependencies + Odin test install root
   ODIN_VENDOR_ROOT: C:\odin_vendor
+  ODIN_INSTALL_ROOT: C:\odin
   # Boost version + semicolon-separated list of libraries for Boost CMake build
   BOOST_VERSION: 1.89.0
   BOOST_CMAKE_LIBS: algorithm
@@ -138,4 +139,24 @@ jobs:
           # note: need double quotes for PowerShell
           ctest --test-dir build_windows_x86 -C Release `
             "-j$env:NUMBER_OF_PROCESSORS"
-      # TODO: add install stage when this is available
+      # install Runtime and Development components separately
+      # note: only good as a smoke test
+      - name: Install Runtime
+        run: |
+          # convert Win32 -> x86 for build directory + install
+          # TODO: should really make this a separate function
+          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
+            Else { "${{ matrix.arch }}" }
+          cmake --install build_windows_$BUILD_ARCH `
+            --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
+            --config Release `
+            --component Runtime
+      - name: Install Development
+        run: |
+          # same as above
+          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
+            Else { "${{ matrix.arch }}" }
+          cmake --install build_windows_$BUILD_ARCH `
+            --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
+            --config Release `
+            --component Development
