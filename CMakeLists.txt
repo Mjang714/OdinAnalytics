@@ -204,6 +204,7 @@ set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_subdirectory(src)
+add_subdirectory(test)
 
 # install rule for the calendar data. we consider this part of the Runtime
 # component because it is required for some libraries to function at runtime
