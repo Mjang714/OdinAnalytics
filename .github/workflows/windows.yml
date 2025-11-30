@@ -122,23 +122,22 @@ jobs:
         run: |
           # ToUpper() can be used on PowerShell strings for upper-casing
           $ODIN_UNITY_BUILD = "${{ matrix.unity }}".ToUpper()
-          # handle conversion of Win32 -> x86 for build script
-          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
-            Else { "${{ matrix.arch }}" }
+          # include PowerShell helpers
+          . .\tools\common.ps1
           # run build command
           # note: need explicit use of .\ here unlike with CMD
           # note: need double quotes to be preserved for CMD script
           # note: ` is the escape character in PowerShell
-          .\build -a $BUILD_ARCH -c Release -Ca `
+          .\build -a $(OaPlatformTranslate "${{ matrix.arch }}") -c Release -Ca `
             "`"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}`"" `
             "`"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD`""
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: |
-          # handle conversion of Win32 -> x86 for build script
-          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
-            Else { "${{ matrix.arch }}" }
+          # include PowerShell helpers
+          . .\tools\common.ps1
           # note: need double quotes for PowerShell
-          ctest --test-dir build_windows_$BUILD_ARCH -C Release `
-            "-j$env:NUMBER_OF_PROCESSORS"
+          ctest --test-dir `
+            build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
+            -C Release "-j$env:NUMBER_OF_PROCESSORS"
       # TODO: add install stage when this is available
