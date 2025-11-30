@@ -205,6 +205,20 @@ set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_subdirectory(src)
 
+# install rule for include/oa headers (excluding internal testing headers)
+# note: this is currently incomplete and only provides core + config headers
+install(
+    DIRECTORY ${ODIN_INCLUDE_DIR}/oa
+    TYPE INCLUDE
+    COMPONENT Development
+    FILES_MATCHING PATTERN "*.h" PATTERN "testing*" EXCLUDE
+)
+# install rule for generated version.h header
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/${ODIN_VERSION_H}
+    DESTINATION include/oa
+    COMPONENT Development
+)
 # install rule for the calendar data. we consider this part of the Runtime
 # component because it is required for some libraries to function at runtime
 # TODO: do we want shared data to be in share/oa or share/OdinAnalytics? if we
