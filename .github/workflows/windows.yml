@@ -120,6 +120,7 @@ jobs:
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
       # note: not sure if step-level env can use top-level env variables
+      # TODO: this is fixed in the FindXLLSDK.cmake PR
       - name: Build
         run: |
           # ToUpper() can be used on PowerShell strings for upper-casing
@@ -143,20 +144,20 @@ jobs:
       # note: only good as a smoke test
       - name: Install Runtime
         run: |
+          # load helper script for OaPlatformTranslate
+          . .\tools\common.ps1
           # convert Win32 -> x86 for build directory + install
-          # TODO: should really make this a separate function
-          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
-            Else { "${{ matrix.arch }}" }
-          cmake --install build_windows_$BUILD_ARCH `
+          cmake --install `
+            build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
             --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
             --config Release `
             --component Runtime
       - name: Install Development
         run: |
-          # same as above
-          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
-            Else { "${{ matrix.arch }}" }
-          cmake --install build_windows_$BUILD_ARCH `
+          # same as above but install Development component
+          . .\tools\common.ps1
+          cmake --install `
+            build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
             --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
             --config Release `
             --component Development
