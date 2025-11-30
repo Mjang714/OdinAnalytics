@@ -54,7 +54,10 @@
     $PlatName  # should result in "x86" being written sans quotes
 #>
 function OaPlatformTranslate {
-    param ( [string]$Platform )
+    param (
+        [Parameter(Mandatory)]
+        [string]$Platform
+    )
     switch -CaseSensitive ($Platform) {
         "Win32" { "x86" }
         "x64" { "x64" }
