@@ -27,10 +27,12 @@ endif()
 # even if not building dynamic, keeps CMake aware of dependencies
 target_link_libraries(oa_static_data_cache PUBLIC Boost::headers oa_dao oa_time)
 # install rule for oa_static_data_cache
-# TODO: add ARCHIVE COMPONENT Development once we have development headers
 install(
     TARGETS oa_static_data_cache
     EXPORT odin_exports
+    ARCHIVE COMPONENT Development
     LIBRARY COMPONENT Runtime
     RUNTIME COMPONENT Runtime
 )
+# install PDB when building for Debug config
+oa_pdb_install(oa_static_data_cache CONFIGURATIONS Debug COMPONENT Development)

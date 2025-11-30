@@ -38,10 +38,12 @@ endif()
 # link against dependencies
 target_link_libraries(oa_time PUBLIC oa_helpers PRIVATE Boost::headers)
 # install rule for oa_time
-# TODO: add ARCHIVE COMPONENT Development once we have development headers
 install(
     TARGETS oa_time
     EXPORT odin_exports
+    ARCHIVE COMPONENT Development
     LIBRARY COMPONENT Runtime
     RUNTIME COMPONENT Runtime
 )
+# install PDB when building for Debug config
+oa_pdb_install(oa_time CONFIGURATIONS Debug COMPONENT Development)

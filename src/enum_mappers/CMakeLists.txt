@@ -22,10 +22,12 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_enum_mappers INTERFACE OA_ENUM_MAPPERS_DLL)
 endif()
 # install rule for oa_enum_mappers
-# TODO: add ARCHIVE COMPONENT Development once we have development headers
 install(
     TARGETS oa_enum_mappers
     EXPORT odin_exports
+    ARCHIVE COMPONENT Development
     LIBRARY COMPONENT Runtime
     RUNTIME COMPONENT Runtime
 )
+# install PDB when building for Debug config
+oa_pdb_install(oa_enum_mappers CONFIGURATIONS Debug COMPONENT Development)

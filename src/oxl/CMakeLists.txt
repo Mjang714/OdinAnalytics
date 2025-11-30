@@ -52,6 +52,9 @@ if(XLLSDK_FOUND)
     )
     # install rule for oxl
     install(TARGETS oxl EXPORT odin_exports DESTINATION bin COMPONENT Runtime)
+    # install PDB when building for Debug config
+    # note: oxl always built shared so linker PDB file can always be used
+    oa_pdb_install(oxl CONFIGURATIONS Debug COMPONENT Development)
 else()
     message(STATUS "Skipping oxl (requires XLL SDK)")
 endif()

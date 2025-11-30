@@ -24,6 +24,10 @@ endif()
 install(
     TARGETS oa_config
     EXPORT odin_exports
+    ARCHIVE COMPONENT Development
     LIBRARY COMPONENT Runtime
     RUNTIME COMPONENT Runtime
 )
+# install PDB when building shared for Debug config
+# note: oa_config always built shared so linker PDB file can always be used
+oa_pdb_install(oa_config CONFIGURATIONS Debug COMPONENT Development)

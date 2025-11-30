@@ -26,10 +26,12 @@ target_link_libraries(
         PUBLIC oa_time
 )
 # install rule for oa_derived_time
-# TODO: add ARCHIVE COMPONENT Development once we have development headers
 install(
     TARGETS oa_derived_time
     EXPORT odin_exports
+    ARCHIVE COMPONENT Development
     LIBRARY COMPONENT Runtime
     RUNTIME COMPONENT Runtime
 )
+# install PDB when building for Debug config
+oa_pdb_install(oa_derived_time CONFIGURATIONS Debug COMPONENT Development)

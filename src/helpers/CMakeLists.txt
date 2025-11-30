@@ -22,10 +22,12 @@ endif()
 # depends on Magic Enum
 target_link_libraries(oa_helpers PUBLIC magic_enum::magic_enum)
 # install rule for oa_helpers
-# TODO: add ARCHIVE COMPONENT Development once we have development headers
 install(
     TARGETS oa_helpers
     EXPORT odin_exports
+    ARCHIVE COMPONENT Development
     LIBRARY COMPONENT Runtime
     RUNTIME COMPONENT Runtime
 )
+# install PDB when building for Debug config
+oa_pdb_install(oa_helpers CONFIGURATIONS Debug COMPONENT Development)
