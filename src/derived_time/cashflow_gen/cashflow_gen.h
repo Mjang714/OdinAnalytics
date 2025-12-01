@@ -19,6 +19,8 @@ namespace deriv_time = oa::derived_time;
 namespace oa::derived_time {
 	class OA_DERIVED_TIME_API CashflowGen {
 	public:
+		CashflowGen() = default;
+
 		static std::vector<CashflowStruct> CreateCashflows(
 			const oa::time::Date& start_date,
 			const oa::time::Date& mat_date,

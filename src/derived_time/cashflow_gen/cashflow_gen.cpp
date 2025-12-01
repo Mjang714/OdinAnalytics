@@ -24,8 +24,7 @@ namespace oa::derived_time {
 		std::vector<oa::time::Date> unadjusted_start_dates{};
 		std::vector<oa::time::Date> unadjusted_end_dates{};
 
-		//the first date in the start dates is always the start date
-		unadjusted_start_dates.emplace_back(start_date);
+		
 		auto curr_start_date = start_date;
 		if (stub_type == deriv_time::StubType::kShortFirst) {
 			//will fill out later to deal with short first stub
@@ -39,11 +38,12 @@ namespace oa::derived_time {
 
 			if (date_dir == deriv_time::DateDirection::kForward) {
 				while (curr_start_date < mat_date) {
-					curr_start_date = curr_start_date.AddTenor(frequency);
+
 					if (curr_start_date < mat_date) {
 						unadjusted_start_dates.emplace_back(curr_start_date);
 						unadjusted_end_dates.emplace_back(curr_start_date.AddTenor(frequency));
 					}
+					curr_start_date = curr_start_date.AddTenor(frequency);
 				}
 				//last end date is always mat date
 				unadjusted_end_dates.emplace_back(mat_date);
@@ -73,6 +73,7 @@ namespace oa::derived_time {
 			else {
 				cf.payment_date = cf.end_date;
 			}
+
 			if (fixing_date_adj != nullptr) {
 				if(rest_dir == oa::derived_time::ResetDirection::kForward) {
 					cf.fixing_date = fixing_date_adj->Adjust(cf.start_date);
@@ -80,9 +81,12 @@ namespace oa::derived_time {
 				else {
 					cf.fixing_date = fixing_date_adj->Adjust(cf.end_date);
 				}
+			} 
+			else {
+				cf.fixing_date = cf.start_date;
 			}
-			// More logic to populate the CashflowStruct fields
-			cashflows.push_back(cf);
+			// using emplace_back and std::move though not sure if it is necessary here
+			cashflows.emplace_back(std::move(cf));
 		}
 		// Implementation logic to generate cashflows goes here
 		return cashflows;

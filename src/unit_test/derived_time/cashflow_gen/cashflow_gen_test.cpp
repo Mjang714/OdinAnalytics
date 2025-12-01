@@ -8,7 +8,7 @@
 #include "derived_time/cashflow_gen/cashflow_gen.h"
 #include "derived_time/derived_time_enums.h"
 
-namespace 
+namespace oa::unit_test::derived_time
 {
 	class CashflowGenTest : public ::testing::Test
 	{
