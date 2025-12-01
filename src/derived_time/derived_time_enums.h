@@ -1,4 +1,6 @@
 
+#ifndef OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
+#define OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
 
 namespace oa::derived_time
 {
@@ -38,7 +40,12 @@ namespace oa::derived_time
 		kLongLast
 	};
 
-	enum class kFrequency
+	enum class ResetDirection {
+		kForward,
+		kArears
+	};
+
+	enum class Frequency
 	{
 		kOnce = 0,
 		kAnnual = 1,
@@ -48,4 +55,8 @@ namespace oa::derived_time
 		kWeekly = 52,
 		kDaily = 365
 	};
-} // namespace oa::derived_time
+}
+
+
+#endif // !OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
+
