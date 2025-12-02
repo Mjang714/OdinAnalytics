@@ -20,7 +20,23 @@ namespace oa::derived_time {
 	class OA_DERIVED_TIME_API CashflowGen {
 	public:
 		CashflowGen() = default;
-
+		/// <summary>
+		/// Generates the cashflows of a bond 
+		/// </summary>
+		/// <param name="start_date"></param>
+		/// <param name="mat_date"></param>
+		/// <param name="frequency"></param>
+		/// <param name="notional"></param>
+		/// <param name="rate"></param>
+		/// <param name="day_count_rule"></param>
+		/// <param name="cf_type"></param>
+		/// <param name="rest_dir"></param>
+		/// <param name="date_dir"></param>
+		/// <param name="stub_type"></param>
+		/// <param name="payment_date_adj"></param>
+		/// <param name="fixing_date_adj"></param>
+		/// <param name="stub_date"></param>
+		/// <returns></returns>
 		static std::vector<CashflowStruct> CreateCashflows(
 			const oa::time::Date& start_date,
 			const oa::time::Date& mat_date,
@@ -28,9 +44,9 @@ namespace oa::derived_time {
 			const double notional,
 			const double rate,
 			const oa::time::DayCountRule day_count_rule,
+			const oa::derived_time::DateDirection date_dir = deriv_time::DateDirection::kBackward,
 			const oa::derived_time::CashflowType cf_type = oa::derived_time::CashflowType::kFixed,
 			const oa::derived_time::ResetDirection rest_dir = oa::derived_time::ResetDirection::kForward,
-			const oa::derived_time::DateDirection date_dir = deriv_time::DateDirection::kForward,
 			const oa::derived_time::StubType& stub_type = deriv_time::StubType::kNone,
 			const std::shared_ptr<oa::derived_time::DateFormula>& payment_date_adj = nullptr,
 			const std::shared_ptr<oa::derived_time::DateFormula>& fixing_date_adj = nullptr,

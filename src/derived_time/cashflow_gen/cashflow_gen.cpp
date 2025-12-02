@@ -11,9 +11,9 @@ namespace oa::derived_time {
 		const double notional,
 		const double rate,
 		const oa::time::DayCountRule day_count_rule,
+		const oa::derived_time::DateDirection date_dir,
 		const oa::derived_time::CashflowType cf_type,
 		const oa::derived_time::ResetDirection rest_dir,
-		const oa::derived_time::DateDirection date_dir,
 		const oa::derived_time::StubType& stub_type,
 		const std::shared_ptr<oa::derived_time::DateFormula>& payment_date_adj,
 		const std::shared_ptr<oa::derived_time::DateFormula>& fixing_date_adj,
@@ -24,36 +24,46 @@ namespace oa::derived_time {
 		std::vector<oa::time::Date> unadjusted_start_dates{};
 		std::vector<oa::time::Date> unadjusted_end_dates{};
 
-		
-		auto curr_start_date = start_date;
+		if (date_dir == deriv_time::DateDirection::kForward) {
+			auto curr_start_date = start_date;
+			while (curr_start_date < mat_date) {
+
+				if (curr_start_date < mat_date) {
+					unadjusted_start_dates.emplace_back(curr_start_date);
+					unadjusted_end_dates.emplace_back(curr_start_date.AddTenor(frequency));
+				}
+				curr_start_date = curr_start_date.AddTenor(frequency);
+			}
+			//last end date is always mat date
+			unadjusted_end_dates.emplace_back(mat_date);
+		}
+
+		else if (date_dir == deriv_time::DateDirection::kBackward) {
+			auto tenor_pair = frequency.GetValues();
+			auto curr_end_date = mat_date;
+			auto time_length = tenor_pair.first;
+			auto tenor_enum = tenor_pair.second;
+			auto total_length = -time_length;
+			while (curr_end_date > start_date) {
+				if (curr_end_date > start_date) {
+					unadjusted_end_dates.emplace_back(curr_end_date);
+					unadjusted_start_dates.emplace_back(curr_end_date.AddTenor(oa::time::Tenor::Tenor(-time_length, tenor_enum)));
+				}
+				curr_end_date = mat_date.AddTenor(oa::time::Tenor::Tenor(total_length, tenor_enum));
+				total_length -= time_length;
+			}
+		}
+
+		else {
+			// No date direction specified
+		}
+
 		if (stub_type == deriv_time::StubType::kShortFirst) {
 			//will fill out later to deal with short first stub
 		}
 		else if (stub_type == deriv_time::StubType::kShortFirst) {
 			//will fill out later to deal with short last stub
 
-		}
-		else {
-			// No stub type specified
-
-			if (date_dir == deriv_time::DateDirection::kForward) {
-				while (curr_start_date < mat_date) {
-
-					if (curr_start_date < mat_date) {
-						unadjusted_start_dates.emplace_back(curr_start_date);
-						unadjusted_end_dates.emplace_back(curr_start_date.AddTenor(frequency));
-					}
-					curr_start_date = curr_start_date.AddTenor(frequency);
-				}
-				//last end date is always mat date
-				unadjusted_end_dates.emplace_back(mat_date);
-			}
-			else if (date_dir == deriv_time::DateDirection::kBackward) {
-				//will do later
-			}
-			else {
-				// No date direction specified
-			}
 		}
 
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {

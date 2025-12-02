@@ -44,7 +44,7 @@ namespace oa::unit_test::derived_time
 			}
 	};
 
-	TEST_F(CashflowGenTest, CreateFixedCashflowsTest)
+	TEST_F(CashflowGenTest, CreateFixedCashflowsFwdTest)
 	{
 		auto cashflows = oa::derived_time::CashflowGen::CreateCashflows(
 			start_date,
@@ -52,7 +52,22 @@ namespace oa::unit_test::derived_time
 			frequency,
 			notional,
 			rate,
-			day_cnt_rule
+			day_cnt_rule,
+			oa::derived_time::DateDirection::kForward
+		);
+		EXPECT_EQ(10, cashflows.size());
+	}
+
+	TEST_F(CashflowGenTest, CreateFixedCashflowsBkwdTest)
+	{
+		auto cashflows = oa::derived_time::CashflowGen::CreateCashflows(
+			start_date,
+			mat_date,
+			frequency,
+			notional,
+			rate,
+			day_cnt_rule,
+			oa::derived_time::DateDirection::kBackward
 		);
 		EXPECT_EQ(10, cashflows.size());
 	}
