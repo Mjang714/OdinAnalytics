@@ -11,7 +11,8 @@ add_executable(
     config/paths_test.cpp
     dao/calendar_dao_test.cpp
     date_test.cpp
-    date_formula/date_formula_test.cpp
+    derived_time/cashflow_gen/cashflow_gen_test.cpp
+    derived_time/date_formula/date_formula_test.cpp
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp
     static_data_cache/static_data_cache_test.cpp
