@@ -4,7 +4,14 @@
 #include <regex>
 #include <string>
 
+// FIXME: once VS is fixed to correctly namespace we don't need this hackery
+#if !__has_include(<magic_enum/magic_enum.hpp>)
+// for VS compatibility
 #include "magic_enum.hpp"
+#else
+// recommended Magic Enum usage
+#include <magic_enum/magic_enum.hpp>
+#endif  // __has_include(<magic_enum/magic_enum.hpp>)
 
 /// <summary>
 /// This library provides basic utilities that will be used else where to do basic things like check if we have valid tenor string
