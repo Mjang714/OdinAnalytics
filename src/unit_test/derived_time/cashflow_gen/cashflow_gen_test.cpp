@@ -8,7 +8,7 @@
 #include "derived_time/cashflow_gen/cashflow_gen.h"
 #include "derived_time/derived_time_enums.h"
 
-namespace oa::unit_test::derived_time
+namespace
 {
 	class CashflowGenTest : public ::testing::Test
 	{
@@ -49,7 +49,7 @@ namespace oa::unit_test::derived_time
 		auto cashflows = oa::derived_time::CashflowGen::CreateCashflows(
 			start_date,
 			mat_date,
-			frequency,
+			oa::derived_time::Frequency::kSemiAnnual,
 			notional,
 			rate,
 			day_cnt_rule,
@@ -63,7 +63,7 @@ namespace oa::unit_test::derived_time
 		auto cashflows = oa::derived_time::CashflowGen::CreateCashflows(
 			start_date,
 			mat_date,
-			frequency,
+			oa::derived_time::Frequency::kSemiAnnual,
 			notional,
 			rate,
 			day_cnt_rule,

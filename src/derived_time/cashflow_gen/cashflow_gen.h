@@ -13,6 +13,7 @@
 #include "time/tenor.h"
 #include "time/date_adjust/date_adjust_base.h"
 #include "time/day_count/day_counter_factory.h"
+#include "helpers/utils.h"
 
 
 namespace deriv_time = oa::derived_time;
@@ -40,7 +41,7 @@ namespace oa::derived_time {
 		static std::vector<CashflowStruct> CreateCashflows(
 			const oa::time::Date& start_date,
 			const oa::time::Date& mat_date,
-			const oa::time::Tenor& frequency,
+			const oa::derived_time::Frequency reset_freq,
 			const double notional,
 			const double rate,
 			const oa::time::DayCountRule day_count_rule,
@@ -52,6 +53,7 @@ namespace oa::derived_time {
 			const std::shared_ptr<oa::derived_time::DateFormula>& fixing_date_adj = nullptr,
 			const std::optional<oa::time::Date>& stub_date = std::nullopt
 			);
+	
 
 	};
 }

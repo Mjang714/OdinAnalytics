@@ -6,7 +6,7 @@
 #include "static_data_cache/calendar_cache.h"
 #include "derived_time/date_formula/date_formula.h"
 
-namespace oa::unit_test::derived_time
+namespace
 {
 	class DateFormulaTest : public ::testing::Test
 	{
