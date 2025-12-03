@@ -168,8 +168,15 @@ if(EXISTS "${_xllsdk_frmwrk_srcdir}")
         "${_xllsdk_frmwrk_srcdir}/framewrk.c" PROPERTIES
         LANGUAGE C
     )
-    # ensure we *never* use unity build when building frmwrk32
-    set_target_properties(frmwrk32 PROPERTIES UNITY_BUILD FALSE)
+    set_target_properties(
+        frmwrk32 PROPERTIES
+        # when building the Debug config we want the frmwrk32 PDB to be in the
+        # same output directory as frmwrk32.lib and be named frmwrk32.pdb
+        COMPILE_PDB_NAME_DEBUG frmwrk32
+        COMPILE_PDB_OUTPUT_DIRECTORY_DEBUG $<TARGET_FILE_DIR:frmwrk32>
+        # ensure we *never* use unity build when building frmwrk32
+        UNITY_BUILD FALSE
+    )
     # mark as found + add target to XLLSDK_LIBRARIES
     set(XLLSDK_frmwrk32_FOUND TRUE)
     list(APPEND XLLSDK_LIBRARIES "XLLSDK::frmwrk32")
