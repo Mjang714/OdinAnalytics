@@ -1,6 +1,6 @@
 :Description this is the london bank holiday file format of the date is YYYY/MM/DD
 :Currency GBP 
-Version 2025/10/23
+Version 2025/12/03
 TimeToLive 
 #optional thing
 
@@ -130,6 +130,6 @@ TimeToLive
 2038/04/23
 2038/04/26
 2038/05/03
-2038/08/39
+2038/08/30
 2038/12/27
 2038/12/28
