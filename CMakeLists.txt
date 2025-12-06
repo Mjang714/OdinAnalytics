@@ -196,6 +196,8 @@ set(ODIN_VERSION "${ODIN_MAJOR_VERSION}.${ODIN_MINOR_VERSION}.${ODIN_PATCH_VERSI
 if(NOT ODIN_BUILD_RELEASE)
     string(APPEND ODIN_VERSION "-${ODIN_BUILD_INFO}")
 endif()
+# set Python version string (use "+" instead for local versions)
+string(REPLACE "-" "+" ODIN_PY_VERSION "${ODIN_VERSION}")
 
 # print version info
 message(STATUS "Build version: ${ODIN_VERSION}")
