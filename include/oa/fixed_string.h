@@ -157,6 +157,8 @@ public:
           *it++ = args[i];
       }(), ...
     );
+    // write final null terminator
+    *it = '\0';
   }
 
   /**
