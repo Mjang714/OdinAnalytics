@@ -10,14 +10,24 @@
 #endif  // SWIGPYTHON
 
 %{
-#include "oa/python.h"
+#include <sstream>
+#include <stdexcept>
 
+#include "oa/fixed_string.h"
+#include "oa/python.h"
+#include "oa/rtti.h"
+%}
+
+// helper code for the std::filesystem::path typemap conversion
+%{
 namespace oa {
 namespace pathlib {
 namespace {
 
 /**
  * Ensure that the `pathlib` module is imported and obtain a reference.
+ *
+ * On error the returned Python object pointer is `nullptr`.
  *
  * @note Requires Python 3.4+.
  *
@@ -33,6 +43,8 @@ const auto& module_() noexcept
 
 /**
  * Get the `pathlib.Path` class object.
+ *
+ * On error the returned Python object pointer is `nullptr`.
  *
  * @note Requires Python 3.4+.
  */
@@ -51,6 +63,34 @@ const auto& Path() noexcept
 }  // namespace pathlib
 }  // namesspace oa
 %}
+
+/**
+ * Macro for a C++ exception handler that sets a `RuntimeError` appropriately.
+ */
+%define OA_USE_EXCEPTION_HANDLER
+%exception {
+  try {
+    $action
+  }
+  catch (const std::exception& exc) {
+    // note: technically not noexcept
+    std::stringstream ss;
+    ss << OA_PRETTY_FUNCTION_NAME << ": " << exc.what();
+    // note: temporary materialization rules mean str() is valid until the end
+    // of the full-expression, i.e. destroyed only after PyErr_SetString() call
+    PyErr_SetString(PyExc_RuntimeError, ss.str().c_str());
+    SWIG_fail;
+  }
+  catch (...) {
+    // note: truly exception-free call due to use of fixed_string
+    PyErr_SetString(
+      PyExc_RuntimeError,
+      oa::fixed_string{OA_PRETTY_FUNCTION_NAME, ": unknown C++ exception"}.data()
+    );
+    SWIG_fail
+  }
+}
+%enddef  // OA_USE_EXCEPTION_HANDLER
 
 /**
  * Typemap to convert a `std::filesystem::path` into a `pathlib.Path`.
