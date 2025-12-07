@@ -269,7 +269,7 @@ constexpr bool equal(const T& s1, const U& s2) noexcept
 {
   // if sizes don't match automatically not equal
   if constexpr (fixed_size_v<T> != fixed_size_v<U>)
-    return false
+    return false;
   else {
     for (decltype(fixed_size_v<T>) i = 0u; i < fixed_size_v<T>; i++)
       if (s1[i] != s2[i])
