@@ -17,6 +17,7 @@ namespace oa::derived_time {
 		const oa::derived_time::StubType& stub_type,
 		const std::shared_ptr<oa::derived_time::DateFormula>& payment_date_adj,
 		const std::shared_ptr<oa::derived_time::DateFormula>& fixing_date_adj,
+		const std::shared_ptr<oa::derived_time::DateFormula>& acc_date_adj,
 		const std::optional<oa::time::Date>& stub_date
 	) {
 		std::vector<CashflowStruct> cashflows{};

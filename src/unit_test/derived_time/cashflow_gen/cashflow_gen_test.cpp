@@ -30,6 +30,9 @@ namespace
 			double notional;
 			double rate;
 			oa::time::DayCountRule day_cnt_rule;
+			//std::vector<oa::derived_time::CashflowStruct> cashflows{
+			//	{"","","","", }
+			//};
 			virtual void SetUp() override
 			{
 				start_date = oa::time::Date(2025, 1, 3);
