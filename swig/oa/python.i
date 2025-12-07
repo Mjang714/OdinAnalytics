@@ -57,10 +57,21 @@ const auto& Path() noexcept
  */
 %typemap(out) std::filesystem::path {
   // create Python string from path (use native encoding)
-  py_object str{$1.c_str()};
+  oa::py_object str{$1.c_str()};
   if (!str)
     SWIG_fail;
+  // import pathlib.Path
+  const auto& path_class = oa::pathlib::Path();
+  if (!path_class)
+    SWIG_fail;
   // invoke string as argument to pathlib.Path
-  // TODO: requires Python 3.9+
-  $result = PyObject_CallOneArg(oa::pathlib::Path(), str);
+#if OA_PY_VERSION_IS(>=, 3, 9)
+  $result = PyObject_CallOneArg(path_class, str);
+#else
+  // without PyObject_CallOneArg() we have to use Py_BuildValue()
+  oa::py_object tup{Py_BuildValue("(O)", )}
+  if (!tup)
+    SWIG_fail;
+  $result = PyObject_CallObject(path_class, tup);
+#endif  // !OA_PY_VERSION_IS(>=, 3, 9)
 }
