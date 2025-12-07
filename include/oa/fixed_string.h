@@ -9,6 +9,7 @@
 #define OA_FIXED_STRING_H_
 
 #include <cstddef>
+#include <ostream>
 #include <type_traits>
 
 namespace oa {
@@ -271,7 +272,7 @@ constexpr bool equal(const T& s1, const U& s2) noexcept
   if constexpr (fixed_size_v<T> != fixed_size_v<U>)
     return false;
   else {
-    for (decltype(fixed_size_v<T>) i = 0u; i < fixed_size_v<T>; i++)
+    for (std::size_t i = 0u; i < fixed_size_v<T>; i++)
       if (s1[i] != s2[i])
         return false;
     return true;
@@ -328,6 +329,20 @@ constexpr
 bool operator==(const char (&s1)[N1], const fixed_string<N2>& s2) noexcept
 {
   return detail::equal(s1, s2);
+}
+
+/**
+ * Write the contents of a `fixed_string` to an output stream.
+ *
+ * @tparam N Length of fixed string
+ *
+ * @param out Output stream
+ * @param str Fixed string to write
+ */
+template <std::size_t N>
+auto& operator<<(std::ostream& out, const fixed_string<N>& str)
+{
+  return out.write(str.data(), str.size());
 }
 
 }  // namespace oa
