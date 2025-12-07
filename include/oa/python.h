@@ -243,6 +243,19 @@ public:
     obj_ = PyUnicode_FromWideChar(data, size);
   }
 
+  /**
+   * Ctor.
+   *
+   * Creates a new Python Unicode string from a wide character string view.
+   *
+   * On error the data pointer will be `nullptr`.
+   *
+   * @param view String view
+   */
+  explicit py_object(std::wstring_view view) noexcept
+    : py_object{view.data(), view.size()}
+  {}
+
 private:
   PyObject* obj_;
 
