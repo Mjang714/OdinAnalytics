@@ -34,9 +34,9 @@ const auto& module_() noexcept
 /**
  * Get the `pathlib.Path` class object.
  *
- * @note Requires Pythjon 3.4+.
+ * @note Requires Python 3.4+.
  */
-const auto& path() noexcept
+const auto& Path() noexcept
 {
   // lambda used for proper error handling
   static py_object cls = []() -> PyObject*
@@ -62,5 +62,5 @@ const auto& path() noexcept
     SWIG_fail;
   // invoke string as argument to pathlib.Path
   // TODO: requires Python 3.9+
-  $result = PyObject_CallOneArg(oa::pathlib::path(), str);
+  $result = PyObject_CallOneArg(oa::pathlib::Path(), str);
 }
