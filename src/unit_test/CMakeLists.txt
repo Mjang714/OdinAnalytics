@@ -12,6 +12,7 @@ add_executable(
     dao/calendar_dao_test.cpp
     date_test.cpp
     date_formula/date_formula_test.cpp
+    fixed_string_test.cpp
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp
     static_data_cache/static_data_cache_test.cpp
