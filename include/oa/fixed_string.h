@@ -218,6 +218,38 @@ auto operator+(const fixed_string<N1>& s1, const fixed_string<N2>& s2) noexcept
   return fixed_string{s1, s2};
 }
 
+/**
+ * Concatenate a `fixed_string` with a null-terminated character array.
+ *
+ * @tparam N1 Length of string
+ * @tparam N2 Length of character array
+ *
+ * @param s1 Fixed string
+ * @param s2 Null-terminated char array
+ */
+template <std::size_t N1, std::size_t N2>
+constexpr
+auto operator+(const fixed_string<N1>& s1, const char (&s2)[N2]) noexcept
+{
+  return fixed_string{s1, s2};
+}
+
+/**
+ * Concatenate a null-terminated character array with a `fixed_string`.
+ *
+ * @tparam N1 Length of character array
+ * @tparam N2 Length of string
+ *
+ * @param s1 Null-terminated char array
+ * @param s2 Fixed string
+ */
+template <std::size_t N1, std::size_t N2>
+constexpr
+auto operator+(const char (&s1)[N1], const fixed_string<N2>& s2) noexcept
+{
+  return fixed_string{s1, s2};
+}
+
 namespace detail {
 
 /**
