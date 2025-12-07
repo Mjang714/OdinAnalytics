@@ -212,6 +212,7 @@ fixed_string(const Ts&...) -> fixed_string<(detail::fixed_size_v<Ts> + ...)>;
  * @param s2 Second fixed string
  */
 template <std::size_t N1, std::size_t N2>
+constexpr
 auto operator+(const fixed_string<N1>& s1, const fixed_string<N2>& s2) noexcept
 {
   return fixed_string{s1, s2};
@@ -232,7 +233,7 @@ namespace detail {
  * @param s2 Second fixed string or character array
  */
 template <fixed_string_input T, fixed_string_input U>
-bool equal(const T& s1, const U& s2) noexcept
+constexpr bool equal(const T& s1, const U& s2) noexcept
 {
   // if sizes don't match automatically not equal
   if constexpr (fixed_size_v<T> != fixed_size_v<U>)
@@ -259,6 +260,7 @@ bool equal(const T& s1, const U& s2) noexcept
  * @param s2 Second fixed string
  */
 template <std::size_t N1, std::size_t N2>
+constexpr
 bool operator==(const fixed_string<N1>& s1, const fixed_string<N2>& s2) noexcept
 {
   return detail::equal(s1, s2);
@@ -274,6 +276,7 @@ bool operator==(const fixed_string<N1>& s1, const fixed_string<N2>& s2) noexcept
  * @param s2 Null-terminated char array
  */
 template <std::size_t N1, std::size_t N2>
+constexpr
 bool operator==(const fixed_string<N1>& s1, const char (&s2)[N2]) noexcept
 {
   return detail::equal(s1, s2);
@@ -289,6 +292,7 @@ bool operator==(const fixed_string<N1>& s1, const char (&s2)[N2]) noexcept
  * @param s2 Fixed string
  */
 template <std::size_t N1, std::size_t N2>
+constexpr
 bool operator==(const char (&s1)[N1], const fixed_string<N2>& s2) noexcept
 {
   return detail::equal(s1, s2);
