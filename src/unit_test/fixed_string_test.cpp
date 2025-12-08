@@ -12,8 +12,10 @@
 #include <gtest/gtest.h>
 
 #include "oa/common.h"
+#include "oa/internal/unity.h"
 
 namespace {
+namespace OA_UNITY_ID {
 
 // test normal concatenation
 struct concat_test_1 {
@@ -73,9 +75,6 @@ protected:
     EXPECT_TRUE(res) << "expected != actual [\"" << T::expected <<
       "\" != \"" << T::actual;
   }
-
-  // note: due to use of unity builds we define the test input types within the
-  // test fixture body itself. typically we would not do this
 };
 
 using FixedStringTestTypes = ::testing::Types<
@@ -118,4 +117,5 @@ TYPED_TEST(FixedStringTest, StreamTest)
   EXPECT_EQ(TypeParam::expected, std::move(ss).str());
 }
 
+}  // namespace OA_UNITY_ID
 }  // namespace
