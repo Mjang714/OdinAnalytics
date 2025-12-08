@@ -136,4 +136,38 @@ namespace
 		EXPECT_EQ(184, day_counter_act_act.DayCount(day1, day2));
 	}
 
+
+	TEST_F(DayCountActActTest, YearFractionTest)
+	{
+		oa::time::Date day1, day2;
+		// first test 
+		day1 = oa::time::Date(2007, 1, 15);
+		day2 = oa::time::Date(2007, 1, 30);
+		EXPECT_DOUBLE_EQ(15.0 / 365.0, day_counter_act_act.YearFraction(day1, day2));
+		
+		//// second test 
+		//day1 = oa::time::Date(2007, 1, 15);
+		//day2 = oa::time::Date(2008, 1, 15);
+		//EXPECT_DOUBLE_EQ(1.0, day_counter_act_act.YearFraction(day1, day2));
+		//
+		//// third test 
+		//day1 = oa::time::Date(2007, 1, 15);
+		//day2 = oa::time::Date(2009, 1, 15);
+		//EXPECT_DOUBLE_EQ(2.0, day_counter_act_act.YearFraction(day1, day2));
+		//
+		//// fourth test 
+		//day1 = oa::time::Date(2007, 6, 30);
+		//day2 = oa::time::Date(2008, 6, 30);
+		//EXPECT_DOUBLE_EQ(1.0, day_counter_act_act.YearFraction(day1, day2));
+		//
+		//// fifth test 
+		//day1 = oa::time::Date(2008, 2, 29);
+		//day2 = oa::time::Date(2009, 2, 28);
+		//EXPECT_DOUBLE_EQ(1.0, day_counter_act_act.YearFraction(day1, day2));
+
+		//// sixth test 
+		//day1 = oa::time::Date(2007, 1, 15);
+		//day2 = oa::time::Date(2009, 7, 28);
+		//EXPECT_DOUBLE_EQ(2.56986301369863, day_counter_act_act.YearFraction(day1, day2));
+	}
 }

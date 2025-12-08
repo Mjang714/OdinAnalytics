@@ -28,12 +28,20 @@ namespace oa::time
 		int start_year = start_date.m_years();
 		int end_year = end_date.m_years();
 
-		int days_in_start_year = Date::IsLeap(start_year) ? 366 : 365;
-		int days_in_end_year = Date::IsLeap(end_year) ? 366 : 365;
+		double days_in_start_year = Date::IsLeap(start_year) ? 366.0 : 365.0;
+		double days_in_end_year = Date::IsLeap(end_year) ? 366.0 : 365.0;
 
 		auto year_fraction = static_cast<double> (end_year - start_year);
-		year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, Date(start_year, 12, 31)) / days_in_start_year);
-		year_fraction += static_cast<double> (ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year);
+		if (end_year == start_year)
+		{
+			year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, end_date) / days_in_start_year);
+		}
+		else 
+		{
+			//year_fraction -= 1.0;
+			//year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, Date(start_year, 12, 31)) / days_in_start_year);
+			year_fraction += static_cast<double> (ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year);	
+		}
 
 		return year_fraction;
 
