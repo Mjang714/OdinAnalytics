@@ -87,7 +87,7 @@ const auto& Path() noexcept
       PyExc_RuntimeError,
       oa::fixed_string{OA_PRETTY_FUNCTION_NAME, ": unknown C++ exception"}.data()
     );
-    SWIG_fail
+    SWIG_fail;
   }
 }
 %enddef  // OA_USE_EXCEPTION_HANDLER
