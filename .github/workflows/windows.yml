@@ -139,5 +139,5 @@ jobs:
           # note: need double quotes for PowerShell
           ctest --test-dir `
             build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
-            -C Release "-j$env:NUMBER_OF_PROCESSORS"
+            -C Release "-j$env:NUMBER_OF_PROCESSORS" --output-on-failure
       # TODO: add install stage when this is available
