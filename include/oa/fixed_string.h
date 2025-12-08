@@ -279,7 +279,7 @@ constexpr bool equal(const T& s1, const U& s2) noexcept
   }
 }
 
-}  // namespace oa
+}  // namespace detail
 
 /**
  * Compare two `fixed_string` instances for equality.
