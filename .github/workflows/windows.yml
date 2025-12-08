@@ -129,9 +129,10 @@ jobs:
           # run build command
           # note: need explicit use of .\ here unlike with CMD
           # note: need double quotes to be preserved for CMD script
+          # note: ` is the escape character in PowerShell
           .\build -a $BUILD_ARCH -c Release -Ca `
-            '"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}"' `
-            '"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD"'
+            "`"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}`"" `
+            "`"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD`""
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: |
