@@ -11,7 +11,6 @@
 
 #include <gtest/gtest.h>
 
-#include "oa/common.h"
 #include "oa/internal/unity.h"
 
 namespace {
