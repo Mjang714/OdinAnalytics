@@ -83,10 +83,8 @@ const auto& Path() noexcept
   }
   catch (...) {
     // note: truly exception-free call due to use of fixed_string
-    PyErr_SetString(
-      PyExc_RuntimeError,
-      oa::fixed_string{OA_PRETTY_FUNCTION_NAME, ": unknown C++ exception"}.data()
-    );
+    oa::fixed_string msg{OA_PRETTY_FUNCTION_NAME, ": unknown C++ exception"};
+    PyErr_SetString(PyExc_RuntimeError, msg.data());
     SWIG_fail;
   }
 }
