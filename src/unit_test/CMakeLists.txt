@@ -12,6 +12,7 @@ add_executable(
     dao/calendar_dao_test.cpp
     date_test.cpp
     date_formula/date_formula_test.cpp
+    fixed_string_test.cpp
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp
     static_data_cache/static_data_cache_test.cpp
@@ -53,6 +54,9 @@ target_link_libraries(
 if(TARGET oxl_api)
     target_link_libraries(oa_unit_test PRIVATE oxl_api)
 endif()
+
+# enable defining OA_UNITY_ID for each agglomerated TU during unity builds
+oa_unity_enable_unique_id(oa_unit_test)
 
 # discover tests for CTest
 gtest_discover_tests(
