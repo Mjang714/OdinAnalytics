@@ -91,4 +91,9 @@ jobs:
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: ctest --test-dir build -j$(nproc) --output-on-failure
-      # TODO: add install stage when this is available
+      # install Runtime and Development components separately
+      # note: only good as a smoke test. need sudo due to /usr/local install
+      - name: Install Runtime
+        run: sudo cmake --install build --component Runtime
+      - name: Install Development
+        run: sudo cmake --install build --component Development

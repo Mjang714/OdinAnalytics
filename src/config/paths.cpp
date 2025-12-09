@@ -43,9 +43,16 @@ std::filesystem::path library_path()
 {
 #if defined(_WIN32)
   // get module handle for DLL
-  // TODO: if we want to avoid hardcoding this name we can included a header
+  // note: when using the debug C runtime for debug builds we currently opt to
+  // build the library with a "d" suffix. this can be detected by checking if
+  // _DEBUG is defined which lets us correctly conditionally compile
+  // TODO: if we want to avoid hardcoding these names we can included a header
   // configured by CMake that would have the DLL name
+#if defined(_DEBUG)
+  auto mod = GetModuleHandleA("oa_configd");
+#else
   auto mod = GetModuleHandleA("oa_config");
+#endif  // _DEBUG
   if (!mod)
     throw std::system_error{
       // note: cast required to avoid narrowing conversion from DWORD
