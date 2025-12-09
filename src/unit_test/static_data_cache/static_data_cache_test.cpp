@@ -1,5 +1,7 @@
 #include <string>
 
+#include <gtest/gtest.h>
+
 #include "oa/testing/gtest.h"
 #include "static_data_cache/calendar_cache.h"
 
@@ -11,18 +13,16 @@ namespace
 			std::string ny_calendar_str= "NYB";
 			std::string lon_calendar_str = "LNB";
 
-			virtual void SetUp() override
+			void SetUp() override
 			{
 				// skip test if OdinBaseDir was not set correctly
-				// TODO: make this a macro to allow reuse
-				if (!std::getenv("OdinBaseDir"))
-					OA_GTEST_SKIP() << "OdinBaseDir was not set";
+				OA_GTEST_ENSURE_BASE_DIR();
 			}
 
-
-			virtual void TearDown() override
+			void TearDown() override
 			{
-				//remove any heap allocated memory
+				// TODO: remove below comment if it is no longer relevant
+				// remove any heap allocated memory
 			}
 	};
 
