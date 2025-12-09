@@ -1,5 +1,6 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
+#include "oa/testing/gtest.h"
 #include "time/date.h"
 #include "time/calendar.h"
 #include "time/tenor.h"
@@ -15,17 +16,14 @@ namespace
 			oa::time::Tenor tenor{"1Y"};
 			oa::time::AdjRule adjustment_rule;
 			oa::derived_time::DateFormula date_formula, date_formula_str;
-			virtual void SetUp() override
+
+			void SetUp() override
 			{
+				OA_GTEST_ENSURE_BASE_DIR();
 				calendar = oa::static_cache::CalendarCache::RetrieveCache().GetCalendar("NYB");
 				adjustment_rule = oa::time::AdjRule::kModifiedFollowing;
 				date_formula = oa::derived_time::DateFormula(tenor, adjustment_rule, *calendar);
 				date_formula_str = oa::derived_time::DateFormula("1Y", adjustment_rule, "NYB");
-			}
-
-			virtual void TearDown() override
-			{
-
 			}
 	};
 
