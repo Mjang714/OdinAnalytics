@@ -82,7 +82,9 @@ inline void PrintTo(const Date& date, std::ostream* stream)
  * Macro for skipping a Google Test test if `OdinBaseDir` is not set.
  *
  * Several of the date-related tests require `OdinBaseDir` to be set in the
- * environment and could be skipped if the variable is not defined.
+ * environment and could be skipped if the variable is not defined. Like
+ * `GTEST_SKIP` itself this macro can only be used in `SetUp()` members or in
+ * the actual Google Test test cases themselves.
  */
 #define OA_GTEST_ENSURE_BASE_DIR() \
   if (!std::getenv("OdinBaseDir")) \
