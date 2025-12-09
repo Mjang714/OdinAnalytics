@@ -11,13 +11,25 @@ target_include_directories(
     # note: not installable just yet
     $<INSTALL_INTERFACE:include>
 )
-# ensures that the specified macro is defined when building shared. note that
-# if we instead use target_compile_definitions, DEFINE_SYMBOL will be
-# <target>_EXPORTS by default which is unnecessary to define
-set_target_properties(oa_dao PROPERTIES DEFINE_SYMBOL OA_BUILD_DAO_DLL)
+# set export macro for shared build + use d library suffix for debug builds
+set_target_properties(
+    oa_dao PROPERTIES
+    DEFINE_SYMBOL OA_BUILD_DAO_DLL
+    DEBUG_POSTFIX d
+)
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_dao INTERFACE OA_DAO_DLL)
 endif()
 # even if not building dynamic, keeps CMake aware of dependencies
 target_link_libraries(oa_dao PUBLIC oa_helpers oa_time)
+# install rule for oa_dao
+install(
+    TARGETS oa_dao
+    EXPORT odin_exports
+    ARCHIVE COMPONENT Development
+    LIBRARY COMPONENT Runtime
+    RUNTIME COMPONENT Runtime
+)
+# install PDB when building for Debug config
+oa_pdb_install(oa_dao CONFIGURATIONS Debug COMPONENT Development)
