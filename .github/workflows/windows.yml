@@ -139,7 +139,7 @@ jobs:
         run: |
           # note: need double quotes for PowerShell
           ctest --test-dir build_windows_x86 -C Release `
-            "-j$env:NUMBER_OF_PROCESSORS"
+            "-j$env:NUMBER_OF_PROCESSORS" --output-on-failure
       # install Runtime and Development components separately
       # note: only good as a smoke test
       - name: Install Runtime
