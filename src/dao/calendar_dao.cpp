@@ -39,7 +39,7 @@ namespace oa::dao
 			if (!base_dir)
 				throw std::runtime_error{
 					OA_PRETTY_FUNCTION_NAME +
-					std::string{"missing required OdinBaseDir"}
+					std::string{": missing required OdinBaseDir"}
 				};
 			// otherwise, construct path to calendar file
 			return std::filesystem::path{base_dir} /
