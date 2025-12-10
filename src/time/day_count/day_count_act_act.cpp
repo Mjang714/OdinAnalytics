@@ -36,24 +36,21 @@ namespace oa::time
 		{
 			year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, end_date) / days_in_start_year);
 		}
-
 		else 
 		{
 			auto curr_year = start_year;
-			auto prior_date = start_date;
+			auto prior_date = oa::time::Date(start_date.GetJulian() - 1);
 			while (curr_year < end_year)
 			{
 				auto days_in_curr_year = Date::IsLeap(curr_year) ? 366.0 : 365.0;
 				auto curr_date = Date(curr_year, 12, 31);
 				if(curr_date < end_date)
 				{
-					auto temp1 = ComputeDayCountActAct(prior_date, curr_date);
-					year_fraction += static_cast<double> ((ComputeDayCountActAct(prior_date, curr_date) + 1) / days_in_curr_year);
+					year_fraction += static_cast<double> (ComputeDayCountActAct(prior_date, curr_date) / days_in_curr_year);
 					prior_date = curr_date;
 				}
 				curr_year++;
 			}
-			auto temp2 = ComputeDayCountActAct(Date(end_year, 1, 1), end_date);
 			year_fraction += static_cast<double> (ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year);	
 		}
 

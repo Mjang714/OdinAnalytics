@@ -160,14 +160,5 @@ namespace
 		day2 = oa::time::Date(2013, 1, 2);
 		EXPECT_DOUBLE_EQ(367/365.0 + 366/366.0 + 1/365.0, day_counter_act_act.YearFraction(day1, day2));
 		
-		//// fifth test 
-		//day1 = oa::time::Date(2008, 2, 29);
-		//day2 = oa::time::Date(2009, 2, 28);
-		//EXPECT_DOUBLE_EQ(1.0, day_counter_act_act.YearFraction(day1, day2));
-
-		//// sixth test 
-		//day1 = oa::time::Date(2007, 1, 15);
-		//day2 = oa::time::Date(2009, 7, 28);
-		//EXPECT_DOUBLE_EQ(2.56986301369863, day_counter_act_act.YearFraction(day1, day2));
 	}
 }
