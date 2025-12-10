@@ -31,15 +31,29 @@ namespace oa::time
 		double days_in_start_year = Date::IsLeap(start_year) ? 366.0 : 365.0;
 		double days_in_end_year = Date::IsLeap(end_year) ? 366.0 : 365.0;
 
-		auto year_fraction = static_cast<double> (end_year - start_year);
+		auto year_fraction = 0.0;
 		if (end_year == start_year)
 		{
 			year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, end_date) / days_in_start_year);
 		}
+
 		else 
 		{
-			//year_fraction -= 1.0;
-			//year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, Date(start_year, 12, 31)) / days_in_start_year);
+			auto curr_year = start_year;
+			auto prior_date = start_date;
+			while (curr_year < end_year)
+			{
+				auto days_in_curr_year = Date::IsLeap(curr_year) ? 366.0 : 365.0;
+				auto curr_date = Date(curr_year, 12, 31);
+				if(curr_date < end_date)
+				{
+					auto temp1 = ComputeDayCountActAct(prior_date, curr_date);
+					year_fraction += static_cast<double> ((ComputeDayCountActAct(prior_date, curr_date) + 1) / days_in_curr_year);
+					prior_date = curr_date;
+				}
+				curr_year++;
+			}
+			auto temp2 = ComputeDayCountActAct(Date(end_year, 1, 1), end_date);
 			year_fraction += static_cast<double> (ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year);	
 		}
 
