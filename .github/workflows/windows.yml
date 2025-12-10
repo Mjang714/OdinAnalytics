@@ -26,8 +26,9 @@ on:
   workflow_dispatch:
 
 env:
-  # install root for dependencies
+  # install root for dependencies + Odin test install root
   ODIN_VENDOR_ROOT: C:\odin_vendor
+  ODIN_INSTALL_ROOT: C:\odin
   # Boost version + semicolon-separated list of libraries for Boost CMake build
   BOOST_VERSION: 1.89.0
   BOOST_CMAKE_LIBS: algorithm
@@ -119,6 +120,7 @@ jobs:
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
       # note: not sure if step-level env can use top-level env variables
+      # TODO: this is fixed in the FindXLLSDK.cmake PR
       - name: Build
         run: |
           # ToUpper() can be used on PowerShell strings for upper-casing
@@ -138,4 +140,24 @@ jobs:
           # note: need double quotes for PowerShell
           ctest --test-dir build_windows_x86 -C Release `
             "-j$env:NUMBER_OF_PROCESSORS" --output-on-failure
-      # TODO: add install stage when this is available
+      # install Runtime and Development components separately
+      # note: only good as a smoke test
+      - name: Install Runtime
+        run: |
+          # load helper script for OaPlatformTranslate
+          . .\tools\common.ps1
+          # convert Win32 -> x86 for build directory + install
+          cmake --install `
+            build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
+            --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
+            --config Release `
+            --component Runtime
+      - name: Install Development
+        run: |
+          # same as above but install Development component
+          . .\tools\common.ps1
+          cmake --install `
+            build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
+            --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
+            --config Release `
+            --component Development

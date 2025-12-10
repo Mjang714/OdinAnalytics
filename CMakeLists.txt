@@ -1,44 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-##
-# How to build:
-#
-# *nix (ELF 64-bit):
-#
-#   cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
-#
-# Windows:
-#
-#   cmake -S . -B build_windows_(x86|x64) -A (Win32|x64) && ^
-#   cmake --build build_windows_(x86|x64) --config Release -j
-#
-# FIXME: Below content is all out of date
-#
-# Build driver scripts build.bat and build.sh will be contributed later. To
-# build shared libs, add -DBUILD_SHARED_LIBS=1 to the cmake config command. To
-# build static libs, add -DBUILD_SHARED_LIBS=0 instead.
-#
-# The following env/CMake variables can be used to find dependencies:
-#
-#   ODIN_BOOST_ROOT
-#       Boost install root. Can use BOOST_ROOT instead and does not need to be
-#       set if Boost is already installed in the system (e.g. through apt)
-#
-#   ODIN_MAGIC_ENUM_ROOT
-#       magic_enum install root, i.e. should contain include directory.
-#
-#   ODIN_GTEST_ROOT
-#       Google Test install root. Can use GTEST_ROOT instead and does not need
-#       to be set if Google Test is already installed in the system
-#
-#   ODIN_EXCELSDK_ROOT
-#       Excel SDK install root, i.e. should contain INCLUDE, LIB directories.
-#       This need only be available for Windows builds and the user must use
-#       SAMPLES\MAKE.bat to build the samples, in particular frmwrk32.lib.
-#
-# These can be defined either in the environment or passed to the CMake config
-# command directly by using the -D flag.
-#
+# see README.md for build + test instructions
 
 project(
     OdinAnalytics
@@ -104,6 +66,8 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 include(CTest)
+
+include(oa_pdb_install)
 
 # find Boost [headers]
 # TODO: we can decide to upgrade minimum Boost version later if necessary
@@ -240,3 +204,23 @@ set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_subdirectory(src)
+
+# install rule for include/oa headers (excluding internal testing headers)
+# note: this is currently incomplete and only provides core + config headers
+install(
+    DIRECTORY ${ODIN_INCLUDE_DIR}/oa
+    TYPE INCLUDE
+    COMPONENT Development
+    FILES_MATCHING PATTERN "*.h" PATTERN "testing*" EXCLUDE
+)
+# install rule for generated version.h header
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/${ODIN_VERSION_H}
+    DESTINATION include/oa
+    COMPONENT Development
+)
+# install rule for the calendar data. we consider this part of the Runtime
+# component because it is required for some libraries to function at runtime
+# TODO: do we want shared data to be in share/oa or share/OdinAnalytics? if we
+# want the latter then we'll need to update oa::config::data_dir()
+install(DIRECTORY static_data/calendars DESTINATION share/oa COMPONENT Runtime)
