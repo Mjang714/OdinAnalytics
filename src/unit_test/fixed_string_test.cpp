@@ -11,13 +11,14 @@
 
 #include <gtest/gtest.h>
 
-#include "oa/internal/unity.h"
-
 namespace {
-namespace OA_UNITY_ID {
+
+// note: test case names a bit more verbose due to use of unity build. using
+// OA_UNITY_ID has been discarded due to it affecting the test case name and
+// also requiring a second anonymous namespace
 
 // test normal concatenation
-struct concat_test_1 {
+struct fixed_string_concat_test_1 {
   static constexpr const char expected[] = "the quick brown fox jumped";
   static constexpr oa::fixed_string actual{
     "the ", "quick ", "brown ", "fox ", "jumped"
@@ -25,7 +26,7 @@ struct concat_test_1 {
 };
 
 // test concatenation with empty string literals
-struct concat_test_2 {
+struct fixed_string_concat_test_2 {
   static constexpr const char expected[] = "hello world";
   static constexpr oa::fixed_string actual{
     "", "", "", "hello", "" , " ", "", "world", "", "", ""
@@ -33,7 +34,7 @@ struct concat_test_2 {
 };
 
 // test concatenation with fragmented literals
-struct concat_test_3 {
+struct fixed_string_concat_test_3 {
   static constexpr const char expected[] = "fight until your last breath";
   static constexpr oa::fixed_string actual{
     "fi", "ght", " ", "un", "til", " yo", "ur ", "last", " br", "ea", "th"
@@ -41,7 +42,7 @@ struct concat_test_3 {
 };
 
 // test concatenation with all 3 operator+ overloads
-struct concat_test_4 {
+struct fixed_string_concat_test_4 {
   static constexpr const char expected[] = "i say hello goodbye";
   static constexpr auto actual =
     "i "
@@ -56,7 +57,7 @@ struct concat_test_4 {
 /**
  * `fixed_string` template test fixture.
  *
- * @tparam T `concat_test_*` test input type
+ * @tparam T `fixed_string_concat_test_*` test input type
  */
 template <typename T>
 class FixedStringTest : public ::testing::Test {
@@ -77,7 +78,10 @@ protected:
 };
 
 using FixedStringTestTypes = ::testing::Types<
-  concat_test_1, concat_test_2, concat_test_3, concat_test_4
+  fixed_string_concat_test_1,
+  fixed_string_concat_test_2,
+  fixed_string_concat_test_3,
+  fixed_string_concat_test_4
 >;
 TYPED_TEST_SUITE(FixedStringTest, FixedStringTestTypes);
 
@@ -116,5 +120,4 @@ TYPED_TEST(FixedStringTest, StreamTest)
   EXPECT_EQ(TypeParam::expected, std::move(ss).str());
 }
 
-}  // namespace OA_UNITY_ID
 }  // namespace
