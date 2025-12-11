@@ -62,6 +62,14 @@ else()
     message(STATUS "Build unity: No")
 endif()
 
+# Visual Studio generator specific info
+string(FIND "${CMAKE_GENERATOR}" "Visual Studio" _is_vs_generator)
+if(_is_vs_generator EQUAL 0)
+    message(STATUS "Visual Studio platform: ${CMAKE_VS_PLATFORM_NAME}")
+    message(STATUS "Visual Studio toolset: ${CMAKE_VS_PLATFORM_TOOLSET}")
+endif()
+unset(_is_vs_generator)
+
 # update CMake module path to allow inclusion of custom CMake code
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -101,6 +109,11 @@ if(WIN32)
 endif()
 if(XLLSDK_FOUND)
     message(STATUS "XLL SDK version: ${XLLSDK_VERSION}")
+    if(XLLSDK_64BIT)
+        message(STATUS "XLL SDK 64-bit: Yes")
+    else()
+        message(STATUS "XLL SDK 64-bit: No")
+    endif()
 else()
     message(STATUS "XLL SDK version: None")
 endif()
