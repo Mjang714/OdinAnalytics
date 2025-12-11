@@ -111,11 +111,17 @@ else()
     set(_xllsdk_libdir lib)
 endif()
 
-# locate xlcall32
+# get root install directory
+# note: had some issues with trailing / with cmake_path
+set(_xllsdk_root "${XLLSDK_INCLUDE_DIRS}/..")
+
+# locate xlcall32. search *only* the library root with NO_DEFAULT_PATH
 find_library(
     XLLSDK_XLCALL32 xlcall32.lib
+    HINTS "${_xllsdk_root}"
     PATH_SUFFIXES ${_xllsdk_libdir}
     NO_CACHE
+    NO_DEFAULT_PATH
 )
 if(NOT XLLSDK_XLCALL32)
     find_package_handle_standard_args(XLLSDK REQUIRED_VARS XLLSDK_XLCALL32)
@@ -134,8 +140,7 @@ set_target_properties(
 set(XLLSDK_xlcall32_FOUND TRUE)
 set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}")
 
-# get root install directory + framework library source directory
-set(_xllsdk_root "${XLLSDK_INCLUDE_DIRS}/..")
+# get framework library source directory
 set(_xllsdk_frmwrk_srcdir "${_xllsdk_root}/samples/framewrk")
 
 # directly build frmwrk32 as part of the calling project
@@ -163,8 +168,15 @@ if(EXISTS "${_xllsdk_frmwrk_srcdir}")
         "${_xllsdk_frmwrk_srcdir}/framewrk.c" PROPERTIES
         LANGUAGE C
     )
-    # ensure we *never* use unity build when building frmwrk32
-    set_target_properties(frmwrk32 PROPERTIES UNITY_BUILD FALSE)
+    set_target_properties(
+        frmwrk32 PROPERTIES
+        # when building the Debug config we want the frmwrk32 PDB to be in the
+        # same output directory as frmwrk32.lib and be named frmwrk32.pdb
+        COMPILE_PDB_NAME_DEBUG frmwrk32
+        COMPILE_PDB_OUTPUT_DIRECTORY_DEBUG $<TARGET_FILE_DIR:frmwrk32>
+        # ensure we *never* use unity build when building frmwrk32
+        UNITY_BUILD FALSE
+    )
     # mark as found + add target to XLLSDK_LIBRARIES
     set(XLLSDK_frmwrk32_FOUND TRUE)
     list(APPEND XLLSDK_LIBRARIES "XLLSDK::frmwrk32")
