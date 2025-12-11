@@ -93,19 +93,19 @@ ctest --test-dir build -j$(nproc)
 
 To build Odin on Windows a wrapper `build.bat` script is provided.
 
-For example, to build the x86 Release config with Odin shared libraries, use
+For example, to build the x64 Release config with Odin shared libraries, use
 
 ```shell
 build -c Release
 ```
 
-To build x64 Release shared libraries instead x86 shared libraries, use
+To build x86 Release shared libraries instead x64 shared libraries, use
 
 ```shell
-build -c Release -a x64
+build -c Release -a x86
 ```
 
-To build x86 Release static libraries instead of shared libraries, use
+To build x64 Release static libraries instead of shared libraries, use
 
 ```shell
 build -c Release -Ca "-DBUILD_SHARED_LIBS=OFF"
