@@ -34,8 +34,9 @@ namespace oa::time
 		auto year_fraction = 0.0;
 		if (end_year == start_year)
 		{
-			year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, end_date) / days_in_start_year);
+			year_fraction += ComputeDayCountActAct(start_date, end_date) / days_in_start_year;
 		}
+
 		else 
 		{
 			auto curr_year = start_year;
@@ -46,12 +47,12 @@ namespace oa::time
 				auto curr_date = Date(curr_year, 12, 31);
 				if(curr_date < end_date)
 				{
-					year_fraction += static_cast<double> (ComputeDayCountActAct(prior_date, curr_date) / days_in_curr_year);
+					year_fraction += ComputeDayCountActAct(prior_date, curr_date) / days_in_curr_year;
 					prior_date = curr_date;
 				}
 				curr_year++;
 			}
-			year_fraction += static_cast<double> (ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year);	
+			year_fraction +=ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year;	
 		}
 
 		return year_fraction;
