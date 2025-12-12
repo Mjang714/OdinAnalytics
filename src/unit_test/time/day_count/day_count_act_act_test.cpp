@@ -136,4 +136,29 @@ namespace
 		EXPECT_EQ(184, day_counter_act_act.DayCount(day1, day2));
 	}
 
+
+	TEST_F(DayCountActActTest, YearFractionTest)
+	{
+		oa::time::Date day1, day2;
+		// first test 
+		day1 = oa::time::Date(2007, 1, 15);
+		day2 = oa::time::Date(2007, 1, 30);
+		EXPECT_DOUBLE_EQ(15.0 / 365.0, day_counter_act_act.YearFraction(day1, day2));
+		
+		// second test 
+		day1 = oa::time::Date(2010, 12, 30);
+		day2 = oa::time::Date(2011, 1, 2);
+		EXPECT_DOUBLE_EQ(3.0/365, day_counter_act_act.YearFraction(day1, day2));
+
+		// third test 
+		day1 = oa::time::Date(2011, 12, 30);
+		day2 = oa::time::Date(2012, 1, 2);
+		EXPECT_DOUBLE_EQ((2.0/365) + (1.0/366), day_counter_act_act.YearFraction(day1, day2));
+		
+		// fourth test 
+		day1 = oa::time::Date(2010, 12, 30);
+		day2 = oa::time::Date(2013, 1, 2);
+		EXPECT_DOUBLE_EQ(367/365.0 + 366/366.0 + 1/365.0, day_counter_act_act.YearFraction(day1, day2));
+		
+	}
 }
