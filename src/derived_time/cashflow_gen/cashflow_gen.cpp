@@ -111,6 +111,13 @@ namespace oa::derived_time {
 			// using emplace_back and std::move though not sure if it is necessary here
 			cashflows.emplace_back(std::move(cf));
 		}
+		//add the princple to the last cashflow
+
+		CashflowStruct cf(cashflows.back());
+		cf.cashflow_amount = notional;
+		cf.rate = 1.0;
+		cf.cf_type = deriv_time::CashflowType::kPrincipal;
+		cashflows.emplace_back(std::move(cf));
 		// Implementation logic to generate cashflows goes here
 		return cashflows;
 

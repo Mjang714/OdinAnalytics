@@ -8,6 +8,7 @@
 #include "derived_time/cashflow_gen/cashflow_gen.h"
 #include "derived_time/derived_time_enums.h"
 
+namespace dt = oa::derived_time;
 namespace
 {
 	class CashflowGenTest : public ::testing::Test
@@ -19,7 +20,7 @@ namespace
 				  frequency("6M"),
 				  notional(0.0),
 				  rate(0.0),
-				  day_cnt_rule(oa::time::DayCountRule::kACT_ACT)
+				  day_cnt_rule(oa::time::DayCountRule::kACT_360)
 			{
 			}
 
@@ -30,9 +31,21 @@ namespace
 			double notional;
 			double rate;
 			oa::time::DayCountRule day_cnt_rule;
-			//std::vector<oa::derived_time::CashflowStruct> cashflows{
-			//	{"","","","", }
-			//};
+			
+			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base{
+				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-7-3","2027-1-3","2026-7-3","2027-1-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-1-3","2027-7-3","2027-1-3","2027-7-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-7-3","2028-1-3","2027-7-3","2028-1-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-1-3","2028-7-3","2028-1-3","2028-7-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-7-3","2029-1-3","2028-7-3","2029-1-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-1-3","2029-7-3","2029-1-3","2029-7-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, .05, 25000, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, 1.0, 1000000.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kPrincipal }
+
+			};
 			virtual void SetUp() override
 			{
 				start_date = oa::time::Date(2025, 1, 3);
@@ -40,7 +53,13 @@ namespace
 				frequency = oa::time::Tenor("6M");
 				notional = 1000000.0;
 				rate = 0.05; //5%
-				day_cnt_rule = oa::time::DayCountRule::kACT_ACT;
+				day_cnt_rule = oa::time::DayCountRule::kACT_360;
+
+				auto day_count = oa::time::DayCounterFactory::GenerateDayCounter(day_cnt_rule);
+				for(auto& cf : fixed_cf_base) {
+					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
+					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
+				}	
 			}
 			virtual void TearDown() override
 			{
@@ -58,7 +77,11 @@ namespace
 			day_cnt_rule,
 			oa::derived_time::DateDirection::kForward
 		);
-		EXPECT_EQ(10, cashflows.size());
+		EXPECT_EQ(11, cashflows.size());
+		//check to see if the cashflow details match expected values
+		for (size_t i = 0; i < cashflows.size(); i++) {
+			EXPECT_EQ(fixed_cf_base[i], cashflows[i]);
+		}
 	}
 
 	TEST_F(CashflowGenTest, CreateFixedCashflowsBkwdTest)
@@ -72,6 +95,10 @@ namespace
 			day_cnt_rule,
 			oa::derived_time::DateDirection::kBackward
 		);
-		EXPECT_EQ(10, cashflows.size());
+		EXPECT_EQ(11, cashflows.size());
+		////check to see if the cashflow details match expected values
+		//for (size_t i = 0; i < cashflows.size(); i++) {
+		//	EXPECT_EQ(fixed_cf_base[i], cashflows[i]);
+		//}
 	}
 }
