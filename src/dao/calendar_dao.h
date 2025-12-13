@@ -1,23 +1,14 @@
-// TODO: move unneeded headers into calendar_dao.cpp
-#include <cstdlib>
-#include <filesystem>
-#include <fstream>
-#include <mutex>
-#include <string>
-
-#include "helpers/str_utils/str_utils.h"
-#include "helpers/utils.h"
-#include "oa/dllexport.h"
-#include "time/calendar_data_struct.h"
-
 #ifndef ODINANALYTICS_DAO_CALENDAR_DAO_H_
 #define ODINANALYTICS_DAO_CALENDAR_DAO_H_
 
+#include <string>
+
+#include "oa/dllexport.h"
+// TODO: fix header namespacing
+#include "time/calendar_data_struct.h"
+
 namespace oa::dao
 {
-	namespace StrHelpers = oa::utils::str_utils;
-	namespace Helpers = oa::utils;
-	namespace CalStruct = oa::ds;
 
 	class OA_DAO_API CalendarDao
 	{
@@ -67,6 +58,3 @@ namespace oa::dao
 }
 
 #endif // !ODINANALYTICS_DAO_CALENDAR_DAO_H_
-
-
-

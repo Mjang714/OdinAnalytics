@@ -1,8 +1,15 @@
 #include "calendar_dao.h"
 
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <stdexcept>
 #include <string>
 
+#include "helpers/str_utils/str_utils.h"
+#include "helpers/utils.h"
 #include "oa/platform.h"
+#include "oa/rtti.h"
 
 #if OA_HAS_CPP20_FORMAT
 #include <format>
@@ -17,11 +24,31 @@ namespace oa::dao
 		return calendar_dao_instance;
 	}
 
-	CalStruct::CalendarDataStruct CalendarDao::GetCalendartData(const std::string& region)
+	ds::CalendarDataStruct CalendarDao::GetCalendartData(const std::string& region)
 	{
-		CalStruct::CalendarDataStruct calendar_struct{};
-		std::string calendar_file_path_str = std::getenv("OdinBaseDir") + std::string("//static_data//calendars//");
-		std::filesystem::path cal_file_path{ calendar_file_path_str + region + ".hol" };
+		ds::CalendarDataStruct calendar_struct{};
+		// construct path to corresponding calendar file
+		auto cal_file_path = [&region]
+		{
+			// if no OdinBaseDir throw
+			// TODO: consider use of oa_config library to construct path
+			// relative to oa::config::data_dir() after build system is updated
+			// to copy the static_data directory to the build directory
+			auto base_dir = std::getenv("OdinBaseDir");
+			// note: could use fixed_string for compile-time string concat
+			if (!base_dir)
+				throw std::runtime_error{
+					OA_PRETTY_FUNCTION_NAME +
+					std::string{": missing required OdinBaseDir"}
+				};
+			// otherwise, construct path to calendar file
+			return std::filesystem::path{base_dir} /
+				"static_data" /
+				"calendars" /
+				(region + ".hol");
+		}();
+		// regular file check
+		// note: indirectly also checks for existence
 		if (!std::filesystem::is_regular_file(cal_file_path))
 		{
 			throw std::invalid_argument{
@@ -65,11 +92,13 @@ namespace oa::dao
 			{
 				//get the next line of the file
 				std::getline(raw_calendar_data, file_line);
-				for (auto weekend_integer : StrHelpers::StrToDigits(file_line))
+				for (auto weekend_integer : utils::str_utils::StrToDigits(file_line))
 				{
 					if (weekend_integer > -1 && weekend_integer < 7)
 					{
-						calendar_struct.weekends.push_back(Helpers::ValueToEnum<oa::time::Weekdays>(weekend_integer));
+						calendar_struct
+							.weekends
+							.push_back(utils::ValueToEnum<time::Weekdays>(weekend_integer));
 					}
 					else
 					{
