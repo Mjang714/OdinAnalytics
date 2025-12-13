@@ -162,7 +162,7 @@ struct fixed_string_sstream_equal {
   template <std::size_t N1, std::size_t N2>
   bool operator()(
     const oa::fixed_string<N1>& s1,
-    const oa::fixed_string<N2>& s2) const noexcept
+    const oa::fixed_string<N2>& s2) const
   {
     // stream both fixed_string instances
     std::stringstream ss1;
