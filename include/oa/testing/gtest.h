@@ -1,7 +1,7 @@
 /**
  * @file testing/gtest.h
  * @author Derek Huang
- * @brief Google Test compatibility + extension header
+ * @brief C++ Google Test compatibility + extension header
  * @copyright MIT License
  *
  * Intended for compatibility with older Google Test versions. Defines some of
@@ -11,6 +11,7 @@
 #ifndef OA_TESTING_GTEST_H_
 #define OA_TESTING_GTEST_H_
 
+#include <cstdlib>  // for OA_GTEST_ENSURE_BASE_DIR
 #include <functional>
 #include <iomanip>
 #include <ostream>
@@ -83,6 +84,18 @@ inline void PrintTo(const Date& date, std::ostream* stream)
 
 }  // namespace time
 }  // namespace oa
+
+/**
+ * Macro for skipping a Google Test test if `OdinBaseDir` is not set.
+ *
+ * Several of the date-related tests require `OdinBaseDir` to be set in the
+ * environment and could be skipped if the variable is not defined. Like
+ * `GTEST_SKIP` itself this macro can only be used in `SetUp()` members or in
+ * the actual Google Test test cases themselves.
+ */
+#define OA_GTEST_ENSURE_BASE_DIR() \
+  if (!std::getenv("OdinBaseDir")) \
+    OA_GTEST_SKIP() << "OdinBaseDir not set in environment"
 
 namespace oa {
 namespace testing {
