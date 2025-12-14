@@ -12,6 +12,8 @@ namespace date = oa::time;
 
 namespace oa::derived_time {
 	struct OA_DERIVED_TIME_API CashflowStruct {
+		date::Date unadj_start_date;
+		date::Date unadj_end_date;
 		date::Date start_date;
 		date::Date end_date;
 		date::Date fixing_date;
@@ -28,6 +30,8 @@ namespace oa::derived_time {
 		CashflowStruct() = default;	
 
 		CashflowStruct(
+			std::string unadj_start_str,
+			std::string unadj_end_str,
 			std::string start_str,
 			std::string end_str,
 			std::string fixing_str,
@@ -39,7 +43,9 @@ namespace oa::derived_time {
 			int input_days,
 			double input_day_count_fraction,
 			Currency input_cf_curr,
-			CashflowType input_cf_type) : 
+			CashflowType input_cf_type) :
+			unadj_start_date(unadj_start_str),
+			unadj_end_date(unadj_end_str),
 			start_date(start_str), 
 			end_date(end_str),
 			fixing_date(fixing_str),
@@ -60,6 +66,8 @@ namespace oa::derived_time {
 			//not sure if std::tied is the best way to do this but it seems to work
 			return 
 				std::tie(
+				unadj_start_date,
+				unadj_end_date,
 				start_date,
 				end_date,
 				fixing_date,
@@ -76,6 +84,8 @@ namespace oa::derived_time {
 				==
 
 				std::tie(
+					right_value.unadj_start_date,
+					right_value.unadj_end_date,
 					right_value.start_date,
 					right_value.end_date,
 					right_value.fixing_date,

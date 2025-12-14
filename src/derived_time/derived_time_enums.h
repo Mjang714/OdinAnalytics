@@ -41,8 +41,8 @@ namespace oa::derived_time
 	};
 
 	enum class ResetDirection {
-		kForward,
-		kArears
+		kAdvance,
+		kInArears
 	};
 
 	enum class Frequency

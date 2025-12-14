@@ -11,10 +11,13 @@ namespace oa::derived_time {
 		const double notional,
 		const double rate,
 		const oa::time::DayCountRule day_count_rule,
+		const oa::derived_time::Currency cf_curr, 
 		const oa::derived_time::DateDirection date_dir,
 		const oa::derived_time::CashflowType cf_type,
 		const oa::derived_time::ResetDirection rest_dir,
 		const oa::derived_time::StubType& stub_type,
+		const std::shared_ptr<oa::derived_time::DateFormula>& start_date_adj,
+		const std::shared_ptr<oa::derived_time::DateFormula>& end_date_adj,
 		const std::shared_ptr<oa::derived_time::DateFormula>& payment_date_adj,
 		const std::shared_ptr<oa::derived_time::DateFormula>& fixing_date_adj,
 		const std::shared_ptr<oa::derived_time::DateFormula>& acc_date_adj,
@@ -65,6 +68,9 @@ namespace oa::derived_time {
 				curr_end_date = mat_date.AddTenor(oa::time::Tenor(total_length, tenor_enum));
 				total_length -= time_length;
 			}
+			//this ensrue that the cashflows dates are in the same chonological order.
+			std::reverse(unadjusted_start_dates.begin(), unadjusted_start_dates.end());
+			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
 		else {
@@ -82,23 +88,21 @@ namespace oa::derived_time {
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {
 			auto day_count = oa::time::DayCounterFactory::GenerateDayCounter(day_count_rule);
 			CashflowStruct cf{};
-			cf.start_date = unadjusted_start_dates[i];
-			cf.end_date = unadjusted_end_dates[i];
+			cf.unadj_start_date = unadjusted_start_dates[i];
+			cf.unadj_end_date = unadjusted_end_dates[i];
+			cf.start_date = (start_date_adj != nullptr) ? start_date_adj->Adjust(cf.unadj_start_date) : cf.unadj_start_date;
+			cf.end_date = (end_date_adj != nullptr) ? end_date_adj->Adjust(cf.unadj_end_date) : cf.unadj_end_date;
+			cf.payment_date = (payment_date_adj != nullptr) ? payment_date_adj->Adjust(cf.end_date) : cf.end_date;
 			cf.notional = notional;
 			cf.rate = rate;
-			cf.cashflow_amount = notional * (rate / oa::utils::EnumToInt<oa::derived_time::Frequency>(reset_freq));
 			cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-			cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
 			cf.cf_type = cf_type;
-			if (payment_date_adj != nullptr) {
-				cf.payment_date = payment_date_adj->Adjust(cf.end_date);
-			}
-			else {
-				cf.payment_date = cf.end_date;
-			}
+			cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
+			cf.cashflow_amount = notional * (rate * cf.day_count_fraction);
+			cf.cf_curr = cf_curr;
 
 			if (fixing_date_adj != nullptr) {
-				if(rest_dir == oa::derived_time::ResetDirection::kForward) {
+				if(rest_dir == oa::derived_time::ResetDirection::kAdvance) {
 					cf.fixing_date = fixing_date_adj->Adjust(cf.start_date);
 				}
 				else {
