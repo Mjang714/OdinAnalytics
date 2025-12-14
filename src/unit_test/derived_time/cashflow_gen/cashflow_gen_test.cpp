@@ -1,4 +1,5 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "time/date.h"
 #include "time/calendar.h"
@@ -9,6 +10,9 @@
 #include "derived_time/derived_time_enums.h"
 
 namespace dt = oa::derived_time;
+using ::testing::ContainerEq;
+//using ::testing::EXPECT_THAT;
+
 namespace
 {
 	class CashflowGenTest : public ::testing::Test
@@ -81,10 +85,7 @@ namespace
 			oa::derived_time::DateDirection::kForward
 		);
 		EXPECT_EQ(11, cashflows.size());
-		//check to see if the cashflow details match expected values
-		for (size_t i = 0; i < cashflows.size(); i++) {
-			EXPECT_EQ(fixed_cf_base[i], cashflows[i]);
-		}
+		EXPECT_THAT(cashflows, ContainerEq(fixed_cf_base));
 	}
 
 	TEST_F(CashflowGenTest, CreateFixedCashflowsBkwdTest)
@@ -100,9 +101,6 @@ namespace
 			oa::derived_time::DateDirection::kBackward
 		);
 		EXPECT_EQ(11, cashflows.size());
-		//check to see if the cashflow details match expected values
-		for (size_t i = 0; i < cashflows.size(); i++) {
-			EXPECT_EQ(fixed_cf_base[i], cashflows[i]);
-		}
+		EXPECT_THAT(cashflows, ContainerEq(fixed_cf_base));
 	}
 }
