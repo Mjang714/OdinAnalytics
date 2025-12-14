@@ -30,12 +30,12 @@ namespace oa::derived_time {
 		CashflowStruct() = default;	
 
 		CashflowStruct(
-			std::string unadj_start_str,
-			std::string unadj_end_str,
-			std::string start_str,
-			std::string end_str,
-			std::string fixing_str,
-			std::string payment_str,
+			const std::string& unadj_start_str,
+			const std::string& unadj_end_str,
+			const std::string& start_str,
+			const std::string& end_str,
+			const std::string& fixing_str,
+			const std::string& payment_str,
 			double inpt_notional,
 			double input_rate,
 			double input_cashflow_amount,
@@ -62,43 +62,7 @@ namespace oa::derived_time {
 
 			}
 
-		bool operator==(const CashflowStruct& right_value) const {
-			//not sure if std::tied is the best way to do this but it seems to work
-			return 
-				std::tie(
-				unadj_start_date,
-				unadj_end_date,
-				start_date,
-				end_date,
-				fixing_date,
-				payment_date,
-				notional,
-				rate,
-				cashflow_amount,
-				npv_cashflow_amount,
-				days,
-				day_count_fraction,
-				cf_curr,
-				cf_type) 
-
-				==
-
-				std::tie(
-					right_value.unadj_start_date,
-					right_value.unadj_end_date,
-					right_value.start_date,
-					right_value.end_date,
-					right_value.fixing_date,
-					right_value.payment_date,
-					right_value.notional,
-					right_value.rate,
-					right_value.cashflow_amount,
-					right_value.npv_cashflow_amount,
-					right_value.days,
-					right_value.day_count_fraction,
-					right_value.cf_curr,
-					right_value.cf_type);
-		}
+		bool operator==(const CashflowStruct& right_value) const = default;
 	};
 
 	
