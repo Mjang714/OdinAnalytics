@@ -59,7 +59,9 @@
     <ClCompile Include="..\..\src\unit_test\derived_time\cashflow_gen\cashflow_gen_test.cpp">
       <Filter>derived_time\cashflow_gen</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\unit_test\test_main.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gtest\gtest-all.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc" />
+    <ClCompile Include="..\..\packages\gmock.1.11.0\lib\native\src\gtest\src\gtest_main.cc" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="time">
