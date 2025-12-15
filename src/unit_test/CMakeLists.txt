@@ -41,7 +41,9 @@ endif()
 target_link_libraries(
     oa_unit_test
     PRIVATE
-        GTest::gtest_main
+        GTest::gmock_main
+        GTest::gmock
+        GTest::gtest
         oa_config
         oa_dao
         oa_derived_time
