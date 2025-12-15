@@ -74,11 +74,15 @@ jobs:
             -DMAGIC_ENUM_OPT_BUILD_TESTS=OFF
           cmake --build build -j
           sudo cmake --install build
+      # note: also installs GoogleMock which is packaged separately in APT
+      # TODO: for consistency with Windows build consider using a Git checkout
       - name: Install GoogleTest
         run: |
-          sudo apt install libgtest-dev
+          sudo apt install libgtest-dev libgmock-dev
           echo -n "GoogleTest version: "
           apt-cache show libgtest-dev | grep Version | sed -E 's/Version:\s+//g'
+          echo -n "GoogleMock version: "
+          apt-cache show libgmock-dev | grep Version | sed -E 's/Version:\s+//g'
       # note: build.sh script can't accept arguments like "Unix Makefiles" so
       # we have problems using -Ca -G "Unix Makefiles" for example. also, if we
       # use build.sh on GitHub Actions, we need chmod +x to make it executable.
