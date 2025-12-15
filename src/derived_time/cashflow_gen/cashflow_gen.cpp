@@ -4,7 +4,7 @@
 namespace oa::derived_time {
 
 
-	std::vector<CashflowStruct> CashflowGen::CreateCashflows(
+	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
 		const oa::time::Date& start_date,
 		const oa::time::Date& mat_date,
 		const oa::derived_time::Frequency reset_freq,
@@ -28,17 +28,9 @@ namespace oa::derived_time {
 		std::vector<oa::time::Date> unadjusted_start_dates{};
 		std::vector<oa::time::Date> unadjusted_end_dates{};
 
-		//this is not a good palce to place this but I need to think about where else I can put this mapping.
-		const static std::unordered_map<oa::derived_time::Frequency, oa::time::Tenor> reset_freq_enum_to_tenor{
-			{oa::derived_time::Frequency::kAnnual, oa::time::Tenor("1Y")},
-			{oa::derived_time::Frequency::kSemiAnnual,oa::time::Tenor("6M")},
-			{oa::derived_time::Frequency::kQuarterly, oa::time::Tenor("3M")},
-			{oa::derived_time::Frequency::kMonthly, oa::time::Tenor("1M")},
-			{oa::derived_time::Frequency::kWeekly, oa::time::Tenor("1W")},
-			{oa::derived_time::Frequency::kDaily, oa::time::Tenor("1D")}
-		};
+		
 
-		auto tenor_pair = reset_freq_enum_to_tenor.at(reset_freq).GetValues();
+		auto tenor_pair = MapResetFreqEnumToTenor(reset_freq).GetValues();
 		auto time_length = tenor_pair.first;
 		auto tenor_enum = tenor_pair.second;
 
@@ -125,5 +117,19 @@ namespace oa::derived_time {
 		// Implementation logic to generate cashflows goes here
 		return cashflows;
 
+	}
+
+	oa::time::Tenor CashflowGen::MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq) 
+	{
+		const static std::unordered_map<oa::derived_time::Frequency, oa::time::Tenor> reset_freq_enum_to_tenor{
+			{oa::derived_time::Frequency::kAnnual, oa::time::Tenor("1Y")},
+			{oa::derived_time::Frequency::kSemiAnnual,oa::time::Tenor("6M")},
+			{oa::derived_time::Frequency::kQuarterly, oa::time::Tenor("3M")},
+			{oa::derived_time::Frequency::kMonthly, oa::time::Tenor("1M")},
+			{oa::derived_time::Frequency::kWeekly, oa::time::Tenor("1W")},
+			{oa::derived_time::Frequency::kDaily, oa::time::Tenor("1D")}
+		};
+
+		return reset_freq_enum_to_tenor.at(reset_freq);
 	}
 }  // namespace oa::derived_time

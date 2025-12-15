@@ -1,6 +1,7 @@
 #ifndef OA_DERIVED_TIME_CAHFLOW_STRUCT_H_
 #define OA_DERIVED_TIME_CAHFLOW_STRUCT_H_
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "oa/dllexport.h"

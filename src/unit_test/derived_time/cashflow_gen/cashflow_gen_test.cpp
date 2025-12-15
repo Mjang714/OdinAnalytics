@@ -11,7 +11,6 @@
 
 namespace dt = oa::derived_time;
 using ::testing::ContainerEq;
-//using ::testing::EXPECT_THAT;
 
 namespace
 {
@@ -74,7 +73,7 @@ namespace
 
 	TEST_F(CashflowGenTest, CreateFixedCashflowsFwdTest)
 	{
-		auto cashflows = oa::derived_time::CashflowGen::CreateCashflows(
+		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
 			mat_date,
 			oa::derived_time::Frequency::kSemiAnnual,
@@ -84,13 +83,12 @@ namespace
 			oa::derived_time::Currency::kUSD,
 			oa::derived_time::DateDirection::kForward
 		);
-		EXPECT_EQ(11, cashflows.size());
-		EXPECT_THAT(cashflows, ContainerEq(fixed_cf_base));
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
 
 	TEST_F(CashflowGenTest, CreateFixedCashflowsBkwdTest)
 	{
-		auto cashflows = oa::derived_time::CashflowGen::CreateCashflows(
+		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
 			mat_date,
 			oa::derived_time::Frequency::kSemiAnnual,
@@ -100,7 +98,6 @@ namespace
 			oa::derived_time::Currency::kUSD,
 			oa::derived_time::DateDirection::kBackward
 		);
-		EXPECT_EQ(11, cashflows.size());
-		EXPECT_THAT(cashflows, ContainerEq(fixed_cf_base));
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
 }

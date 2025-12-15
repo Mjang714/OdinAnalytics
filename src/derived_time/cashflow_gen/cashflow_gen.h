@@ -21,7 +21,7 @@ namespace oa::derived_time {
 	class OA_DERIVED_TIME_API CashflowGen {
 	public:
 		CashflowGen() = default;
-		static std::vector<CashflowStruct> CreateCashflows(
+		static std::vector<CashflowStruct> CreateFixedCashflows(
 			const oa::time::Date& start_date,
 			const oa::time::Date& mat_date,
 			const oa::derived_time::Frequency reset_freq,
@@ -40,8 +40,10 @@ namespace oa::derived_time {
 			const std::shared_ptr<oa::derived_time::DateFormula>& acc_date_adj = nullptr,
 			const std::optional<oa::time::Date>& stub_date = std::nullopt
 			);
-	
-
+	private:
+		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
+		
+		
 	};
 }
 #endif // !OA_DERIVED_TIME_CASHFLOW_GEN_CASHFLOW_GEN_H_
