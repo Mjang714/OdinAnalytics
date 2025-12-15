@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.23)
 
 # see README.md for build + test instructions
 
@@ -100,6 +100,17 @@ if(GTest_FOUND)
     message(STATUS "GoogleTest version: ${GTest_VERSION}")
 else()
     message(STATUS "GoogleTest version: None")
+endif()
+
+# find GoogleMock by detecting GTest::gmock target. GoogleTest and GoogleMock
+# may be packaged separately on some Linux distros so GTest::gmock[_main] may
+# not be defined if GoogleMock is not found in the find_package call
+if(TARGET GTest::gmock)
+    set(GMock_FOUND TRUE)
+    message(STATUS "GoogleMock version: ${GTest_VERSION}")
+else()
+    set(GMock_FOUND FALSE)
+    message(STATUS "GoogleMock version: None")
 endif()
 
 # look for Excel 2013 XLL SDK
