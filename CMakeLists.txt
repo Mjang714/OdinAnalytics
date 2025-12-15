@@ -102,6 +102,17 @@ else()
     message(STATUS "GoogleTest version: None")
 endif()
 
+# find GoogleMock by detecting GTest::gmock target. GoogleTest and GoogleMock
+# may be packaged separately on some Linux distros so GTest::gmock[_main] may
+# not be defined if GoogleMock is not found in the find_package call
+if(TARGET GTest::gmock)
+    set(GMock_FOUND TRUE)
+    message(STATUS "GoogleMock version: ${GTest_VERSION}")
+else()
+    set(GMock_FOUND FALSE)
+    message(STATUS "GoogleMock version: None")
+endif()
+
 # look for Excel 2013 XLL SDK
 if(WIN32)
     find_package(XLLSDK 15.0 COMPONENTS frmwrk32)

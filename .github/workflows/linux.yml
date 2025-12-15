@@ -74,6 +74,8 @@ jobs:
             -DMAGIC_ENUM_OPT_BUILD_TESTS=OFF
           cmake --build build -j
           sudo cmake --install build
+      # note: also installs GoogleMock which is packaged separately in APT
+      # TODO: for consistency with Windows build consider using a Git checkout
       - name: Install GoogleTest
         run: |
           sudo apt install libgtest-dev libgmock-dev
