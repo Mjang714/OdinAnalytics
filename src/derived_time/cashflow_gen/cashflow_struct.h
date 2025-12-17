@@ -82,7 +82,7 @@ namespace oa::derived_time {
 				<< "days: " << cf.days << ", "
 				<< "day_count_fraction: " << cf.day_count_fraction << ", "
 				<< "cf_curr: " << oa::utils::EnumToInt<Currency>(cf.cf_curr) << ", "
-				<< "cf_type: " << oa::utils::GetEnumName<CashflowType>(cf.cf_type)
+				<< "cf_type: " << oa::utils::GetCleanName<CashflowType>(cf.cf_type)
 				<< "}";
 		}
 	};
