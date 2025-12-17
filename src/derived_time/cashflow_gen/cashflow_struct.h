@@ -6,6 +6,7 @@
 
 #include "oa/dllexport.h"
 #include "time/date.h"
+#include "helpers/utils.h"
 #include "derived_time/derived_time_enums.h"
 
 
@@ -64,6 +65,26 @@ namespace oa::derived_time {
 			}
 
 		bool operator==(const CashflowStruct& right_value) const = default;
+
+		friend void PrintTo(const CashflowStruct& cf, std::ostream* os) 
+		{
+			*os << "CashflowStruct{"
+				<< "unadj_start_date: " << cf.unadj_start_date.ToString() << ", "
+				<< "unadj_end_date: " << cf.unadj_end_date.ToString() << ", "
+				<< "start_date: " << cf.start_date.ToString() << ", "
+				<< "end_date: " << cf.end_date.ToString() << ", "
+				<< "fixing_date: " << cf.fixing_date.ToString() << ", "
+				<< "payment_date: " << cf.payment_date.ToString() << ", "
+				<< "notional: " << cf.notional << ", "
+				<< "rate: " << cf.rate << ", "
+				<< "cashflow_amount: " << cf.cashflow_amount << ", "
+				<< "npv_cashflow_amount: " << cf.npv_cashflow_amount << ", "
+				<< "days: " << cf.days << ", "
+				<< "day_count_fraction: " << cf.day_count_fraction << ", "
+				<< "cf_curr: " << oa::utils::EnumToInt<Currency>(cf.cf_curr) << ", "
+				<< "cf_type: " << oa::utils::GetEnumName<CashflowType>(cf.cf_type)
+				<< "}";
+		}
 	};
 
 	

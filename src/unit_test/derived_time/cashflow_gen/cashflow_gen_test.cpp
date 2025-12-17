@@ -36,7 +36,7 @@ namespace
 			oa::time::DayCountRule day_cnt_rule;
 			
 			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base{
-				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2025-1-3","2025-7-3","2025-1-3","2025-1-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2026-7-3","2027-1-3","2026-7-3","2027-1-3","2026-7-3","2027-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
@@ -49,6 +49,7 @@ namespace
 				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, 1.0, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kPrincipal }
 
 			};
+
 			virtual void SetUp() override
 			{
 				start_date = oa::time::Date(2025, 1, 3);
@@ -71,6 +72,11 @@ namespace
 			}
 	};
 
+	/// <summary>
+	/// unit test for CreateFixedCashflows with forward date direction and no adjustments
+	/// </summary>
+	/// <param name=""></param>
+	/// <param name=""></param>
 	TEST_F(CashflowGenTest, CreateFixedCashflowsFwdTest)
 	{
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
@@ -86,6 +92,11 @@ namespace
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
 
+	/// <summary>
+	/// unit test for CreateFixedCashflows with backward date direction and no adjustments
+	/// </summary>
+	/// <param name=""></param>
+	/// <param name=""></param>
 	TEST_F(CashflowGenTest, CreateFixedCashflowsBkwdTest)
 	{
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
