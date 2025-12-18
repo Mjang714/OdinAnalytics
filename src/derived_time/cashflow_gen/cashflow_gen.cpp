@@ -47,7 +47,7 @@ namespace oa::derived_time {
 			}
 		}
 
-		else if (date_dir == deriv_time::DateDirection::kBackward) {
+		else {
 			
 			auto curr_end_date = mat_date;
 			auto total_length = -time_length;
@@ -64,16 +64,21 @@ namespace oa::derived_time {
 			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
-		else {
-			// No date direction specified
-		}
 
-		if (stub_type == deriv_time::StubType::kShortFirst) {
+		if (stub_type == deriv_time::StubType::kShortFirst && date_dir == deriv_time::DateDirection::kBackward) {
 			//will fill out later to deal with short first stub
 		}
-		else if (stub_type == deriv_time::StubType::kShortFirst) {
+
+		else if (stub_type == deriv_time::StubType::kLongFirst && date_dir == deriv_time::DateDirection::kBackward) {
 			//will fill out later to deal with short last stub
 
+		}
+
+		else if (stub_type == deriv_time::StubType::kShortLast && date_dir == deriv_time::DateDirection::kForward) {
+			//will fill out later to deal with short last stub
+		}
+		else if (stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward) {
+			//will fill out later to deal with long last stub
 		}
 
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {

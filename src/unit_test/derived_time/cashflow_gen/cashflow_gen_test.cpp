@@ -14,10 +14,10 @@ using ::testing::ContainerEq;
 
 namespace
 {
-	class CashflowGenTest : public ::testing::Test
+	class CashflowGenBaseTest : public ::testing::Test
 	{
 		public:
-			CashflowGenTest()
+			CashflowGenBaseTest()
 				: start_date(),
 				  mat_date(),
 				  frequency("6M"),
@@ -36,7 +36,7 @@ namespace
 			oa::time::DayCountRule day_cnt_rule;
 			
 			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base{
-				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2025-1-3","2025-7-3","2025-1-3","2025-1-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2026-7-3","2027-1-3","2026-7-3","2027-1-3","2026-7-3","2027-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
@@ -77,7 +77,7 @@ namespace
 	/// </summary>
 	/// <param name=""></param>
 	/// <param name=""></param>
-	TEST_F(CashflowGenTest, CreateFixedCashflowsFwdTest)
+	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsFwdTest)
 	{
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
@@ -97,7 +97,7 @@ namespace
 	/// </summary>
 	/// <param name=""></param>
 	/// <param name=""></param>
-	TEST_F(CashflowGenTest, CreateFixedCashflowsBkwdTest)
+	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsBkwdTest)
 	{
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,

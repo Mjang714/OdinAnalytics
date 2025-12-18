@@ -27,7 +27,6 @@ namespace oa::derived_time
 	};
 
 	enum class DateDirection {
-		kNone,
 		kForward,
 		kBackward
 	};
