@@ -62,4 +62,6 @@ gtest_discover_tests(
     oa_unit_test
     # ensure that OdinBaseDir is correctly set up
     PROPERTIES ENVIRONMENT "OdinBaseDir=${PROJECT_SOURCE_DIR}"
+    # increase timeout beyond default 5 seconds for CI
+    DISCOVERY_TIMEOUT 15
 )
