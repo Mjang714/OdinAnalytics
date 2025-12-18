@@ -77,8 +77,9 @@ namespace oa::derived_time {
 		else if (stub_type == deriv_time::StubType::kShortLast && date_dir == deriv_time::DateDirection::kForward) {
 			//will fill out later to deal with short last stub
 		}
-		else if (stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward) {
-			//will fill out later to deal with long last stub
+
+		else {
+			//this case is stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward)
 		}
 
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {
