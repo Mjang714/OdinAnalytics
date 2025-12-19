@@ -69,7 +69,7 @@ namespace oa::derived_time {
 		
 	};
 
-	void PrintTo(const CashflowStruct& cf, std::ostream* os)
+	inline void PrintTo(const CashflowStruct& cf, std::ostream* os)
 	{
 		*os << "CashflowStruct{"
 			<< "unadj_start_date: " << cf.unadj_start_date.ToString() << ", "
