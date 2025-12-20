@@ -11,7 +11,8 @@ add_executable(
     config/paths_test.cpp
     dao/calendar_dao_test.cpp
     date_test.cpp
-    date_formula/date_formula_test.cpp
+    derived_time/cashflow_gen/cashflow_gen_test.cpp
+    derived_time/date_formula/date_formula_test.cpp
     fixed_string_test.cpp
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp
@@ -41,7 +42,9 @@ endif()
 target_link_libraries(
     oa_unit_test
     PRIVATE
-        GTest::gtest_main
+        GTest::gmock_main
+        GTest::gmock
+        GTest::gtest
         oa_config
         oa_dao
         oa_derived_time
@@ -63,4 +66,6 @@ gtest_discover_tests(
     oa_unit_test
     # ensure that OdinBaseDir is correctly set up
     PROPERTIES ENVIRONMENT "OdinBaseDir=${PROJECT_SOURCE_DIR}"
+    # increase timeout beyond default 5 seconds for CI
+    DISCOVERY_TIMEOUT 15
 )
