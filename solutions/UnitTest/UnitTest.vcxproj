@@ -21,9 +21,9 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ada0fba8-c692-435b-9557-fd9eb5e0b2c7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <ProjectName>UnitTest</ProjectName>
   </PropertyGroup>
@@ -75,11 +75,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\packages\gmock.1.11.0\lib\native\src\gmock\src\gmock_main.cc" />
     <ClCompile Include="..\..\src\time\day_count\day_count_act_365_fixed_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\calendar_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\dao\calendar_dao_test.cpp" />
-    <ClCompile Include="..\..\src\unit_test\date_formula\date_formula_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\date_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\derived_time\cashflow_gen\cashflow_gen_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\derived_time\date_formula\date_formula_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\business_logic_check_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\enum_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\oxl\handle_prefixer_test.cpp" />
@@ -103,10 +105,10 @@
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets" Condition="Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" />
     <Import Project="..\..\packages\boost.1.82.0\build\boost.targets" Condition="Exists('..\..\packages\boost.1.82.0\build\boost.targets')" />
     <Import Project="..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets" Condition="Exists('..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets')" />
-    <Import Project="..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
+    <Import Project="..\..\packages\magic_enum.0.9.7\build\native\magic_enum.targets" Condition="Exists('..\..\packages\magic_enum.0.9.7\build\native\magic_enum.targets')" />
+    <Import Project="..\..\packages\gmock.1.11.0\build\native\gmock.targets" Condition="Exists('..\..\packages\gmock.1.11.0\build\native\gmock.targets')" />
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -119,7 +121,7 @@
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../../src;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\projects\OdinAnalytics\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\include;../../src;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -132,7 +134,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\builds\$(PlatformTarget)\$(Configuration)\helpers\;..\builds\intermediate\$(PlatformTarget)\$(Configuration)\helpers\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\projects\OdinAnalytics\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\lib\native\v140\windesktop\msvcstl\static\rt-dyn\x64\Debug;..\builds\$(PlatformTarget)\$(Configuration)\helpers\;..\builds\intermediate\$(PlatformTarget)\$(Configuration)\helpers\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -146,7 +148,7 @@
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../../src;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\projects\OdinAnalytics\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\include;../../src;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -159,7 +161,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\builds\$(PlatformTarget)\$(Configuration)\helpers\;..\builds\intermediate\$(PlatformTarget)\$(Configuration)\helpers\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\projects\OdinAnalytics\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\lib\native\v140\windesktop\msvcstl\static\rt-dyn\x64\Debug;..\builds\$(PlatformTarget)\$(Configuration)\helpers\;..\builds\intermediate\$(PlatformTarget)\$(Configuration)\helpers\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -172,7 +174,7 @@
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../../src;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\projects\OdinAnalytics\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\include;../../src;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -187,7 +189,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\builds\$(PlatformTarget)\$(Configuration)\helpers\;..\builds\intermediate\$(PlatformTarget)\$(Configuration)\helpers\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\projects\OdinAnalytics\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\lib\native\v140\windesktop\msvcstl\static\rt-dyn\x64\Debug;..\builds\$(PlatformTarget)\$(Configuration)\helpers\;..\builds\intermediate\$(PlatformTarget)\$(Configuration)\helpers\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -200,7 +202,7 @@
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../../src;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\projects\OdinAnalytics\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\include;../../src;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -215,16 +217,16 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\builds\$(PlatformTarget)\$(Configuration)\helpers\;..\builds\intermediate\$(PlatformTarget)\$(Configuration)\helpers\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\projects\OdinAnalytics\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\lib\native\v140\windesktop\msvcstl\static\rt-dyn\x64\Debug;..\builds\$(PlatformTarget)\$(Configuration)\helpers\;..\builds\intermediate\$(PlatformTarget)\$(Configuration)\helpers\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\magic_enum.0.8.2\build\native\magic_enum.targets'))" />
     <Error Condition="!Exists('..\..\packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\boost.1.82.0\build\boost.targets'))" />
     <Error Condition="!Exists('..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Excel2013XLLSDK.2013.0.0\build\native\Excel2013XLLSDK.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\..\packages\magic_enum.0.9.7\build\native\magic_enum.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\magic_enum.0.9.7\build\native\magic_enum.targets'))" />
+    <Error Condition="!Exists('..\..\packages\gmock.1.11.0\build\native\gmock.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\gmock.1.11.0\build\native\gmock.targets'))" />
   </Target>
 </Project>

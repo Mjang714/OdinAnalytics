@@ -47,19 +47,19 @@ namespace oa::enum_mappers {
 	{
 		static const std::unordered_map<std::string, time::AdjRule> da_map{
 			{"MF", time::AdjRule::kModifiedFollowing},
-			{"MODIFIEDFOLLOWING", time::AdjRule::kModifiedFollowing },
-			{"MODIFIED_FOLLOWING", time::AdjRule::kModifiedFollowing },
-			{"MODF", time::AdjRule::kModifiedFollowing },
-			{"MFOL", time::AdjRule::kModifiedFollowing },
-			{"P", time::AdjRule::kPreceding },
-			{"PRECEDING", time::AdjRule::kPreceding },
-			{"PRE", time::AdjRule::kPreceding },
-			{"F", time::AdjRule::kFollowing },
-			{"FOLLOWING", time::AdjRule::kFollowing },
-			{"FOL", time::AdjRule::kFollowing },
-			{ "NOADJ", time::AdjRule::kPlainAdjustment },
-			{ "NO_ADJ", time::AdjRule::kPlainAdjustment },
-			{ "NONE", time::AdjRule::kPlainAdjustment },
+			{"MODIFIEDFOLLOWING", time::AdjRule::kModifiedFollowing},
+			{"MODIFIED_FOLLOWING", time::AdjRule::kModifiedFollowing},
+			{"MODF", time::AdjRule::kModifiedFollowing},
+			{"MFOL", time::AdjRule::kModifiedFollowing},
+			{"P", time::AdjRule::kPreceding},
+			{"PRECEDING", time::AdjRule::kPreceding},
+			{"PRE", time::AdjRule::kPreceding},
+			{"F", time::AdjRule::kFollowing},
+			{"FOLLOWING", time::AdjRule::kFollowing},
+			{"FOL", time::AdjRule::kFollowing},
+			{"NOADJ", time::AdjRule::kPlainAdjustment},
+			{"NO_ADJ", time::AdjRule::kPlainAdjustment},
+			{"NONE", time::AdjRule::kPlainAdjustment},
 		};
 		return da_map;
 	}
