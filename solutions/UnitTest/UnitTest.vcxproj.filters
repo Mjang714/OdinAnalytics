@@ -52,10 +52,16 @@
     <ClCompile Include="..\..\src\unit_test\time\day_count\day_count_factory_test.cpp">
       <Filter>time\day_count</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\unit_test\date_formula\date_formula_test.cpp">
-      <Filter>date_formula</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\unit_test\oxl\handle_prefixer_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\derived_time\date_formula\date_formula_test.cpp">
+      <Filter>derived_time\date_formula</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\derived_time\cashflow_gen\cashflow_gen_test.cpp">
+      <Filter>derived_time\cashflow_gen</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gtest\gtest-all.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc" />
+    <ClCompile Include="..\..\packages\gmock.1.11.0\lib\native\src\gmock\src\gmock_main.cc" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="time">
@@ -76,8 +82,14 @@
     <Filter Include="static_data_cache">
       <UniqueIdentifier>{9a6c4162-3e4b-4f34-bc6c-db4f5a9fd129}</UniqueIdentifier>
     </Filter>
-    <Filter Include="date_formula">
+    <Filter Include="derived_time">
+      <UniqueIdentifier>{778d5a11-50b3-4d53-b904-6e9765107920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="derived_time\date_formula">
       <UniqueIdentifier>{e2fd977f-96c6-47f8-997f-c129d7ac4e45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="derived_time\cashflow_gen">
+      <UniqueIdentifier>{c19e632f-ec1a-47f3-ad89-b744fa3f62c5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

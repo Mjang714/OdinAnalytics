@@ -25,6 +25,12 @@ namespace oa
 			catch (const std::exception&) {}
 		}
 
+
+		Tenor::Tenor(int time_length, oa::time::Tenors tenor_enum) : m_number_(time_length), m_time_unit_(tenor_enum)
+		{
+
+		}
+
 		const Tenor Tenor::FlipSign() const
 		{
 			return Tenor(std::to_string( -m_number_) +
