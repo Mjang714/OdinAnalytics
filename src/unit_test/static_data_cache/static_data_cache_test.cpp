@@ -13,12 +13,6 @@ namespace
 			std::string ny_calendar_str= "NYB";
 			std::string lon_calendar_str = "LNB";
 
-			void SetUp() override
-			{
-				// skip test if OdinBaseDir was not set correctly
-				OA_GTEST_ENSURE_BASE_DIR();
-			}
-
 			void TearDown() override
 			{
 				// TODO: remove below comment if it is no longer relevant

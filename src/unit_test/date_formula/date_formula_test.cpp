@@ -19,7 +19,6 @@ namespace
 
 			void SetUp() override
 			{
-				OA_GTEST_ENSURE_BASE_DIR();
 				calendar = oa::static_cache::CalendarCache::RetrieveCache().GetCalendar("NYB");
 				adjustment_rule = oa::time::AdjRule::kModifiedFollowing;
 				date_formula = oa::derived_time::DateFormula(tenor, adjustment_rule, *calendar);
