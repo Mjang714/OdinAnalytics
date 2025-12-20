@@ -1,0 +1,15 @@
+# @PROJECT_NAME@Config.cmake
+#
+# @PROJECT_NAME@ CMake package config file.
+#
+# Author: Derek Huang
+# Copyright: MIT License
+#
+
+@PACKAGE_INIT@
+
+# include exported targets
+include("${CMAKE_CURRENT_LIST_DIR}/@ODIN_TARGETS_FILE@")
+
+# note: no specific find_package() components supported for now
+check_required_components(@PROJECT_NAME@)
