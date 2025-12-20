@@ -121,8 +121,9 @@ The double quotes are necessary as without them CMD will get confused by the
 `=` and think a variable assignment is being done. For more build options run
 `build --help` for a brief usage summary.
 
-If C++ unit tests were built they can be run in parallel using CTest with
+If C++ unit tests were built, e.g. for x64 Release libraries, they can be run in
+parallel using CTest with
 
 ```shell
-ctest --test-dir build -j%NUMBER_OF_PROCESSORS%
+ctest --test-dir build_windows_x64 -C Release -j%NUMBER_OF_PROCESSORS%
 ```
