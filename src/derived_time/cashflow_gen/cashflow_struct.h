@@ -72,20 +72,20 @@ namespace oa::derived_time {
 	inline void PrintTo(const CashflowStruct& cf, std::ostream* os)
 	{
 		*os << "CashflowStruct{\n"
-			<< "unadj_start_date: " << cf.unadj_start_date.ToString() << "\n"
-			<< "unadj_end_date: " << cf.unadj_end_date.ToString() << "\n"
-			<< "start_date: " << cf.start_date.ToString() << "\n"
-			<< "end_date: " << cf.end_date.ToString() << "\n"
-			<< "fixing_date: " << cf.fixing_date.ToString() << "\n"
-			<< "payment_date: " << cf.payment_date.ToString() << "\n"
-			<< "notional: " << cf.notional << "\n"
-			<< "rate: " << cf.rate << "\n"
-			<< "cashflow_amount: " << cf.cashflow_amount << "\n"
-			<< "npv_cashflow_amount: " << cf.npv_cashflow_amount << "\n"
-			<< "days: " << cf.days << "\n"
-			<< "day_count_fraction: " << cf.day_count_fraction << "\n"
-			<< "cf_curr: " << oa::utils::EnumToInt<Currency>(cf.cf_curr) << "\n"
-			<< "cf_type: " << oa::utils::GetCleanName<CashflowType>(cf.cf_type)
+			<< "unadj_start_date = " << cf.unadj_start_date.ToString() << "\n"
+			<< "unadj_end_date = " << cf.unadj_end_date.ToString() << "\n"
+			<< "start_date = " << cf.start_date.ToString() << "\n"
+			<< "end_date = " << cf.end_date.ToString() << "\n"
+			<< "fixing_date = " << cf.fixing_date.ToString() << "\n"
+			<< "payment_date = " << cf.payment_date.ToString() << "\n"
+			<< "notional = " << cf.notional << "\n"
+			<< "rate = " << cf.rate << "\n"
+			<< "cashflow_amount = " << cf.cashflow_amount << "\n"
+			<< "npv_cashflow_amount = " << cf.npv_cashflow_amount << "\n"
+			<< "days = " << cf.days << "\n"
+			<< "day_count_fraction = " << cf.day_count_fraction << "\n"
+			<< "cf_curr = " << oa::utils::EnumToInt<Currency>(cf.cf_curr) << "\n"
+			<< "cf_type = " << oa::utils::GetCleanName<CashflowType>(cf.cf_type)
 			<< "}";
 	}
 }
