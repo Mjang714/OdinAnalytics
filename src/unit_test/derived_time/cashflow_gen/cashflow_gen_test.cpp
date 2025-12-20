@@ -25,11 +25,11 @@ namespace
 				  notional(0.0),
 				  rate(0.0),
 				  day_cnt_rule(oa::time::DayCountRule::kACT_360),
-				  tenor_fix("-2d"),
+				  pay_calendar("NYB"),
 				  fix_calendar("NYB"),
 				  tenor_pay("2d"),
-				  pay_calendar("NYB"),
-				  adjustment_rule_pay(oa::time::AdjRule::kFollowing),
+				  tenor_fix("-2d"),
+				  adjustment_rule_pay(oa::time::AdjRule::kModifiedFollowing),
 				  adjustment_rule_fix(oa::time::AdjRule::kPreceding)
 
 			{
@@ -127,7 +127,7 @@ namespace
 			oa::derived_time::Currency::kUSD,
 			oa::derived_time::DateDirection::kForward
 		);
-		EXPECT_THAT(fixed_cf_base, ::testing::Pointwise(::testing::Eq(), cashflows));
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
 
 	/// <summary>
@@ -147,7 +147,7 @@ namespace
 			oa::derived_time::Currency::kUSD,
 			oa::derived_time::DateDirection::kBackward
 		);
-		EXPECT_THAT(fixed_cf_base, ::testing::Pointwise(::testing::Eq(), cashflows));
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
 
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsFwdTestWithPayFixAdj)
@@ -170,7 +170,7 @@ namespace
 			oa::derived_time::DateFormula(tenor_fix, adjustment_rule_fix, fix_calendar)
 
 		);
-		EXPECT_THAT(fixed_cf_fix_pay_adj, ::testing::Pointwise(::testing::Eq(), cashflows));
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_fix_pay_adj));
 	}
 
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsBkwdTestWithPayFixAdj)
@@ -193,6 +193,6 @@ namespace
 			oa::derived_time::DateFormula(tenor_fix, adjustment_rule_fix ,fix_calendar)
 
 		);
-		EXPECT_THAT(fixed_cf_fix_pay_adj, ::testing::Pointwise(::testing::Eq(), cashflows));
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_fix_pay_adj));
 	}
 }
