@@ -53,10 +53,11 @@ target_link_libraries(
 if(TARGET oxl_api)
     target_link_libraries(oa_unit_test PRIVATE oxl_api)
 endif()
+# ensure before oa_unit_test is built that static data is correctly copied.
+# although we could have hung this as a post-build command, this more correctly
+# chains the dependency of oa_unit_test on the static data being located in the
+# same directory as the project artifacts (for local builds)
+add_dependencies(oa_unit_test oa_copy_static_data)
 
 # discover tests for CTest
-gtest_discover_tests(
-    oa_unit_test
-    # ensure that OdinBaseDir is correctly set up
-    PROPERTIES ENVIRONMENT "OdinBaseDir=${PROJECT_SOURCE_DIR}"
-)
+gtest_discover_tests(oa_unit_test)
