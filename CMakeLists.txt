@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.23)
 # see README.md for build + test instructions
 
 project(
-    OdinAnalytics
+    OA
     VERSION 0.1.0
     DESCRIPTION "Nordic quantitative library sandbox"
     LANGUAGES C CXX
@@ -227,6 +227,18 @@ set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # TODO: stop using this as part of target include paths later on
 set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+# oa_core: core header-only library
+# FIXME: currently oa/rtti.h still requires Boost
+# TODO: go through project targets to see which implicitly depend on this
+add_library(oa_core INTERFACE)
+target_include_directories(
+    oa_core INTERFACE
+    $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
+# install rule for oa_core (provides just an IMPORTED target)
+install(TARGETS oa_core EXPORT odin_exports)
+
 add_subdirectory(src)
 
 # install rule for include/oa headers (excluding internal testing headers)
@@ -247,4 +259,51 @@ install(
 # component because it is required for some libraries to function at runtime
 # TODO: do we want shared data to be in share/oa or share/OdinAnalytics? if we
 # want the latter then we'll need to update oa::config::data_dir()
+# TODO: ensure that we use share/OA (capitalized) for static data
 install(DIRECTORY static_data/calendars DESTINATION share/oa COMPONENT Runtime)
+
+# CMake package configuration
+
+include(CMakePackageConfigHelpers)
+
+# CMake script install subdir
+set(ODIN_CMAKE_INSTALL_DIR lib/cmake/${PROJECT_NAME})
+# name of exported targets file
+set(ODIN_TARGETS_FILE ${PROJECT_NAME}Targets.cmake)
+# generate package config file
+set(ODIN_CONFIG_FILE cmake/${PROJECT_NAME}Config.cmake)
+# variables consumed:
+#
+#   PROJECT_NAME
+#   ODIN_TARGETS_FILE
+#
+configure_package_config_file(
+    ${ODIN_CONFIG_FILE}.in ${ODIN_CONFIG_FILE}
+    INSTALL_DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+)
+message(STATUS "Generated ${ODIN_CONFIG_FILE}")
+# generate package version file
+set(ODIN_CONFIG_VERSION_FILE cmake/${PROJECT_NAME}ConfigVersion.cmake)
+write_basic_package_version_file(
+    ${ODIN_CONFIG_VERSION_FILE}
+    VERSION ${ODIN_VERSION}
+    # TODO: no real compatibility guarantees so just use SameMajorVersion
+    COMPATIBILITY SameMajorVersion
+)
+message(STATUS "Generated ${ODIN_CONFIG_VERSION_FILE}")
+# install rule for config files
+install(
+    FILES
+        ${PROJECT_BINARY_DIR}/${ODIN_CONFIG_FILE}
+        ${PROJECT_BINARY_DIR}/${ODIN_CONFIG_VERSION_FILE}
+    DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+    COMPONENT Development
+)
+# install rule for exported targets
+install(
+    EXPORT odin_exports
+    DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+    NAMESPACE ${PROJECT_NAME}::
+    FILE ${ODIN_TARGETS_FILE}
+    COMPONENT Development
+)

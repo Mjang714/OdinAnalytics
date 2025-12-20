@@ -3,7 +3,11 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 # oa_config: library config helpers
 # note: this is always shared so we can use dladdr() and GetModuleFileNameA()
 add_library(oa_config SHARED paths.cpp)
-target_include_directories(oa_config PUBLIC ${ODIN_INCLUDE_DIR})
+target_include_directories(
+    oa_config PUBLIC
+    $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
 # need Boost headers for boost::core::demangle
 # TODO: may split rtti.h macros into a separate ctti.h
 target_link_libraries(oa_config PRIVATE Boost::headers)
