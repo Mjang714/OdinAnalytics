@@ -268,6 +268,8 @@ install(
 )
 # install rule for the calendar data. we consider this part of the Runtime
 # component because it is required for some libraries to function at runtime
-# TODO: do we want shared data to be in share/oa or share/OdinAnalytics? if we
-# want the latter then we'll need to update oa::config::data_dir()
-install(DIRECTORY static_data/calendars DESTINATION share/oa COMPONENT Runtime)
+install(
+    DIRECTORY static_data/calendars
+    DESTINATION share/OdinAnalytics
+    COMPONENT Runtime
+)
