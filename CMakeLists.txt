@@ -243,7 +243,7 @@ set(
 # note: multi-config generators will have the per-config subdirectory
 add_custom_target(
     oa_copy_static_data
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
             static_data/calendars ${ODIN_BUILD_DIR_GENEX}/calendars
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMENT "Copying static data to ${ODIN_BUILD_DIR_GENEX}"
