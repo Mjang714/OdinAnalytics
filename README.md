@@ -90,12 +90,14 @@ If C++ unit tests were built they can be run in parallel using [CTest] with
 ctest --test-dir build -j$(nproc)
 ```
 
-To install the x64 Relase Odin Runtime component libraries + data and [partial]
-Development headers to a given install root, e.g. `/opt/OdinAnalytics`, use
+To install Odin into a given install root, e.g. `/opt/OdinAnalytics`, use
 
 ```bash
 cmake --install build --prefix /opt/OdinAnalytics
 ```
+
+See the corresponding section for details on
+[per-component installation](#per-component-installation).
 
 [CTest]: https://cmake.org/cmake/help/latest/manual/ctest.1.html
 
@@ -138,12 +140,15 @@ parallel using CTest with
 ctest --test-dir build_windows_x64 -C Release -j%NUMBER_OF_PROCESSORS%
 ```
 
-To install the x64 Relase Odin Runtime component libraries + data and [partial]
-Development headers to a given install root, e.g. `C:\OdinAnalytics`, use
+To install the Odin x64 Release build to a given install root, e.g.
+`C:\OdinAnalytics`, use
 
 ```shell
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release
 ```
+
+See the corresponding section for details on
+[per-component installation](#per-component-installation).
 
 ## Per-Component Installation
 
