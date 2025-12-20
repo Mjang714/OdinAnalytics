@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 # oa_derived_time: Odin derived time library
-add_library(oa_derived_time date_formula/date_formula.cpp)
+add_library(
+    oa_derived_time
+    # TODO: maybe too much directory nesting
+    cashflow_gen/cashflow_gen.cpp date_formula/date_formula.cpp
+)
 target_include_directories(
     oa_derived_time PUBLIC
     $<BUILD_INTERFACE:${ODIN_INSTALL_DIR}>
