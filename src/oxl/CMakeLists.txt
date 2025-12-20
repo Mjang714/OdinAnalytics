@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 # oxl sources (xl_api directory) should be compiled here instead
 if(XLLSDK_FOUND)
     add_library(oxl_api INTERFACE)
-    add_library(OdinAnalytics::oxl_api ALIAS oxl_api)
     target_include_directories(
         oxl_api INTERFACE
         $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
