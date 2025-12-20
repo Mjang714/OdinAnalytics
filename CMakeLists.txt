@@ -268,8 +268,4 @@ install(
 )
 # install rule for the calendar data. we consider this part of the Runtime
 # component because it is required for some libraries to function at runtime
-install(
-    DIRECTORY static_data/calendars
-    DESTINATION share/OdinAnalytics
-    COMPONENT Runtime
-)
+install(DIRECTORY static_data/calendars DESTINATION share/OA COMPONENT Runtime)
