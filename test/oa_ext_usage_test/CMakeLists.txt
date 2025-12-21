@@ -26,6 +26,18 @@ endif()
 # oa_print_dirs: print some OA directories using oa_config functions
 add_executable(oa_print_dirs oa_print_dirs.cpp)
 target_link_libraries(oa_print_dirs PRIVATE OA::oa_config)
+# on Windows copy dependent DLLs to directory containing oa_print_dirs
+if(WIN32)
+    add_custom_command(
+        TARGET oa_print_dirs POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_RUNTIME_DLLS:oa_print_dirs>
+                $<TARGET_FILE_DIR:oa_print_dirs>
+        COMMENT "Copying oa_print_dirs runtime DLLs"
+        VERBATIM
+        COMMAND_EXPAND_LISTS
+    )
+endif()
 
 # smoke test for oa_print_dirs
 add_test(NAME oa_print_dirs COMMAND oa_print_dirs)
