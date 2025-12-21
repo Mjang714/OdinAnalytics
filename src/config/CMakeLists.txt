@@ -10,6 +10,7 @@ target_include_directories(
 )
 # need Boost headers for boost::core::demangle
 # TODO: may split rtti.h macros into a separate ctti.h
+# TODO: drop use of boost::core::demangle and use abi::__cxa_demangle directly
 target_link_libraries(oa_config PRIVATE Boost::headers)
 # ensure the export macro is defined during shared build + use d suffix to
 # distinguish the debug library from the release library
