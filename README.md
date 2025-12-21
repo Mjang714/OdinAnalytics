@@ -159,7 +159,7 @@ See the corresponding section for details on
 > The Development component is incomplete and only provides a few C++ headers
 > for downstream consumption. Future work will involve migrating as many
 > headers into a proper namespaced include structure for downstream consumption
-> and adding CMake [`find_package`][find_package] support.
+> and finalizing CMake [`find_package`][find_package] support.
 
 [find_package]: https://cmake.org/cmake/help/latest/command/find_package.html
 
@@ -170,7 +170,7 @@ the list of available install components is the following:
 Name | Description
 ---- | -----------
 Runtime | Required runtime libraries and static data
-Development | Optional add-on C++ development headers
+Development | Optional add-on C++ development headers + CMake config files
 
 [cmake_install]: https://cmake.org/cmake/help/latest/manual/cmake.1.html#install-a-project
 
