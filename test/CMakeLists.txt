@@ -133,14 +133,14 @@ if(ODIN_MULTI_CONFIG)
 endif()
 # run test verbosely so we can see the command + output
 list(APPEND ext_usage_ctest_test_args -V)
-# add external CTest test (required build success)
+# add external test execution using CTest (required build success)
 add_test(
-    NAME oa_ext_usage_ctest_test
+    NAME oa_ext_usage_run_test
     COMMAND ${CMAKE_CTEST_COMMAND} ${ext_usage_ctest_test_args}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/oa_ext_usage_test
     COMMAND_EXPAND_LISTS
 )
 set_tests_properties(
-    oa_ext_usage_ctest_test PROPERTIES
+    oa_ext_usage_run_test PROPERTIES
     FIXTURES_REQUIRED oa_ext_usage_build_test
 )
