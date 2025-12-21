@@ -240,6 +240,7 @@ target_include_directories(
 install(TARGETS oa_core EXPORT odin_exports)
 
 add_subdirectory(src)
+add_subdirectory(test)
 
 # install rule for include/oa headers (excluding internal testing headers)
 # note: this is currently incomplete and only provides core + config headers
