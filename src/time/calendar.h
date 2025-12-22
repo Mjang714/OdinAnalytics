@@ -62,6 +62,8 @@ namespace oa::time
 			/// <returns>a date object that is the previous businessday</returns>
 			oa::time::Date GetPrevBusinessDay(const oa::time::Date& base_date) const;
 
+			oa::time::Date AddBusinessDays(int number_of_days, const Date& base_date) const;
+
 		private:
 			/// <summary>
 			/// populate the regions and the related data fields
@@ -81,7 +83,7 @@ namespace oa::time
 			/// </summary>
 			/// <param name="julian_base_date"></param>
 			/// <returns>Date object</returns>
-			oa::time::Date GetPrevBusinessDay(int julian_base_date) const;
+			inline oa::time::Date GetPrevBusinessDay(int julian_base_date) const;
 
 			std::bitset<7> m_weekends_;
 			std::string m_regions_ = "";

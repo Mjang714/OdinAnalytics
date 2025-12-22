@@ -44,7 +44,6 @@ namespace oa::derived_time {
 
 	oa::time::Date DateFormula::Adjust(const oa::time::Date& date_obj) const
 	{
-
 		return  m_holiday_adjuster_->AdjustDate(date_obj.AddTenor(m_tenor_));
 	}
 

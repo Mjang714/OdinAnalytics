@@ -59,6 +59,9 @@
     <ClCompile Include="..\..\src\unit_test\derived_time\cashflow_gen\cashflow_gen_test.cpp">
       <Filter>derived_time\cashflow_gen</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\derived_time\date_formula\business_date_formula_test.cpp">
+      <Filter>derived_time\date_formula</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="time">
