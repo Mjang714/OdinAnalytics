@@ -26,6 +26,7 @@ public:
 	/// <returns></returns>
 	oa::time::Date Adjust(const oa::time::Date& date_obj) const;
 
+
 private:
 	oa::time::Tenor m_tenor_;
 	std::unique_ptr<oa::time::DateAdjustBase> m_holiday_adjuster_;
