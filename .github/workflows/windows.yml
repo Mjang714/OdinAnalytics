@@ -136,7 +136,7 @@ jobs:
           # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec
           # for more details on using msiexec for MSI install
           msiexec /i excelxllsdk.msi /quiet /qn /norestart `
-            /log excelxllsdk.log `
+            /l*! excelxllsdk.log `
             TARGETDIR=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
           # print log file contents
           Get-Content excelxllsdk.log
