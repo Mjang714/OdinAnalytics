@@ -129,8 +129,6 @@ jobs:
           Invoke-WebRequest ${{ env.XLLSDK_MSI_LINK }} `
             -Verbose `
             -OutFile excelxllsdk.msi
-          # create install directory
-          mkdir ${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
           # use msiexec to install without user interaction and no UI. no
           # restart is needed and we log to a log file in case of errors. see
           # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec
@@ -143,11 +141,12 @@ jobs:
             /qn,`
             /norestart,`
             /log,excelxllsdk.log,`
-            TARGETDIR=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK `
+            XLLSDKINSTALLDIR=${{ env.ODIN_VENDOR_ROOT }} `
             -NoNewWindow -PassThru
           $msi_proc.WaitForExit()
-          # print log file contents
+          # print log file contents + verify installation location
           Get-Content excelxllsdk.log
+          Get-ChildItem ${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
       # note: not sure if step-level env can use top-level env variables
       # TODO: this is fixed in the FindXLLSDK.cmake PR
       - name: Build
