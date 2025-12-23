@@ -146,7 +146,7 @@ jobs:
           $msi_proc.WaitForExit()
           # print log file contents + verify installation location layout
           Get-Content excelxllsdk.log
-          Get-ChildItem ${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
+          Get-ChildItem -Recurse ${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
       - name: Build
         run: |
           # ToUpper() can be used on PowerShell strings for upper-casing
