@@ -89,9 +89,10 @@ class IncludeResolver:
                     if relative else inc_candidate
                 )
         # can't find it so error
+        # note: later versions of Python disallow \ within f-string brackets
         raise RuntimeError(
-            f"Unable to find locate header file {path} in:\n  "
-            f"{'\n  '.join(str(inc_dir) for inc_dir in self.include_dirs)}"
+            f"Unable to find locate header file {path} in:\n  " +
+            "\n  ".join(str(inc_dir) for inc_dir in self.include_dirs)
         )
 
 
@@ -284,8 +285,12 @@ def make_depfile_content(
 ) -> str:
     """Return the depfile string content representing the YAML dependencies.
 
-    OutputFile and RegFile are kept as relativepaths so that CMake can
-    interpret them as relative to the binary directory.
+    OutputFile and RegFile are kept as relative paths so that CMake can
+    interpret them as relative to the binary directory which would be set via
+    this script's -o, --output-directory option.
+
+    The YAML input file and the path to this script itself are always present
+    as dependencies for the obvious reasons.
 
     Parameters
     ----------
@@ -298,11 +303,15 @@ def make_depfile_content(
     -------
     str
     """
-    # main output from OutputFile. YAML path is main input + headers
+    # main output from OutputFile. YAML path is main input + headers. note that
+    # this script itself is *also* a dependency, as if the code generator
+    # changes, you probably want to re-run code generation
+    # note: __file__ is absolute since Python 3.9
     return "".join(
         [
             f"{yml['OutputFile']}: \\\n"
-            f"  {str(Path(yml_path).absolute())}"
+            f"  {str(Path(yml_path).absolute())} \\\n"
+            f"  {__file__}"
         ] + [
             f" \\\n  {str(path)}"
             for path in get_header_deps(yml, resolver=resolver)
