@@ -144,11 +144,9 @@ jobs:
             XLLSDKINSTALLDIR=${{ env.ODIN_VENDOR_ROOT }} `
             -NoNewWindow -PassThru
           $msi_proc.WaitForExit()
-          # print log file contents + verify installation location
+          # print log file contents + verify installation location layout
           Get-Content excelxllsdk.log
           Get-ChildItem ${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
-      # note: not sure if step-level env can use top-level env variables
-      # TODO: this is fixed in the FindXLLSDK.cmake PR
       - name: Build
         run: |
           # ToUpper() can be used on PowerShell strings for upper-casing
@@ -161,6 +159,7 @@ jobs:
           # note: ` is the escape character in PowerShell
           .\build -a $(OaPlatformTranslate "${{ matrix.arch }}") -c Release -Ca `
             "`"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}`"" `
+            "`"-DXLLSDK_ROOT=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK`"" `
             "`"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD`""
       # note: we don't have a nice wrapper script for this yet
       - name: Test
