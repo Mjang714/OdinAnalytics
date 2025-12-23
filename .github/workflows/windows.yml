@@ -135,9 +135,17 @@ jobs:
           # restart is needed and we log to a log file in case of errors. see
           # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec
           # for more details on using msiexec for MSI install
-          msiexec /i excelxllsdk.msi /quiet /qn /norestart `
-            /l*! excelxllsdk.log `
-            TARGETDIR=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
+          # note: we start a separate process here and return a process object
+          # so we can wait for the process to correctly exit
+          $msi_proc = Start-Process msiexec `
+            /i,excelxllsdk.msi,`
+            /quiet,`
+            /qn,`
+            /norestart,`
+            /log,excelxllsdk.log,`
+            TARGETDIR=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK `
+            -NoNewWindow -PassThru
+          $msi_proc.WaitForExit()
           # print log file contents
           Get-Content excelxllsdk.log
       # note: not sure if step-level env can use top-level env variables
