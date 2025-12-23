@@ -134,7 +134,8 @@ jobs:
           # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec
           # for more details on using msiexec for MSI install
           # note: we start a separate process here and return a process object
-          # so we can wait for the process to correctly exit
+          # so we can wait for the process to correctly exit. inspired from
+          # https://stackoverflow.com/a/72291019/14227825
           $msi_proc = Start-Process msiexec `
             /i,excelxllsdk.msi,`
             /quiet,`
