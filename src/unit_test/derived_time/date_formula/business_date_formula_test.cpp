@@ -18,12 +18,9 @@ namespace
 			oa::derived_time::BusinessDateFormula business_days_zero;
 			oa::time::Date start_date{"2026-11-10"};
 			oa::time::Date end_date{ "2026-11-18" };
-			void SetUp() override
-			{
-				business_days_fwd = oa::derived_time::BusinessDateFormula(5, calendar);
-				business_days_bkwd = oa::derived_time::BusinessDateFormula(-5, calendar);
-				business_days_zero = oa::derived_time::BusinessDateFormula(0, calendar);
-			}
+			oa::derived_time::BusinessDateFormula business_days_fwd{5, calendar};
+			oa::derived_time::BusinessDateFormula business_days_bkwd{-5, calendar};
+			oa::derived_time::BusinessDateFormula business_days_zero{0, calendar};
 	};
 
 	TEST_F(BusinessDateFormulaTest, BusDateFormulaFwdTest)
