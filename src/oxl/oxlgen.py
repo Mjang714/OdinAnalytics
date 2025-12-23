@@ -581,7 +581,7 @@ def parse_args(args: Iterable[str] | None = None) -> Namespace:
         type=Path,
         help=(
             "Specifies the alternate path to write the depfile to when used "
-            "with -MMD. The default is the input file name with a .d suffixed "
+            "with -MMD. The default is the input file name with a .d suffix "
             "written to the output directory."
         )
     )
