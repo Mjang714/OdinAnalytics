@@ -352,19 +352,8 @@ def excel_function_header(
         f"#include \"{str(dep)}\""
         for dep in get_header_deps(yml, resolver=resolver, relative=True)
     ]
-    # add extra empty line
+    # add extra empty line + return
     header.append("")
-    """
-    header_deps = get_header_deps(yml)
-    # update
-    header.append("#include \"oxl/xl_api/xloper_converter.h\"")
-    header.append("#include \"oxl/xl_api/cache_xl_obj.h\"")
-    header.append("#include \"oxl/xl_api/xl_dictionary.h\"")
-    if(yml["HeaderFiles"]):
-        for header_file in yml["HeaderFiles"]:
-            header.append("#include \"oxl/" + header_file["FileName"]+"\"")
-    header.append(" ")
-    """
     return header
 
 def create_cached_handle(yml_definition):
