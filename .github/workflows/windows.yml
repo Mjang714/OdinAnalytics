@@ -36,6 +36,9 @@ env:
   MAGIC_ENUM_VERSION: 0.9.7
   # GoogleTest version
   GTEST_VERSION: 1.14.0
+  # Excel 2013 XLL SDK MSI name + download link
+  XLLSDK_MSI_LINK: "https://download.microsoft.com/download/d/a/c/\
+    dac9c321-279c-4625-b381-bcb044eef7b2/excelxllsdk.msi"
 
 jobs:
   # only one job which is the build job
@@ -118,8 +121,33 @@ jobs:
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
-      # note: not sure if step-level env can use top-level env variables
-      # TODO: this is fixed in the FindXLLSDK.cmake PR
+      # use msiexec to perform XLL SDK installation through the MSI
+      - name: Install Excel 2013 XLL SDK
+        run: |
+          cd ${{ runner.temp }}
+          # download MSI to temp dir (verbose output)
+          Invoke-WebRequest ${{ env.XLLSDK_MSI_LINK }} `
+            -Verbose `
+            -OutFile excelxllsdk.msi
+          # use msiexec to install without user interaction and no UI. no
+          # restart is needed and we log to a log file in case of errors. see
+          # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec
+          # for more details on using msiexec for MSI install
+          # note: we start a separate process here and return a process object
+          # so we can wait for the process to correctly exit. inspired from
+          # https://stackoverflow.com/a/72291019/14227825
+          $msi_proc = Start-Process msiexec `
+            /i,excelxllsdk.msi,`
+            /quiet,`
+            /qn,`
+            /norestart,`
+            /log,excelxllsdk.log,`
+            XLLSDKINSTALLDIR=${{ env.ODIN_VENDOR_ROOT }} `
+            -NoNewWindow -PassThru
+          $msi_proc.WaitForExit()
+          # print log file contents + verify installation location layout
+          Get-Content excelxllsdk.log
+          Get-ChildItem -Recurse ${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
       - name: Build
         run: |
           # ToUpper() can be used on PowerShell strings for upper-casing
@@ -132,6 +160,7 @@ jobs:
           # note: ` is the escape character in PowerShell
           .\build -a $(OaPlatformTranslate "${{ matrix.arch }}") -c Release -Ca `
             "`"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}`"" `
+            "`"-DXLLSDK_ROOT=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK`"" `
             "`"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD`""
       # note: we don't have a nice wrapper script for this yet
       - name: Test
