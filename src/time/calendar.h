@@ -76,14 +76,14 @@ namespace oa::time
 			/// </summary>
 			/// <param name="julian_base_date"></param>
 			/// <returns>Date object</returns>
-			inline oa::time::Date GetNextBusinessDay(int julian_base_date) const;
+			oa::time::Date GetNextBusinessDay(int julian_base_date) const;
 
 			/// <summary>
 			/// returns a date object that is the previous date
 			/// </summary>
 			/// <param name="julian_base_date"></param>
 			/// <returns>Date object</returns>
-			inline oa::time::Date GetPrevBusinessDay(int julian_base_date) const;
+			oa::time::Date GetPrevBusinessDay(int julian_base_date) const;
 
 			std::bitset<7> m_weekends_;
 			std::string m_regions_ = "";
