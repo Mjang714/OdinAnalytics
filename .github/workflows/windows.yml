@@ -125,8 +125,10 @@ jobs:
       - name: Install Excel 2013 XLL SDK
         run: |
           cd ${{ runner.temp }}
-          # download MSI to temp dir
-          Invoke-WebRequest ${{ env.XLLSDK_MSI_LINK }} -OutFile excelxllsdk.msi
+          # download MSI to temp dir (verbose output)
+          Invoke-WebRequest ${{ env.XLLSDK_MSI_LINK }} `
+            -Verbose `
+            -OutFile excelxllsdk.msi
           # create install directory
           mkdir ${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
           # use msiexec to install without user interaction and no UI. no
