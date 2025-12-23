@@ -36,6 +36,9 @@ env:
   MAGIC_ENUM_VERSION: 0.9.7
   # GoogleTest version
   GTEST_VERSION: 1.14.0
+  # Excel 2013 XLL SDK MSI name + download link
+  XLLSDK_MSI_LINK: "https://download.microsoft.com/download/d/a/c/\
+    dac9c321-279c-4625-b381-bcb044eef7b2/excelxllsdk.msi"
 
 jobs:
   # only one job which is the build job
@@ -118,6 +121,21 @@ jobs:
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
+      # use msiexec to perform XLL SDK installation through the MSI
+      - name: Install Excel 2013 XLL SDK
+        run: |
+          cd ${{ runner.temp }}
+          # download MSI to temp dir
+          Invoke-WebRequest ${{ env.XLLSDK_MSI_LINK }} -OutFile excelxllsdk.msi
+          # use msiexec to install without user interaction and no UI. no
+          # restart is needed and we log to a log file in case of errors. see
+          # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec
+          # for more details on using msiexec for MSI install
+          msiexec /i excelxllsdk.msi /quiet /qn /norestart `
+            /log excelxllsdk.log `
+            TARGETDIR=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
+          # print log file contents
+          Get-Content excelxllsdk.log
       # note: not sure if step-level env can use top-level env variables
       # TODO: this is fixed in the FindXLLSDK.cmake PR
       - name: Build
