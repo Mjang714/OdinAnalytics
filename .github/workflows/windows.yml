@@ -127,6 +127,9 @@ jobs:
           cd ${{ runner.temp }}
           # download MSI to temp dir
           Invoke-WebRequest ${{ env.XLLSDK_MSI_LINK }} -OutFile excelxllsdk.msi
+          # grant full access to ODIN_VENDOR_ROOT
+          # see https://github.com/actions/runner-images/issues/1704#issuecomment-701362987
+          icacls ${{ env.ODIN_VENDOR_ROOT }} /c /t /grant Users:F
           # use msiexec to install without user interaction and no UI. no
           # restart is needed and we log to a log file in case of errors. see
           # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec
