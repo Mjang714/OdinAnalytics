@@ -1,10 +1,9 @@
 OutputFile: autogen_excel.cpp
-RegFile: autogen_excel_reg_funcs.h
+RegFile: oxl/autogen_excel_reg_funcs.h
 Category: Oxl - Excel - Tools
 RegPreFix: excel_base
-HeaderFiles: 
-  - 
-    FileName: excel_base_funcs.h
+HeaderFiles:
+  - oxl/excel_base_funcs.h
 Functions:
  -
    ExcelName: oxlArray
@@ -29,7 +28,7 @@ Functions:
      -
        Name: Value
        Help: Excel Range
-       Type: Array     
+       Type: Array
    ReturnType: Handle|XlDictionary
    Help: Creates a Dictionary of the data from a given range
  -
