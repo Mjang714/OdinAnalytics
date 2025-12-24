@@ -113,6 +113,14 @@ else()
     message(STATUS "GoogleMock version: None")
 endif()
 
+# find Python 3. this is required for code generation (bindings too later on)
+find_package(Python3 3.10 COMPONENTS Interpreter)
+if(Python3_FOUND)
+    message(STATUS "Python version: ${Python3_VERSION}")
+else()
+    message(STATUS "Python version: None")
+endif()
+
 # look for Excel 2013 XLL SDK
 if(WIN32)
     find_package(XLLSDK 15.0 COMPONENTS frmwrk32)

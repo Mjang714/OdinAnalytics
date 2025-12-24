@@ -1,6 +1,6 @@
 #include "oxl/xl_api/xl_uitls.h"
-#include "oxl/auto_gen/autogen_excel_reg_funcs.h"
-#include "oxl/auto_gen/auto_gen_time_reg_fns.h"
+#include "oxl/autogen_excel_reg_funcs.h"
+#include "oxl/auto_gen_time_reg_fns.h"
 
 
 
