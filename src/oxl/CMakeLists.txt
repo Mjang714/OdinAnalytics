@@ -69,8 +69,8 @@ if(Python3_FOUND AND XLLSDK_FOUND)
     add_library(
         oxl MODULE
             # generated headers
-            autogen_excel.cpp
             auto_gen_time.cpp
+            autogen_excel.cpp
             # source tree headers
             excel_base_funcs.cpp
             excel_functions.cpp
