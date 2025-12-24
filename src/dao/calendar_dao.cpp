@@ -8,6 +8,7 @@
 
 #include "helpers/str_utils/str_utils.h"
 #include "helpers/utils.h"
+#include "oa/config/paths.h"
 #include "oa/platform.h"
 #include "oa/rtti.h"
 
@@ -28,25 +29,7 @@ namespace oa::dao
 	{
 		ds::CalendarDataStruct calendar_struct{};
 		// construct path to corresponding calendar file
-		auto cal_file_path = [&region]
-		{
-			// if no OdinBaseDir throw
-			// TODO: consider use of oa_config library to construct path
-			// relative to oa::config::data_dir() after build system is updated
-			// to copy the static_data directory to the build directory
-			auto base_dir = std::getenv("OdinBaseDir");
-			// note: could use fixed_string for compile-time string concat
-			if (!base_dir)
-				throw std::runtime_error{
-					OA_PRETTY_FUNCTION_NAME +
-					std::string{": missing required OdinBaseDir"}
-				};
-			// otherwise, construct path to calendar file
-			return std::filesystem::path{base_dir} /
-				"static_data" /
-				"calendars" /
-				(region + ".hol");
-		}();
+		auto cal_file_path = config::data_dir() / "calendars" / (region + ".hol");
 		// regular file check
 		// note: indirectly also checks for existence
 		if (!std::filesystem::is_regular_file(cal_file_path))

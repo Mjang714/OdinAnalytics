@@ -96,7 +96,7 @@ std::filesystem::path data_dir()
   // path to library directory
   auto lib_dir = library_dir();
   // preferred path to shared data
-  auto share_dir = lib_dir.parent_path() / "share" / "oa";
+  auto share_dir = lib_dir.parent_path() / "share" / "OA";
   // if share_dir doesn't exist use lib_dir
   return (std::filesystem::exists(share_dir)) ? share_dir : lib_dir;
 }

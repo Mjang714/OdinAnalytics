@@ -22,8 +22,6 @@ namespace
 
 		void SetUp() override
 		{
-			// skip test if OdinBaseDir was not set correctly
-			OA_GTEST_ENSURE_BASE_DIR();
 			data_struct = oa::dao::CalendarDao::GetInstance().GetCalendartData(region_str);
 		}
 	};
