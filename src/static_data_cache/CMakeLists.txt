@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 # oa_static_data_cache
 # TODO: need better descriptive comment
 add_library(oa_static_data_cache calendar_cache.cpp)
-add_library(OdinAnalytics::oa_static_data_cache ALIAS oa_static_data_cache)
 target_include_directories(
     oa_static_data_cache PUBLIC
     $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
