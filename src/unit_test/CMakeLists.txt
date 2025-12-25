@@ -13,6 +13,7 @@ add_executable(
     date_test.cpp
     derived_time/cashflow_gen/cashflow_gen_test.cpp
     derived_time/date_formula/date_formula_test.cpp
+    fixed_string_test.cpp
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp
     static_data_cache/static_data_cache_test.cpp
@@ -61,6 +62,10 @@ endif()
 # chains the dependency of oa_unit_test on the static data being located in the
 # same directory as the project artifacts (for local builds)
 add_dependencies(oa_unit_test oa_copy_static_data)
+
+# enable defining OA_UNITY_ID for each agglomerated TU during unity builds
+# note: disabled for now as it is unused
+# oa_unity_enable_unique_id(oa_unit_test)
 
 # discover tests for CTest (timeout increased beyond default 5 seconds for CI)
 gtest_discover_tests(oa_unit_test DISCOVERY_TIMEOUT 15)

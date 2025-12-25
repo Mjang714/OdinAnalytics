@@ -76,6 +76,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(CTest)
 
 include(oa_pdb_install)
+include(oa_unity_enable_unique_id)
 
 # find Boost [headers]
 # TODO: we can decide to upgrade minimum Boost version later if necessary
