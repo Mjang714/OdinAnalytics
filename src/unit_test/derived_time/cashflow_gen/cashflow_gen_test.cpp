@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include "oa/testing/gtest.h"
 #include <gmock/gmock.h>
 
+#include "oa/testing/gtest.h"
 #include "time/date.h"
 #include "time/calendar.h"
 #include "time/tenor.h"
@@ -82,7 +82,6 @@ namespace
 
 			virtual void SetUp() override
 			{
-				OA_GTEST_ENSURE_BASE_DIR();
 				start_date = oa::time::Date(2025, 1, 3);
 				mat_date = oa::time::Date(2030, 1, 3);
 				frequency = oa::time::Tenor("6M");

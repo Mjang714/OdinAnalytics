@@ -228,6 +228,29 @@ set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # TODO: stop using this as part of target include paths later on
 set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+# project build directory relative to CMAKE_CURRENT_SOURCE_DIR
+cmake_path(RELATIVE_PATH PROJECT_BINARY_DIR OUTPUT_VARIABLE ODIN_REL_BUILD_DIR)
+# project build directory generator expression (for multi-config subdir)
+set(
+    ODIN_BUILD_DIR_GENEX
+    "${PROJECT_BINARY_DIR}$<${ODIN_MULTI_CONFIG}:/$<CONFIG>>"
+)
+# project relative build directory generator expression
+set(
+    ODIN_REL_BUILD_DIR_GENEX
+    "${ODIN_REL_BUILD_DIR}$<${ODIN_MULTI_CONFIG}:/$<CONFIG>>"
+)
+# custom target to copy static data to build output directory
+# note: multi-config generators will have the per-config subdirectory
+add_custom_target(
+    oa_copy_static_data
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            static_data/calendars ${ODIN_BUILD_DIR_GENEX}/calendars
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Copying static data to ${ODIN_BUILD_DIR_GENEX}"
+    VERBATIM
+)
+
 add_subdirectory(src)
 
 # install rule for include/oa headers (excluding internal testing headers)
@@ -246,6 +269,4 @@ install(
 )
 # install rule for the calendar data. we consider this part of the Runtime
 # component because it is required for some libraries to function at runtime
-# TODO: do we want shared data to be in share/oa or share/OdinAnalytics? if we
-# want the latter then we'll need to update oa::config::data_dir()
-install(DIRECTORY static_data/calendars DESTINATION share/oa COMPONENT Runtime)
+install(DIRECTORY static_data/calendars DESTINATION share/OA COMPONENT Runtime)

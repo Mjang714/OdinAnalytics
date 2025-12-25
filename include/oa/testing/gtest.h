@@ -85,6 +85,29 @@ inline void PrintTo(const Date& date, std::ostream* stream)
 }  // namespace time
 }  // namespace oa
 
+namespace oa {
+namespace testing {
+namespace detail {
+
+/**
+ * Return the value of the `OdinBaseDir` environment variable.
+ *
+ * `nullptr` is returned if `OdinBaseDir` is not defined in the environment.
+ *
+ * @note This wrapper function around `std::getenv` exists so that use of
+ *  `OA_GTEST_ENSURE_BASE_DIR()` will trigger a compiler deprecation warning
+ *  due to the `[[deprecated]]` annotation. Do *not* use in new code.
+ */
+[[deprecated("Use oa::config::data_dir() for the static data directory")]]
+inline const char* base_dir()
+{
+  return std::getenv("OdinBaseDir");
+}
+
+}  // namespace detail
+}  // namespace testing
+}  // namespace oa
+
 /**
  * Macro for skipping a Google Test test if `OdinBaseDir` is not set.
  *
@@ -92,9 +115,13 @@ inline void PrintTo(const Date& date, std::ostream* stream)
  * environment and could be skipped if the variable is not defined. Like
  * `GTEST_SKIP` itself this macro can only be used in `SetUp()` members or in
  * the actual Google Test test cases themselves.
+ *
+ * @deprecated `OdinBaseDir` is currently no longer used to tell Odin libraries
+ *  where to find static data, e.g. calendar files. `oa::config::data_dir()`
+ *  provides the location; see comment in `oa/config/paths.h` for details.
  */
 #define OA_GTEST_ENSURE_BASE_DIR() \
-  if (!std::getenv("OdinBaseDir")) \
+  if (!oa::testing::detail::base_dir()) \
     OA_GTEST_SKIP() << "OdinBaseDir not set in environment"
 
 namespace oa {
