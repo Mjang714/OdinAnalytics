@@ -49,13 +49,13 @@ namespace
 		EXPECT_EQ(expected_date.GetJulian(), resulting_date.GetJulian());
 	}
 
-	//TEST_F(DateFormulaTest, DateFormulaTestoeratorOverloading)
-	//{
-	//	oa::time::Date start_date(2022, 9, 4);
-	//	oa::time::Date expected_date(2023, 9, 5);
+	TEST_F(DateFormulaTest, DateFormulaTestoeratorOverloading)
+	{
+		oa::time::Date start_date(2022, 9, 4);
+		oa::time::Date expected_date(2023, 9, 5);
 
 
-	//	EXPECT_EQ(expected_date, start_date + date_formula_str);
-	//	EXPECT_EQ(expected_date, date_formula_str + start_date);
-	//}
+		EXPECT_EQ(expected_date, start_date + date_formula_str);
+		EXPECT_EQ(expected_date, date_formula_str + start_date);
+	}
 }

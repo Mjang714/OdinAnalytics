@@ -33,13 +33,6 @@ class OA_DERIVED_TIME_API DateFormula {
 		std::unique_ptr<oa::time::DateAdjustBase> m_holiday_adjuster_;
 };
 
-	oa::time::Date operator+(const oa::time::Date& date_obj, const oa::derived_time::DateFormula& date_formula_rule) {
-		return date_formula_rule.Adjust(date_obj);
-	}
-
-	oa::time::Date operator+(const oa::derived_time::DateFormula& date_formula_rule, const oa::time::Date& date_obj) {
-		return date_formula_rule.Adjust(date_obj);
-	}
 }
 
 #endif //!OA_DERIVED_TIME_DATE_FORMULA_H_
