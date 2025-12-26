@@ -9,7 +9,7 @@
 #include <string>
 #include "xlcall.h"
 #include "framewrk.h"
-#define time_num_reg_functions_rows 5
+#define time_num_reg_functions_rows 6
  
 static const WCHAR* time_ngFuncs[time_num_reg_functions_rows][12] = {
 { L"oxlIsBusinessDay", L"QQQ", L"oxlIsBusinessDay", L"Date,Centers", L"1",L"oxl_time",L"",L"",L"Determines if a date given is a business day",},
@@ -17,4 +17,5 @@ static const WCHAR* time_ngFuncs[time_num_reg_functions_rows][12] = {
 { L"oxlComputeDayCount", L"QQQQ", L"oxlComputeDayCount", L"Start_Date,End_Date,Day_Count_Convention", L"1",L"oxl_time",L"",L"",L"compute the number of business days",},
 { L"oxlComputeYearFraction", L"QQQQ", L"oxlComputeYearFraction", L"Start_Date,End_Date,Day_Count_Convention", L"1",L"oxl_time",L"",L"",L"compute the year fractions",},
 { L"oxlComputeDate", L"QQQQQ", L"oxlComputeDate", L"Base_Date,Tenor,Adjustment_Rule,Calendar", L"1",L"oxl_time",L"",L"",L"Computes a new date from date, tenor, calendar, date modifier",},
+{ L"oxlAddBusinessDays", L"QQQQ", L"oxlAddBusinessDays", L"Base_Date,Days,Calendar", L"1",L"oxl_time",L"",L"",L"Computes a new business date from date, num of business days, calendar",},
 };

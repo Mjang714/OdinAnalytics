@@ -13,9 +13,6 @@ namespace
 	{
 		protected:
 			std::string calendar{ "NYB" };
-			oa::derived_time::BusinessDateFormula business_days_fwd;
-			oa::derived_time::BusinessDateFormula  business_days_bkwd;
-			oa::derived_time::BusinessDateFormula business_days_zero;
 			oa::time::Date start_date{"2026-11-10"};
 			oa::time::Date end_date{ "2026-11-18" };
 			oa::derived_time::BusinessDateFormula business_days_fwd{5, calendar};
@@ -37,5 +34,17 @@ namespace
 	{
 		EXPECT_EQ(start_date, business_days_zero.Adjust(start_date));
 		EXPECT_EQ(end_date, business_days_zero.Adjust(end_date));
+	}
+
+	TEST_F(BusinessDateFormulaTest, OperatorOverlaodingFwd)
+	{
+		EXPECT_EQ(end_date, business_days_fwd + start_date);
+		EXPECT_EQ(end_date, start_date + business_days_fwd);
+	}
+
+	TEST_F(BusinessDateFormulaTest, OperatorOverlaodingBckwd)
+	{
+		EXPECT_EQ(start_date, business_days_bkwd + end_date);
+		EXPECT_EQ(start_date, end_date + business_days_bkwd);
 	}
 }
