@@ -15,8 +15,6 @@ namespace oa::derived_time
 			BusinessDateFormula(int business_days, const std::shared_ptr<const oa::time::Calendar>& calendar_input);
 			BusinessDateFormula(int business_days, const std::string& calendars);
 			oa::time::Date Adjust(const oa::time::Date& base_date) const;
-			friend oa::time::Date operator+(const oa::time::Date& base_date, const BusinessDateFormula& bus_date_formula);
-			friend oa::time::Date operator+(const BusinessDateFormula& bus_date_formula, const oa::time::Date& base_date);
 
 		private:
 			std::shared_ptr<const oa::time::Calendar> m_calendar_{};
