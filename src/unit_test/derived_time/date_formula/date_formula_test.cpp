@@ -11,11 +11,13 @@ namespace
 {
 	class DateFormulaTest : public ::testing::Test
 	{
-		protected:
-			std::shared_ptr<const oa::time::Calendar> calendar;
-			oa::time::Tenor tenor{"1Y"};
-			oa::time::AdjRule adjustment_rule;
-			oa::derived_time::DateFormula date_formula, date_formula_str;
+	protected:
+		std::shared_ptr<const oa::time::Calendar> calendar;
+		oa::time::Tenor tenor{ "1Y" };
+		oa::time::AdjRule adjustment_rule;
+		oa::derived_time::DateFormula date_formula, date_formula_str;
+		oa::time::Date start_date{ "2022-9-4" };
+		oa::time::Date expected_date{"2023-9-5"};
 
 			void SetUp() override
 			{
@@ -29,32 +31,16 @@ namespace
 
 	TEST_F(DateFormulaTest, DateFormulaTestAdjustTenorInput)
 	{
-		oa::time::Date start_date(2022,9,4);
-		oa::time::Date resulting_date;
-		oa::time::Date expected_date(2023, 9, 5);
-
-		resulting_date = date_formula.Adjust(start_date);
-
-		EXPECT_EQ(expected_date.GetJulian(), resulting_date.GetJulian());
+		EXPECT_EQ(expected_date, date_formula.Adjust(start_date));
 	}
 
 	TEST_F(DateFormulaTest, DateFormulaTestAdjustStrInput)
 	{
-		oa::time::Date start_date(2022, 9, 4);
-		oa::time::Date resulting_date;
-		oa::time::Date expected_date(2023, 9, 5);
-
-		resulting_date = date_formula_str.Adjust(start_date);
-
-		EXPECT_EQ(expected_date.GetJulian(), resulting_date.GetJulian());
+		EXPECT_EQ(expected_date, date_formula_str.Adjust(start_date));
 	}
 
 	TEST_F(DateFormulaTest, DateFormulaTestoeratorOverloading)
 	{
-		oa::time::Date start_date(2022, 9, 4);
-		oa::time::Date expected_date(2023, 9, 5);
-
-
 		EXPECT_EQ(expected_date, start_date + date_formula_str);
 		EXPECT_EQ(expected_date, date_formula_str + start_date);
 	}
