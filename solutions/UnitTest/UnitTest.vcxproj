@@ -80,6 +80,7 @@
     <ClCompile Include="..\..\src\unit_test\dao\calendar_dao_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\date_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\derived_time\cashflow_gen\cashflow_gen_test.cpp" />
+    <ClCompile Include="..\..\src\unit_test\derived_time\date_formula\business_date_formula_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\derived_time\date_formula\date_formula_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\business_logic_check_test.cpp" />
     <ClCompile Include="..\..\src\unit_test\helpers\enum_test.cpp" />

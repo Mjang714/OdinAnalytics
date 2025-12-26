@@ -1,6 +1,7 @@
 import sys
 import os
 import yaml
+from pathlib import Path
 
 #TODO: change yml_definition to yml_def
 #this function creates the the header function for the registration
@@ -227,7 +228,9 @@ def dictionary_functions_base(yml_definition):
             if(arg["Type"] == "String"):
                 create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToStr(" + arg["Name"] + "_input); \n"
             elif(arg["Type"] == "LPXLOPER|Date"):
-                create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"   
+                create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"
+            elif(arg["Type"] == "Integer" or arg["Type"] == "Double"):
+                create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"          
     dictionary_code += [create_dictionary_line] 
     dictionary_code += ["         }"]
     dictionary_code += ["    }"]
@@ -320,12 +323,12 @@ def main():
     print("starting the autogen")
 
     arg_vector = sys.argv
+    current_working_dir = os.getcwd()
+    xl_yaml_file = current_working_dir+"\\"+arg_vector[1]
+    output_path = current_working_dir+"\\"+arg_vector[2]
 
-    xl_yaml_file = arg_vector[1]
-    output_path = arg_vector[2]
-
-    print("Opening yaml config file: " + xl_yaml_file)
-    print("Outputing files to : " + output_path)
+    print("Opening yaml config file: " + arg_vector[1])
+    print("Outputing files to : " + arg_vector[2])
 
     with open(xl_yaml_file, "r") as stream:
         yaml_file_stream = yaml.safe_load(stream)

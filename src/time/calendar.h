@@ -62,6 +62,8 @@ namespace oa::time
 			/// <returns>a date object that is the previous businessday</returns>
 			oa::time::Date GetPrevBusinessDay(const oa::time::Date& base_date) const;
 
+			oa::time::Date AddBusinessDays(int number_of_days, const Date& base_date) const;
+
 		private:
 			/// <summary>
 			/// populate the regions and the related data fields
@@ -74,7 +76,7 @@ namespace oa::time
 			/// </summary>
 			/// <param name="julian_base_date"></param>
 			/// <returns>Date object</returns>
-			inline oa::time::Date GetNextBusinessDay(int julian_base_date) const;
+			oa::time::Date GetNextBusinessDay(int julian_base_date) const;
 
 			/// <summary>
 			/// returns a date object that is the previous date

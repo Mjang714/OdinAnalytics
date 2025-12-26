@@ -97,3 +97,22 @@ Functions :
      Type : String
    Return : Double
    Help : Computes a new date from date, tenor, calendar, date modifier
+  -
+   ExcelName : oxlAddBusinessDays
+   OxlName : OxlAddBusinessDays
+   Type : Dictionary
+   Args:
+    -
+     Name : Base_Date
+     Help : base date to compute the new business date from
+     Type : LPXLOPER|Date
+    -
+     Name : Days
+     Help : number of business days to adjust
+     Type : Double
+    -
+     Name : Calendar
+     Help : Business Calendar such as NYB(NY Fed), LNB(London Bank), NDQ (Nasdaq), and etc
+     Type : String
+   Return : Double
+   Help : Computes a new business date from date, num of business days, calendar

@@ -185,11 +185,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\derived_time\cashflow_gen\cashflow_gen.cpp" />
+    <ClCompile Include="..\..\src\derived_time\date_formula\business_date_formula.cpp" />
     <ClCompile Include="..\..\src\derived_time\date_formula\date_formula.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\derived_time\cashflow_gen\cashflow_gen.h" />
     <ClInclude Include="..\..\src\derived_time\cashflow_gen\cashflow_struct.h" />
+    <ClInclude Include="..\..\src\derived_time\date_formula\business_date_formula.h" />
     <ClInclude Include="..\..\src\derived_time\date_formula\date_formula.h" />
     <ClInclude Include="..\..\src\derived_time\derived_time_enums.h" />
   </ItemGroup>
