@@ -50,7 +50,6 @@ function(oa_yml_interface yml_file)
     add_custom_command(
         OUTPUT  ${cpp_file} ${reg_header}
         COMMAND ${Python3_EXECUTABLE} oxlgen.py
-                --oxl-root ${ODIN_SOURCE_DIR}
                 -MMD -MF ${CMAKE_CURRENT_BINARY_DIR}/${yml_file_name}.d
                 -o ${CMAKE_CURRENT_BINARY_DIR} ${yml_path}
         MAIN_DEPENDENCY ${yml_path}

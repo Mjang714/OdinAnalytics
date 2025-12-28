@@ -47,55 +47,6 @@ class HelpFormatter(ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
         )
 
 
-class IncludeResolver:
-    """Class that resolves absolute paths for header files.
-
-    It manages a list of include directories that are searched in order.
-
-    Parameters
-    ----------
-    include_dirs: list[PathLike] | None, default=None
-        List of include directory paths. If not specified, ["."] is used
-    """
-
-    def __init__(self, include_dirs: list[PathLike] | None = None):
-        self.include_dirs = include_dirs if include_dirs else [Path(".")]
-
-    def __call__(self, path: PathLike, relative: bool = False) -> Path:
-        """Resolve an absolute path for a given include file.
-
-        If ``relative`` is specified, absolute paths and chopped down to
-        relative paths suitable for an ``#include`` directive.
-
-        Parameters
-        ----------
-        path : PathLike
-            Relative or absolute include file path
-        relatve : bool, default=False
-            Whether or not to keep/convert to a relative path
-        """
-        # search until found
-        for inc_dir in self.include_dirs:
-            # assume absolute. if relative, resolve back to absoluate
-            inc_candidate = Path(path)
-            if not inc_candidate.is_absolute():
-                inc_candidate = (Path(inc_dir) / path).resolve()
-            # ok, found the file
-            if inc_candidate.exists():
-                # make relative if necessary
-                # note: inc_dir may be relative so we resolve it here
-                return (
-                    inc_candidate.relative_to(inc_dir.resolve())
-                    if relative else inc_candidate
-                )
-        # can't find it so error
-        # note: later versions of Python disallow \ within f-string brackets
-        raise RuntimeError(
-            f"Unable to find locate header file {path} in:\n  " +
-            "\n  ".join(str(inc_dir) for inc_dir in self.include_dirs)
-        )
-
-
 # TODO: change yml_definition to yml_def
 #this function creates the the header function for the registration
 def header_reg_func(num_func: int, prefix_reg: str) -> list[str]:
@@ -213,11 +164,8 @@ def OxlType(arg_type, ptr_type):
         print("not a valid input type" + arg_type + " thus will return an empty string" )
         return ""
 
-def create_excel_cpp(
-    yml: YAMLDocument,
-    resolver: IncludeResolver = IncludeResolver()
-) -> list[str]:
-    auto_gen = excel_function_header(yml, resolver=resolver)
+def create_excel_cpp(yml: YAMLDocument) -> list[str]:
+    auto_gen = excel_function_header(yml)
     for func_desc in yml["Functions"]:
         func_type = func_desc["Type"]
         if(func_type == "Excel"):
@@ -237,60 +185,18 @@ def create_excel_cpp(
     return auto_gen
 
 
-def get_header_deps(
-    yml: YAMLDocument,
-    resolver: IncludeResolver = IncludeResolver(),
-    relative: bool = False
-) -> list[Path]:
-    """Return a list of header paths required by the YAML interface.
-
-    These include the standard conversion headers as well any oxl-relative
-    headers specified in the HeaderFiles field of the YAML input file.
-
-    Parameters
-    ----------
-    yml : YAMLDocument
-        YAML input from an interface input file
-    resolver : IncludeResolver, default=IncludeResolver()
-        Include path resolver
-    relative : bool, default=False
-        True to return relative paths for ``#include`` instead
-
-    Returns
-    -------
-    list[Path]
-        List of absolute paths to the specified header files
-    """
-    # default header paths
-    paths = [
-        resolver("oxl/xl_api/cache_xl_obj.h", relative=relative),
-        resolver("oxl/xl_api/xl_dictionary.h", relative=relative),
-        resolver("oxl/xl_api/xloper_converter.h", relative=relative)
-    ]
-    # add any extra headers. yml["HeaderFiles"] is a list[str]
-    # TODO: enable use of additional include directories
-    if yml["HeaderFiles"]:
-        paths += [
-            resolver(path, relative=relative)
-            for path in yml["HeaderFiles"]
-        ]
-    # done
-    return paths
-
-
-def make_depfile_content(
-    yml_path: PathLike,
-    yml: YAMLDocument,
-    resolver: IncludeResolver = IncludeResolver()
-) -> str:
+def make_depfile_content(yml_path: PathLike, yml: YAMLDocument) -> str:
     """Return the depfile string content representing the YAML dependencies.
 
     OutputFile and RegFile are kept as relative paths so that CMake can
     interpret them as relative to the binary directory which would be set via
     this script's -o, --output-directory option.
 
-    The YAML input file and the path to this script itself are always present
-    as dependencies for the obvious reasons.
+    The YAML input file path and the path to this script itself are the two
+    dependencies that are considered as changes to either affects the code
+    generation. However, no header dependencies are considered as they are
+    strictly dependencies of the generated C++ code, e.g. if a header changes,
+    we don't need to re-generate the C++ file, we just re-compile.
 
     Parameters
     ----------
@@ -303,8 +209,8 @@ def make_depfile_content(
     -------
     str
     """
-    # main output from OutputFile. YAML path is main input + headers. note that
-    # this script itself is *also* a dependency, as if the code generator
+    # main output from OutputFile. YAML path is absolute main input path. note
+    # that this script itself is *also* a dependency, as if the code generator
     # changes, you probably want to re-run code generation
     # note: __file__ is absolute since Python 3.9
     return "".join(
@@ -312,20 +218,12 @@ def make_depfile_content(
             f"{yml['OutputFile']}: \\\n"
             f"  {str(Path(yml_path).absolute())} \\\n"
             f"  {__file__}"
-        ] + [
-            f" \\\n  {str(path)}"
-            for path in get_header_deps(yml, resolver=resolver)
-        ] + [
-            "\n"
         ]
     )
 
 
 # TODO: document
-def excel_function_header(
-    yml: YAMLDocument,
-    resolver: IncludeResolver = IncludeResolver()
-) -> list[str]:
+def excel_function_header(yml: YAMLDocument) -> list[str]:
     header = []
     header.append("// This is the registration function cpp that excel will use expose the function outwards.")
     header.append("// This auto generated cpp registration file that leverages the yaml file.")
@@ -347,11 +245,19 @@ def excel_function_header(
     header.append("#include \"xlcall.h\"")
     header.append("#include \"framewrk.h\"")
     header.append("")
-    # get header dependencies + update header (all relative)
+    # add any oxl_api headers required by default
+    # TODO: list of headers could be maintained somewhere more visible
     header += [
-        f"#include \"{str(dep)}\""
-        for dep in get_header_deps(yml, resolver=resolver, relative=True)
+        f"#include \"oxl/xl_api/{hdr}\"" for hdr in (
+            "cache_xl_obj.h",
+            "xl_dictionary.h",
+            "xloper_converter.h"
+        )
     ]
+    # add any extra headers. yml["HeaderFiles"] is a list[str]
+    # TODO: consider how strictly we want to adhere to Google header ordering
+    if yml["HeaderFiles"]:
+        header += [f"#include \"{str(hdr)}\"" for hdr in yml["HeaderFiles"]]
     # add extra empty line + return
     header.append("")
     return header
@@ -534,27 +440,18 @@ def parse_args(args: Iterable[str] | None = None) -> Namespace:
     """
     ap = ArgumentParser(description=__doc__, formatter_class=HelpFormatter)
     ap.add_argument("input_file", type=Path, help="YAML interface input file")
-    ap.add_argument(
-        "--oxl-root",
-        default=Path("."),
-        type=Path,
-        help=(
-            "Directory to look for oxl/ or oxl/xl_api headers. This is similar "
-            "to the --sysroot GCC option."
-        )
-    )
-    ap.add_argument(
-        "-I",
-        "--include-directory",
-        action="append",
-        type=Path,
-        default=[],
-        help=(
-            "Directories to search, in order, when resolving headers listed "
-            "in the HeaderFiles field of the YAML input. These take precedence "
-            "over --oxl-root."
-        )
-    )
+    # note: this would be useful if input files could "include" each other
+    # ap.add_argument(
+    #     "-I",
+    #     "--include-directory",
+    #     action="append",
+    #     type=Path,
+    #     default=[],
+    #     help=(
+    #         "Directories to search, in order, when resolving YAML input "
+    #         "include directives."
+    #     )
+    # )
     ap.add_argument(
         "-o",
         "--output-directory",
@@ -580,9 +477,9 @@ def parse_args(args: Iterable[str] | None = None) -> Namespace:
         "--makefile",
         type=Path,
         help=(
-            "Specifies the alternate path to write the depfile to when used "
-            "with -MMD. The default is the input file name with a .d suffix "
-            "written to the output directory."
+            "Specifies an alternate depfile output path when used with -MMD. "
+            "The default is the input file name with a .d suffix written to "
+            "the output directory."
         )
     )
     return ap.parse_args(args=args)
@@ -596,16 +493,13 @@ def main(args: Iterable[str] | None = None) -> int:
     with open(argn.input_file, "r") as stream:
         yml = yaml.safe_load(stream)
 
-    # create include resolver
-    resolver = IncludeResolver(include_dirs=argn.include_directory + [argn.oxl_root])
-
     # TODO: document more
     registered_funcs = register_function(yml)
     out_regfile = argn.output_directory / yml["RegFile"]
     out_regfile.parent.mkdir(parents=True, exist_ok=True)
     write_file(registered_funcs, out_regfile)
 
-    excel_func_cpp =  create_excel_cpp(yml, resolver=resolver)
+    excel_func_cpp =  create_excel_cpp(yml)
     out_cppfile = argn.output_directory / yml["OutputFile"]
     out_cppfile.parent.mkdir(parents=True, exist_ok=True)
     write_file(excel_func_cpp, out_cppfile)
@@ -619,7 +513,7 @@ def main(args: Iterable[str] | None = None) -> int:
         ).resolve()
         # write to file
         with open(depfile_path, "w") as f:
-            f.write(make_depfile_content(argn.input_file, yml, resolver=resolver))
+            f.write(make_depfile_content(argn.input_file, yml))
     return 0
 
 
