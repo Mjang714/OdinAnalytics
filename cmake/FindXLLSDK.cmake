@@ -153,15 +153,17 @@ if(EXISTS "${_xllsdk_frmwrk_srcdir}")
         "${_xllsdk_frmwrk_srcdir}/MemoryPool.cpp"
     )
     add_library(XLLSDK::frmwrk32 ALIAS frmwrk32)
-    target_include_directories(frmwrk32 PUBLIC "${XLLSDK_INCLUDE_DIRS}")
+    # expose _xllsdk_frmwrk_srcdir as part of include interface due to use of
+    # <memorymanager.h> include + CMake won't be running in same directory
+    # note: MemoryManager.h and MemoryPool.h are not specified in Microsoft
+    # documentation as part of the frmwrk32 include interface but we can't
+    # really stop a project from including these files
+    target_include_directories(frmwrk32 PUBLIC "${_xllsdk_frmwrk_srcdir}")
     # need extra private include directories due to weird setup
     target_include_directories(
         frmwrk32 PRIVATE
-        # needs to be able to include xlcall.cpp and xlcall.h
-        "${_xllsdk_root}/src"
-        # note: explicitly include _xllsdk_frmwrk_srcdir due to use of
-        # <memorymanager.h> include + CMake won't be running in same directory
-        "${_xllsdk_frmwrk_srcdir}"
+        # need to be able to include xlcall.cpp and xlcall.h respectively
+        "${_xllsdk_root}/src" "${XLLSDK_INCLUDE_DIRS}"
     )
     # explicitly need to compile FRAMEWRK.C as C code
     set_source_files_properties(

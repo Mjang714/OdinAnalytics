@@ -23,7 +23,7 @@ if(BUILD_SHARED_LIBS)
 endif()
 # even if not building dynamic, keeps CMake aware of dependencies
 # TODO: since Boost::headers is for oa/rtti.h maybe we want an INTERFACE target
-target_link_libraries(oa_dao PUBLIC Boost::headers oa_helpers oa_time)
+target_link_libraries(oa_dao PUBLIC Boost::headers oa_config oa_helpers oa_time)
 # install rule for oa_dao
 install(
     TARGETS oa_dao
