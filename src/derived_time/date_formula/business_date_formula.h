@@ -10,17 +10,15 @@ namespace oa::derived_time
 {
 	class OA_DERIVED_TIME_API BusinessDateFormula
 	{
-		public: 
+		public:
 			BusinessDateFormula() = default;
 			BusinessDateFormula(int business_days, const std::shared_ptr<const oa::time::Calendar>& calendar_input);
 			BusinessDateFormula(int business_days, const std::string& calendars);
 			oa::time::Date Adjust(const oa::time::Date& base_date) const;
-			friend oa::time::Date operator+(const oa::time::Date& base_date, const BusinessDateFormula& bus_date_formula);
-			friend oa::time::Date operator+(const BusinessDateFormula& bus_date_formula, const oa::time::Date& base_date);
 
 		private:
-			std::shared_ptr<const oa::time::Calendar> m_calendar_{};
 			int m_num_of_business_days{ 0 };
+			std::shared_ptr<const oa::time::Calendar> m_calendar_{};
 	};
 
 	inline oa::time::Date operator+(const oa::time::Date& base_date, const BusinessDateFormula& bus_date_formula) {
@@ -33,5 +31,3 @@ namespace oa::derived_time
 
 }
 #endif // !OA_DERIVED_TIME_DATE_FORMULA_SPOT_DATE_FORMULA_H_
-
-
