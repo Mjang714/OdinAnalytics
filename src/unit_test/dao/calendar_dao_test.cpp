@@ -22,7 +22,7 @@ namespace
 
 		void SetUp() override
 		{
-			data_struct = oa::dao::CalendarDao::GetInstance().GetCalendartData(region_str);
+			data_struct = oa::dao::CalendarDao::GetInstance().GetCalendarData(region_str);
 		}
 	};
 

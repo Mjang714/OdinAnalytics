@@ -25,7 +25,7 @@ namespace oa::dao
 		return calendar_dao_instance;
 	}
 
-	ds::CalendarDataStruct CalendarDao::GetCalendartData(const std::string& region)
+	ds::CalendarDataStruct CalendarDao::GetCalendarData(const std::string& region)
 	{
 		ds::CalendarDataStruct calendar_struct{};
 		// construct path to corresponding calendar file
