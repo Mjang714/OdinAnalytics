@@ -38,6 +38,8 @@ namespace
 		protected:
 			oa::time::Date start_date;
 			oa::time::Date mat_date;
+			oa::time::Date stub_first_start_date;
+			oa::time::Date stub_last_end_date;
 			oa::time::Tenor frequency;
 			double notional;
 			double rate;
@@ -49,7 +51,7 @@ namespace
 			std::string tenor_fix;
 			oa::time::AdjRule adjustment_rule_pay;
 			oa::time::AdjRule adjustment_rule_fix;
-			
+		
 			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base{
 				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
@@ -62,6 +64,68 @@ namespace
 				{"2029-1-3","2029-7-3","2029-1-3","2029-7-3","2029-1-3","2029-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
 				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
 				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, 1.0, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kPrincipal }
+
+			};
+
+
+			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base_short_first{
+				{"2024-10-3","2025-1-3","2024-10-3","2025-1-3","2024-10-3","2025-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-7-3","2027-1-3","2026-7-3","2027-1-3","2026-7-3","2027-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-1-3","2027-7-3","2027-1-3","2027-7-3","2027-1-3","2027-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-7-3","2028-1-3","2027-7-3","2028-1-3","2027-7-3","2028-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-1-3","2028-7-3","2028-1-3","2028-7-3","2028-1-3","2028-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-7-3","2029-1-3","2028-7-3","2029-1-3","2028-7-3","2029-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-1-3","2029-7-3","2029-1-3","2029-7-3","2029-1-3","2029-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, 1.0, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kPrincipal }
+			};
+
+			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base_long_first{
+				{"2024-10-3","2025-7-3","2024-10-3","2025-7-3","2024-10-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-7-3","2027-1-3","2026-7-3","2027-1-3","2026-7-3","2027-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-1-3","2027-7-3","2027-1-3","2027-7-3","2027-1-3","2027-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-7-3","2028-1-3","2027-7-3","2028-1-3","2027-7-3","2028-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-1-3","2028-7-3","2028-1-3","2028-7-3","2028-1-3","2028-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-7-3","2029-1-3","2028-7-3","2029-1-3","2028-7-3","2029-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-1-3","2029-7-3","2029-1-3","2029-7-3","2029-1-3","2029-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, 1.0, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kPrincipal }
+
+			};
+
+			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base_short_last{
+				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-7-3","2027-1-3","2026-7-3","2027-1-3","2026-7-3","2027-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-1-3","2027-7-3","2027-1-3","2027-7-3","2027-1-3","2027-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-7-3","2028-1-3","2027-7-3","2028-1-3","2027-7-3","2028-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-1-3","2028-7-3","2028-1-3","2028-7-3","2028-1-3","2028-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-7-3","2029-1-3","2028-7-3","2029-1-3","2028-7-3","2029-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-1-3","2029-7-3","2029-1-3","2029-7-3","2029-1-3","2029-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-1-3","2029-7-3","2030-1-3","2029-7-3","2030-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2030-1-3","2030-5-3","2030-1-3","2030-5-3","2030-1-3","2030-5-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2030-1-3","2030-5-3","2030-1-3","2030-5-3","2030-1-3","2030-5-3", 1000000.0, 1.0, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kPrincipal },
+
+			};
+
+			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base_long_last{
+				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
+				{"2026-7-3","2027-1-3","2026-7-3","2027-1-3","2026-7-3","2027-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-1-3","2027-7-3","2027-1-3","2027-7-3","2027-1-3","2027-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2027-7-3","2028-1-3","2027-7-3","2028-1-3","2027-7-3","2028-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-1-3","2028-7-3","2028-1-3","2028-7-3","2028-1-3","2028-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2028-7-3","2029-1-3","2028-7-3","2029-1-3","2028-7-3","2029-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-1-3","2029-7-3","2029-1-3","2029-7-3","2029-1-3","2029-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-5-3","2029-7-3","2030-5-3","2029-7-3","2030-5-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed },
+				{"2029-7-3","2030-5-3","2029-7-3","2030-5-3","2029-7-3","2030-5-3", 1000000.0, 1.0, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kPrincipal }
 
 			};
 
@@ -82,6 +146,8 @@ namespace
 
 			virtual void SetUp() override
 			{
+				stub_first_start_date = oa::time::Date(2024, 10, 3);
+				stub_last_end_date = oa::time::Date(2030, 5, 3);
 				start_date = oa::time::Date(2025, 1, 3);
 				mat_date = oa::time::Date(2030, 1, 3);
 				frequency = oa::time::Tenor("6M");
@@ -96,6 +162,34 @@ namespace
 					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
 				}
 				fixed_cf_base.at(10).cashflow_amount = notional;
+
+				for (auto& cf : fixed_cf_base_short_first) {
+					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
+					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
+					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
+				}
+				fixed_cf_base_short_first.at(11).cashflow_amount = notional;
+
+				for (auto& cf : fixed_cf_base_long_first) {
+					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
+					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
+					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
+				}
+				fixed_cf_base_long_first.at(10).cashflow_amount = notional;
+
+				for (auto& cf : fixed_cf_base_short_last) {
+					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
+					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
+					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
+				}
+				fixed_cf_base_short_last.at(11).cashflow_amount = notional;
+
+				for (auto& cf : fixed_cf_base_long_last) {
+					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
+					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
+					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
+				}
+				fixed_cf_base_long_last.at(10).cashflow_amount = notional;
 
 				for (auto& cf : fixed_cf_fix_pay_adj) {
 					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
@@ -147,6 +241,78 @@ namespace
 			oa::derived_time::DateDirection::kBackward
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
+	}
+
+	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsBckwdTestShortFirst)
+	{
+		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
+			stub_first_start_date,
+			mat_date,
+			oa::derived_time::Frequency::kSemiAnnual,
+			notional,
+			rate,
+			day_cnt_rule,
+			oa::derived_time::Currency::kUSD,
+			oa::derived_time::DateDirection::kBackward,
+			oa::derived_time::CashflowType::kFixed,
+			oa::derived_time::ResetDirection::kAdvance,
+			oa::derived_time::StubType::kShortFirst
+		);
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_short_first));
+	}
+
+	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsBckwdTestlongFirst)
+	{
+		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
+			stub_first_start_date,
+			mat_date,
+			oa::derived_time::Frequency::kSemiAnnual,
+			notional,
+			rate,
+			day_cnt_rule,
+			oa::derived_time::Currency::kUSD,
+			oa::derived_time::DateDirection::kBackward,
+			oa::derived_time::CashflowType::kFixed,
+			oa::derived_time::ResetDirection::kAdvance,
+			oa::derived_time::StubType::kLongFirst
+		);
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_long_first));
+	}
+
+	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsFwdTestShortLast)
+	{
+		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
+			start_date,
+			stub_last_end_date,
+			oa::derived_time::Frequency::kSemiAnnual,
+			notional,
+			rate,
+			day_cnt_rule,
+			oa::derived_time::Currency::kUSD,
+			oa::derived_time::DateDirection::kForward,
+			oa::derived_time::CashflowType::kFixed,
+			oa::derived_time::ResetDirection::kAdvance,
+			oa::derived_time::StubType::kShortLast
+		);
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_short_last));
+	}
+
+	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsFwdTestLongLast)
+	{
+		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
+			start_date,
+			stub_last_end_date,
+			oa::derived_time::Frequency::kSemiAnnual,
+			notional,
+			rate,
+			day_cnt_rule,
+			oa::derived_time::Currency::kUSD,
+			oa::derived_time::DateDirection::kForward,
+			oa::derived_time::CashflowType::kFixed,
+			oa::derived_time::ResetDirection::kAdvance,
+			oa::derived_time::StubType::kLongLast
+		);
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_long_last));
 	}
 
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsFwdTestWithPayFixAdj)
