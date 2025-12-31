@@ -40,9 +40,9 @@ std::filesystem::path library_dir();
  *
  * For example, if `/usr/local` is the Odin installation root and libraries are
  * installed in `/usr/local/lib`, this function returns the path corresponding
- * to `/usr/local/share/oa` if it exists.
+ * to the directory `/usr/local/share/OA` if it exists.
  *
- * If the `share/oa` subdirectory in `/usr/local` doesn't exist, then the path
+ * If the corresponding `share/OA` subdirectory doesn't exist, then the path
  * returned is the same as the one returned by `library_dir()`. This behavior
  * is solely to facilitate local testing as the build artifact directory will
  * contain the requisite shared data subdirectories.

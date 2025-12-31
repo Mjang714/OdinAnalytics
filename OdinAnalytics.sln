@@ -30,6 +30,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "derived_time", "solutions\d
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "solutions\UnitTest\UnitTest.vcxproj", "{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oa_config", "solutions\oa_config\oa_config.vcxproj", "{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -134,6 +136,18 @@ Global
 		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x64.Build.0 = Release|x64
 		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x86.ActiveCfg = Release|Win32
 		{ADA0FBA8-C692-435B-9557-FD9EB5E0B2C7}.Release|x86.Build.0 = Release|Win32
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Debug|Any CPU.Build.0 = Debug|x64
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Debug|x64.ActiveCfg = Debug|x64
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Debug|x64.Build.0 = Debug|x64
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Debug|x86.ActiveCfg = Debug|Win32
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Debug|x86.Build.0 = Debug|Win32
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Release|Any CPU.ActiveCfg = Release|x64
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Release|Any CPU.Build.0 = Release|x64
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Release|x64.ActiveCfg = Release|x64
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Release|x64.Build.0 = Release|x64
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Release|x86.ActiveCfg = Release|Win32
+		{8D946ED4-52D6-4D34-8D4A-E95BF00548CD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

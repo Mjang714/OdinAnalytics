@@ -11,7 +11,9 @@ add_executable(
     config/paths_test.cpp
     dao/calendar_dao_test.cpp
     date_test.cpp
-    date_formula/date_formula_test.cpp
+    derived_time/cashflow_gen/cashflow_gen_test.cpp
+    derived_time/date_formula/business_date_formula_test.cpp
+    derived_time/date_formula/date_formula_test.cpp
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp
     static_data_cache/static_data_cache_test.cpp
@@ -40,7 +42,9 @@ endif()
 target_link_libraries(
     oa_unit_test
     PRIVATE
-        GTest::gtest_main
+        GTest::gmock_main
+        GTest::gmock
+        GTest::gtest
         oa_config
         oa_dao
         oa_derived_time
@@ -53,10 +57,11 @@ target_link_libraries(
 if(TARGET oxl_api)
     target_link_libraries(oa_unit_test PRIVATE oxl_api)
 endif()
+# ensure before oa_unit_test is built that static data is correctly copied.
+# although we could have hung this as a post-build command, this more correctly
+# chains the dependency of oa_unit_test on the static data being located in the
+# same directory as the project artifacts (for local builds)
+add_dependencies(oa_unit_test oa_copy_static_data)
 
-# discover tests for CTest
-gtest_discover_tests(
-    oa_unit_test
-    # ensure that OdinBaseDir is correctly set up
-    PROPERTIES ENVIRONMENT "OdinBaseDir=${PROJECT_SOURCE_DIR}"
-)
+# discover tests for CTest (timeout increased beyond default 5 seconds for CI)
+gtest_discover_tests(oa_unit_test DISCOVERY_TIMEOUT 15)

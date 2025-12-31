@@ -13,6 +13,8 @@ namespace oa::time
 	{
 		public:
 			Tenor(const std::string& input_string);
+
+			Tenor(int time_length, oa::time::Tenors tenor_enum);
 			/// <summary>
 			/// flips the sign of the tenor
 			/// </summary>

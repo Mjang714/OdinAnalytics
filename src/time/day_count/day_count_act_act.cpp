@@ -28,12 +28,32 @@ namespace oa::time
 		int start_year = start_date.m_years();
 		int end_year = end_date.m_years();
 
-		int days_in_start_year = Date::IsLeap(start_year) ? 366 : 365;
-		int days_in_end_year = Date::IsLeap(end_year) ? 366 : 365;
+		double days_in_start_year = Date::IsLeap(start_year) ? 366.0 : 365.0;
+		double days_in_end_year = Date::IsLeap(end_year) ? 366.0 : 365.0;
 
-		auto year_fraction = static_cast<double> (end_year - start_year);
-		year_fraction += static_cast<double> (ComputeDayCountActAct(start_date, Date(start_year, 12, 31)) / days_in_start_year);
-		year_fraction += static_cast<double> (ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year);
+		auto year_fraction = 0.0;
+		if (end_year == start_year)
+		{
+			year_fraction += ComputeDayCountActAct(start_date, end_date) / days_in_start_year;
+		}
+
+		else 
+		{
+			auto curr_year = start_year;
+			auto prior_date = oa::time::Date(start_date.GetJulian() - 1);
+			while (curr_year < end_year)
+			{
+				auto days_in_curr_year = Date::IsLeap(curr_year) ? 366.0 : 365.0;
+				auto curr_date = Date(curr_year, 12, 31);
+				if(curr_date < end_date)
+				{
+					year_fraction += ComputeDayCountActAct(prior_date, curr_date) / days_in_curr_year;
+					prior_date = curr_date;
+				}
+				curr_year++;
+			}
+			year_fraction +=ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year;	
+		}
 
 		return year_fraction;
 

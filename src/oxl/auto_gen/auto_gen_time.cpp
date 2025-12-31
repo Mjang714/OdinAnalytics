@@ -1,4 +1,4 @@
-// This is the registration funcition cpp that excel will use expose the function outwards.
+// This is the registration function cpp that excel will use expose the function outwards.
 // This auto generated cpp registration file that leverages the yaml file.
   
 #include <format>
@@ -155,6 +155,60 @@ LPXLOPER12  oxlComputeDate(LPXLOPER12 Base_Date_input, LPXLOPER12 Tenor_input, L
          }
     }
        auto intermediate_result = oxl::OxlComputeDate(dictionary_input);
+       oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);
+       return xloper_result;
+   }
+ 
+   catch(std::exception& e)
+   {
+       oxl::xl_api::XLoperObj::ConvertToLPXloper("ERROR:" + std::string(e.what()), xloper_result);
+       return xloper_result;
+   }
+
+   catch(...)
+   {
+       xloper_result->xltype = xltypeErr;
+       xloper_result->val.err = xlerrValue;
+       return xloper_result;
+   }
+}
+ 
+extern "C" __declspec(dllexport) 
+LPXLOPER12  oxlAddBusinessDays(LPXLOPER12 Base_Date_input, LPXLOPER12 Days_input, LPXLOPER12 Calendar_input)
+{
+  LPXLOPER12 xloper_result = static_cast<LPXLOPER12> (calloc(1, sizeof(xloper12)));
+  try
+ {
+    oxl::xl_api::XlDictionary dictionary_input;
+    if (oxl::xl_api::XLoperObj::IsMulti(Base_Date_input ) && (oxl::xl_api::XLoperObj::IsMulti(Days_input )))
+    {
+         dictionary_input = oxl::xl_api::XLoperObj::LPXloperToDictionary(Base_Date_input, Days_input);
+    }
+    else if (oxl::xl_api::XLoperObj::IsMulti(Base_Date_input))
+    {
+         dictionary_input = oxl::xl_api::XLoperObj::LPXloperToDictionary(Base_Date_input);
+    }
+    else
+    {
+         if(oxl::xl_api::XLoperObj::IsStr(Base_Date_input))
+         {
+            std::string handle_str = oxl::xl_api::XLoperObj::LPXloperToStr(Base_Date_input);
+            std::string key = oxl::xl_api::XlCacheObj::GetKeyFromHandle(handle_str);
+            if(oxl::xl_api::XlCacheObj::IsDictionary(key))
+            {
+              auto cache_variant = oxl::xl_api::XlCacheObj::GetVariant(key);
+              dictionary_input = *std::get<std::shared_ptr<oxl::xl_api::XlDictionary>>(cache_variant);
+            }
+         }
+         else
+         {
+           dictionary_input["Base_Date"] = oxl::xl_api::XLoperObj::LPXloperToDouble(Base_Date_input); 
+           dictionary_input["Days"] = oxl::xl_api::XLoperObj::LPXloperToDouble(Days_input); 
+           dictionary_input["Calendar"] = oxl::xl_api::XLoperObj::LPXloperToStr(Calendar_input); 
+
+         }
+    }
+       auto intermediate_result = oxl::OxlAddBusinessDays(dictionary_input);
        oxl::xl_api::XLoperObj::ConvertToLPXloper(intermediate_result, xloper_result);
        return xloper_result;
    }
