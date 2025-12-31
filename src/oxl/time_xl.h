@@ -37,6 +37,7 @@ namespace oxl
 	int OxlComputeDayCount(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count);
 	double OxlComputeYearFraction(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count);
 	double OxlComputeDate(const xl_api::XlDictionary& dictionary);
+	double OxlAddBusinessDays(const xl_api::XlDictionary& dictionary);
 }
 
 #endif //OXL_TIME_XL_H_

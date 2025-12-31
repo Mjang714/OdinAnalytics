@@ -18,6 +18,7 @@ from pathlib import Path
 import sys
 from typing import Any, Iterable
 import yaml
+from pathlib import Path
 
 # path-like typing hint
 PathLike = Path | str
@@ -338,7 +339,9 @@ def dictionary_functions_base(yml_definition):
                 create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToStr(" + arg["Name"] + "_input); \n"
             elif(arg["Type"] == "LPXLOPER|Date"):
                 create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"
-    dictionary_code += [create_dictionary_line]
+            elif(arg["Type"] == "Integer" or arg["Type"] == "Double"):
+                create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"          
+    dictionary_code += [create_dictionary_line] 
     dictionary_code += ["         }"]
     dictionary_code += ["    }"]
     line = "       auto intermediate_result = oxl::" + yml_definition["OxlName"]+ "(dictionary_input);"
@@ -429,6 +432,7 @@ def CreateDir(path):
 def parse_args(args: Iterable[str] | None = None) -> Namespace:
     """Parse incoming command-line arguments.
 
+<<<<<<< HEAD:src/oxl/oxlgen.py
     Parameters
     ----------
     args : Iterable[str] | None, default=None
