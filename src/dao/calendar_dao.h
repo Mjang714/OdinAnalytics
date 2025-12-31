@@ -43,7 +43,7 @@ namespace oa::dao
 			/// </summary>
 			/// <param name="calendar_str"> what city calendar that is needed (i.e. NYB = New York Fed)</param>
 			/// <returns></returns>
-			static oa::ds::CalendarDataStruct GetCalendartData(const std::string& region);
+			static oa::ds::CalendarDataStruct GetCalendarData(const std::string& region);
 
 		private:
 
