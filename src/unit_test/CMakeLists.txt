@@ -12,6 +12,7 @@ add_executable(
     dao/calendar_dao_test.cpp
     date_test.cpp
     derived_time/cashflow_gen/cashflow_gen_test.cpp
+    derived_time/date_formula/business_date_formula_test.cpp
     derived_time/date_formula/date_formula_test.cpp
     fixed_string_test.cpp
     helpers/business_logic_check_test.cpp
