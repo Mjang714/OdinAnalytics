@@ -144,6 +144,16 @@ namespace
 
 			};
 
+			static void PopulateFixedCashflows(std::vector<oa::derived_time::CashflowStruct>& cash_flows, oa::time::DayCountRule day_cnt_rule) {
+
+				auto day_count = oa::time::DayCounterFactory::GenerateDayCounter(day_cnt_rule);
+				for (auto& cf : cash_flows) {
+					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
+					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
+					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
+				}
+			}
+
 			virtual void SetUp() override
 			{
 				stub_first_start_date = oa::time::Date(2024, 10, 3);
@@ -155,47 +165,22 @@ namespace
 				rate = 0.05; //5%
 				day_cnt_rule = oa::time::DayCountRule::kACT_360;
 
-				auto day_count = oa::time::DayCounterFactory::GenerateDayCounter(day_cnt_rule);
-				for(auto& cf : fixed_cf_base) {
-					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
-				}
+				PopulateFixedCashflows(fixed_cf_base, day_cnt_rule);
 				fixed_cf_base.at(10).cashflow_amount = notional;
 
-				for (auto& cf : fixed_cf_base_short_first) {
-					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
-				}
+				PopulateFixedCashflows(fixed_cf_base_short_first, day_cnt_rule);
 				fixed_cf_base_short_first.at(11).cashflow_amount = notional;
 
-				for (auto& cf : fixed_cf_base_long_first) {
-					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
-				}
+				PopulateFixedCashflows(fixed_cf_base_long_first, day_cnt_rule);
 				fixed_cf_base_long_first.at(10).cashflow_amount = notional;
 
-				for (auto& cf : fixed_cf_base_short_last) {
-					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
-				}
+				PopulateFixedCashflows(fixed_cf_base_short_last, day_cnt_rule);
 				fixed_cf_base_short_last.at(11).cashflow_amount = notional;
 
-				for (auto& cf : fixed_cf_base_long_last) {
-					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
-				}
+				PopulateFixedCashflows(fixed_cf_base_long_last, day_cnt_rule);
 				fixed_cf_base_long_last.at(10).cashflow_amount = notional;
 
-				for (auto& cf : fixed_cf_fix_pay_adj) {
-					cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-					cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-					cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
-				}
+				PopulateFixedCashflows(fixed_cf_fix_pay_adj, day_cnt_rule);
 				fixed_cf_fix_pay_adj.at(10).cashflow_amount = notional;
 			}
 			virtual void TearDown() override
