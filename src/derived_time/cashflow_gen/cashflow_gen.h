@@ -8,6 +8,7 @@
 #include "derived_time/derived_time_enums.h"
 #include "derived_time/cashflow_gen/cashflow_struct.h"
 #include "derived_time/date_formula/date_formula.h"
+#include "derived_time/date_formula/business_date_formula.h"
 #include "time/calendar.h"
 #include "time/date.h"
 #include "time/tenor.h"
@@ -33,10 +34,10 @@ namespace oa::derived_time {
 			const oa::derived_time::CashflowType cf_type = oa::derived_time::CashflowType::kFixed,
 			const oa::derived_time::ResetDirection rest_dir = oa::derived_time::ResetDirection::kAdvance,
 			const oa::derived_time::StubType& stub_type = deriv_time::StubType::kNone,
-			const std::optional<const oa::derived_time::DateFormula>& start_date_adj = std::nullopt,
-			const std::optional<const oa::derived_time::DateFormula>& end_date_adj = std::nullopt,
-			const std::optional<const oa::derived_time::DateFormula>& payment_date_adj = std::nullopt,
-			const std::optional<const oa::derived_time::DateFormula>& fixing_date_adj = std::nullopt,
+			const std::optional<const oa::derived_time::BusinessDateFormula>& start_date_adj = std::nullopt,
+			const std::optional<const oa::derived_time::BusinessDateFormula>& end_date_adj = std::nullopt,
+			const std::optional<const oa::derived_time::BusinessDateFormula>& payment_date_adj = std::nullopt,
+			const std::optional<const oa::derived_time::BusinessDateFormula>& fixing_date_adj = std::nullopt,
 			const std::optional<oa::time::Date>& stub_date = std::nullopt
 			);
 	private:
