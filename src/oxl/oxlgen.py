@@ -432,7 +432,6 @@ def CreateDir(path):
 def parse_args(args: Iterable[str] | None = None) -> Namespace:
     """Parse incoming command-line arguments.
 
-<<<<<<< HEAD:src/oxl/oxlgen.py
     Parameters
     ----------
     args : Iterable[str] | None, default=None
