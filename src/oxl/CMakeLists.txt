@@ -20,7 +20,7 @@ else()
 endif()
 
 ##
-# Add a build run that runs oxlgen on the specified YAML file.
+# Add a build rule that runs oxlgen on the specified YAML file.
 #
 # This uses add_custom_command() to construct a build rule for the .cpp file
 # specified by the oxl YAML interface files. If the OutputFile specified is
