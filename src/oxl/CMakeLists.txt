@@ -25,7 +25,7 @@ endif()
 # This uses add_custom_command() to construct a build rule for the .cpp file
 # specified by the oxl YAML interface files. If the OutputFile specified is
 # used in a target in the current source directory, CMake provides the rule so
-# that when the YAML file or header dependencies change, rebuild is automatic.
+# that when the YAML file or other dependencies change, rebuild is automatic.
 #
 # Arguments:
 #   yml_file        YAML interface file input for oxlgen.py
