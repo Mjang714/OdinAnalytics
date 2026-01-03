@@ -145,8 +145,8 @@ namespace
 			};
 
 			static void PopulateFixedCashflows(std::vector<oa::derived_time::CashflowStruct>& cash_flows, oa::time::DayCountRule day_cnt_rule,
-				std::optional<oa::derived_time::BusinessDateFormula>  date_formula_pay = std::nullopt,
-				std::optional<oa::derived_time::BusinessDateFormula> date_formula_fix = std::nullopt)
+				std::optional<oa::derived_time::BusinessDateFormula>  date_formula_pay = {},
+				std::optional<oa::derived_time::BusinessDateFormula> date_formula_fix = {})
 				{
 					auto day_count = oa::time::DayCounterFactory::GenerateDayCounter(day_cnt_rule);
 					for (auto& cf : cash_flows) {
@@ -162,6 +162,7 @@ namespace
 							cf.fixing_date = date_formula_fix.value().Adjust(cf.start_date);
 						}
 					}
+					cash_flows.back().cashflow_amount = cash_flows.back().notional; //principal repayment
 				}
 
 			virtual void SetUp() override
@@ -189,7 +190,6 @@ namespace
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsFwdTest)
 	{
 		PopulateFixedCashflows(fixed_cf_base, day_cnt_rule);
-		fixed_cf_base.at(10).cashflow_amount = notional;
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
 			mat_date,
@@ -211,7 +211,6 @@ namespace
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsBkwdTest)
 	{
 		PopulateFixedCashflows(fixed_cf_base, day_cnt_rule);
-		fixed_cf_base.at(10).cashflow_amount = notional;
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
 			mat_date,
@@ -228,7 +227,6 @@ namespace
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsBckwdTestShortFirst)
 	{
 		PopulateFixedCashflows(fixed_cf_base_short_first, day_cnt_rule);
-		fixed_cf_base_short_first.at(11).cashflow_amount = notional;
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			stub_first_start_date,
 			mat_date,
@@ -248,7 +246,6 @@ namespace
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsBckwdTestlongFirst)
 	{
 		PopulateFixedCashflows(fixed_cf_base_long_first, day_cnt_rule);
-		fixed_cf_base_long_first.at(10).cashflow_amount = notional;
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			stub_first_start_date,
 			mat_date,
@@ -268,7 +265,6 @@ namespace
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsFwdTestShortLast)
 	{
 		PopulateFixedCashflows(fixed_cf_base_short_last, day_cnt_rule);
-		fixed_cf_base_short_last.at(11).cashflow_amount = notional;
 
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
@@ -289,7 +285,6 @@ namespace
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsFwdTestLongLast)
 	{
 		PopulateFixedCashflows(fixed_cf_base_long_last, day_cnt_rule);
-		fixed_cf_base_long_last.at(10).cashflow_amount = notional;
 
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
@@ -312,7 +307,6 @@ namespace
 		PopulateFixedCashflows(fixed_cf_fix_pay_adj, day_cnt_rule,
 			oa::derived_time::BusinessDateFormula(biz_pay_days, pay_calendar),
 			oa::derived_time::BusinessDateFormula(biz_fix_days, fix_calendar));
-		fixed_cf_fix_pay_adj.at(10).cashflow_amount = notional;
 
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
@@ -340,7 +334,6 @@ namespace
 		PopulateFixedCashflows(fixed_cf_fix_pay_adj, day_cnt_rule,
 			oa::derived_time::BusinessDateFormula(biz_pay_days, pay_calendar),
 			oa::derived_time::BusinessDateFormula(biz_fix_days, fix_calendar));
-		fixed_cf_fix_pay_adj.at(10).cashflow_amount = notional;
 		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
 			start_date,
 			mat_date,

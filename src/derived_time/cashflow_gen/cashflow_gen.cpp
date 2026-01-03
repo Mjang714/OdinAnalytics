@@ -66,29 +66,24 @@ namespace oa::derived_time {
 
 		//normally we dont insert in the front but this is one time operation so it should be ok maybe a good idea to crate a private static function and move this logic there but not sure as it would mutate the unadj_starta and unadj_end vectors
 		if (stub_type == deriv_time::StubType::kShortFirst && date_dir == deriv_time::DateDirection::kBackward) {
-			if (stub_date != std::nullopt) {
-				unadjusted_start_dates.front() = stub_date.value();
-			}
-			else {
-				unadjusted_start_dates.front() = start_date;
-			}
+			unadjusted_start_dates.front() = stub_date.value_or(start_date);
 		}
 
 		else if (stub_type == deriv_time::StubType::kLongFirst && date_dir == deriv_time::DateDirection::kBackward) {
 			unadjusted_start_dates.erase(unadjusted_start_dates.begin());
 			unadjusted_end_dates.erase(unadjusted_end_dates.begin());
-			unadjusted_start_dates.front() = stub_date == std::nullopt ? start_date : stub_date.value();
+			unadjusted_start_dates.front() = stub_date.value_or(start_date);
 
 		}
 
 		else if (stub_type == deriv_time::StubType::kShortLast && date_dir == deriv_time::DateDirection::kForward) {
-			unadjusted_end_dates.back() = stub_date == std::nullopt ? mat_date : stub_date.value();
+			unadjusted_end_dates.back() = stub_date.value_or(mat_date);
 		}
 
 		else if (stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward) {
 			unadjusted_end_dates.pop_back();
 			unadjusted_start_dates.pop_back();
-			unadjusted_end_dates.back() = stub_date == std::nullopt ? mat_date : stub_date.value();
+			unadjusted_end_dates.back() = stub_date.value_or(mat_date);
 		}
 
 		else {
