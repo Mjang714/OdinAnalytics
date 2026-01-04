@@ -16,10 +16,10 @@ namespace oa::derived_time {
 		const oa::derived_time::CashflowType cf_type,
 		const oa::derived_time::ResetDirection rest_dir,
 		const oa::derived_time::StubType& stub_type,
-		const std::optional<const oa::derived_time::DateFormula>& start_date_adj,
-		const std::optional<const oa::derived_time::DateFormula>& end_date_adj,
-		const std::optional<const oa::derived_time::DateFormula>& payment_date_adj,
-		const std::optional<const oa::derived_time::DateFormula>& fixing_date_adj,
+		const std::optional<oa::derived_time::BusinessDateFormula>& start_date_adj,
+		const std::optional<oa::derived_time::BusinessDateFormula>& end_date_adj,
+		const std::optional<oa::derived_time::BusinessDateFormula>& payment_date_adj,
+		const std::optional<oa::derived_time::BusinessDateFormula>& fixing_date_adj,
 		const std::optional<oa::time::Date>& stub_date
 	) {
 		std::vector<CashflowStruct> cashflows{};
@@ -59,23 +59,31 @@ namespace oa::derived_time {
 				curr_end_date = mat_date.AddTenor(oa::time::Tenor(total_length, tenor_enum));
 				total_length -= time_length;
 			}
-			//this ensrue that the cashflows dates are in the same chonological order.
+			//this ensure that the cashflows dates are in the same chonological order.
 			std::reverse(unadjusted_start_dates.begin(), unadjusted_start_dates.end());
 			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
-
+		//normally we dont insert in the front but this is one time operation so it should be ok maybe a good idea to crate a private static function and move this logic there but not sure as it would mutate the unadj_starta and unadj_end vectors
 		if (stub_type == deriv_time::StubType::kShortFirst && date_dir == deriv_time::DateDirection::kBackward) {
-			//will fill out later to deal with short first stub
+			unadjusted_start_dates.front() = stub_date.value_or(start_date);
 		}
 
 		else if (stub_type == deriv_time::StubType::kLongFirst && date_dir == deriv_time::DateDirection::kBackward) {
-			//will fill out later to deal with short last stub
+			unadjusted_start_dates.erase(unadjusted_start_dates.begin());
+			unadjusted_end_dates.erase(unadjusted_end_dates.begin());
+			unadjusted_start_dates.front() = stub_date.value_or(start_date);
 
 		}
 
 		else if (stub_type == deriv_time::StubType::kShortLast && date_dir == deriv_time::DateDirection::kForward) {
-			//will fill out later to deal with short last stub
+			unadjusted_end_dates.back() = stub_date.value_or(mat_date);
+		}
+
+		else if (stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward) {
+			unadjusted_end_dates.pop_back();
+			unadjusted_start_dates.pop_back();
+			unadjusted_end_dates.back() = stub_date.value_or(mat_date);
 		}
 
 		else {
