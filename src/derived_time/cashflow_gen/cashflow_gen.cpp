@@ -16,10 +16,10 @@ namespace oa::derived_time {
 		const oa::derived_time::CashflowType cf_type,
 		const oa::derived_time::ResetDirection rest_dir,
 		const oa::derived_time::StubType& stub_type,
-		const std::optional<const oa::derived_time::BusinessDateFormula>& start_date_adj,
-		const std::optional<const oa::derived_time::BusinessDateFormula>& end_date_adj,
-		const std::optional<const oa::derived_time::BusinessDateFormula>& payment_date_adj,
-		const std::optional<const oa::derived_time::BusinessDateFormula>& fixing_date_adj,
+		const std::optional<oa::derived_time::BusinessDateFormula>& start_date_adj,
+		const std::optional<oa::derived_time::BusinessDateFormula>& end_date_adj,
+		const std::optional<oa::derived_time::BusinessDateFormula>& payment_date_adj,
+		const std::optional<oa::derived_time::BusinessDateFormula>& fixing_date_adj,
 		const std::optional<oa::time::Date>& stub_date
 	) {
 		std::vector<CashflowStruct> cashflows{};

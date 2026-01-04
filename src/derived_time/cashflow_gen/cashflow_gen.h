@@ -34,10 +34,10 @@ namespace oa::derived_time {
 			const oa::derived_time::CashflowType cf_type = oa::derived_time::CashflowType::kFixed,
 			const oa::derived_time::ResetDirection rest_dir = oa::derived_time::ResetDirection::kAdvance,
 			const oa::derived_time::StubType& stub_type = deriv_time::StubType::kNone,
-			const std::optional<const oa::derived_time::BusinessDateFormula>& start_date_adj = {},
-			const std::optional<const oa::derived_time::BusinessDateFormula>& end_date_adj = {},
-			const std::optional<const oa::derived_time::BusinessDateFormula>& payment_date_adj = {},
-			const std::optional<const oa::derived_time::BusinessDateFormula>& fixing_date_adj = {},
+			const std::optional<oa::derived_time::BusinessDateFormula>& start_date_adj = {},
+			const std::optional<oa::derived_time::BusinessDateFormula>& end_date_adj = {},
+			const std::optional<oa::derived_time::BusinessDateFormula>& payment_date_adj = {},
+			const std::optional<oa::derived_time::BusinessDateFormula>& fixing_date_adj = {},
 			const std::optional<oa::time::Date>& stub_date = {}
 			);
 	private:
