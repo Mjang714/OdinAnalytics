@@ -156,21 +156,21 @@ set(_xllsdk_frmwrk_srcdir "${_xllsdk_root}/samples/framewrk")
 # note: not defining _USRDLL during compilation. do we need to (for MFC)?
 if(EXISTS "${_xllsdk_frmwrk_srcdir}")
     add_library(
-        xllsdk_frmwrk32 STATIC
+        frmwrk32 STATIC
         "${_xllsdk_frmwrk_srcdir}/framewrk.c"
         "${_xllsdk_frmwrk_srcdir}/MemoryManager.cpp"
         "${_xllsdk_frmwrk_srcdir}/MemoryPool.cpp"
     )
-    add_library(XLLSDK::Framework ALIAS xllsdk_frmwrk32)
+    add_library(XLLSDK::Framework ALIAS frmwrk32)
     # expose _xllsdk_frmwrk_srcdir as part of include interface due to use of
     # <memorymanager.h> include + CMake won't be running in same directory
     # note: MemoryManager.h and MemoryPool.h are not specified in Microsoft
     # documentation as part of the frmwrk32 include interface but we can't
     # really stop a project from including these files
-    target_include_directories(xllsdk_frmwrk32 PUBLIC "${_xllsdk_frmwrk_srcdir}")
+    target_include_directories(frmwrk32 PUBLIC "${_xllsdk_frmwrk_srcdir}")
     # need extra private include directories due to weird setup
     target_include_directories(
-        xllsdk_frmwrk32 PRIVATE
+        frmwrk32 PRIVATE
         # need to be able to include xlcall.cpp and xlcall.h respectively
         "${_xllsdk_root}/src" "${XLLSDK_INCLUDE_DIRS}"
     )
@@ -180,13 +180,11 @@ if(EXISTS "${_xllsdk_frmwrk_srcdir}")
         LANGUAGE C
     )
     set_target_properties(
-        xllsdk_frmwrk32 PROPERTIES
-        # make output name frmwrk32 like in the Excel SDK's Makefile
-        OUTPUT_NAME frmwrk32
+        frmwrk32 PROPERTIES
         # when building the Debug config we want the frmwrk32 PDB to be in the
         # same output directory as frmwrk32.lib and be named frmwrk32.pdb
         COMPILE_PDB_NAME_DEBUG frmwrk32
-        COMPILE_PDB_OUTPUT_DIRECTORY_DEBUG $<TARGET_FILE_DIR:xllsdk_frmwrk32>
+        COMPILE_PDB_OUTPUT_DIRECTORY_DEBUG $<TARGET_FILE_DIR:frmwrk32>
         # ensure we *never* use unity build when building frmwrk32
         UNITY_BUILD FALSE
     )
@@ -202,33 +200,27 @@ set(_xllsdk_generic_srcdir "${_xllsdk_root}/samples/generic")
 # note: not defining _USRDLL during compilation. do we need to (for MFC)?
 if(EXISTS "${_xllsdk_generic_srcdir}")
     add_library(
-        xllsdk_generic MODULE
+        generic MODULE
         "${_xllsdk_generic_srcdir}/generic.c"
         # note: excluding generic.def because DLL exported functions already
         # have __declspec(dllexport) attributes
         "${_xllsdk_generic_srcdir}/generic.rc"
     )
-    add_library(XLLSDK::Generic ALIAS xllsdk_generic)
+    add_library(XLLSDK::Generic ALIAS generic)
     # suppress C4312 we cannot do anything about
-    target_compile_options(xllsdk_generic PRIVATE /wd4312)
+    target_compile_options(generic PRIVATE /wd4312)
     # since _xllsdk_generic_srcdir is not part of the project's source tree we
     # need to add it to the list of include directories
-    target_include_directories(xllsdk_generic PRIVATE "${_xllsdk_generic_srcdir}")
+    target_include_directories(generic PRIVATE "${_xllsdk_generic_srcdir}")
     # generic XLL uses both SDK and Framework library
-    target_link_libraries(xllsdk_generic PRIVATE XLLSDK::SDK XLLSDK::Framework)
+    target_link_libraries(generic PRIVATE XLLSDK::SDK XLLSDK::Framework)
     # again, explicitly need to compile GENERIC.C as C code
     set_source_files_properties(
         "${_xllsdk_generic_srcdir}/generic.c" PROPERTIES
         LANGUAGE C
     )
-    set_target_properties(
-        xllsdk_generic PROPERTIES
-        # make output name generic like in the Excel SDK's Makefile
-        OUTPUT_NAME generic
-        # make the extension .xll + never use unity build with generic XLL
-        SUFFIX .xll
-        UNITY_BUILD FALSE
-    )
+    # make the extension .xll + never use unity build with generic XLL
+    set_target_properties(generic PROPERTIES SUFFIX .xll UNITY_BUILD FALSE)
     # mark as found
     # note: not added to XLLSDK_LIBRARIES since generic.xll is not a library
     set(XLLSDK_Generic_FOUND TRUE)
