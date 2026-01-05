@@ -42,7 +42,15 @@ namespace oa::derived_time {
 			);
 	private:
 		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
-		
+		static void StubDateAdjustments(
+			const oa::derived_time::StubType& stub_type,
+			const oa::derived_time::DateDirection date_dir,
+			const oa::time::Date& start_date,
+			const oa::time::Date& mat_date,
+			std::vector<oa::time::Date>& unadjusted_start_dates,
+			std::vector<oa::time::Date>& unadjusted_end_dates,
+			const std::optional<oa::time::Date>& stub_date
+		);
 		
 	};
 }

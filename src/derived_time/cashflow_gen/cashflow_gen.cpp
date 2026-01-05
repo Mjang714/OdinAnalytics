@@ -64,31 +64,13 @@ namespace oa::derived_time {
 			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
-		//normally we dont insert in the front but this is one time operation so it should be ok maybe a good idea to crate a private static function and move this logic there but not sure as it would mutate the unadj_starta and unadj_end vectors
-		if (stub_type == deriv_time::StubType::kShortFirst && date_dir == deriv_time::DateDirection::kBackward) {
-			unadjusted_start_dates.front() = stub_date.value_or(start_date);
-		}
-
-		else if (stub_type == deriv_time::StubType::kLongFirst && date_dir == deriv_time::DateDirection::kBackward) {
-			unadjusted_start_dates.erase(unadjusted_start_dates.begin());
-			unadjusted_end_dates.erase(unadjusted_end_dates.begin());
-			unadjusted_start_dates.front() = stub_date.value_or(start_date);
-
-		}
-
-		else if (stub_type == deriv_time::StubType::kShortLast && date_dir == deriv_time::DateDirection::kForward) {
-			unadjusted_end_dates.back() = stub_date.value_or(mat_date);
-		}
-
-		else if (stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward) {
-			unadjusted_end_dates.pop_back();
-			unadjusted_start_dates.pop_back();
-			unadjusted_end_dates.back() = stub_date.value_or(mat_date);
-		}
-
-		else {
-			//this case is stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward)
-		}
+		StubDateAdjustments(stub_type,
+							date_dir,
+							start_date,
+							mat_date,
+							unadjusted_start_dates,
+							unadjusted_end_dates,
+							stub_date);
 
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {
 			auto day_count = oa::time::DayCounterFactory::GenerateDayCounter(day_count_rule);
@@ -130,6 +112,43 @@ namespace oa::derived_time {
 		// Implementation logic to generate cashflows goes here
 		return cashflows;
 
+	}
+
+	void CashflowGen::StubDateAdjustments(
+		const oa::derived_time::StubType& stub_type,
+		const oa::derived_time::DateDirection date_dir,
+		const oa::time::Date& start_date,
+		const oa::time::Date& mat_date,
+		std::vector<oa::time::Date>& unadjusted_start_dates,
+		std::vector<oa::time::Date>& unadjusted_end_dates,
+		const std::optional<oa::time::Date>&  stub_date
+	) 
+	{
+		//normally we dont insert in the front but this is one time operation so it should be ok maybe a good idea to crate a private static function and move this logic there but not sure as it would mutate the unadj_starta and unadj_end vectors
+		if (stub_type == deriv_time::StubType::kShortFirst && date_dir == deriv_time::DateDirection::kBackward) {
+			unadjusted_start_dates.front() = stub_date.value_or(start_date);
+		}
+
+		else if (stub_type == deriv_time::StubType::kLongFirst && date_dir == deriv_time::DateDirection::kBackward) {
+			unadjusted_start_dates.erase(unadjusted_start_dates.begin());
+			unadjusted_end_dates.erase(unadjusted_end_dates.begin());
+			unadjusted_start_dates.front() = stub_date.value_or(start_date);
+
+		}
+
+		else if (stub_type == deriv_time::StubType::kShortLast && date_dir == deriv_time::DateDirection::kForward) {
+			unadjusted_end_dates.back() = stub_date.value_or(mat_date);
+		}
+
+		else if (stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward) {
+			unadjusted_end_dates.pop_back();
+			unadjusted_start_dates.pop_back();
+			unadjusted_end_dates.back() = stub_date.value_or(mat_date);
+		}
+
+		else {
+			//stil thiking about ways to deal with cases where we can stub at teh fron and end. 
+		}
 	}
 
 	oa::time::Tenor CashflowGen::MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq) 
