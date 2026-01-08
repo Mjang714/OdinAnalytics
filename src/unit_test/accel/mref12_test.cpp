@@ -7,13 +7,14 @@
 
 #include "oa/accel/mref12.h"
 
-#include <tuple>
-
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <XLCALL.H>
+
+#include <sstream>
+#include <tuple>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -90,6 +91,32 @@ TEST_F(MultiRef12Test, RangeForTest)
   // all values should be equal now
   // note: this is only possible since mref12 provides value_type
   EXPECT_THAT(ref, ::testing::Each(tgt));
+}
+
+/**
+ * Test `mref12` string formatting.
+ *
+ * This indirectly tests the `operator<<` for the `xlref12` + list init.
+ */
+TEST_F(MultiRef12Test, StreamFormatTest)
+{
+  oa::accel::mref12 ref{
+    {1, 6, 4, 18},  // (1, 4) ... (6, 18)
+    {4, 4, 6, 6},   // (4, 6)
+    {2, 9, 5, 5},   // (2, 5) ... (9, 5)
+    {6, 6, 0, 10}   // (6, 0) ... (6, 10)
+  };
+  // stream
+  std::stringstream ss;
+  ss << ref;
+  // check
+  EXPECT_EQ(
+    "[(1, 4) ... (6, 18), "
+      "(4, 6), "
+      "(2, 5) ... (9, 5), "
+      "(6, 0) ... (6, 10)]",
+    ss.str()
+  );
 }
 
 }  // namespace
