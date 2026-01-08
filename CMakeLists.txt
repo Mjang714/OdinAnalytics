@@ -114,6 +114,27 @@ else()
     message(STATUS "GoogleMock version: None")
 endif()
 
+# look for Excel 2013 or higher
+if(WIN32)
+    find_package(Excel 13)
+endif()
+if(Excel_FOUND)
+    message(STATUS "Excel version: ${Excel_VERSION}")
+    # note: proper Office installations should have XLCALL32.DLL
+    if(TARGET Excel::XLCALL32)
+        message(STATUS "Excel XLCALL32: Yes")
+    else()
+        message(STATUS "Excel XLCALL32: No")
+    endif()
+    if(Excel_64BIT)
+        message(STATUS "Excel 64-bit: Yes")
+    else()
+        message(STATUS "Excel 64-bit: No")
+    endif()
+else()
+    message(STATUS "Excel version: None")
+endif()
+
 # look for Excel 2013 XLL SDK
 if(WIN32)
     find_package(XLLSDK 15.0 COMPONENTS frmwrk32)
