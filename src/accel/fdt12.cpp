@@ -5,8 +5,6 @@
  * @copyright MIT License
  */
 
-#include "oa/accel/excel12.h"
-
 #include "oa/accel/fdt12.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -316,7 +314,7 @@ fdt12::destroy() noexcept
     case xltypeStr:
     case xltypeMulti:
     case xltypeRef:
-      excel12(xlFree, nullptr, value_);
+      Excel12(xlFree, nullptr, 1, value_);
       break;
     }
   }
