@@ -17,11 +17,12 @@
 #include <cstring>
 #include <initializer_list>
 #include <limits>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include "oa/accel/xl_ops.h"  // for xlref12 operator==
+#include "oa/accel/xl_ops.h"  // for xlref12 operator==, operator<<
 
 namespace oa {
 namespace accel {
@@ -253,6 +254,23 @@ void
 mref12::destroy() noexcept
 {
   xlmref12_free(value_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// operator<<                                                                 //
+////////////////////////////////////////////////////////////////////////////////
+
+std::ostream& operator<<(std::ostream& out, const mref12& ref)
+{
+  out << '[';
+  // stream values
+  for (auto it = ref.begin(); it != ref.end(); it++) {
+    if (it != ref.begin())
+      out << ", ";
+    out << *it;
+  }
+  // ending delimiter + done
+  return out << ']';
 }
 
 }  // namespace accel

@@ -14,6 +14,7 @@ struct xlref12;
 
 #include <cstddef>
 #include <initializer_list>
+#include <iosfwd>
 
 namespace oa {
 namespace accel {
@@ -262,6 +263,22 @@ private:
    */
   void destroy() noexcept;
 };
+
+/**
+ * Stream operator for the `mref12`.
+ *
+ * This streams each `xlref12` using `operator<<` between delimiters:
+ *
+ * @code
+ * [(r1, c1), (r2, c2) ... (r3, c3), ... ]
+ * @endcode
+ *
+ * If the `mref12` is empty then just `"[]"` will be formatted.
+ *
+ * @param out Output stream
+ * @param ref Multi-reference to stream
+ */
+std::ostream& operator<<(std::ostream& out, const mref12& ref);
 
 }  // namespace accel
 }  // namespace oa
