@@ -309,15 +309,8 @@ fdt12::destroy() noexcept
   }
   // otherwise, call Excel12(xlFree, ...) as appropriate. see
   // https://learn.microsoft.com/en-us/office/client-developer/excel/xlfree
-  else {
-    switch (value_->xltype) {
-    case xltypeStr:
-    case xltypeMulti:
-    case xltypeRef:
-      Excel12(xlFree, nullptr, 1, value_);
-      break;
-    }
-  }
+  else if (needs_extra_memory(type()))
+    Excel12(xlFree, nullptr, 1, value_);
   // now we can delete the XLOPER12 itself
   delete value_;
 }
