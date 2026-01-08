@@ -102,25 +102,25 @@ fdt12::~fdt12()
 // value constructors                                                         //
 ////////////////////////////////////////////////////////////////////////////////
 
-fdt12::fdt12(xlerr err) : value_{new xloper12}
+fdt12::fdt12(xlerr err) : value_{new xloper12{}}
 {
   value_->val.err = static_cast<int>(err);
   value_->xltype = xltypeErr;
 }
 
-fdt12::fdt12(bool val) : value_{new xloper12}
+fdt12::fdt12(bool val) : value_{new xloper12{}}
 {
   value_->val.xbool = val;
   value_->xltype = xltypeBool;
 }
 
-fdt12::fdt12(int val) : value_{new xloper12}
+fdt12::fdt12(int val) : value_{new xloper12{}}
 {
   value_->val.w = val;
   value_->xltype = xltypeInt;
 }
 
-fdt12::fdt12(double val) : value_{new xloper12}
+fdt12::fdt12(double val) : value_{new xloper12{}}
 {
   value_->val.num = val;
   value_->xltype = xltypeNum;
@@ -146,7 +146,7 @@ fdt12::fdt12(std::wstring_view str)
   owning_ = true;
 }
 
-fdt12::fdt12(xlref12 ref) : value_{new xloper12}
+fdt12::fdt12(xlref12 ref) : value_{new xloper12{}}
 {
   value_->val.sref = {1u, ref};
   value_->xltype = xltypeSRef;
@@ -170,7 +170,7 @@ fdt12::fdt12(std::uintptr_t id, const mref12& mref)
 
 fdt12::fdt12(mref12&& mref) : fdt12{0u, std::move(mref)} {}
 
-fdt12::fdt12(std::uintptr_t id, mref12&& mref) : value_{new xloper12}
+fdt12::fdt12(std::uintptr_t id, mref12&& mref) : value_{new xloper12{}}
 {
   value_->val.mref.lpmref = mref.release();  // noexcept
   value_->val.mref.idSheet = id;

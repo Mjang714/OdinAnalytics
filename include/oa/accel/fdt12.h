@@ -82,6 +82,14 @@ constexpr bool needs_extra_memory(xltype type) noexcept
  *
  * This provides the fundamental data type (FDT) that can be used to manage
  * `XLOPER12` memory while still providing interop with Excel SDK C functions.
+ *
+ * For safety the internal `XLOPER12` will have all fields not explicitly
+ * initialized zeroed out. This is important for `Excel12()` interop, as some
+ * functions, e.g. `xlfGetBinaryName`, may not provide any way to distinguish
+ * from their variant type, e.g. the bigdata union is not tagged, what member
+ * has been modified. For the bigadta, with a zeroed `cbData` member, if the
+ * `fdt12` is of type `bigdata`, we know the union should contains a `HANDLE`,
+ * not a `BYTE*` as when used with `xlDefineBinaryName`.
  */
 class fdt12 {
 public:
