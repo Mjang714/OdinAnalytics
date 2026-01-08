@@ -236,7 +236,10 @@ public:
   /**
    * Return the `XLOPER12` pointer owned by the object.
    *
-   * This is useful for C function interop.
+   * This is useful for C function interop but can be abused.
+   *
+   * @todo Once we have a good `to<T>()` implementation this may be removed.
+   *  We may also implement a `Excel12()` wrapper for safe hydration.
    */
   xloper12* value() noexcept;
 
