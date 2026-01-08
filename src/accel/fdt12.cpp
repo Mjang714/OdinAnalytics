@@ -35,7 +35,7 @@ namespace {
  *
  * This copies the data and appropriately prepends the 2-byte length, which
  * must be 65535 or less, and appends the wide null terminator. The data must
- * be freed using `delete` or will be leaked.
+ * be freed using `delete[]` or will be leaked.
  *
  * @tparam T Character type
  *
