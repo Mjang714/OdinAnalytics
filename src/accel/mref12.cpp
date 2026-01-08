@@ -14,6 +14,7 @@
 #include <XLCALL.H>
 
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <initializer_list>
 #include <limits>
@@ -31,7 +32,7 @@ namespace accel {
 // raw functions                                                              //
 ////////////////////////////////////////////////////////////////////////////////
 
-xlmref12* xlmref12_malloc(WORD count)
+xlmref12* xlmref12_malloc(std::uint16_t count)
 {
   // if zero, no allocation
   if (!count)
@@ -44,7 +45,7 @@ xlmref12* xlmref12_malloc(WORD count)
   return res;
 }
 
-xlmref12* xlmref12_calloc(WORD count)
+xlmref12* xlmref12_calloc(std::uint16_t count)
 {
   auto res = xlmref12_malloc(count);
   if (!res)

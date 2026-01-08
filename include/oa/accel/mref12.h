@@ -13,6 +13,7 @@ struct xlmref12;
 struct xlref12;
 
 #include <cstddef>
+#include <cstdint>
 #include <initializer_list>
 #include <iosfwd>
 
@@ -42,13 +43,9 @@ namespace accel {
  *
  * Any allocated `xlmref12*` buffers should be freed with `xlmref12_free()`.
  *
- * Memory is allocated using `new[]` and should be freed with `delete[]` after
- * explicitly calling `~xlmref12()` to satisfy C++ object lifetime semantics.
- * It i
- *
  * @param count Number of `xlref12` objects to allocate space for
  */
-xlmref12* xlmref12_malloc(WORD count);
+xlmref12* xlmref12_malloc(std::uint16_t count);
 
 /**
  * Allocate and zero a `xlmref12` for a given number of `xlref12`.
@@ -57,7 +54,7 @@ xlmref12* xlmref12_malloc(WORD count);
  *
  * @param count Number of zeroed `xlref12` objects to allocate space for
  */
-xlmref12 *xlmref12_calloc(WORD count);
+xlmref12 *xlmref12_calloc(std::uint16_t count);
 
 /**
  * Create a copy of the `xlmref12`.
