@@ -1,0 +1,214 @@
+/**
+ * @file mref12.h
+ * @author Derek Huang
+ * @brief C++ header for the Excel 12 multi-reference type
+ * @copyright MIT License
+ */
+
+#ifndef OA_ACCEL_MREF12_H_
+#define OA_ACCEL_MREF12_H_
+
+// forward decl to avoid pulling in XLCALL.H
+struct xlmref12;
+struct xlref12;
+
+#include <cstddef>
+#include <initializer_list>
+
+namespace oa {
+namespace accel {
+
+// TODO: document more
+
+xlmref12* xlmref12_malloc(WORD count);
+
+xlmref12* xlmref12_copy(xlmref12* mref);
+
+void xlmref12_free(xlmref12* mref) noexcept;
+
+/**
+ * Excel 12 multiple reference management class.
+ *
+ * This provides a way to safely allocate and manipulate a `XLMREF12` which can
+ * refer to more memory than its `sizeof()` value implies, as although the
+ * `XLMREF12` has a fixed size, it describes a variable-length structure:
+ *
+ * @code
+ * +---------------------+
+ * | WORD count;         |  // object count
+ * | XLREF12 reftbl[1];  |  // first XLREF12 object
+ * +---------------------+
+ * | XLREF12[count - 1]; |  // subsequent XLREF12 objects
+ * +---------------------+
+ * @endcode
+ *
+ * We get around this by manually allocating the right size and using placement
+ * `new` to write the `XLMREF12` body with the `count` member set.
+ *
+ * This class satsifies some of the *Container* requirements.
+ */
+class mref12 {
+public:
+  // partial *Container* support for code that uses value_type instead of the
+  // more comprehensive std::decay_t<decltype(std::begin(range))>
+  using value_type = xlref12;
+
+  /**
+   * Default ctor.
+   *
+   * This has the same effect as `mref12(0u)`.
+   */
+  mref12();
+
+  /**
+   * Copy ctor.
+   */
+  mref12(const mref12& other);
+
+  /**
+   * Copy assignment operator.
+   */
+  mref12& operator=(const mref12& other);
+
+  /**
+   * Move ctor.
+   */
+  mref12(mref12&& other) noexcept;
+
+  /**
+   * Move assignment operator.
+   */
+  mref12& operator=(mref12&& other) noexcept;
+
+  /**
+   * Dtor.
+   *
+   * Deallocates any memory that is managed by the class if necessary.
+   */
+  ~mref12();
+
+  /**
+   * Ctor.
+   *
+   * Allocates space for the requested number of `XLREF12` instances. The
+   * maximum value cannot exceed the `WORD` maximum. No memory is zeroed.
+   *
+   * @note If `count` is zero no memory is allocated.
+   *
+   * @todo Maybe zero memory by default for safety? Or provide a raw overload.
+   *
+   * @param count Number of `XLREF12` instances to allocate memory for
+   */
+  mref12(std::size_t count);
+
+  /**
+   * Ctor.
+   *
+   * List-initialize by copy using the specified `xlref12` objects.
+   *
+   * @param refs Initializer list of `xlref12` objects
+   */
+  mref12(std::initializer_list<xlref12> refs);
+
+  /**
+   * Compare against another `mref12` for equality.
+   *
+   * Result is unspecified if any `xlref12` instances have unspecified values.
+   *
+   * @param other `mref12` to compare against
+   */
+  bool operator==(const mref12& other) const noexcept;
+
+  /**
+   * Release ownership of the `xlmref12`.
+   *
+   * This is mostly useful for interop with a `fdt12` that will take ownership.
+   * After `release()` is called the `mref12` has `nullptr` data (size 0).
+   */
+  xlmref12* release() noexcept;
+
+  /**
+   * Return a pointer to the first managed `xlref12`.
+   */
+  xlref12* data() noexcept;
+
+  /**
+   * Return a pointer to the first managed `xlref12`.
+   */
+  const xlref12* data() const noexcept;
+
+  /**
+   * Indicate if the `mref12` contains any `xlref12` instances.
+   */
+  bool empty() const noexcept;
+
+  /**
+   * Return the number of managed `xlref12` structures.
+   *
+   * If `size()` returns zero no `xlref12` structures are managed.
+   */
+  std::size_t size() const noexcept;
+
+  /**
+   * Return a reference to the `i`th `xlref12`.
+   *
+   * @param i Index to the `i`th `xlref12`
+   */
+  xlref12& operator[](std::size_t i) noexcept;
+
+  /**
+   * Return a reference to the `i`th `xlref12`.
+   *
+   * @param i Index to the `i`th `xlref12`.
+   */
+  const xlref12& operator[](std::size_t i) const noexcept;
+
+  /**
+   * Return a pointer to the first managed `xlref12`.
+   */
+  xlref12* begin() noexcept;
+
+  /**
+   * Return a pointer to the first managed `xlref12`.
+   */
+  const xlref12* begin() const noexcept;
+
+  /**
+   * Return a pointer to one past the last managed `xlref12`.
+   */
+  xlref12* end() noexcept;
+
+  /**
+   * Return a pointer to one past the last managed `xlref12`.
+   */
+  const xlref12* end() const noexcept;
+
+private:
+  xlmref12* value_;  // xlmref12 data pointer
+
+  /**
+   * Initialize by copy from a `mref12`.
+   *
+   * This is implemented using `xlmref12_copy()`.
+   */
+  void from(const mref12& other);
+
+  /**
+   * Initialize by move from a `mref12`.
+   *
+   * On completion, the moved-from `mref12` has `nullptr` data (zero size).
+   */
+  void from(mref12&& other) noexcept;
+
+  /**
+   * Deallocate any memory if the `xlmref12*` is not `nullptr`.
+   *
+   * This is implemented using `xlmref12_free()`.
+   */
+  void destroy() noexcept;
+};
+
+}  // namespace accel
+}  // namespace oa
+
+#endif  // OA_ACCEL_MREF12_H_

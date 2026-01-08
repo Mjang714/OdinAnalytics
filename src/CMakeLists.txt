@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 # add library targets
+add_subdirectory(accel)
 add_subdirectory(config)
 add_subdirectory(dao)
 add_subdirectory(derived_time)
