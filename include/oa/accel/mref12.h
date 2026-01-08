@@ -18,12 +18,67 @@ struct xlref12;
 namespace oa {
 namespace accel {
 
-// TODO: document more
-
+/**
+ * Allocate a `xlmref12` using for a specified number of `xlref12`.
+ *
+ * This safely allocates a `XLMREF12` which can refer to more memory than its
+ * `sizeof()` value implies, as the `XLMREF12` is of variable length:
+ *
+ * @code
+ * +---------------------+
+ * | WORD count;         |  // object count
+ * | XLREF12 reftbl[1];  |  // first XLREF12 object
+ * +---------------------+
+ * | XLREF12[count - 1]; |  // subsequent XLREF12 objects
+ * +---------------------+
+ * @endcode
+ *
+ * We therefore manually allocate the right number of bytes, which will be
+ * `sizeof(xlmref12)` plus `sizeof(xlref12) * (count - 1)`. Allocating the
+ * `xlmref12` is done using placement `new` to satisfy C++ object construction
+ * semantics to avoid any undefined behavior. The special case of `count` being
+ * zero is handled by simply returning `nullptr`.
+ *
+ * Any allocated `xlmref12*` buffers should be freed with `xlmref12_free()`.
+ *
+ * Memory is allocated using `new[]` and should be freed with `delete[]` after
+ * explicitly calling `~xlmref12()` to satisfy C++ object lifetime semantics.
+ * It i
+ *
+ * @param count Number of `xlref12` objects to allocate space for
+ */
 xlmref12* xlmref12_malloc(WORD count);
 
+/**
+ * Allocate and zero a `xlmref12` for a given number of `xlref12`.
+ *
+ * This has the same semantics as `xlmref12_malloc()` but zeroes the memory.
+ *
+ * @param count Number of zeroed `xlref12` objects to allocate space for
+ */
+xlmref12 *xlmref12_calloc(WORD count);
+
+/**
+ * Create a copy of the `xlmref12`.
+ *
+ * The new `xlmref12` is allocated using `xlmref12_malloc()`. The count and
+ * individual `xlre12` objects are simply copied using `memcpy()`.
+ *
+ * If `mref` is `nullptr`, then `nullptr` is simply returned.
+ *
+ * @param mref `xlmref12` to copy from
+ */
 xlmref12* xlmref12_copy(xlmref12* mref);
 
+/**
+ * Frees the memory associated with the `xlmref12`.
+ *
+ * This explicitly calls the implicit `~xlmref12()` to satisfy C++ object
+ * lifetime semantics and calls `delete[]` to free the allocated buffer. If
+ * `mref` is `nullptr` then nothing will be done.
+ *
+ * @param mref `xlmref12` to free
+ */
 void xlmref12_free(xlmref12* mref) noexcept;
 
 /**

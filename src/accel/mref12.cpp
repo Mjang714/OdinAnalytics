@@ -43,6 +43,16 @@ xlmref12* xlmref12_malloc(WORD count)
   return res;
 }
 
+xlmref12* xlmref12_calloc(WORD count)
+{
+  auto res = xlmref12_malloc(count);
+  if (!res)
+    return nullptr;
+  // zero and return
+  std::memset(res, 0, sizeof(xlmref12) + sizeof(xlref12) * (count - 1u));
+  return res;
+}
+
 xlmref12* xlmref12_copy(xlmref12* mref)
 {
   // if nullptr, return nullptr
@@ -52,11 +62,7 @@ xlmref12* xlmref12_copy(xlmref12* mref)
   auto res = xlmref12_malloc(mref->count);
   // copy the struct element + variable length data
   res->reftbl[0] = mref->reftbl[0];
-  std::memcpy(
-    reinterpret_cast<unsigned char*>(res) + sizeof(xlmref12),
-    reinterpret_cast<const unsigned char*>(mref) + sizeof(xlmref12),
-    sizeof(xlref12) * (mref->count - 1u)
-  );
+  std::memcpy(res + 1, mref + 1, sizeof(xlref12) * (mref->count - 1u));
   return res;
 }
 
