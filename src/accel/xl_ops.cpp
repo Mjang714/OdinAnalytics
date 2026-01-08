@@ -13,6 +13,8 @@
 #include <Windows.h>
 #include <XLCALL.H>
 
+#include <ostream>
+
 ////////////////////////////////////////////////////////////////////////////////
 // xlref12                                                                    //
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,4 +32,15 @@ bool operator==(const xlref12& a, const xlref12& b) noexcept
 bool operator!=(const xlref12& a, const xlref12& b) noexcept
 {
   return !(a == b);
+}
+
+std::ostream& operator<<(std::ostream& out, const xlref12& ref)
+{
+  // stream top-left cell
+  out << "(" << ref.rwFirst << ", " << ref.colFirst << ")";
+  // if single-cell reference, done
+  if (ref.rwFirst == ref.rwLast && ref.colFirst == ref.colLast)
+    return out;
+  // otherwise multi-cell reference, so stream bottom-right cell
+  return out << " ... (" << ref.rwLast << ", " << ref.colLast << ")";
 }
