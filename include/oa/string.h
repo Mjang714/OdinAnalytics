@@ -70,7 +70,9 @@ public:
     // interpreting the bytes in order to avoid endianness issues
     auto byte = [v](auto i) noexcept
     {
-      auto shift = sizeof(v) - i - 1u;
+      // shift size in terms of octets
+      auto shift = 8u * (sizeof(v) - i - 1u);
+      // get single octet by masking with 0xFF
       return static_cast<char>((v & (0xFF << shift)) >> shift);
     };
     // for each byte in write 2 hex chars
