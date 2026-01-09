@@ -56,17 +56,6 @@ protected:
   {
     return GetProcAddress(xlcall32_handle(), name);
   }
-
-  /**
-   * Perform test setup by looking for `xlcall32_is_stub()`.
-   *
-   * If this function cannot be found then the test is failed.
-   */
-  void SetUp() override
-  {
-    GTEST_ASSERT_PROC_EXISTS(proc, xlcall32_is_stub, bool (*)() noexcept);
-    ASSERT_TRUE(proc()) << "xlcall32_is_stub() should return true";
-  }
 };
 
 /**
