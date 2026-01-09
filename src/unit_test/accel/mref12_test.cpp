@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 
 #include "oa/accel/xl_ops.h"  // for xlref12 operator==
+#include "oa/string.h"        // for oa::hex
 
 namespace {
 
@@ -111,7 +112,15 @@ TEST_F(MultiRef12Test, StreamFormatTest)
   ss << ref;
   // check
   EXPECT_EQ(
-    "[(1, 4) ... (6, 18), "
+    // obtain the sheet ID as hex bytes
+    [&ref]
+    {
+      std::stringstream ss;
+      ss << oa::hex << ref.sheet();
+      return std::move(ss).str();    // ref-qualified overload since C++20
+    }() +
+    // delimiter + expected cell values
+    ": [(1, 4) ... (6, 18), "
       "(4, 6), "
       "(2, 5) ... (9, 5), "
       "(6, 0) ... (6, 10)]",

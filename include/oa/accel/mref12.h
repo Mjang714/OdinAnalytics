@@ -80,7 +80,7 @@ xlmref12* xlmref12_copy(xlmref12* mref);
 void xlmref12_free(xlmref12* mref) noexcept;
 
 /**
- * Excel 12 multiple reference management class.
+ * Excel 12 multiple sheet reference management class.
  *
  * This provides a way to safely allocate and manipulate a `XLMREF12` which can
  * refer to more memory than its `sizeof()` value implies, as although the
@@ -111,7 +111,7 @@ public:
    *
    * This has the same effect as `mref12(0u)`.
    */
-  mref12();
+  mref12() = default;
 
   /**
    * Copy ctor.
@@ -146,9 +146,10 @@ public:
    * Allocates space for the requested number of `XLREF12` instances. The
    * maximum value cannot exceed the `WORD` maximum. No memory is zeroed.
    *
-   * @note If `count` is zero no memory is allocated.
+   * If `count` is zero no memory is allocated and the sheet ID is not set.
+   * Otherwise, the sheet ID is obtained using `xlSheetId`.
    *
-   * @todo Maybe zero memory by default for safety? Or provide a raw overload.
+   * @note This function is typically not very useful by itself.
    *
    * @param count Number of `XLREF12` instances to allocate memory for
    */
@@ -157,11 +158,23 @@ public:
   /**
    * Ctor.
    *
-   * List-initialize by copy using the specified `xlref12` objects.
+   * List-initialize by copy using the specified `xlref12` objects. The sheet
+   * ID is obtained by a call to `xlSheetId` unless the list is empty.
    *
    * @param refs Initializer list of `xlref12` objects
    */
   mref12(std::initializer_list<xlref12> refs);
+
+  /**
+   * Ctor.
+   *
+   * List-initialize by copy using the given `xlref12` objects and sheet ID. If
+   * the initializer list is empty, however, then the sheet ID is not set.
+   *
+   * @param id Excel sheet ID from `xlSheetId`
+   * @param refs Initializer list of `xlref12` objects
+   */
+  mref12(std::uintptr_t id, std::initializer_list<xlref12> refs);
 
   /**
    * Compare against another `mref12` for equality.
@@ -171,6 +184,14 @@ public:
    * @param other `mref12` to compare against
    */
   bool operator==(const mref12& other) const noexcept;
+
+  /**
+   * Return the Excel sheet ID associated with the reference.
+   *
+   * This is zero if the `mref12` is empty or an `xlSheetId` call failed, the
+   * latter of which shouldn't happen if constructed while running in Excel.
+   */
+  std::uintptr_t sheet() const noexcept;
 
   /**
    * Release ownership of the `xlmref12`.
@@ -237,19 +258,44 @@ public:
   const xlref12* end() const noexcept;
 
 private:
-  xlmref12* value_;  // xlmref12 data pointer
+  std::uintptr_t sheet_{};  // Excel sheet ID from xlSheetId
+  xlmref12* value_{};       // xlmref12 data pointer
+
+  /**
+   * Set sheet ID and allocate memory for the given number of `xlref12`.
+   *
+   * If `count` exceeds `std::numeric_limits<WORD>::max()` this will throw.
+   *
+   * @note Only needs to be called when `count` is nonzero.
+   *
+   * @param id Excel sheet ID
+   * @param count Number of `xlref12` to allocate for
+   */
+  void init(std::uintptr_t id, std::size_t count);
+
+  /**
+   * Set sheet ID and initialize from the given `xlref12.
+   *
+   * If `count` exceeds `std::numeric_limits<WORD>::max()` this will throw.
+   *
+   * @note Only needs to be called when `count` is nonzero.
+   *
+   * @param id Excel sheet ID
+   * @param refs Initializer list of `xlref12` objects.
+   */
+  void init(std::uintptr_t id, std::initializer_list<xlref12> refs);
 
   /**
    * Initialize by copy from a `mref12`.
    *
-   * This is implemented using `xlmref12_copy()`.
+   * The `xlref12` copy is implemented using `xlmref12_copy()`.
    */
   void from(const mref12& other);
 
   /**
    * Initialize by move from a `mref12`.
    *
-   * On completion, the moved-from `mref12` has `nullptr` data (zero size).
+   * On completion, the moved-from `mref12` has zeroed data pointer and ID.
    */
   void from(mref12&& other) noexcept;
 
@@ -267,10 +313,10 @@ private:
  * This streams each `xlref12` using `operator<<` between delimiters:
  *
  * @code
- * [(r1, c1), (r2, c2) ... (r3, c3), ... ]
+ * <hex sheet ID>: [(r1, c1), (r2, c2) ... (r3, c3), ... ]
  * @endcode
  *
- * If the `mref12` is empty then just `"[]"` will be formatted.
+ * If the `mref12` is empty then just `"<hex sheet ID>: []"` will be formatted.
  *
  * @param out Output stream
  * @param ref Multi-reference to stream

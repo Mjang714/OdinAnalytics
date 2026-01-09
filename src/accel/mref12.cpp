@@ -24,9 +24,27 @@
 #include <utility>
 
 #include "oa/accel/xl_ops.h"  // for xlref12 operator==, operator<<
+#include "oa/string.h"        // for oa::hex
 
 namespace oa {
 namespace accel {
+
+namespace {
+
+/**
+ * Helper function to get the ID of the active workbook sheet.
+ *
+ * On error, e.g. if not called from Excel, zero is returned.
+ */
+auto sheet_id() noexcept
+{
+  // zeroed so even on failure value is valid
+  xloper12 res{};
+  Excel12(xlSheetId, &res, 1, nullptr);
+  return res.val.mref.idSheet;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // raw functions                                                              //
@@ -83,8 +101,6 @@ void xlmref12_free(xlmref12* mref) noexcept
 // ctors + dtor + assignment operators                                        //
 ////////////////////////////////////////////////////////////////////////////////
 
-mref12::mref12() : mref12{0u} {}
-
 mref12::mref12(const mref12& other)
 {
   from(other);
@@ -122,30 +138,29 @@ mref12::~mref12()
 
 mref12::mref12(std::size_t count)
 {
-  // max count
-  constexpr auto max_count = (std::numeric_limits<WORD>::max)();
-  // if count too large, error
-  if (count > max_count)
-    throw std::runtime_error{
-      "count " + std::to_string(count) + " exceeded maximum value " +
-      std::to_string(max_count) + " supported by xlmref12"
-    };
-  // otherwise, allocate new xlmref12 variable-length data
-  value_ = xlmref12_malloc(static_cast<WORD>(count));
+  // nothing to do if zero
+  if (!count)
+    return;
+  // otherwise, initalize
+  init(sheet_id(), count);
 }
 
-mref12::mref12(std::initializer_list<xlref12> refs) : mref12{refs.size()}
+mref12::mref12(std::initializer_list<xlref12> refs)
 {
   // if zero, skip
   if (!refs.size())
     return;
-  // copy first + memcpy() the rest
-  value_->reftbl[0] = *refs.begin();
-  std::memcpy(
-    reinterpret_cast<unsigned char*>(value_) + sizeof(xlmref12),
-    refs.begin() + 1u,
-    sizeof(xlref12) * (refs.size() - 1u)
-  );
+  // otherwise, initialize
+  init(sheet_id(), refs);
+}
+
+mref12::mref12(std::uintptr_t id, std::initializer_list<xlref12> refs)
+{
+  // if zero, skip
+  if (!refs.size())
+    return;
+  // otherwise, initalize
+  init(id, refs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,8 +170,8 @@ mref12::mref12(std::initializer_list<xlref12> refs) : mref12{refs.size()}
 bool
 mref12::operator==(const mref12& other) const noexcept
 {
-  // not equal if size differs
-  if (size() != other.size())
+  // not equal if size or ID differs
+  if (size() != other.size() || sheet_ != other.sheet_)
     return false;
   // ok, elementwise comparison
   for (std::size_t i = 0u; i < size(); i++)
@@ -164,6 +179,12 @@ mref12::operator==(const mref12& other) const noexcept
     if ((*this)[i] != other[i])
       return false;
   return true;
+}
+
+std::uintptr_t
+mref12::sheet() const noexcept
+{
+  return sheet_;
 }
 
 xlmref12*
@@ -239,15 +260,48 @@ mref12::end() const noexcept
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+mref12::init(std::uintptr_t id, std::size_t count)
+{
+  // max count
+  constexpr auto max_count = (std::numeric_limits<WORD>::max)();
+  // if count too large, error
+  if (count > max_count)
+    throw std::runtime_error{
+      "count " + std::to_string(count) + " exceeded maximum value " +
+      std::to_string(max_count) + " supported by xlmref12"
+    };
+  // otherwise set sheet ID + allocate new xlmref12 variable-length data
+  sheet_ = id;
+  value_ = xlmref12_malloc(static_cast<WORD>(count));
+}
+
+void
+mref12::init(std::uintptr_t id, std::initializer_list<xlref12> refs)
+{
+  // set ID + allocate
+  init(id, refs.size());
+  // copy first ref + memcpy() the rest
+  value_->reftbl[0] = *refs.begin();
+  std::memcpy(
+    reinterpret_cast<unsigned char*>(value_) + sizeof(xlmref12),
+    refs.begin() + 1u,
+    sizeof(xlref12) * (refs.size() - 1u)
+  );
+}
+
+void
 mref12::from(const mref12& other)
 {
+  sheet_ = other.sheet_;
   value_ = xlmref12_copy(other.value_);
 }
 
 void
 mref12::from(mref12&& other) noexcept
 {
+  sheet_ = other.sheet_;
   value_ = other.value_;
+  other.sheet_ = 0u;
   other.value_ = nullptr;
 }
 
@@ -263,8 +317,10 @@ mref12::destroy() noexcept
 
 std::ostream& operator<<(std::ostream& out, const mref12& ref)
 {
+  // format sheet ID as 0x-prefixed hex bytes
+  out << hex << ref.sheet() << ": ";
+  // now stream each xlref12
   out << '[';
-  // stream values
   for (auto it = ref.begin(); it != ref.end(); it++) {
     if (it != ref.begin())
       out << ", ";
