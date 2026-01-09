@@ -36,15 +36,17 @@ add_executable(
 if(TARGET oxl_api)
     target_sources(oa_unit_test PRIVATE oxl/handle_prefixer_test.cpp)
 endif()
-# add accel + xlcall32_stub tests if oa_accel is available
+# add oa_accel tests if oa_accel is available
 # note: no need to check if on Windows as oa_accel is Windows-only
 if(TARGET oa_accel) # AND TARGET Excel::XLCALL32)
     target_sources(
         oa_unit_test PRIVATE
-        accel/mref12_test.cpp
-        accel/oper12_test.cpp
-        xlcall32_stub_test.cpp
+        accel/mref12_test.cpp accel/oper12_test.cpp
     )
+endif()
+# add xlcall32_stub tests if xlcall32_stub is available
+if(TARGET xlcall32_stub)
+    target_sources(oa_unit_test PRIVATE xlcall32_stub_test.cpp)
 endif()
 # MSVC emits C5264 a lot for Google Test fixtures
 if(MSVC)
