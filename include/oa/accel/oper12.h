@@ -190,8 +190,7 @@ public:
   /**
    * Ctor.
    *
-   * Constructs a multi-reference `XLOPER12` by copying from a `mref12`. The
-   * sheet ID will be set to zero to represent the current sheet.
+   * Constructs a multi-reference `XLOPER12` by copying from a `mref12`.
    *
    * @param mref Multi-reference object to copy from
    */
@@ -200,32 +199,11 @@ public:
   /**
    * Ctor.
    *
-   * Constructs a multi-reference `XLOPER12` by copying from a `mref12`.
-   *
-   * @param id Excel sheet ID
-   * @param mref Multi-reference object to copy from
-   */
-  oper12(std::uintptr_t id, const mref12& mref);
-
-  /**
-   * Ctor.
-   *
-   * Constructs a multi-reference `XLOPER12` by moving from a `mref12`. The
-   * sheet ID will be set to zero to represent the current sheet.
+   * Constructs a multi-reference `XLOPER12` by moving from a `mref12`.
    *
    * @param mref Multi-reference object to move from
    */
   oper12(mref12&& mref);
-
-  /**
-   * Ctor.
-   *
-   * Constructs a multi-reference `XLOPER12` by moving from a `mref12`.
-   *
-   * @param id Excel sheet ID
-   * @param mref Multi-reference object to move from
-   */
-  oper12(std::uintptr_t id, mref12&& mref);
 
   /**
    * Return a `oper12` owning an `XLOPER12` of type `xltypeNil`.

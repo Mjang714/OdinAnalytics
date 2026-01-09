@@ -152,28 +152,24 @@ oper12::oper12(xlref12 ref) : value_{new xloper12{}}
   value_->xltype = xltypeSRef;
 }
 
-oper12::oper12(const mref12& mref) : oper12{0u, mref} {}
-
-oper12::oper12(std::uintptr_t id, const mref12& mref)
+oper12::oper12(const mref12& mref)
 {
   // use unique_ptr to be exception-safe if mref() throws
   auto val = std::make_unique<xloper12>();
   auto mref_new = mref;
   // update members
   val->val.mref.lpmref = mref_new.release();
-  val->val.mref.idSheet = id;
+  val->val.mref.idSheet = mref_new.sheet();
   val->xltype = xltypeRef;
   // update value_ + owning_
   value_ = val.release();
   owning_ = true;
 }
 
-oper12::oper12(mref12&& mref) : oper12{0u, std::move(mref)} {}
-
-oper12::oper12(std::uintptr_t id, mref12&& mref) : value_{new xloper12{}}
+oper12::oper12(mref12&& mref) : value_{new xloper12{}}
 {
   value_->val.mref.lpmref = mref.release();  // noexcept
-  value_->val.mref.idSheet = id;
+  value_->val.mref.idSheet = mref.sheet();   // noexcept
   value_->xltype = xltypeRef;
   owning_ = true;
 }
