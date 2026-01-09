@@ -36,12 +36,14 @@ add_executable(
 if(TARGET oxl_api)
     target_sources(oa_unit_test PRIVATE oxl/handle_prefixer_test.cpp)
 endif()
-# add accel tests if oa_accel and XLCALL32.DLL are available
+# add accel + xlcall32_stub tests if oa_accel is available
 # note: no need to check if on Windows as oa_accel is Windows-only
-if(TARGET oa_accel AND TARGET Excel::XLCALL32)
+if(TARGET oa_accel) # AND TARGET Excel::XLCALL32)
     target_sources(
         oa_unit_test PRIVATE
-        accel/mref12_test.cpp accel/oper12_test.cpp
+        accel/mref12_test.cpp
+        accel/oper12_test.cpp
+        xlcall32_stub_test.cpp
     )
 endif()
 # MSVC emits C5264 a lot for Google Test fixtures
@@ -66,16 +68,20 @@ target_link_libraries(
 if(TARGET oxl_api)
     target_link_libraries(oa_unit_test PRIVATE oxl_api)
 endif()
-# link against oa_accel as necessary + add custom rule to copy XLCALL32 DLL
-if(TARGET oa_accel AND TARGET Excel::XLCALL32)
-    target_link_libraries(oa_unit_test PRIVATE oa_accel)
-    add_custom_command(
-        TARGET oa_unit_test POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${Excel_XLCALL32_DLL}"
-                "$<TARGET_FILE_DIR:oa_unit_test>"
-        COMMENT "Copying XLCALL32.DLL to $<TARGET_FILE_DIR:oa_unit_test>"
-        VERBATIM
-    )
+# link against oa_accel and XLL SDK as necessary
+if(TARGET oa_accel) # AND TARGET Excel::XLCALL32)
+    # TODO: refactor XLLSDK::xlcall32 to XLLSDK::SDK later
+    target_link_libraries(oa_unit_test PRIVATE oa_accel XLLSDK::xlcall32)
+    # ensure that target is built after xlcall32_stub to ensure XLCALL32 DLL
+    # exists before gtest_discover_tests() invokes oa_unit_test
+    add_dependencies(oa_unit_test xlcall32_stub)
+    # add_custom_command(
+    #     TARGET oa_unit_test POST_BUILD
+    #     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${Excel_XLCALL32_DLL}"
+    #             "$<TARGET_FILE_DIR:oa_unit_test>"
+    #     COMMENT "Copying XLCALL32.DLL to $<TARGET_FILE_DIR:oa_unit_test>"
+    #     VERBATIM
+    # )
 endif()
 # ensure before oa_unit_test is built that static data is correctly copied.
 # although we could have hung this as a post-build command, this more correctly
