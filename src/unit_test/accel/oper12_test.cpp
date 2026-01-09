@@ -1,11 +1,11 @@
 /**
- * @file fdt12_test.cpp
+ * @file oper12_test.cpp
  * @author Derek Huang
- * @brief fd12.h unit tests
+ * @brief oper12.h unit tests
  * @copyright MIT License
  */
 
-#include "oa/accel/fdt12.h"
+#include "oa/accel/oper12.h"
 
 // TODO: remove once we have a proper to<T>() implementation
 #ifndef WIN32_LEAN_AND_MEAN
@@ -23,17 +23,17 @@
 namespace {
 
 /**
- * `fdt12` test fixture.
+ * `oper12` test fixture.
  */
-class Fdt12Test : public ::testing::Test {};
+class Oper12Test : public ::testing::Test {};
 
 /**
  * Test that `xlerr` construction works as expected.
  */
-TEST_F(Fdt12Test, MakeErrTest)
+TEST_F(Oper12Test, MakeErrTest)
 {
   constexpr auto x = oa::accel::xlerr::div0;
-  oa::accel::fdt12 val{x};
+  oa::accel::oper12 val{x};
   ASSERT_TRUE(val.error()) << "val does not contain an xlerr";
   EXPECT_EQ(x, *val.error());
 }
@@ -41,10 +41,10 @@ TEST_F(Fdt12Test, MakeErrTest)
 /**
  * Test that `bool` construction works as expected.
  */
-TEST_F(Fdt12Test, MakeBoolTest)
+TEST_F(Oper12Test, MakeBoolTest)
 {
   constexpr bool x = true;
-  oa::accel::fdt12 val{x};
+  oa::accel::oper12 val{x};
   ASSERT_TRUE(val.type() == oa::accel::xltype::bool_) << "val is not bool_";
   // TODO: add conversion for value inspection
   EXPECT_EQ(x, !!val.value()->val.xbool);
@@ -53,10 +53,10 @@ TEST_F(Fdt12Test, MakeBoolTest)
 /**
  * Test that `int` construction works as expected.
  */
-TEST_F(Fdt12Test, MakeIntTest)
+TEST_F(Oper12Test, MakeIntTest)
 {
   constexpr int x = 100;
-  oa::accel::fdt12 val{x};
+  oa::accel::oper12 val{x};
   ASSERT_TRUE(val.type() == oa::accel::xltype::int_) << "val is not int_";
   // TODO: add conversion for value inspection
   EXPECT_EQ(x, val.value()->val.w);
@@ -65,10 +65,10 @@ TEST_F(Fdt12Test, MakeIntTest)
 /**
  * Test that `double` construction works as expected.
  */
-TEST_F(Fdt12Test, MakeDoubleTest)
+TEST_F(Oper12Test, MakeDoubleTest)
 {
   constexpr double x = 2.;
-  oa::accel::fdt12 val{x};
+  oa::accel::oper12 val{x};
   ASSERT_TRUE(val.type() == oa::accel::xltype::num) << "val is not a number";
   // TODO: add conversion for value inspection
   EXPECT_DOUBLE_EQ(x, val.value()->val.num);
@@ -77,10 +77,10 @@ TEST_F(Fdt12Test, MakeDoubleTest)
 /**
  * Test that `std::string` construction works as expected.
  */
-TEST_F(Fdt12Test, MakeStringTest)
+TEST_F(Oper12Test, MakeStringTest)
 {
   std::string str{"hello world"};
-  oa::accel::fdt12 val{str};
+  oa::accel::oper12 val{str};
   ASSERT_TRUE(val.type() == oa::accel::xltype::str) << "val is not a string";
   // owns extra memory
   EXPECT_TRUE(val.owning());
@@ -95,10 +95,10 @@ TEST_F(Fdt12Test, MakeStringTest)
 /**
  * Test that `std::wstring` construction works as expected.
  */
-TEST_F(Fdt12Test, MakeWstringTest)
+TEST_F(Oper12Test, MakeWstringTest)
 {
   std::wstring str{L"hello world"};
-  oa::accel::fdt12 val{str};
+  oa::accel::oper12 val{str};
   ASSERT_TRUE(val.type() == oa::accel::xltype::str) << "val is not a string";
   // owns extra memory
   EXPECT_TRUE(val.owning());
@@ -110,10 +110,10 @@ TEST_F(Fdt12Test, MakeWstringTest)
 /**
  * Test that single-cell reference construction works as expected.
  */
-TEST_F(Fdt12Test, MakeSingleRefTest)
+TEST_F(Oper12Test, MakeSingleRefTest)
 {
   xlref12 ref{1, 1, 45, 45};
-  oa::accel::fdt12 val{ref};
+  oa::accel::oper12 val{ref};
   ASSERT_TRUE(val.type() == oa::accel::xltype::sref) << "val is not an sref";
   // note: count is always 1
   EXPECT_EQ(1, val.value()->val.sref.count);
@@ -123,19 +123,19 @@ TEST_F(Fdt12Test, MakeSingleRefTest)
 // TODO: add tests for multi-ref
 
 /**
- * Test that a nil `fdt12` works as expected.
+ * Test that a nil `oper12` works as expected.
  */
-TEST_F(Fdt12Test, MakeNilTest)
+TEST_F(Oper12Test, MakeNilTest)
 {
-  EXPECT_EQ(oa::accel::xltype::nil, oa::accel::fdt12::nil().type());
+  EXPECT_EQ(oa::accel::xltype::nil, oa::accel::oper12::nil().type());
 }
 
 /**
- * Test that a missing `fdt12` works as expected.
+ * Test that a missing `oper12` works as expected.
  */
-TEST_F(Fdt12Test, MakeMissingTest)
+TEST_F(Oper12Test, MakeMissingTest)
 {
-  EXPECT_EQ(oa::accel::xltype::missing, oa::accel::fdt12::missing().type());
+  EXPECT_EQ(oa::accel::xltype::missing, oa::accel::oper12::missing().type());
 }
 
 }  // namespace

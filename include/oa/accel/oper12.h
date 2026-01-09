@@ -1,12 +1,12 @@
 /**
- * @file accel/fdt12.h
+ * @file accel/oper12.h
  * @author Derek Huang
- * @brief C++ header for the Excel 12 fundamental data type (FDT)
+ * @brief C++ header for the Excel 12 fundamental data type (operand)
  * @copyright MIT License
  */
 
-#ifndef OA_ACCEL_FDT12_H_
-#define OA_ACCEL_FDT12_H_
+#ifndef OA_ACCEL_OPER12_H_
+#define OA_ACCEL_OPER12_H_
 
 #include <concepts>
 #include <cstdint>
@@ -78,9 +78,9 @@ constexpr bool needs_extra_memory(xltype type) noexcept
 }
 
 /**
- * Excel 12 fundamental data type management class.
+ * Excel 12 fundamental data type "operand" management class.
  *
- * This provides the fundamental data type (FDT) that can be used to manage
+ * This provides the general cell operand type that can be used to manage
  * `XLOPER12` memory while still providing interop with Excel SDK C functions.
  *
  * For safety the internal `XLOPER12` will have all fields not explicitly
@@ -88,41 +88,41 @@ constexpr bool needs_extra_memory(xltype type) noexcept
  * functions, e.g. `xlfGetBinaryName`, may not provide any way to distinguish
  * from their variant type, e.g. the bigdata union is not tagged, what member
  * has been modified. For the bigadta, with a zeroed `cbData` member, if the
- * `fdt12` is of type `bigdata`, we know the union should contains a `HANDLE`,
+ * `oper12` is of type `bigdata`, we know the union should contains a `HANDLE`,
  * not a `BYTE*` as when used with `xlDefineBinaryName`.
  */
-class fdt12 {
+class oper12 {
 public:
   /**
    * Default ctor.
    *
-   * Constructs an empty `fdt12` that does not own an `XLOPER12`.
+   * Constructs an empty `oper12` that does not own an `XLOPER12`.
    */
-  fdt12() noexcept = default;
+  oper12() noexcept = default;
 
   /**
    * Copy ctor.
    *
    * @todo Currently deleted for simplicity. We will support copying later.
    */
-  fdt12(const fdt12&) = delete;
+  oper12(const oper12&) = delete;
 
   /**
    * Move ctor.
    */
-  fdt12(fdt12&& other) noexcept;
+  oper12(oper12&& other) noexcept;
 
   /**
    * Move assignment operator.
    */
-  fdt12& operator=(fdt12&& other) noexcept;
+  oper12& operator=(oper12&& other) noexcept;
 
   /**
    * Dtor.
    *
    * This calls `destroy()` to free the `XLOPER12` memory as appropriate.
    */
-  ~fdt12();
+  ~oper12();
 
   /**
    * Ctor.
@@ -131,7 +131,7 @@ public:
    *
    * @param err Excel error value
    */
-  fdt12(xlerr err);
+  oper12(xlerr err);
 
   /**
    * Ctor.
@@ -140,7 +140,7 @@ public:
    *
    * @param val Boolean value
    */
-  fdt12(bool val);
+  oper12(bool val);
 
   /**
    * Ctor.
@@ -149,7 +149,7 @@ public:
    *
    * @param val Integer value
    */
-  fdt12(int val);
+  oper12(int val);
 
   /**
    * Ctor.
@@ -158,7 +158,7 @@ public:
    *
    * @param val Floating value to store
    */
-  fdt12(double val);
+  oper12(double val);
 
   /**
    * Ctor.
@@ -167,7 +167,7 @@ public:
    *
    * @param str String view to construct from
    */
-  fdt12(std::string_view str);
+  oper12(std::string_view str);
 
   /**
    * Ctor.
@@ -176,7 +176,7 @@ public:
    *
    * @param str String view to construct from
    */
-  fdt12(std::wstring_view str);
+  oper12(std::wstring_view str);
 
   /**
    * Ctor.
@@ -185,7 +185,7 @@ public:
    *
    * @param ref Reference to use
    */
-  fdt12(xlref12 ref);
+  oper12(xlref12 ref);
 
   /**
    * Ctor.
@@ -195,7 +195,7 @@ public:
    *
    * @param mref Multi-reference object to copy from
    */
-  fdt12(const mref12& mref);
+  oper12(const mref12& mref);
 
   /**
    * Ctor.
@@ -205,7 +205,7 @@ public:
    * @param id Excel sheet ID
    * @param mref Multi-reference object to copy from
    */
-  fdt12(std::uintptr_t id, const mref12& mref);
+  oper12(std::uintptr_t id, const mref12& mref);
 
   /**
    * Ctor.
@@ -215,7 +215,7 @@ public:
    *
    * @param mref Multi-reference object to move from
    */
-  fdt12(mref12&& mref);
+  oper12(mref12&& mref);
 
   /**
    * Ctor.
@@ -225,21 +225,21 @@ public:
    * @param id Excel sheet ID
    * @param mref Multi-reference object to move from
    */
-  fdt12(std::uintptr_t id, mref12&& mref);
+  oper12(std::uintptr_t id, mref12&& mref);
 
   /**
-   * Return a `fdt12` owning an `XLOPER12` of type `xltypeNil`.
+   * Return a `oper12` owning an `XLOPER12` of type `xltypeNil`.
    *
    * It is recommended to use this or `missing()` for Excel C function interop.
    */
-  static fdt12 nil();
+  static oper12 nil();
 
   /**
-   * Return a `fdt12` owning an `XLOPER12` of type `xltypeMissing`.
+   * Return a `oper12` owning an `XLOPER12` of type `xltypeMissing`.
    *
    * It is recommended to use this or `nil()` for Excel C function interop.
    */
-  static fdt12 missing();
+  static oper12 missing();
 
   /**
    * Return the `XLOPER12` pointer owned by the object.
@@ -255,19 +255,19 @@ public:
    * Return a const-qualified version of the owned `XLOPER12` pointer.
    *
    * This prevents calling a C function that modifies the `XLOPER12` on
-   * `value()` when the `fdt12` is const-qualified.
+   * `value()` when the `oper12` is const-qualified.
    */
   const xloper12* value() const noexcept;
 
   /**
-   * Indicate if the `fdt12` is responsible for allocated `XLOPER12` data.
+   * Indicate if the `oper12` is responsible for allocated `XLOPER12` data.
    *
    * Some `XLOPER12` data, e.g. for strings when type is `xltypeStr`, requires
-   * additional memory allocation. All `fdt12` value constructors will
+   * additional memory allocation. All `oper12` value constructors will
    * appropriately set the ownership flag to `true` if necessary.
    *
    * If the ownership flag is `false`, for `XLOPER12` types like `xltypeStr`,
-   * `xlTypeMulti`, and `xlTypeRef`, the `fdt12` assumes the `XLOPER12` data
+   * `xlTypeMulti`, and `xlTypeRef`, the `oper12` assumes the `XLOPER12` data
    * was allocated by Excel, and so `Excel12(xlFree, ...)` is called.
    */
   bool owning() const noexcept;
@@ -275,7 +275,7 @@ public:
   /**
    * Release ownership of the allocated `XLOPER12` back to Excel.
    *
-   * After this call, the `fdt12` will have no owned value. If `owning()`
+   * After this call, the `oper12` will have no owned value. If `owning()`
    * returns `true`, then `xlbitDLLFree` will be set. Otherwise, `xlbitXLFree`
    * will be set in the `XLOPER12` if the type is `xltypeStr`, `xltypeMulti`,
    * or `xltypeRef`, all of which have extra memory to free.
@@ -303,15 +303,15 @@ public:
 
 private:
   xloper12* value_{};  // heap-allocated XLOPER12
-  bool owning_{};      // indicate if XLOPER12 memory is owned by fdt12
+  bool owning_{};      // indicate if XLOPER12 memory is owned by oper12
 
   /**
-   * Initialize from another `fdt12` by move.
+   * Initialize from another `oper12` by move.
    *
-   * After this function is called the moved-from `fdt12` is completely zeroed,
+   * After this function is called the moved-from `oper12` is completely zeroed,
    * i.e. its data is `nullptr` and it owns no extra `XLOPER12` memory.
    */
-  void from(fdt12&& other) noexcept;
+  void from(oper12&& other) noexcept;
 
   /**
    * Deallocate the managed `XLOPER12` if necessary.
@@ -328,4 +328,4 @@ private:
 }  // namespace accel
 }  // namespace oa
 
-#endif  // OA_ACCEL_FDT12_H_
+#endif  // OA_ACCEL_OPER12_H_

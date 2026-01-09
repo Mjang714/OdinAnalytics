@@ -175,8 +175,8 @@ public:
   /**
    * Release ownership of the `xlmref12`.
    *
-   * This is mostly useful for interop with a `fdt12` that will take ownership.
-   * After `release()` is called the `mref12` has `nullptr` data (size 0).
+   * This is mostly useful for interop with an `oper12` that will take
+   * ownership. After `release()` is called the `mref12` has `nullptr` data.
    */
   xlmref12* release() noexcept;
 

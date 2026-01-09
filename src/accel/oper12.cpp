@@ -1,11 +1,11 @@
 /**
- * @file accel/fdt12.cpp
+ * @file accel/oper12.cpp
  * @author Derek Huang
- * @brief C++ source for the Excel 12 fundamental data type (FDT)
+ * @brief C++ source for the Excel 12 fundamental data type (operand)
  * @copyright MIT License
  */
 
-#include "oa/accel/fdt12.h"
+#include "oa/accel/oper12.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -80,20 +80,20 @@ void to(xloper12* out, const T* buf, std::size_t length)
 // ctors + assignment + dtors                                                 //
 ////////////////////////////////////////////////////////////////////////////////
 
-fdt12::fdt12(fdt12&& other) noexcept
+oper12::oper12(oper12&& other) noexcept
 {
   from(std::move(other));
 }
 
-fdt12&
-fdt12::operator=(fdt12&& other) noexcept
+oper12&
+oper12::operator=(oper12&& other) noexcept
 {
   destroy();
   from(std::move(other));
   return *this;
 }
 
-fdt12::~fdt12()
+oper12::~oper12()
 {
   destroy();
 }
@@ -102,31 +102,31 @@ fdt12::~fdt12()
 // value constructors                                                         //
 ////////////////////////////////////////////////////////////////////////////////
 
-fdt12::fdt12(xlerr err) : value_{new xloper12{}}
+oper12::oper12(xlerr err) : value_{new xloper12{}}
 {
   value_->val.err = static_cast<int>(err);
   value_->xltype = xltypeErr;
 }
 
-fdt12::fdt12(bool val) : value_{new xloper12{}}
+oper12::oper12(bool val) : value_{new xloper12{}}
 {
   value_->val.xbool = val;
   value_->xltype = xltypeBool;
 }
 
-fdt12::fdt12(int val) : value_{new xloper12{}}
+oper12::oper12(int val) : value_{new xloper12{}}
 {
   value_->val.w = val;
   value_->xltype = xltypeInt;
 }
 
-fdt12::fdt12(double val) : value_{new xloper12{}}
+oper12::oper12(double val) : value_{new xloper12{}}
 {
   value_->val.num = val;
   value_->xltype = xltypeNum;
 }
 
-fdt12::fdt12(std::string_view str)
+oper12::oper12(std::string_view str)
 {
   // use unique_ptr to be exception-safe if to() throws
   auto val = std::make_unique<xloper12>();
@@ -136,7 +136,7 @@ fdt12::fdt12(std::string_view str)
   owning_ = true;
 }
 
-fdt12::fdt12(std::wstring_view str)
+oper12::oper12(std::wstring_view str)
 {
   // use unique_ptr to be exception-safe if to() throws
   auto val = std::make_unique<xloper12>();
@@ -146,15 +146,15 @@ fdt12::fdt12(std::wstring_view str)
   owning_ = true;
 }
 
-fdt12::fdt12(xlref12 ref) : value_{new xloper12{}}
+oper12::oper12(xlref12 ref) : value_{new xloper12{}}
 {
   value_->val.sref = {1u, ref};
   value_->xltype = xltypeSRef;
 }
 
-fdt12::fdt12(const mref12& mref) : fdt12{0u, mref} {}
+oper12::oper12(const mref12& mref) : oper12{0u, mref} {}
 
-fdt12::fdt12(std::uintptr_t id, const mref12& mref)
+oper12::oper12(std::uintptr_t id, const mref12& mref)
 {
   // use unique_ptr to be exception-safe if mref() throws
   auto val = std::make_unique<xloper12>();
@@ -168,9 +168,9 @@ fdt12::fdt12(std::uintptr_t id, const mref12& mref)
   owning_ = true;
 }
 
-fdt12::fdt12(mref12&& mref) : fdt12{0u, std::move(mref)} {}
+oper12::oper12(mref12&& mref) : oper12{0u, std::move(mref)} {}
 
-fdt12::fdt12(std::uintptr_t id, mref12&& mref) : value_{new xloper12{}}
+oper12::oper12(std::uintptr_t id, mref12&& mref) : value_{new xloper12{}}
 {
   value_->val.mref.lpmref = mref.release();  // noexcept
   value_->val.mref.idSheet = id;
@@ -182,19 +182,19 @@ fdt12::fdt12(std::uintptr_t id, mref12&& mref) : value_{new xloper12{}}
 // nil + missing                                                              //
 ////////////////////////////////////////////////////////////////////////////////
 
-fdt12
-fdt12::nil()
+oper12
+oper12::nil()
 {
-  fdt12 res;
+  oper12 res;
   res.value_ = new xloper12;
   res.value_->xltype = xltypeNil;
   return res;
 }
 
-fdt12
-fdt12::missing()
+oper12
+oper12::missing()
 {
-  fdt12 res;
+  oper12 res;
   res.value_ = new xloper12;
   res.value_->xltype = xltypeMissing;
   return res;
@@ -205,25 +205,25 @@ fdt12::missing()
 ////////////////////////////////////////////////////////////////////////////////
 
 xloper12*
-fdt12::value() noexcept
+oper12::value() noexcept
 {
   return value_;
 }
 
 const xloper12*
-fdt12::value() const noexcept
+oper12::value() const noexcept
 {
   return value_;
 }
 
 bool
-fdt12::owning() const noexcept
+oper12::owning() const noexcept
 {
   return owning_;
 }
 
 xloper12*
-fdt12::release() noexcept
+oper12::release() noexcept
 {
   // copy value_ and clear
   auto res = value_;
@@ -240,14 +240,14 @@ fdt12::release() noexcept
 }
 
 xltype
-fdt12::type() const noexcept
+oper12::type() const noexcept
 {
   // cast to satisfy initialization rules
   return xltype{static_cast<int>(value_->xltype)};
 }
 
 std::optional<xlerr>
-fdt12::error() const noexcept
+oper12::error() const noexcept
 {
   if (type() == xltype::err)
     return xlerr{value_->val.err};
@@ -260,7 +260,7 @@ fdt12::error() const noexcept
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-fdt12::from(fdt12&& other) noexcept
+oper12::from(oper12&& other) noexcept
 {
   value_ = other.value_;
   owning_ = other.owning_;
@@ -269,7 +269,7 @@ fdt12::from(fdt12&& other) noexcept
 }
 
 void
-fdt12::destroy() noexcept
+oper12::destroy() noexcept
 {
   // do nothing if no data
   if (!value_)

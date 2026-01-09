@@ -41,7 +41,7 @@ endif()
 if(TARGET oa_accel AND TARGET Excel::XLCALL32)
     target_sources(
         oa_unit_test PRIVATE
-        accel/fdt12_test.cpp accel/mref12_test.cpp
+        accel/mref12_test.cpp accel/oper12_test.cpp
     )
 endif()
 # MSVC emits C5264 a lot for Google Test fixtures
