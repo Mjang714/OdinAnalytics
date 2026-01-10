@@ -66,7 +66,7 @@ xlmref12 *xlmref12_calloc(std::uint16_t count);
  *
  * @param mref `xlmref12` to copy from
  */
-xlmref12* xlmref12_copy(xlmref12* mref);
+xlmref12* xlmref12_copy(const xlmref12* mref);
 
 /**
  * Frees the memory associated with the `xlmref12`.

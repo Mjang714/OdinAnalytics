@@ -73,7 +73,7 @@ xlmref12* xlmref12_calloc(std::uint16_t count)
   return res;
 }
 
-xlmref12* xlmref12_copy(xlmref12* mref)
+xlmref12* xlmref12_copy(const xlmref12* mref)
 {
   // if nullptr, return nullptr
   if (!mref)
