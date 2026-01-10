@@ -78,6 +78,36 @@ constexpr bool needs_extra_memory(xltype type) noexcept
 }
 
 /**
+ * Create a copy of the `XLOPER12` allocated with `new`.
+ *
+ * This calls `new` to allocate another `XLOPER12`, allocating any additional
+ * memory required for the type, e.g. for `xltypeStr`, `xltypeRef`, or
+ * `xltypeMulti` members. If `oper` is `nullptr`, `nullptr` is returned.
+ *
+ * @note This function discards the `xlbitDLLFree` and `xlbitXLFree` bits in
+ *  `op->xltype` when copying this field to the new `XLOPER12` type member.
+ *  This ensures that these deallocation flags are not falsely propagated.
+ *
+ * @param op `XLOPER12` to copy
+ */
+xloper12* xloper12_copy(const xloper12* op);
+
+/**
+ * Delete an `XLOPER12` allocated with `new` in an `oper12`.
+ *
+ * This deallocates any extra memory allocated for the `XLOPER12`, e.g. for
+ * `xltypeStr`, `xltypeRef`, or `xltypeMulti` members, before calling `delete`
+ * on the `XLOPER12` pointer itself. If `oper` is `nullptr`, nothing is done.
+ *
+ * @note This function correctly masks off `xlbitDLLFree`. Note that it is
+ *  still an error to pass in an `XLOPER12` that has been allocated by Excel,
+ *  even with the `xlbitXLFree` bit set, as `delete` is called on `op`.
+ *
+ * @param op `XLOPER12` to delete
+ */
+void xloper12_free(xloper12* op) noexcept;
+
+/**
  * Excel 12 fundamental data type "operand" management class.
  *
  * This provides the general cell operand type that can be used to manage
@@ -102,10 +132,13 @@ public:
 
   /**
    * Copy ctor.
-   *
-   * @todo Currently deleted for simplicity. We will support copying later.
    */
-  oper12(const oper12&) = delete;
+  oper12(const oper12&);
+
+  /**
+   * Copy assignment operator.
+   */
+  oper12& operator=(const oper12& other);
 
   /**
    * Move ctor.
@@ -270,6 +303,13 @@ public:
   const xloper12* value() const noexcept;
 
   /**
+   * Indicate if the `oper12` owns a value.
+   *
+   * This returns `true` when the `value_` pointer is not `nullptr`.
+   */
+  operator bool() const noexcept;
+
+  /**
    * Indicate if the `oper12` is responsible for allocated `XLOPER12` data.
    *
    * Some `XLOPER12` data, e.g. for strings when type is `xltypeStr`, requires
@@ -314,6 +354,13 @@ public:
 private:
   xloper12* value_{};  // heap-allocated XLOPER12
   bool owning_{};      // indicate if XLOPER12 memory is owned by oper12
+
+  /**
+   * Initialize from another `oper12` by copy.
+   *
+   * Copying the `XLOPER12` is done using `xloper12_copy()`.
+   */
+  void from(const oper12& other);
 
   /**
    * Initialize from another `oper12` by move.

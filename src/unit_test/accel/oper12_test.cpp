@@ -15,6 +15,7 @@
 #include <XLCALL.H>
 
 #include <string>
+#include <utility>
 
 #include <gtest/gtest.h>
 
@@ -105,6 +106,39 @@ TEST_F(Oper12Test, MakeWstringTest)
   // TODO: add conversion for value inspection
   // Excel 12 wide string size is in first code point
   EXPECT_EQ(L"\013" + str, std::wstring_view{val.value()->val.str});
+}
+
+/**
+ * Test that `std::wstring` copy works as expected.
+ */
+TEST_F(Oper12Test, CopyWStringTest)
+{
+  std::wstring str{L"hello world"};
+  oa::accel::oper12 v1{str};
+  auto v2 = v1;
+  ASSERT_TRUE(v1.type() == v2.type());
+  EXPECT_EQ(v1.owning(), v2.owning());
+  // TODO: add conversion for value inspection
+  EXPECT_EQ(
+    std::wstring_view{v1.value()->val.str},
+    std::wstring_view{v2.value()->val.str}
+  );
+}
+
+/**
+ * Test that `std::wstring` move works as expected.
+ */
+TEST_F(Oper12Test, MoveWStringTest)
+{
+  std::wstring str{L"hello world"};
+  oa::accel::oper12 v1{str};
+  auto v2 = std::move(v1);
+  // v1 has no value now
+  ASSERT_FALSE(v1);
+  // v2 will have the contents
+  ASSERT_TRUE(v2.type() == oa::accel::xltype::str);
+  // TODO: add conversion for value inspection
+  EXPECT_EQ(L"\013" + str, v2.value()->val.str);
 }
 
 /**

@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "oa/accel/mref12.h"
 
@@ -77,8 +78,126 @@ void to(xloper12* out, const T* buf, std::size_t length)
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// raw functions                                                              //
+////////////////////////////////////////////////////////////////////////////////
+
+xloper12* xloper12_copy(const xloper12* op)
+{
+  // no-op if nullptr
+  if (!op)
+    return nullptr;
+  // allocate (unique_ptr for exception safety) copy + mask deallocation bits
+  auto res = std::make_unique<xloper12>(*op);
+  res->xltype &= ~xlbitDLLFree;
+  res->xltype &= ~xlbitXLFree;
+  // handle types with auxiliary memory requirements
+  switch (res->xltype) {
+  // string
+  case xltypeStr: {
+    // Excel strings have size encoded in first character + are null terminated
+    auto len = op->val.str[0] + 2u;
+    auto buf = std::make_unique<XCHAR[]>(len);
+    std::memcpy(buf.get(), op->val.str, sizeof(XCHAR) * len);
+    // update res + release
+    res->val.str = buf.release();
+    break;
+  }
+  // multi-cell reference
+  case xltypeRef:
+    res->val.mref.lpmref = xlmref12_copy(op->val.mref.lpmref);
+    break;
+  // array
+  case xltypeMulti: {
+    // total size
+    unsigned len = op->val.array.rows * op->val.array.columns;
+    // allocate with scoping for exception safety + copy XLOPER12 array
+    auto buf = std::make_unique<xloper12[]>(len);
+    std::memcpy(buf.get(), op->val.array.lparray, sizeof(xloper12) * len);
+    // indices + buffers for any string data that needs copying
+    std::vector<std::pair<unsigned, std::unique_ptr<XCHAR[]>>> strs;
+    // copy memory for any allocated strings
+    for (auto i = 0u; i < len; i++) {
+      // reference to ith XLOPER12
+      const auto& op_i = op->val.array.lparray[i];
+      // handle strings
+      if (op_i.xltype == xltypeStr) {
+        // again, Excel strings are null terminated with size in first char
+        auto slen = op_i.val.str[0] + 2u;
+        strs.push_back({i, std::make_unique<XCHAR[]>(slen)});
+        std::memcpy(strs.back().second.get(), op_i.val.str, sizeof(XCHAR) * slen);
+      }
+    }
+    // if no allocation exceptions thrown, release memory to new array
+    // note: type checking already done in previous loop
+    for (auto i = 0u; i < strs.size(); i++)
+      buf[strs[i].first].val.str = strs[i].second.release();
+    // update res + release
+    res->val.array.lparray = buf.release();
+    break;
+  }
+  // other types
+  default:
+    break;
+  }
+  // done, so release res itself
+  return res.release();
+}
+
+void xloper12_free(xloper12* op) noexcept
+{
+  // no-op if nullptr
+  if (!op)
+    return;
+  // handle types
+  switch (op->xltype & ~xlbitDLLFree) {
+  // string
+  case xltypeStr:
+    delete[] op->val.str;
+    break;
+  // multi-cell reference
+  case xltypeRef:
+    xlmref12_free(op->val.mref.lpmref);
+    break;
+  // array
+  case xltypeMulti: {
+    // total size
+    unsigned len = op->val.array.rows * op->val.array.columns;
+    // any xltypeStr objects are deleted like in the xltypeStr case
+    for (auto i = 0u; i < len; i++) {
+      // reference to ith XLOPER12
+      const auto& op_i = op->val.array.lparray[i];
+      // handle strings
+      if (op_i.xltype == xltypeStr)
+        delete[] op_i.val.str;
+    }
+    // delete array itself
+    delete[] op->val.array.lparray;
+    break;
+  }
+  // other types
+  default:
+    break;
+  }
+  // done, so delete op itself
+  delete op;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ctors + assignment + dtors                                                 //
 ////////////////////////////////////////////////////////////////////////////////
+
+oper12::oper12(const oper12& other)
+{
+  from(other);
+}
+
+oper12&
+oper12::operator=(const oper12& other)
+{
+  destroy();
+  from(other);
+  return *this;
+}
 
 oper12::oper12(oper12&& other) noexcept
 {
@@ -237,6 +356,11 @@ oper12::value() const noexcept
   return value_;
 }
 
+oper12::operator bool() const noexcept
+{
+  return !!value_;
+}
+
 bool
 oper12::owning() const noexcept
 {
@@ -281,6 +405,13 @@ oper12::error() const noexcept
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+oper12::from(const oper12& other)
+{
+  value_ = xloper12_copy(other.value_);
+  owning_ = other.owning_;
+}
+
+void
 oper12::from(oper12&& other) noexcept
 {
   value_ = other.value_;
@@ -297,40 +428,12 @@ oper12::destroy() noexcept
     return;
   // if owning, we free XLOPER12 memory ourselves
   if (owning_) {
-    // TODO: this can be broken out into a xlAutoFree12() implementation
-    switch (value_->xltype) {
-    // string
-    case xltypeStr:
-      delete[] value_->val.str;
-      break;
-    // multi-cell reference
-    case xltypeRef:
-      xlmref12_free(value_->val.mref.lpmref);
-      break;
-    // array
-    // note: we don't support constructing xltypeMulti currently
-    case xltypeMulti: {
-      // rows + columns
-      auto n_rows = value_->val.array.rows;
-      auto n_cols = value_->val.array.columns;
-      // lambda for xloper12 (i, j) array reference
-      auto array = [this, n_rows, n_cols](auto i, auto j) noexcept -> auto&
-      {
-        return value_->val.array.lparray[i * n_rows + j * n_cols];
-      };
-      // any xltypeStr objects are deleted like in the xltypeStr case, but we
-      // specifically mask off 0xFFF to correctly ignore the xlbit* values
-      for (decltype(n_rows) i = 0; i < n_rows; i++)
-        for (decltype(n_cols) j = 0; j < n_cols; j++)
-          if ((array(i, j).xltype & 0xFFF) == xltypeStr)
-            delete[] array(i, j).val.str;
-      break;
-    }
-    }
+    xloper12_free(value_);
+    return;
   }
   // otherwise, call Excel12(xlFree, ...) as appropriate. see
   // https://learn.microsoft.com/en-us/office/client-developer/excel/xlfree
-  else if (needs_extra_memory(type()))
+  if (needs_extra_memory(type()))
     Excel12(xlFree, nullptr, 1, value_);
   // now we can delete the XLOPER12 itself
   delete value_;
