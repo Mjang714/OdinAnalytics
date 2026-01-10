@@ -77,6 +77,20 @@ TEST_F(MultiRef12Test, CopyTest)
 }
 
 /**
+ * Test `mref12` move testing.
+ *
+ * This also tests construction from an initializer list + `operator==`.
+ */
+TEST_F(MultiRef12Test, MoveTest)
+{
+  oa::accel::mref12 ref1{{1, 2, 4, 5}, {1, 6, 2, 4}, {10, 24, 0, 16}};
+  auto ref2 = std::move(ref1);
+  // ref1 is empty now
+  EXPECT_TRUE(ref1.empty());
+  EXPECT_EQ(3, ref2.size());
+}
+
+/**
  * Test `mref12` range-for test.
  *
  * This also tests construction with a given size + iterators.
