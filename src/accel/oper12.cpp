@@ -146,6 +146,10 @@ oper12::oper12(std::wstring_view str)
   owning_ = true;
 }
 
+oper12::oper12(std::int32_t row, std::int32_t col)
+  : oper12{{row, row, col, col}}
+{}
+
 oper12::oper12(xlref12 ref) : value_{new xloper12{}}
 {
   value_->val.sref = {1u, ref};
@@ -172,6 +176,27 @@ oper12::oper12(mref12&& mref) : value_{new xloper12{}}
   value_->val.mref.idSheet = mref.sheet();   // noexcept
   value_->xltype = xltypeRef;
   owning_ = true;
+}
+
+oper12::oper12(const char* data, std::size_t size)
+  : oper12{reinterpret_cast<const unsigned char*>(data), size}
+{}
+
+oper12::oper12(const unsigned char* data, std::size_t size)
+{
+  // max data length
+  constexpr auto max_len = (std::numeric_limits<long>::max)();
+  // size must not exceed long max
+  if (size > max_len)
+    throw std::runtime_error{
+      "bigdata length " + std::to_string(size) + " exceeded maximum " +
+      std::to_string(max_len)
+    };
+  // initialize
+  value_ = new xloper12{};
+  value_->val.bigdata.h.lpbData = const_cast<BYTE*>(data);
+  value_->val.bigdata.cbData = static_cast<long>(size);
+  value_->xltype = xltypeBigData;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

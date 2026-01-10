@@ -181,6 +181,16 @@ public:
   /**
    * Ctor.
    *
+   * Constructs a single-cell, single-reference `XLOPER12`.
+   *
+   * @param row Row index
+   * @param col Column index
+   */
+  oper12(std::int32_t row, std::int32_t col);
+
+  /**
+   * Ctor.
+   *
    * Constructs a single-reference `XLOPER12`.
    *
    * @param ref Reference to use
@@ -204,6 +214,28 @@ public:
    * @param mref Multi-reference object to move from
    */
   oper12(mref12&& mref);
+
+  /**
+   * Ctor.
+   *
+   * Constructs a `xltypeBigData` input `XLOPER12 using the given buffer
+   * pointer and size. No copying of the buffer data is done.
+   *
+   * @param data Data buffer
+   * @param size Data buffer length in bytes > 0
+   */
+  oper12(const char* data, std::size_t size);
+
+  /**
+   * Ctor.
+   *
+   * Constructs a `xltypeBigData` input `XLOPER12 using the given buffer
+   * pointer and size. No copying of the buffer data is done.
+   *
+   * @param data Data buffer
+   * @param size Data buffer length in bytes > 0
+   */
+  oper12(const unsigned char* data, std::size_t size);
 
   /**
    * Return a `oper12` owning an `XLOPER12` of type `xltypeNil`.
