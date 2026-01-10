@@ -28,7 +28,8 @@ namespace {
  */
 #define GTEST_ASSERT_PROC_EXISTS(out, name, type) \
   auto out = [&] { return reinterpret_cast<type>(xlcall32_proc(#name)); }(); \
-  ASSERT_TRUE(out) << #name "() missing"
+  ASSERT_TRUE(out) << #name "() missing: " << \
+    std::system_category().message(static_cast<int>(GetLastError()))
 
 /**
  * Test fixture for stub `XLCALL32` DLL tests.
@@ -42,17 +43,25 @@ protected:
    *
    * @note The returned `HMODULE` does not increment the module ref count.
    */
-  static auto xlcall32_handle() noexcept
+  static auto xlcall32_handle()
   {
-    return GetModuleHandleA("XLCALL32");
+    auto hnd = GetModuleHandleA("XLCALL32");
+    if (!hnd)
+      throw std::system_error{
+        {static_cast<int>(GetLastError()), std::system_category()},
+        "GetModuleHandleA() failed"
+      };
+    return hnd;
   }
 
   /**
    * Obtain the function pointer for the specified function.
    *
    * On error `nullptr` is returned so check `GetLastError()`.
+   *
+   * @param name Name of the DLL procedure to get a pointer to
    */
-  static auto xlcall32_proc(const char* name) noexcept
+  static auto xlcall32_proc(const char* name)
   {
     return GetProcAddress(xlcall32_handle(), name);
   }
@@ -108,7 +117,7 @@ TEST_F(StubXlCall32Test, LPenHelperTest)
 TEST_F(StubXlCall32Test, XLCallVerTest)
 {
   GTEST_ASSERT_PROC_EXISTS(proc, XLCallVer, int (pascal *)());
-  // both function pointer + name should worl
+  // both function pointer + name should work
   EXPECT_EQ(0, proc());
   EXPECT_EQ(0, XLCallVer());
 }
