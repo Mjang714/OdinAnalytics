@@ -110,9 +110,24 @@ TEST_F(Oper12Test, MakeWstringTest)
 /**
  * Test that single-cell reference construction works as expected.
  */
+TEST_F(Oper12Test, MakeSingleCellTest)
+{
+  constexpr int row = 1;
+  constexpr int col = 5;
+  oa::accel::oper12 val{row, col};
+  ASSERT_TRUE(val.type() == oa::accel::xltype::sref) << "val is not an sref";
+  // note: count is always 1
+  EXPECT_EQ(1, val.value()->val.sref.count);
+  // note: need parentheses as otherwise macro gets confused
+  EXPECT_EQ((xlref12{row, row, col, col}), val.value()->val.sref.ref);
+}
+
+/**
+ * Test that single reference construction works as expected.
+ */
 TEST_F(Oper12Test, MakeSingleRefTest)
 {
-  xlref12 ref{1, 1, 45, 45};
+  xlref12 ref{1, 3, 8, 45};
   oa::accel::oper12 val{ref};
   ASSERT_TRUE(val.type() == oa::accel::xltype::sref) << "val is not an sref";
   // note: count is always 1
@@ -121,6 +136,22 @@ TEST_F(Oper12Test, MakeSingleRefTest)
 }
 
 // TODO: add tests for multi-ref
+
+/**
+ * Test that char buffer construction works as expected.
+ *
+ * This directly tests the `unsigned char` buffer ctor due to delegation.
+ */
+TEST_F(Oper12Test, MakeCharDataTest)
+{
+  constexpr const char data[] = {"arbitrary character data"};
+  oa::accel::oper12 val{data, sizeof data - 1u};
+  ASSERT_TRUE(val.type() == oa::accel::xltype::bigdata) << "val is not bigdata";
+  // note: cast to satisfy template type deduction
+  EXPECT_EQ(reinterpret_cast<const BYTE*>(data), val.value()->val.bigdata.h.lpbData);
+  // note: cast to silence compiler warning
+  EXPECT_EQ(static_cast<long>(sizeof data - 1u), val.value()->val.bigdata.cbData);
+}
 
 /**
  * Test that a nil `oper12` works as expected.
