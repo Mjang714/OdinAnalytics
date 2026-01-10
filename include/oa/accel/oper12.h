@@ -318,7 +318,7 @@ public:
    *
    * If the ownership flag is `false`, for `XLOPER12` types like `xltypeStr`,
    * `xlTypeMulti`, and `xlTypeRef`, the `oper12` assumes the `XLOPER12` data
-   * was allocated by Excel, and so `Excel12(xlFree, ...)` is called.
+   * was allocated by Excel, so `Excel12(xlFree, ...)` will be called in dtor.
    */
   bool owning() const noexcept;
 
