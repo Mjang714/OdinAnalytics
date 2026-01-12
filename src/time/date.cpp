@@ -305,6 +305,21 @@ namespace oa::time
 		return AddYears(-time_length);
 	}
 
+	int Date::julian() const noexcept
+	{
+		return m_julian_int_;
+	}
+
+	Date::operator bool() const noexcept
+	{
+		return !!m_julian_int_;
+	}
+
+	Date Date::value_or(Date other) const noexcept
+	{
+		return (*this) ? *this : other;
+	}
+
 	// defining operator overloading
 	bool Date::operator==(const Date& right_value) const
 	{
@@ -315,5 +330,24 @@ namespace oa::time
 	{
 		return m_julian_int_ <=> right_value.m_julian_int_;
 	}
+
+////////////////////////////////////////////////////////////////////////////////
+// operators                                                                  //
+////////////////////////////////////////////////////////////////////////////////
+
+Date operator+(const Date& date, int days) /*noexcept*/
+{
+	return Date{date.julian() + days};
+}
+
+Date operator+(int days, const Date& date) /*noexcept*/
+{
+	return date + days;
+}
+
+Date operator-(const Date& date, int days) /*noexcept*/
+{
+	return Date{date.julian() - days};
+}
 
 }  // namespace oa::time
