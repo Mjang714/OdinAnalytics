@@ -1,5 +1,11 @@
 #include "business_date_formula.h"
+
+#include <memory>
+#include <string>
+
 #include "static_data_cache/calendar_cache.h"
+#include "time/calendar.h"
+#include "time/date.h"
 
 namespace oa::derived_time
 {

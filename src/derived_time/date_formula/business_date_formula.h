@@ -1,10 +1,12 @@
 #ifndef OA_DERIVED_TIME_DATE_FORMULA_SPOT_DATE_FORMULA_H_
 #define OA_DERIVED_TIME_DATE_FORMULA_SPOT_DATE_FORMULA_H_
 
+#include <memory>
+#include <string>
+
 #include "oa/dllexport.h"
 #include "time/calendar.h"
-#include "derived_time/date_formula/date_formula.h"
-
+#include "time/date.h"
 
 namespace oa::derived_time
 {
@@ -18,13 +20,13 @@ namespace oa::derived_time
 			 */
 			BusinessDateFormula() = default;
 
-			BusinessDateFormula(int business_days, const std::shared_ptr<const oa::time::Calendar>& calendar_input);
+			BusinessDateFormula(int business_days, const std::shared_ptr<const time::Calendar>& calendar_input);
 			BusinessDateFormula(int business_days, const std::string& calendars);
 
 			// TODO: document more
 			// updated so that if business day count is zero no adjustment is done.
 			// this allows BDFs without a calendar to work
-			oa::time::Date Adjust(const oa::time::Date& base_date) const;
+			time::Date Adjust(const time::Date& base_date) const;
 
 			// number of adjustment days
 			int days() const noexcept;
@@ -38,14 +40,14 @@ namespace oa::derived_time
 
 		private:
 			int m_num_of_business_days{ 0 };
-			std::shared_ptr<const oa::time::Calendar> m_calendar_{};
+			std::shared_ptr<const time::Calendar> m_calendar_{};
 	};
 
-	inline oa::time::Date operator+(const oa::time::Date& base_date, const BusinessDateFormula& bus_date_formula) {
+	inline time::Date operator+(const time::Date& base_date, const BusinessDateFormula& bus_date_formula) {
 		return bus_date_formula.Adjust(base_date);
 	}
 
-	inline oa::time::Date operator+(const BusinessDateFormula& bus_date_formula, const oa::time::Date& base_date) {
+	inline time::Date operator+(const BusinessDateFormula& bus_date_formula, const time::Date& base_date) {
 		return bus_date_formula.Adjust(base_date);
 	}
 
