@@ -408,7 +408,16 @@ void
 oper12::from(const oper12& other)
 {
   value_ = xloper12_copy(other.value_);
-  owning_ = other.owning_;
+  switch (value_->xltype) {
+  case xltypeStr:
+  case xltypeRef:
+  case xltypeMulti:
+    owning_ = true;
+    break;
+  default:
+    owning_ = false;
+    break;
+  }
 }
 
 void
