@@ -9,8 +9,8 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "helpers/utils.h"
 #include "oa/platform.h"
+#include "helpers/utils.h"
 #include "time/tenor.h"
 #include "time/time_enums.h"
 
@@ -30,7 +30,7 @@ namespace oa::time
 	{
 		std::vector <std::string> split_date_str{};
 
-		if (oa::utils::CheckDateStr(date_str))
+		if (utils::CheckDateStr(date_str))
 		{
 			boost::split(split_date_str, date_str, boost::is_any_of("\\-\\/:"));
 			this->m_years_ = std::stoi(split_date_str.at(0));
@@ -210,7 +210,7 @@ namespace oa::time
 				return AddYears(lenght_of_time);
 
 			default:
-				throw "Not a valid Tenor please check input tenor of:" + oa::utils::GetCleanName(tenor_enum);
+				throw "Not a valid Tenor please check input tenor of:" + utils::GetCleanName(tenor_enum);
 		}
 	}
 
