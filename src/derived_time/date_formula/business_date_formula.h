@@ -11,10 +11,30 @@ namespace oa::derived_time
 	class OA_DERIVED_TIME_API BusinessDateFormula
 	{
 		public:
+			/**
+			 * Default ctor.
+			 *
+			 * This constructs an adjustment of zero days without a calendar.
+			 */
 			BusinessDateFormula() = default;
+
 			BusinessDateFormula(int business_days, const std::shared_ptr<const oa::time::Calendar>& calendar_input);
 			BusinessDateFormula(int business_days, const std::string& calendars);
+
+			// TODO: document more
+			// updated so that if business day count is zero no adjustment is done.
+			// this allows BDFs without a calendar to work
 			oa::time::Date Adjust(const oa::time::Date& base_date) const;
+
+			// number of adjustment days
+			int days() const noexcept;
+
+			// calendar
+			// TODO: doesn't need to be const Calendar in the shared_ptr
+			const time::Calendar* calendar() const noexcept;
+
+			// indicate that adjustment is nonzero
+			operator bool() const noexcept;
 
 		private:
 			int m_num_of_business_days{ 0 };
