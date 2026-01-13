@@ -19,6 +19,7 @@
 
 #include <gtest/gtest.h>
 
+#include "oa/accel/enums.h"
 #include "oa/accel/xl_ops.h"  // for xlref12 operator==
 
 namespace {
@@ -192,7 +193,9 @@ TEST_F(Oper12Test, MakeCharDataTest)
  */
 TEST_F(Oper12Test, MakeNilTest)
 {
-  EXPECT_EQ(oa::accel::xltype::nil, oa::accel::oper12::nil().type());
+  auto op = oa::accel::oper12::nil();
+  EXPECT_EQ(oa::accel::xltype::nil, op.type());
+  EXPECT_EQ("[owning=false] nil", oa::accel::to_string(op));
 }
 
 /**
@@ -200,7 +203,9 @@ TEST_F(Oper12Test, MakeNilTest)
  */
 TEST_F(Oper12Test, MakeMissingTest)
 {
-  EXPECT_EQ(oa::accel::xltype::missing, oa::accel::oper12::missing().type());
+  auto op = oa::accel::oper12::missing();
+  EXPECT_EQ(oa::accel::xltype::missing, op.type());
+  EXPECT_EQ("[owning=false] missing", oa::accel::to_string(op));
 }
 
 }  // namespace
