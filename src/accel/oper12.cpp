@@ -19,12 +19,17 @@
 #include <iostream>  // for std::wcout
 #include <limits>
 #include <optional>
+#include <ostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "oa/accel/enums.h"
 #include "oa/accel/mref12.h"
+#include "oa/accel/xl_ops.h"  // for operator<<
+#include "oa/string.h"        // for oa::hex
 
 namespace oa {
 namespace accel {
@@ -378,7 +383,7 @@ oper12::release() noexcept
     res->xltype |= xlbitDLLFree;
   // otherwise, assume Excel owns the memory, and set xlbitXLFree if XLOPER12
   // type is one of the Excel types that require extra memory
-  else if (needs_extra_memory(type()))
+  else if (needs_aux_memory(type()))
     res->xltype |= xlbitXLFree;
   // done
   return res;
@@ -442,10 +447,37 @@ oper12::destroy() noexcept
   }
   // otherwise, call Excel12(xlFree, ...) as appropriate. see
   // https://learn.microsoft.com/en-us/office/client-developer/excel/xlfree
-  if (needs_extra_memory(type()))
+  if (needs_aux_memory(type()))
     Excel12(xlFree, nullptr, 1, value_);
   // now we can delete the XLOPER12 itself
   delete value_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// operator<<                                                                 //
+////////////////////////////////////////////////////////////////////////////////
+
+std::ostream& operator<<(std::ostream& out, const oper12& op)
+{
+  // print ownership
+  out << "[owning=" <<
+    [own = op.owning()] { return (own) ? "true" : "false"; }() << "] ";
+  // empty
+  if (!op.value())
+    return out << "(empty)";
+  // otherwise, format value
+  return out << *op.value();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// to_string()                                                                //
+////////////////////////////////////////////////////////////////////////////////
+
+std::string to_string(const oper12& op)
+{
+  std::stringstream ss;
+  ss << op;
+  return std::move(ss).str();  // ref-qualified overload since C++20
 }
 
 }  // namespace accel

@@ -10,8 +10,12 @@
 
 #include <concepts>
 #include <cstdint>
+#include <iosfwd>
 #include <optional>
+#include <string>
 #include <string_view>
+
+#include "oa/accel/enums.h"
 
 // forward decl to avoid pulling in XLCALL.H
 struct xloper12;
@@ -24,60 +28,6 @@ namespace accel {
 class mref12;
 
 /**
- * `XLOPER` and `XLOPER12` data types.
- *
- * Each member has the same value as the actual Excel data type integer.
- */
-enum class xltype : int {
-  num = 0x0001,      // xltypeNum
-  str = 0x0002,      // xltypeStr
-  bool_ = 0x0004,    // xltypeBool
-  ref = 0x0008,      // xltypeRef
-  err = 0x0010,      // xltypeErr
-  flow = 0x0020,     // xltypeFlow
-  multi = 0x0040,    // xltypeMulti
-  missing = 0x0080,  // xltypeMissing
-  nil = 0x0100,      // xltypeNil
-  sref = 0x0400,     // xltypeSRef
-  int_ = 0x0800,     // xltypeInt
-  bigdata = 0x0802   // xltypeBigData
-};
-
-/**
- * Excel error codes.
- *
- * Each member has the same value as the actual Excel error code integer.
- */
-enum class xlerr : int {
-  null = 0,          // xlerrNull
-  div0 = 7,          // xlerrDiv0
-  value = 15,        // xkerrValue
-  ref = 23,          // xlerrRef
-  name = 29,         // xlerrName
-  num = 36,          // xlerrNum
-  na = 42,           // xlerrNA
-  getting_data = 43  // xlerrGettingData
-};
-
-/**
- * Returns `true` if the given type enumeration requires owning extra memory.
- *
- * String, multi-cell reference, and array types have extra memory requirements
- * besides the `XLOPER12` allocation itself.
- */
-constexpr bool needs_extra_memory(xltype type) noexcept
-{
-  switch (type) {
-  case xltype::str:
-  case xltype::ref:
-  case xltype::multi:
-    return true;
-  default:
-    return false;
-  }
-}
-
-/**
  * Create a copy of the `XLOPER12` allocated with `new`.
  *
  * This calls `new` to allocate another `XLOPER12`, allocating any additional
@@ -87,6 +37,12 @@ constexpr bool needs_extra_memory(xltype type) noexcept
  * @note This function discards the `xlbitDLLFree` and `xlbitXLFree` bits in
  *  `op->xltype` when copying this field to the new `XLOPER12` type member.
  *  This ensures that these deallocation flags are not falsely propagated.
+ *
+ * @warning It is incredibly easy to leak memory with this function in the
+ *  presence of exceptions. Although the function itself satisfies the strong
+ *  exception guarantee, the returned `xloper12*` may be associated with
+ *  auxiliary memory that will be leaked should an exception be thrown after
+ *  this function is called, e.g. if `xltypeStr`, `xltypeMulti`, `xltypeRef`.
  *
  * @param op `XLOPER12` to copy
  */
@@ -288,9 +244,6 @@ public:
    * Return the `XLOPER12` pointer owned by the object.
    *
    * This is useful for C function interop but can be abused.
-   *
-   * @todo Once we have a good `to<T>()` implementation this may be removed.
-   *  We may also implement a `Excel12()` wrapper for safe hydration.
    */
   xloper12* value() noexcept;
 
@@ -349,7 +302,7 @@ public:
    */
   std::optional<xlerr> error() const noexcept;
 
-  // TODO: add to<T>() template for conversion to C++ types (converting allowed)
+  // TODO: add as<T>() template for conversion to C++ types (converting allowed)
 
 private:
   xloper12* value_{};  // heap-allocated XLOPER12
@@ -358,7 +311,8 @@ private:
   /**
    * Initialize from another `oper12` by copy.
    *
-   * Copying the `XLOPER12` is done using `xloper12_copy()`.
+   * Copying the `XLOPER12` is done using `xloper12_copy()`. The new `oper12`
+   * will determine its ownership by checking the `XLOPER12` type member.
    */
   void from(const oper12& other);
 
@@ -381,6 +335,34 @@ private:
    */
   void destroy() noexcept;
 };
+
+/**
+ * Stream the `oper12` value to an output stream.
+ *
+ * The formatted value will look something like the following:
+ *
+ * @code
+ * [owning=(true|false)] ...
+ * @endcode
+ *
+ * The object formatting is implemented using the `operator<<` for the
+ * `xloper12`. If the `oper12` doesn't manage a `xloper12`, e.g. because it has
+ * been default-constructed or was moved from, the object representation of
+ * the `oper12` is simply `"[owning=false] (empty)"`.
+ *
+ * @param out Output stream
+ * @param op `oper12` value to write
+ */
+std::ostream& operator<<(std::ostream& out, const oper12& op);
+
+/**
+ * Return a string representation for the `oper12` value.
+ *
+ * This provides the same representation as that given by `operator<<
+ *
+ * @param op `oper12` value
+ */
+std::string to_string(const oper12& op);
 
 }  // namespace accel
 }  // namespace oa
