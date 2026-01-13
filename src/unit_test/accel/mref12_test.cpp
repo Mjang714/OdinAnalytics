@@ -142,4 +142,29 @@ TEST_F(MultiRef12Test, StreamFormatTest)
   );
 }
 
+/**
+ * Test empty `mref12` string formatting.
+ *
+ * This ensures that streaming the `mref12` when empty is error-free.
+ */
+TEST_F(MultiRef12Test, StreamEmptyFormatTest)
+{
+  oa::accel::mref12 ref;
+  // check
+  EXPECT_EQ(
+    [&ref]
+    {
+      std::stringstream ss;
+      ss << oa::hex << ref.sheet();
+      return std::move(ss).str();    // ref-qualified overload since C++20
+    }() + ": []",
+    [&ref]
+    {
+      std::stringstream ss;
+      ss << ref;
+      return std::move(ss).str();    // ref-qualified overload since C++20
+    }()
+  );
+}
+
 }  // namespace
