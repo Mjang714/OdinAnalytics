@@ -203,11 +203,15 @@ public:
 
   /**
    * Return a pointer to the first managed `xlref12`.
+   *
+   * If the `mref12` is empty `nullptr` is returned.
    */
   xlref12* data() noexcept;
 
   /**
    * Return a pointer to the first managed `xlref12`.
+   *
+   * If the `mref12` is empty `nullptr` is returned.
    */
   const xlref12* data() const noexcept;
 
@@ -226,6 +230,8 @@ public:
   /**
    * Return a reference to the `i`th `xlref12`.
    *
+   * If the `mref12` is empty calling `operator[]` is undefined behavior.
+   *
    * @param i Index to the `i`th `xlref12`
    */
   xlref12& operator[](std::size_t i) noexcept;
@@ -233,27 +239,37 @@ public:
   /**
    * Return a reference to the `i`th `xlref12`.
    *
+   * If the `mref12` is empty calling `operator[]` is undefined behavior.
+   *
    * @param i Index to the `i`th `xlref12`.
    */
   const xlref12& operator[](std::size_t i) const noexcept;
 
   /**
    * Return a pointer to the first managed `xlref12`.
+   *
+   * If the `mref12` is empty `nullptr` is returned.
    */
   xlref12* begin() noexcept;
 
   /**
    * Return a pointer to the first managed `xlref12`.
+   *
+   * If the `mref12` is empty `nullptr` is returned.
    */
   const xlref12* begin() const noexcept;
 
   /**
    * Return a pointer to one past the last managed `xlref12`.
+   *
+   * If the `mref12` is empty `nullptr` is returned.
    */
   xlref12* end() noexcept;
 
   /**
    * Return a pointer to one past the last managed `xlref12`.
+   *
+   * If the `mref12` is empty `nullptr` is returned.
    */
   const xlref12* end() const noexcept;
 

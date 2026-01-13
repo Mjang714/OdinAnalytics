@@ -198,13 +198,13 @@ mref12::release() noexcept
 xlref12*
 mref12::data() noexcept
 {
-  return value_->reftbl;
+  return (value_) ? value_->reftbl : nullptr;
 }
 
 const xlref12*
 mref12::data() const noexcept
 {
-  return value_->reftbl;
+  return (value_) ? value_->reftbl : nullptr;
 }
 
 bool
