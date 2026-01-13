@@ -55,7 +55,12 @@ class hex_stream_formatter {};
 /**
  * Partial specialization for integral types.
  *
- * The format will look something like `"0x4D51231D"` for example.
+ * The format will look something like `"0x4D51231D"` for example. Endianness
+ * issues are correctly handled by operating byte-by-byte on values.
+ *
+ * @note Since function and member function pointers can have sizes that are
+ *  *not* the same as `sizeof(void*)`, for "standard" pointer to objects or
+ *  non-static data members, cast the pointer to `std::uintptr_t`.
  *
  * @tparam T type
  */
