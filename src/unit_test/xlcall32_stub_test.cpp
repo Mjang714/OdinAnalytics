@@ -57,8 +57,6 @@ protected:
   /**
    * Obtain the function pointer for the specified function.
    *
-   * On error `nullptr` is returned so check `GetLastError()`.
-   *
    * @param name Name of the DLL procedure to get a pointer to
    */
   static auto xlcall32_proc(const char* name)

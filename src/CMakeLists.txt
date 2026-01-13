@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 # this is provided so that any targets that link against the XLL SDK or
 # oa_accel (which links against the XLL SDK implicitly) can correctly load at
 # runtime. furthermore, any XLCALL32.DLL exported function calls will complete,
-# but simply return a invalid/error failure like xlfetFailed.
+# but simply return a invalid/error failure like xlretFailed.
 #
 # see xlcall32_stub.cpp for more details on how the stub should be used.
 #
