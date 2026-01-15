@@ -42,6 +42,9 @@
  *  into a DLL called `XLCALL32.DLL`. We cannot `__declspec(dllexport)` because
  *  MSVC will complain about a change in linkage and because the `.def` file
  *  is the only way we can export names at specific ordinals.
+ *
+ * @todo Mock implementations may be provided to simulate callback
+ *  functionality, e.g. so `xlFree` and `xlGetName` can work.
  */
 
 #ifndef WIN32_LEAN_AND_MEAN
