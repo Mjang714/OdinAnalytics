@@ -14,6 +14,7 @@
 #include <XLCALL.H>
 
 #include <cstdint>
+#include <filesystem>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -77,7 +78,18 @@ addin::~addin()
 addin&
 addin::instance()
 {
-  return *addin_registry().front();
+  static auto ptr = []
+  {
+    // if registry is empty use default instance
+    if (addin_registry().empty()) {
+      static addin xll;
+      return &xll;
+    }
+    // otherwise use first add-in registered
+    else
+      return addin_registry().front();
+  }();
+  return *ptr;
 }
 
 std::string_view
@@ -100,22 +112,26 @@ addin::path()
 std::wstring_view
 addin::wpath()
 {
-  static auto path = []
+  // get full string path
+  static auto path = []() -> std::wstring
   {
+    // get path from Excel
     oper12 op;
     Excel12(xlGetName, op.value(), 0);
-    return op;
+    // copy to wstring because calling Excel12() during static object
+    // destruction is likely undefined behavior
+    // note: Excel string size is in first code point + not null-terminated
+    auto v = op.value();
+    return {&v->val.str[1], static_cast<unsigned>(v->val.str[0])};
   }();
-  // string size in first code point
-  return &path.value()->val.str[1];
+  // return view from conversion
+  return path;
 }
 
 std::string
-addin::info() const
+addin::long_name() const
 {
-  std::stringstream ss;
-  ss << "Accel add-in at 0x" << hex << reinterpret_cast<std::uintptr_t>(this);
-  return ss.str();
+  return std::filesystem::path{path()}.filename().string() + " dev";
 }
 
 void
@@ -130,19 +146,19 @@ addin::on_auto_free(const xloper12* /*op*/)
 
 extern "C" {
 
+// TODO: document more
 OA_XLL_EXPORT(xloper12*) xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
 {
-  // TODO: add try-catch for exceptions
   // coerced input from Excel + xlCoerce bitmask
   oper12 in;
   oper12 mask{xltypeInt};
   // coerce input using mask
   Excel12(xlCoerce, in.value(), 2, op, mask.value());
-  // if 1, return XLL name, otherwise return #VALUE!
+  // if 1, return XLL long name, otherwise return #VALUE!
   auto res = [&in]
   {
     if (in.value()->val.w == 1)
-      return oper12{addin::instance().info()};
+      return oper12{addin::instance().long_name()};
     else
       return oper12{xlerr::value};
   }();
@@ -169,21 +185,7 @@ OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
  */
 OA_XLL_EXPORT(int) xlAutoOpen() noexcept
 {
-  // if add-in registry is empty, no addin instance was constructed. this is an
-  // error, so pop up a message box to inform the user of such
-  if (addin_registry().empty()) {
-    // note: don't need to check return
-    MessageBoxA(
-      reinterpret_cast<HWND>(excel_window()),
-      "No Accel addin instance was registered.\n"
-      "\n"
-      "Excel will load the XLL but no functions will be available.",
-      "xlAutoOpen() error",
-      MB_ICONWARNING
-    );
-    return 1;
-  }
-  // if more than one, also an error
+  // if more than one instance registered this is an error
   if (addin_registry().size() > 1) {
     // note: don't need to check return
     MessageBoxA(

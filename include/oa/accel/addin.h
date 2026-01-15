@@ -113,7 +113,8 @@ public:
   /**
    * Return the singleton add-in instance loaded by Excel.
    *
-   * Behavior is undefined if no add-in instances have been registered.
+   * A reference to a default-constructed `addin` is returned if no
+   * user-defined add-in instances have been registered.
    */
   static addin& instance();
 
@@ -136,16 +137,16 @@ public:
   static std::wstring_view wpath();
 
   /**
-   * Return string information about the registered XLL add-in.
+   * Return the registered XLL add-in long name displayed in the add-in menu.
    *
    * The string returned by this function will be returned by the Accel
-   * `xlAddInManagerInfo12()` implementation. It should contain some info about
-   * the add-in, e.g. a human-readable name and version info.
+   * `xlAddInManagerInfo12()` implementation. It should contain the name of the
+   * add-in and optionally a version identifier. What is returned will shown as
+   * an entry in the Excel dialog that displays the list of available add-ins.
    *
-   * If not implemented a generic message identifying the XLL as a Accel add-in
-   * and the address of the `addin` instance will be returned.
+   * If not implemented `"<xll name>.xll dev"` is returned as the default.
    */
-  virtual std::string info() const;
+  virtual std::string long_name() const;
 
   /**
    * `xlAutoFree12()` action run before an XLL-allocated `XLOPER12` is freed.
