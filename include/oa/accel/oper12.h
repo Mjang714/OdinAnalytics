@@ -82,9 +82,9 @@ public:
   /**
    * Default ctor.
    *
-   * Constructs an empty `oper12` that does not own an `XLOPER12`.
+   * Constructs an `oper12` owning an `XLOPER12` of type `xltypeNil`.
    */
-  oper12() noexcept = default;
+  oper12();
 
   /**
    * Copy ctor.
@@ -238,14 +238,12 @@ public:
   /**
    * Return a `oper12` owning an `XLOPER12` of type `xltypeNil`.
    *
-   * It is recommended to use this or `missing()` for Excel C function interop.
+   * This has the same effect as default-constructing an `oper12`.
    */
   static oper12 nil();
 
   /**
    * Return a `oper12` owning an `XLOPER12` of type `xltypeMissing`.
-   *
-   * It is recommended to use this or `nil()` for Excel C function interop.
    */
   static oper12 missing();
 
@@ -267,7 +265,8 @@ public:
   /**
    * Indicate if the `oper12` owns a value.
    *
-   * This returns `true` when the `value_` pointer is not `nullptr`.
+   * This returns `true` when the `value_` pointer is not `nullptr`. The only
+   * case where `false` is returned is when a `oper12` is moved from.
    */
   operator bool() const noexcept;
 
@@ -341,6 +340,10 @@ private:
    * to free the `XLOPER12` data depending on its type. Otherwise, for the
    * `xltypeStr`, `xltypeMulti`, and `xltypeRef` types, it is assumed the
    * `XLOPER12` data is from Excel, so `Excel12(xlFree, ...)` is called.
+   *
+   * @warning Do *not* use statically allocated `oper12` instances that hold
+   *  string memory from Excel. `Excel12(xlFree, ...)` will be called during
+   *  static object destruction and behavior is undefined.
    */
   void destroy() noexcept;
 };

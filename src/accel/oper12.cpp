@@ -40,9 +40,9 @@ namespace {
 /**
  * Helper function to create a string `XLOPER12` from a character buffer.
  *
- * This copies the data and appropriately prepends the 2-byte length, which
- * must be 65535 or less, and appends the wide null terminator. The data must
- * be freed using `delete[]` or will be leaked.
+ * This copies the string data and appropriately prepends the 2-byte length,
+ * which must be 65535 or less. Note that the string is *not* null-terminated.
+ * The data must later be freed using `delete[]` or will be leaked.
  *
  * @tparam T Character type
  *
@@ -63,8 +63,8 @@ void to(xloper12* out, const T* buf, std::size_t length)
       std::to_string(max_len)
     };
   // allocate new wide character data. we need 1 starting wide char for the
-  // data length (excluding null) + 1 and 1 trailing null terminator
-  auto data = std::make_unique<WCHAR[]>(length + 2);
+  // data length (excluding null) + 1 (no null terminator)
+  auto data = std::make_unique<WCHAR[]>(length + 1);
   // write size
   data[0] = static_cast<WCHAR>(length);
   // widen characters as necessary (copy if WCHAR already)
@@ -74,8 +74,6 @@ void to(xloper12* out, const T* buf, std::size_t length)
     for (std::size_t i = 0u; i < length; i++)
       data[i + 1] = std::wcout.widen(buf[i]);
   }
-  // null-terminate
-  data[length + 1] = L'\0';
   // update XLOPER12 values
   out->val.str = data.release();
   out->xltype = xltypeStr;
@@ -100,8 +98,8 @@ xloper12* xloper12_copy(const xloper12* op)
   switch (res->xltype) {
   // string
   case xltypeStr: {
-    // Excel strings have size encoded in first character + are null terminated
-    auto len = op->val.str[0] + 2u;
+    // Excel strings have size encoded in first character
+    auto len = op->val.str[0] + 1u;
     auto buf = std::make_unique<XCHAR[]>(len);
     std::memcpy(buf.get(), op->val.str, sizeof(XCHAR) * len);
     // update res + release
@@ -127,8 +125,8 @@ xloper12* xloper12_copy(const xloper12* op)
       const auto& op_i = op->val.array.lparray[i];
       // handle strings
       if (op_i.xltype == xltypeStr) {
-        // again, Excel strings are null terminated with size in first char
-        auto slen = op_i.val.str[0] + 2u;
+        // again, Excel strings have size in first char
+        auto slen = op_i.val.str[0] + 1u;
         strs.push_back({i, std::make_unique<XCHAR[]>(slen)});
         std::memcpy(strs.back().second.get(), op_i.val.str, sizeof(XCHAR) * slen);
       }
@@ -191,6 +189,11 @@ void xloper12_free(xloper12* op) noexcept
 ////////////////////////////////////////////////////////////////////////////////
 // ctors + assignment + dtors                                                 //
 ////////////////////////////////////////////////////////////////////////////////
+
+oper12::oper12() : value_{new xloper12}
+{
+  value_->xltype = xltypeNil;
+}
 
 oper12::oper12(const oper12& other)
 {
@@ -333,17 +336,13 @@ oper12::oper12(const unsigned char* data, std::size_t size)
 oper12
 oper12::nil()
 {
-  oper12 res;
-  res.value_ = new xloper12;
-  res.value_->xltype = xltypeNil;
-  return res;
+  return {};
 }
 
 oper12
 oper12::missing()
 {
   oper12 res;
-  res.value_ = new xloper12;
   res.value_->xltype = xltypeMissing;
   return res;
 }
@@ -378,17 +377,16 @@ oper12::owning() const noexcept
 xloper12*
 oper12::release() noexcept
 {
-  // copy value_ and clear
-  auto res = value_;
-  value_ = nullptr;
   // if owning, set xlbitDLLFree
   if (owning_)
-    res->xltype |= xlbitDLLFree;
+    value_->xltype |= xlbitDLLFree;
   // otherwise, assume Excel owns the memory, and set xlbitXLFree if XLOPER12
   // type is one of the Excel types that require extra memory
   else if (needs_aux_memory(type()))
-    res->xltype |= xlbitXLFree;
-  // done
+    value_->xltype |= xlbitXLFree;
+  // copy value_, clear, and return
+  auto res = value_;
+  value_ = nullptr;
   return res;
 }
 

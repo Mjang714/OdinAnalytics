@@ -90,8 +90,9 @@ TEST_F(Oper12Test, MakeCStringTest)
   // TODO: add conversion for value inspection
   EXPECT_EQ(
     // note: subtract one from end(str) to avoid null terminator
-    (L"\013" + std::wstring{std::begin(str), std::end(str) - 1}),
-    std::wstring_view{val.value()->val.str}
+    (L"\013" + std::wstring{std::begin(str), std::end(str) - 1u}),
+    // note: use sizeof str because Excel string has prepended size
+    (std::wstring_view{val.value()->val.str, sizeof str})
   );
 }
 
@@ -109,7 +110,7 @@ TEST_F(Oper12Test, MakeStringTest)
   // Excel 12 uses wide strings and size is in first code point
   EXPECT_EQ(
     (L"\013" + std::wstring{str.begin(), str.end()}),
-    std::wstring_view{val.value()->val.str}
+    (std::wstring_view{val.value()->val.str, str.size() + 1u})
   );
 }
 
@@ -125,7 +126,10 @@ TEST_F(Oper12Test, MakeWstringTest)
   EXPECT_TRUE(val.owning());
   // TODO: add conversion for value inspection
   // Excel 12 wide string size is in first code point
-  EXPECT_EQ(L"\013" + str, std::wstring_view{val.value()->val.str});
+  EXPECT_EQ(
+    L"\013" + str,
+    (std::wstring_view{val.value()->val.str, str.size() + 1u})
+  );
 }
 
 /**
@@ -139,9 +143,10 @@ TEST_F(Oper12Test, CopyWStringTest)
   ASSERT_TRUE(v1.type() == v2.type());
   EXPECT_EQ(v1.owning(), v2.owning());
   // TODO: add conversion for value inspection
+  // note: Excel strings have size prepended into first character
   EXPECT_EQ(
-    std::wstring_view{v1.value()->val.str},
-    std::wstring_view{v2.value()->val.str}
+    (std::wstring_view{v1.value()->val.str, str.size() + 1u}),
+    (std::wstring_view{v2.value()->val.str, str.size() + 1u})
   );
 }
 
@@ -158,7 +163,10 @@ TEST_F(Oper12Test, MoveWStringTest)
   // v2 will have the contents
   ASSERT_TRUE(v2.type() == oa::accel::xltype::str);
   // TODO: add conversion for value inspection
-  EXPECT_EQ(L"\013" + str, v2.value()->val.str);
+  EXPECT_EQ(
+    L"\013" + str,
+    (std::wstring_view{v2.value()->val.str, str.size() + 1u})
+  );
 }
 
 /**
