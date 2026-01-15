@@ -77,6 +77,25 @@ TEST_F(Oper12Test, MakeDoubleTest)
 }
 
 /**
+ * Test that string literal construction works as expected.
+ */
+TEST_F(Oper12Test, MakeCStringTest)
+{
+  // note: using character array so we can use begin() and end()
+  constexpr const char str[] = "hello world";
+  oa::accel::oper12 val{str};
+  ASSERT_TRUE(val.type() == oa::accel::xltype::str) << "val is not a string";
+  // owns extra memory
+  EXPECT_TRUE(val.owning());
+  // TODO: add conversion for value inspection
+  EXPECT_EQ(
+    // note: subtract one from end(str) to avoid null terminator
+    (L"\013" + std::wstring{std::begin(str), std::end(str) - 1}),
+    std::wstring_view{val.value()->val.str}
+  );
+}
+
+/**
  * Test that `std::string` construction works as expected.
  */
 TEST_F(Oper12Test, MakeStringTest)

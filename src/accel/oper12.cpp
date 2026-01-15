@@ -23,6 +23,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -249,6 +250,8 @@ oper12::oper12(double val) : value_{new xloper12{}}
   value_->val.num = val;
   value_->xltype = xltypeNum;
 }
+
+oper12::oper12(const char* str) : oper12{std::string_view{str}} {}
 
 oper12::oper12(std::string_view str)
 {

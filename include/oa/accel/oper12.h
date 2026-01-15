@@ -152,6 +152,15 @@ public:
   /**
    * Ctor.
    *
+   * Constructs a string `XLOPER12` by copying from a null-terminated string.
+   *
+   * @param str Null-terminated buffer to copy from
+   */
+  oper12(const char* str);
+
+  /**
+   * Ctor.
+   *
    * Constructs a string `XLOPER12` by copying from a narrow string view.
    *
    * @param str String view to construct from
