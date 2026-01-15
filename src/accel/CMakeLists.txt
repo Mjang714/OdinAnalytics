@@ -10,6 +10,8 @@ if(XLLSDK_FOUND)
     )
     # XLL SDK dependency is private
     # TODO: refactor XLLSDK::xlcall32 to XLLSDK::SDK later
+    # TODO: add XLLSDK::SDK12 target in FindXLLSDK.cmake so we can compile
+    # XLCALL.CPP as a separate static library instead of #include'ing it
     target_link_libraries(oa_accel PRIVATE XLLSDK::xlcall32)
 else()
     message(STATUS "Skipping oa_accel (requires XLL SDK)")
