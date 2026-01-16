@@ -60,6 +60,14 @@ std::uintptr_t excel_window()
   return handle;
 }
 
+bool alert(std::string_view str)
+{
+  oper12 res;
+  oper12 message{str};
+  Excel12(xlcAlert, res.value(), 1, message.value());
+  return !!res.value()->val.xbool;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // addin                                                                      //
 ////////////////////////////////////////////////////////////////////////////////
@@ -192,16 +200,13 @@ OA_XLL_EXPORT(int) xlAutoOpen() noexcept
       reinterpret_cast<HWND>(excel_window()),
       // note: due to temporary lifetime rules string lives until end of the
       // enclosing full-expression (to the semicolon)
-      []
-      {
-        return (
-          std::to_string(addin_registry().size()) +
-          " Accel addin instances were registered.\n"
-          "\n"
-          "Only one Accel addin instance can be registered per XLL."
-        );
-      }()
-      .c_str(),
+      (
+        std::to_string(addin_registry().size()) +
+        " Accel addin instances were registered.\n"
+        "\n"
+        "Only one Accel addin instance can be registered per XLL."
+      )
+        .c_str(),
       "xlAutoOpen() error",
       MB_ICONWARNING
     );

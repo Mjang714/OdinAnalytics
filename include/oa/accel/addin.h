@@ -77,13 +77,12 @@ namespace accel {
     return (expr); \
   } \
   catch (const std::exception& exc) { \
-    /* note: mangling to reduce chances of shadowing */ \
-    oa::accel::oper12 safe_return_op_{exc.what()}; \
-    return safe_return_op_.release(); \
+    return oa::accel::oper12{exc.what()}.release(); \
   } \
   catch (...) { \
-    oa::accel::oper12 safe_return_op_{"Unknown C++ exception"}; \
-    return safe_return_op_.release()
+    return oa::accel::oper12{"Unknown C++ exception"}.release()
+
+// TODO: consider moving Excel12() commands into a different header
 
 /**
  * Return a handle that corresponds to the top-level Excel window.
@@ -91,6 +90,19 @@ namespace accel {
  * This should be cast to `HWND` as appropriate with `reinterpret_cast`.
  */
 std::uintptr_t excel_window();
+
+/**
+ * Display an informational dialog box using `xlcAlert`.
+ *
+ * This uses a type 2 alert box which is informational and only has an "OK"
+ * button for the user to click. `true` is always returned.
+ *
+ * @note This function is useful for simple alerts but does not offer as much
+ *  functionality as the `MessageBoxA()` Win32 function.
+ *
+ * @param str Message to display in the alert
+ */
+bool alert(std::string_view str);
 
 /**
  * Class representing the overall state of an implemented XLL add-in.
@@ -162,7 +174,18 @@ public:
   virtual void on_auto_free(const xloper12* op);
 
 protected:
+  /**
+   * Default ctor.
+   *
+   * This is protected as users are not allowed to construct base instances.
+   */
   addin();
+
+  /**
+   * Dtor.
+   *
+   * This is protected to prevent manual destruction through base pointers.
+   */
   virtual ~addin();
 };
 
