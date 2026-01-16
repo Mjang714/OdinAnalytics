@@ -138,7 +138,8 @@ set_target_properties(
 # define XLCALL2012 target + SDK12 IMPORTED targets for Excel12() + Excel12v()
 add_library(XLCALL2012 STATIC "${_xllsdk_root}/src/xlcall.cpp")
 add_library(XLLSDK::SDK12 ALIAS XLCALL2012)
-target_link_libraries(XLCALL2012 PUBLIC XLLSDK::SDK)
+# TODO: refactor to XLLSDK::SDK when FindXLLSDK.cmake is updated
+target_link_libraries(XLCALL2012 PUBLIC XLLSDK::xlcall32)
 # never use unity build for XLCALL2012 to make it clear what is being built
 set_target_properties(XLCALL2012 PROPERTIES UNITY_BUILD FALSE)
 # mark as located + set XLLSDK_LIBRARIES
