@@ -9,10 +9,11 @@ if(XLLSDK_FOUND)
         $<INSTALL_INTERFACE:include>
     )
     # XLL SDK dependency is private
-    # TODO: refactor XLLSDK::xlcall32 to XLLSDK::SDK later
-    # TODO: add XLLSDK::SDK12 target in FindXLLSDK.cmake so we can compile
-    # XLCALL.CPP as a separate static library instead of #include'ing it
-    target_link_libraries(oa_accel PRIVATE XLLSDK::xlcall32)
+    target_link_libraries(oa_accel PRIVATE XLLSDK::SDK12)
+    # use d postfix for debug builds like other libraries
+    set_target_properties(oa_accel PROPERTIES DEBUG_POSTFIX d)
+    # install rule for Accel library (using static defaults)
+    install(TARGETS oa_accel EXPORT odin_exports ARCHIVE COMPONENT Development)
 else()
     message(STATUS "Skipping oa_accel (requires XLL SDK)")
 endif()
