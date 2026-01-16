@@ -4,7 +4,9 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 add_library(
     oa_derived_time
     # TODO: maybe too much directory nesting
-    cashflow_gen/cashflow_gen.cpp date_formula/date_formula.cpp
+    cashflow_gen/cashflow_gen.cpp
+    date_formula/business_date_formula.cpp
+    date_formula/date_formula.cpp
 )
 target_include_directories(
     oa_derived_time PUBLIC

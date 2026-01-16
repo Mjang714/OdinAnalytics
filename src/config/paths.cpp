@@ -39,29 +39,54 @@
 namespace oa {
 namespace config {
 
+#ifdef _WIN32
+namespace {
+
+// DLL module handle. we set this on process attach in DllMain() so we don't
+// need to call GetModuleHandleA() for the config DLL's module handle
+HMODULE module_handle;
+
+}  // namespace
+
+}  // namespace config
+}  // namespace oa
+
+/**
+ * DLL entry point.
+ *
+ * Currently this is solely provided for `module_handle` initialization so we
+ * don't need to call `GetModuleHandleA()` to get the DLL module handle. This
+ * avoids needing to hardcode the DLL name into the source code.
+ *
+ * @note `DllMain()` need not have C linkage but must be in global namespace.
+ *
+ * @param hmod DLL module handle
+ * @param reason Reason for calling `DllMain()`
+ */
+BOOL WINAPI DllMain(HINSTANCE hmod, DWORD reason, LPVOID /*reserved*/)
+{
+  switch (reason) {
+  // on process attach we initialize module_handle
+  case DLL_PROCESS_ATTACH:
+    oa::config::module_handle = hmod;
+    break;
+  // in all other cases we don't need to do anything
+  default:
+    break;
+  }
+  return TRUE;
+}
+
+namespace oa {
+namespace config {
+#endif  // _WIN32
+
 std::filesystem::path library_path()
 {
 #if defined(_WIN32)
-  // get module handle for DLL
-  // note: when using the debug C runtime for debug builds we currently opt to
-  // build the library with a "d" suffix. this can be detected by checking if
-  // _DEBUG is defined which lets us correctly conditionally compile
-  // TODO: if we want to avoid hardcoding these names we can included a header
-  // configured by CMake that would have the DLL name
-#if defined(_DEBUG)
-  auto mod = GetModuleHandleA("oa_configd");
-#else
-  auto mod = GetModuleHandleA("oa_config");
-#endif  // _DEBUG
-  if (!mod)
-    throw std::system_error{
-      // note: cast required to avoid narrowing conversion from DWORD
-      {static_cast<int>(GetLastError()), std::system_category()},
-      OA_PRETTY_FUNCTION_NAME + std::string{": unable to get module handle"}
-    };
-  // get absolute path name
+  // get DLL absolute path name from module handle
   char name[MAX_PATH];
-  auto name_len = GetModuleFileNameA(mod, name, MAX_PATH);
+  auto name_len = GetModuleFileNameA(module_handle, name, MAX_PATH);
   // handle any errors
   if (!name_len)
     throw std::system_error{

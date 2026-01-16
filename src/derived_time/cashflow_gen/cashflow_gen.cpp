@@ -1,114 +1,269 @@
 #include "cashflow_gen.h"
 
+#include <algorithm>
+#include <stdexcept>
+#include <vector>
+
+// TODO: centralize includes
+#include "derived_time/cashflow_gen/cashflow_struct.h"
+#include "derived_time/derived_time_enums.h"
+#include "derived_time/date_formula/business_date_formula.h"
+#include "helpers/utils.h"
+#include "time/date_adjust/date_adjust_base.h"
+#include "time/day_count/day_counter_factory.h"
+#include "time/tenor.h"
 
 namespace oa::derived_time {
 
+////////////////////////////////////////////////////////////////////////////////
+// CashflowGen::Options                                                       //
+////////////////////////////////////////////////////////////////////////////////
+
+// see Options() declaration for why an explicit definition is required
+CashflowGen::Options::Options() noexcept {}
+
+Currency
+CashflowGen::Options::currency() const noexcept
+{
+	return currency_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::currency(Currency ccy) noexcept
+{
+	currency_ = ccy;
+	return *this;
+}
+
+DateDirection
+CashflowGen::Options::date_direction() const noexcept
+{
+	return date_dir_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::date_direction(DateDirection dir) noexcept
+{
+	date_dir_ = dir;
+	return *this;
+}
+
+CashflowType
+CashflowGen::Options::cashflow_type() const noexcept
+{
+	return cashflow_type_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::cashflow_type(CashflowType type) noexcept
+{
+	cashflow_type_ = type;
+	return *this;
+}
+
+ResetDirection
+CashflowGen::Options::reset_direction() const noexcept
+{
+	return reset_dir_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::reset_direction(ResetDirection dir) noexcept
+{
+	reset_dir_ = dir;
+	return *this;
+}
+
+StubType
+CashflowGen::Options::stub_type() const noexcept
+{
+	return stub_type_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::stub_type(StubType type) noexcept
+{
+	stub_type_ = type;
+	return *this;
+}
+
+const BusinessDateFormula&
+CashflowGen::Options::start_adjustment() const noexcept
+{
+	return start_adj_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::start_adjustment(BusinessDateFormula adj)
+{
+	start_adj_ = std::move(adj);
+	return *this;
+}
+
+const BusinessDateFormula&
+CashflowGen::Options::end_adjustment() const noexcept
+{
+	return end_adj_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::end_adjustment(BusinessDateFormula adj)
+{
+	end_adj_ = std::move(adj);
+	return *this;
+}
+
+const BusinessDateFormula&
+CashflowGen::Options::pay_adjustment() const noexcept
+{
+	return pay_adj_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::pay_adjustment(BusinessDateFormula adj)
+{
+	pay_adj_ = std::move(adj);
+	return *this;
+}
+
+const BusinessDateFormula&
+CashflowGen::Options::fix_adjustment() const noexcept
+{
+	return fix_adj_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::fix_adjustment(BusinessDateFormula adj)
+{
+	fix_adj_ = std::move(adj);
+	return *this;
+}
+
+time::Date
+CashflowGen::Options::stub_date() const
+{
+	return stub_date_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::stub_date(time::Date date)
+{
+	stub_date_ = date;
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CashFlowGen                                                                //
+////////////////////////////////////////////////////////////////////////////////
 
 	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
-		const oa::time::Date& start_date,
-		const oa::time::Date& mat_date,
-		const oa::derived_time::Frequency reset_freq,
+		const time::Date& start_date,
+		const time::Date& mat_date,
+		const Frequency reset_freq,
 		const double notional,
 		const double rate,
-		const oa::time::DayCountRule day_count_rule,
-		const oa::derived_time::Currency cf_curr, 
-		const oa::derived_time::DateDirection date_dir,
-		const oa::derived_time::CashflowType cf_type,
-		const oa::derived_time::ResetDirection rest_dir,
-		const oa::derived_time::StubType& stub_type,
-		const std::optional<const oa::derived_time::DateFormula>& start_date_adj,
-		const std::optional<const oa::derived_time::DateFormula>& end_date_adj,
-		const std::optional<const oa::derived_time::DateFormula>& payment_date_adj,
-		const std::optional<const oa::derived_time::DateFormula>& fixing_date_adj,
-		const std::optional<oa::time::Date>& stub_date
-	) {
+		const time::DayCountRule day_count_rule,
+		const Options& opts)
+	{
 		std::vector<CashflowStruct> cashflows{};
 
-		std::vector<oa::time::Date> unadjusted_start_dates{};
-		std::vector<oa::time::Date> unadjusted_end_dates{};
-
-		
+		std::vector<time::Date> unadjusted_start_dates{};
+		std::vector<time::Date> unadjusted_end_dates{};
 
 		auto tenor_pair = MapResetFreqEnumToTenor(reset_freq).GetValues();
 		auto time_length = tenor_pair.first;
 		auto tenor_enum = tenor_pair.second;
 
-		if (date_dir == deriv_time::DateDirection::kForward) {
+		if (opts.date_direction() == DateDirection::kForward) {
 			auto curr_start_date = start_date;
 			auto total_length = time_length;
 			while (curr_start_date < mat_date) {
 
 				if (curr_start_date < mat_date) {
 					unadjusted_start_dates.emplace_back(curr_start_date);
-					unadjusted_end_dates.emplace_back(curr_start_date.AddTenor(oa::time::Tenor(time_length, tenor_enum)));
+					unadjusted_end_dates.emplace_back(curr_start_date.AddTenor({time_length, tenor_enum}));
 				}
-				curr_start_date = start_date.AddTenor(oa::time::Tenor(total_length, tenor_enum));
+				curr_start_date = start_date.AddTenor({total_length, tenor_enum});
 				total_length += time_length;
 			}
 		}
 
 		else {
-			
 			auto curr_end_date = mat_date;
 			auto total_length = -time_length;
 			while (curr_end_date > start_date) {
 				if (curr_end_date > start_date) {
 					unadjusted_end_dates.emplace_back(curr_end_date);
-					unadjusted_start_dates.emplace_back(curr_end_date.AddTenor(oa::time::Tenor(-time_length, tenor_enum)));
+					unadjusted_start_dates.emplace_back(curr_end_date.AddTenor({-time_length, tenor_enum}));
 				}
-				curr_end_date = mat_date.AddTenor(oa::time::Tenor(total_length, tenor_enum));
+				curr_end_date = mat_date.AddTenor({total_length, tenor_enum});
 				total_length -= time_length;
 			}
-			//this ensrue that the cashflows dates are in the same chonological order.
+			//this ensure that the cashflows dates are in the same chonological order.
 			std::reverse(unadjusted_start_dates.begin(), unadjusted_start_dates.end());
 			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
+		//normally we dont insert in the front but this is one time operation so it should be ok maybe a good idea to crate a private static function and move this logic there but not sure as it would mutate the unadj_starta and unadj_end vectors
 
-		if (stub_type == deriv_time::StubType::kShortFirst && date_dir == deriv_time::DateDirection::kBackward) {
-			//will fill out later to deal with short first stub
-		}
-
-		else if (stub_type == deriv_time::StubType::kLongFirst && date_dir == deriv_time::DateDirection::kBackward) {
-			//will fill out later to deal with short last stub
-
-		}
-
-		else if (stub_type == deriv_time::StubType::kShortLast && date_dir == deriv_time::DateDirection::kForward) {
-			//will fill out later to deal with short last stub
-		}
-
-		else {
-			//this case is stub_type == deriv_time::StubType::kLongLast && date_dir == deriv_time::DateDirection::kForward)
+		// stub adjustment logic
+		// TODO: handle invalid combinations of stub type + date direction
+		switch (opts.date_direction()) {
+		// backwards date direction
+		case DateDirection::kBackward:
+			switch (opts.stub_type()) {
+			case StubType::kLongFirst:
+				unadjusted_start_dates.erase(unadjusted_start_dates.begin());
+				unadjusted_end_dates.erase(unadjusted_end_dates.begin());
+				[[fallthrough]];
+			case StubType::kShortFirst:
+				unadjusted_start_dates.front() = opts.stub_date().value_or(start_date);
+				break;
+			default:
+				break;
+			}
+			break;
+		// forward date direction
+		case DateDirection::kForward:
+			switch (opts.stub_type()) {
+			case StubType::kLongLast:
+				unadjusted_end_dates.pop_back();
+				unadjusted_start_dates.pop_back();
+				[[fallthrough]];
+			case StubType::kShortLast:
+				unadjusted_end_dates.back() = opts.stub_date().value_or(mat_date);
+				break;
+			default:
+				break;
+			}
+			break;
 		}
 
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {
-			auto day_count = oa::time::DayCounterFactory::GenerateDayCounter(day_count_rule);
+			auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
 			CashflowStruct cf{};
 			cf.unadj_start_date = unadjusted_start_dates[i];
 			cf.unadj_end_date = unadjusted_end_dates[i];
-			cf.start_date = (start_date_adj != std::nullopt) ? start_date_adj->Adjust(cf.unadj_start_date) : cf.unadj_start_date;
-			cf.end_date = (end_date_adj != std::nullopt) ? end_date_adj->Adjust(cf.unadj_end_date) : cf.unadj_end_date;
-			cf.payment_date = (payment_date_adj != std::nullopt) ? payment_date_adj->Adjust(cf.end_date) : cf.end_date;
+			cf.start_date = cf.unadj_start_date + opts.start_adjustment();
+			cf.end_date = cf.unadj_end_date + opts.end_adjustment();
+			cf.payment_date = cf.end_date + opts.pay_adjustment();
 			cf.notional = notional;
 			cf.rate = rate;
 			cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-			cf.cf_type = cf_type;
+			cf.cf_type = opts.cashflow_type();
 			cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
 			cf.cashflow_amount = notional * (rate * cf.day_count_fraction);
-			cf.cf_curr = cf_curr;
+			cf.cf_curr = opts.currency();
 
-			if (fixing_date_adj != std::nullopt) {
-				if(rest_dir == oa::derived_time::ResetDirection::kAdvance) {
-					cf.fixing_date = fixing_date_adj->Adjust(cf.start_date);
-				}
-				else {
-					cf.fixing_date = fixing_date_adj->Adjust(cf.end_date);
-				}
-			} 
-			else {
+			// no fixing adjustment -- use start date
+			if (!opts.fix_adjustment())
 				cf.fixing_date = cf.start_date;
-			}
+			// otherwise, if advance reset, adjust start date
+			else if (opts.reset_direction() == ResetDirection::kAdvance)
+				cf.fixing_date = cf.start_date + opts.fix_adjustment();
+			// otherwise, adjust end date
+			else
+				cf.fixing_date = cf.end_date + opts.fix_adjustment();
 			// using emplace_back and std::move though not sure if it is necessary here
 			cashflows.emplace_back(std::move(cf));
 		}
@@ -117,24 +272,25 @@ namespace oa::derived_time {
 		CashflowStruct cf(cashflows.back());
 		cf.cashflow_amount = notional;
 		cf.rate = 1.0;
-		cf.cf_type = deriv_time::CashflowType::kPrincipal;
+		cf.cf_type = CashflowType::kPrincipal;
 		cashflows.emplace_back(std::move(cf));
 		// Implementation logic to generate cashflows goes here
 		return cashflows;
 
 	}
 
-	oa::time::Tenor CashflowGen::MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq) 
+	time::Tenor CashflowGen::MapResetFreqEnumToTenor(const Frequency reset_freq)
 	{
-		const static std::unordered_map<oa::derived_time::Frequency, oa::time::Tenor> reset_freq_enum_to_tenor{
-			{oa::derived_time::Frequency::kAnnual, oa::time::Tenor("1Y")},
-			{oa::derived_time::Frequency::kSemiAnnual,oa::time::Tenor("6M")},
-			{oa::derived_time::Frequency::kQuarterly, oa::time::Tenor("3M")},
-			{oa::derived_time::Frequency::kMonthly, oa::time::Tenor("1M")},
-			{oa::derived_time::Frequency::kWeekly, oa::time::Tenor("1W")},
-			{oa::derived_time::Frequency::kDaily, oa::time::Tenor("1D")}
+		const static std::unordered_map<Frequency, time::Tenor> reset_freq_enum_to_tenor{
+			{Frequency::kAnnual, time::Tenor("1Y")},
+			{Frequency::kSemiAnnual,time::Tenor("6M")},
+			{Frequency::kQuarterly, time::Tenor("3M")},
+			{Frequency::kMonthly, time::Tenor("1M")},
+			{Frequency::kWeekly, time::Tenor("1W")},
+			{Frequency::kDaily, time::Tenor("1D")}
 		};
 
 		return reset_freq_enum_to_tenor.at(reset_freq);
 	}
+
 }  // namespace oa::derived_time

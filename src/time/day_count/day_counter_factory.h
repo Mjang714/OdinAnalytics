@@ -1,15 +1,11 @@
 #ifndef ODINANLYTICS_TIME_DAYCOUNTERFACTORY_H
 #define ODINANLYTICS_TIME_DAYCOUNTERFACTORY_H
 
+#include <memory>
+
 #include "oa/dllexport.h"
-#include "time/date.h"
 #include "time/day_count/day_count_base.h"
-#include "time/day_count/day_count_act_act.h"
-#include "time/day_count/day_count_act_365_fixed.h"
-#include "time/day_count/day_count_30_360e_isda.h"
-#include "time/day_count/day_count_30_360_bond_basis.h"
-#include "time/day_count/day_count_30_e_360_eurobond_basis.h"
-#include "time/day_count/day_count_act_360.h"
+#include "time/time_enums.h"
 
 namespace oa::time {
 
