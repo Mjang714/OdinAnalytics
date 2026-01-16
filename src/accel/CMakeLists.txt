@@ -14,6 +14,8 @@ if(XLLSDK_FOUND)
     set_target_properties(oa_accel PROPERTIES DEBUG_POSTFIX d)
     # install rule for Accel library (using static defaults)
     install(TARGETS oa_accel EXPORT odin_exports ARCHIVE COMPONENT Development)
+    # install PDB for Debug config for downstream
+    oa_pdb_install(oa_accel CONFIGURATIONS Debug COMPONENT Development)
 else()
     message(STATUS "Skipping oa_accel (requires XLL SDK)")
 endif()
