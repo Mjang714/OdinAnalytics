@@ -8,7 +8,6 @@
 #ifndef OA_ACCEL_ADDIN_H_
 #define OA_ACCEL_ADDIN_H_
 
-#include <cstdint>
 #include <string>
 #include <string_view>
 
@@ -81,28 +80,6 @@ namespace accel {
   } \
   catch (...) { \
     return oa::accel::oper12{"Unknown C++ exception"}.release()
-
-// TODO: consider moving Excel12() commands into a different header
-
-/**
- * Return a handle that corresponds to the top-level Excel window.
- *
- * This should be cast to `HWND` as appropriate with `reinterpret_cast`.
- */
-std::uintptr_t excel_window();
-
-/**
- * Display an informational dialog box using `xlcAlert`.
- *
- * This uses a type 2 alert box which is informational and only has an "OK"
- * button for the user to click. `true` is always returned.
- *
- * @note This function is useful for simple alerts but does not offer as much
- *  functionality as the `MessageBoxA()` Win32 function.
- *
- * @param str Message to display in the alert
- */
-bool alert(std::string_view str);
 
 /**
  * Class representing the overall state of an implemented XLL add-in.

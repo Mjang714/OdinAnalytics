@@ -13,7 +13,6 @@
 #include <Windows.h>
 #include <XLCALL.H>
 
-#include <cstdint>
 #include <filesystem>
 #include <iostream>
 #include <sstream>
@@ -21,6 +20,7 @@
 #include <string_view>
 #include <vector>
 
+#include "oa/accel/call.h"
 #include "oa/accel/oper12.h"
 #include "oa/string.h"
 
@@ -44,29 +44,6 @@ auto& addin_registry()
 }
 
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// functions                                                                  //
-////////////////////////////////////////////////////////////////////////////////
-
-std::uintptr_t excel_window()
-{
-  static auto handle = []
-  {
-    oper12 res;
-    Excel12(xlGetHwnd, res.value(), 0);
-    return static_cast<std::uintptr_t>(res.value()->val.w);
-  }();
-  return handle;
-}
-
-bool alert(std::string_view str)
-{
-  oper12 res;
-  oper12 message{str};
-  Excel12(xlcAlert, res.value(), 1, message.value());
-  return !!res.value()->val.xbool;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // addin                                                                      //
@@ -154,7 +131,11 @@ addin::on_auto_free(const xloper12* /*op*/)
 
 extern "C" {
 
-// TODO: document more
+/**
+ * Excel callback run the first time the add-in manager is used in Excel.
+ *
+ * This provides the add-in long name to display in the add-in manager dialog.
+ */
 OA_XLL_EXPORT(xloper12*) xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
 {
   // coerced input from Excel + xlCoerce bitmask
@@ -175,7 +156,31 @@ OA_XLL_EXPORT(xloper12*) xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
 }
 
 /**
+ * Excel callback run whenever the add-in is activated via the add-in manager.
+ *
+ * This is not run when Excel starts up and initializes the add-in itself.
+ */
+OA_XLL_EXPORT(int) xlAutoAdd() noexcept
+{
+  alert(addin::instance().long_name() + " activated!");
+  return 1;
+}
+
+/**
+ * Excel callback run whenever the add-in is deactivated via add-in manager.
+ *
+ * This is not run when Excel is shutting down and deactivating add-ins.
+ */
+OA_XLL_EXPORT(int) xlAutoRemove() noexcept
+{
+  alert(addin::instance().long_name() + " deactivated!");
+  return 1;
+}
+
+/**
  * Excel callback to deallocate any `oper12` released back to Excel.
+ *
+ * This calls the customization hook for user add-ins before `xloper12_free()`.
  */
 OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
 {
@@ -193,28 +198,24 @@ OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
  */
 OA_XLL_EXPORT(int) xlAutoOpen() noexcept
 {
-  // if more than one instance registered this is an error
-  if (addin_registry().size() > 1) {
-    // note: don't need to check return
-    MessageBoxA(
-      reinterpret_cast<HWND>(excel_window()),
-      // note: due to temporary lifetime rules string lives until end of the
-      // enclosing full-expression (to the semicolon)
+  // if more than one instance registered warn the user
+  if (addin_registry().size() > 1)
+    alert(
       (
-        std::to_string(addin_registry().size()) +
-        " Accel addin instances were registered.\n"
+        "Warning:\n"
         "\n"
-        "Only one Accel addin instance can be registered per XLL."
+        "(from " + addin::instance().long_name() + ")\n"
+        "\n"
+        "More than one Accel addin instance registered.\n"
+        "Only one instance may be registered per XLL."
       )
-        .c_str(),
-      "xlAutoOpen() error",
-      MB_ICONWARNING
+      .c_str()
     );
-    return 1;
-  }
-  // TODO: fill in
+  // TODO: fill in with function/macro registration + UI customizations
   return 1;
 }
+
+// TODO: add xlAutoClose() to unregister and undo customizations
 
 }  // extern "C"
 
