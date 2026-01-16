@@ -135,10 +135,16 @@ set_target_properties(
     XLLSDK::xlcall32 PROPERTIES
     IMPORTED_LOCATION "${XLLSDK_XLCALL32}"
 )
+# define XLCALL2012 target + SDK12 IMPORTED targets for Excel12() + Excel12v()
+add_library(XLCALL2012 STATIC "${_xllsdk_root}/src/xlcall.cpp")
+add_library(XLLSDK::SDK12 ALIAS XLCALL2012)
+target_link_libraries(XLCALL2012 PUBLIC XLLSDK::SDK)
+# never use unity build for XLCALL2012 to make it clear what is being built
+set_target_properties(XLCALL2012 PROPERTIES UNITY_BUILD FALSE)
 # mark as located + set XLLSDK_LIBRARIES
-# note: usually never need to pass xlcall32 to COMPONENTS
-set(XLLSDK_xlcall32_FOUND TRUE)
-set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}")
+# note: usually never need to pass SDK to COMPONENTS
+set(XLLSDK_SDK_FOUND TRUE)
+set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}" XLLSDK::SDK12)
 
 # get framework library source directory
 set(_xllsdk_frmwrk_srcdir "${_xllsdk_root}/samples/framewrk")
