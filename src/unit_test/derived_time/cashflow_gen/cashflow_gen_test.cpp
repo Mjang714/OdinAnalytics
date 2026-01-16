@@ -51,7 +51,7 @@ namespace
 			int biz_fix_days;
 			oa::time::AdjRule adjustment_rule_pay;
 			oa::time::AdjRule adjustment_rule_fix;
-		
+
 			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base{
 				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
@@ -175,7 +175,7 @@ namespace
 				notional = 1000000.0;
 				rate = 0.05; //5%
 				day_cnt_rule = oa::time::DayCountRule::kACT_360;
-				
+
 			}
 			virtual void TearDown() override
 			{
@@ -197,8 +197,8 @@ namespace
 			notional,
 			rate,
 			day_cnt_rule,
-			oa::derived_time::Currency::kUSD,
-			oa::derived_time::DateDirection::kForward
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kForward)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
@@ -218,8 +218,8 @@ namespace
 			notional,
 			rate,
 			day_cnt_rule,
-			oa::derived_time::Currency::kUSD,
-			oa::derived_time::DateDirection::kBackward
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kBackward)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
@@ -234,11 +234,9 @@ namespace
 			notional,
 			rate,
 			day_cnt_rule,
-			oa::derived_time::Currency::kUSD,
-			oa::derived_time::DateDirection::kBackward,
-			oa::derived_time::CashflowType::kFixed,
-			oa::derived_time::ResetDirection::kAdvance,
-			oa::derived_time::StubType::kShortFirst
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kBackward)
+				.stub_type(oa::derived_time::StubType::kShortFirst)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_short_first));
 	}
@@ -253,11 +251,9 @@ namespace
 			notional,
 			rate,
 			day_cnt_rule,
-			oa::derived_time::Currency::kUSD,
-			oa::derived_time::DateDirection::kBackward,
-			oa::derived_time::CashflowType::kFixed,
-			oa::derived_time::ResetDirection::kAdvance,
-			oa::derived_time::StubType::kLongFirst
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kBackward)
+				.stub_type(oa::derived_time::StubType::kLongFirst)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_long_first));
 	}
@@ -273,11 +269,9 @@ namespace
 			notional,
 			rate,
 			day_cnt_rule,
-			oa::derived_time::Currency::kUSD,
-			oa::derived_time::DateDirection::kForward,
-			oa::derived_time::CashflowType::kFixed,
-			oa::derived_time::ResetDirection::kAdvance,
-			oa::derived_time::StubType::kShortLast
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kForward)
+				.stub_type(oa::derived_time::StubType::kShortLast)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_short_last));
 	}
@@ -293,11 +287,9 @@ namespace
 			notional,
 			rate,
 			day_cnt_rule,
-			oa::derived_time::Currency::kUSD,
-			oa::derived_time::DateDirection::kForward,
-			oa::derived_time::CashflowType::kFixed,
-			oa::derived_time::ResetDirection::kAdvance,
-			oa::derived_time::StubType::kLongLast
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kForward)
+				.stub_type(oa::derived_time::StubType::kLongLast)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_long_last));
 	}
@@ -315,22 +307,16 @@ namespace
 			notional,
 			rate,
 			day_cnt_rule,
-			oa::derived_time::Currency::kUSD,
-			oa::derived_time::DateDirection::kForward,
-			oa::derived_time::CashflowType::kFixed,
-			oa::derived_time::ResetDirection::kAdvance,
-			oa::derived_time::StubType::kNone,
-			std::nullopt,
-			std::nullopt,
-			oa::derived_time::BusinessDateFormula(biz_pay_days, pay_calendar),
-			oa::derived_time::BusinessDateFormula(biz_fix_days, fix_calendar)
-
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kForward)
+				.pay_adjustment({biz_pay_days, pay_calendar})
+				.fix_adjustment({biz_fix_days, fix_calendar})
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_fix_pay_adj));
 	}
 
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsBkwdTestWithPayFixAdj)
-	{	
+	{
 		PopulateFixedCashflows(fixed_cf_fix_pay_adj, day_cnt_rule,
 			oa::derived_time::BusinessDateFormula(biz_pay_days, pay_calendar),
 			oa::derived_time::BusinessDateFormula(biz_fix_days, fix_calendar));
@@ -341,17 +327,12 @@ namespace
 			notional,
 			rate,
 			day_cnt_rule,
-			oa::derived_time::Currency::kUSD,
-			oa::derived_time::DateDirection::kBackward,
-			oa::derived_time::CashflowType::kFixed,
-			oa::derived_time::ResetDirection::kAdvance,
-			oa::derived_time::StubType::kNone,
-			std::nullopt,
-			std::nullopt,
-			oa::derived_time::BusinessDateFormula(biz_pay_days, pay_calendar),
-			oa::derived_time::BusinessDateFormula(biz_fix_days, fix_calendar)
-
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kBackward)
+				.pay_adjustment({biz_pay_days, pay_calendar})
+				.fix_adjustment({biz_fix_days, fix_calendar})
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_fix_pay_adj));
 	}
-}
+
+}  // namespace
