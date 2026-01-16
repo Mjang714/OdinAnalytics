@@ -16,7 +16,16 @@ cmake_minimum_required(VERSION 3.21)
 #
 #   XLLSDK::SDK             Target for linking against xlcall32.lib
 #
-# On a typical Excel 2013 XLL SDK download there is a SAMPLES\FRAMEWRK
+# Furthermore, using the SRC\XLCALL.CPP source file provided since the 2007
+# Excel XLL SDK, the following CMake ALIAS static library target is provided:
+#
+#   XLLSDK::SDK12           Target for linking against xlcall32.lib and the
+#                           Excel12() and Excel12v() definitions in XLCALL.CPP
+#
+# The SDK12 target is an alias to the XLCALL2012 static library target that
+# will be added to the calling project's build tree for simpler code reuse.
+#
+# A typical Excel 2013 XLL SDK install will also provide a SAMPLES\FRAMEWRK
 # directory for the frmwrk32 library. If this directory exists the following
 # CMake ALIAS static library target will be defined if requested:
 #
@@ -40,13 +49,13 @@ cmake_minimum_required(VERSION 3.21)
 #
 # Example:
 #
-#   # require xlcall32.lib
+#   # require xlcall32.lib, XLCALL.CPP
 #   find_package(XLLSDK 15.0 REQUIRED)
 #
-#   # require xlcall32.lib, frmwrk32.lib
+#   # require xlcall32.lib, XLCALL.CPP, frmwrk32.lib
 #   find_package(XLLSDK 15.0 REQUIRED COMPONENTS Framework)
 #
-#   # require xlcall32.lib, frmwrk32.lib, generic.xll
+#   # require xlcall32.lib, XLCALL.CPP, frmwrk32.lib, generic.xll
 #   find_package(XLLSDK 15.0 REQUIRED COMPONENTS Framework Generic)
 #
 
@@ -144,10 +153,16 @@ set_target_properties(
     XLLSDK::SDK PROPERTIES
     IMPORTED_LOCATION "${XLLSDK_XLCALL32}"
 )
+# define XLCALL2012 target + SDK12 IMPORTED targets for Excel12() + Excel12v()
+add_library(XLCALL2012 STATIC "${_xllsdk_root}/src/xlcall.cpp")
+add_library(XLLSDK::SDK12 ALIAS XLCALL2012)
+target_link_libraries(XLCALL2012 PUBLIC XLLSDK::SDK)
+# never use unity build for XLCALL2012 to make it clear what is being built
+set_target_properties(XLCALL2012 PROPERTIES UNITY_BUILD FALSE)
 # mark as located + set XLLSDK_LIBRARIES
 # note: usually never need to pass SDK to COMPONENTS
 set(XLLSDK_SDK_FOUND TRUE)
-set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}")
+set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}" XLLSDK::SDK12)
 
 # get framework library source directory
 set(_xllsdk_frmwrk_srcdir "${_xllsdk_root}/samples/framewrk")
