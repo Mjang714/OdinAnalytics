@@ -300,6 +300,8 @@ public:
 
   /**
    * Return the type enumeration corresponding to the `XLOPER12` type.
+   *
+   * Behavior is undefined if called on a moved-from `oper12`.
    */
   xltype type() const noexcept;
 
