@@ -184,9 +184,8 @@ OA_XLL_EXPORT(int) xlAutoRemove() noexcept
  */
 OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
 {
-  auto& xll = addin::instance();
   // pre-free event
-  xll.on_auto_free(op);
+  addin::instance().on_auto_free(op);
   // note: xlbitDLLFree should already be set
   xloper12_free(op);
 }
