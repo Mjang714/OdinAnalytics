@@ -205,7 +205,6 @@ CashflowGen::Options::stub_date(time::Date date)
 		}
 
 
-		//normally we dont insert in the front but this is one time operation so it should be ok maybe a good idea to crate a private static function and move this logic there but not sure as it would mutate the unadj_starta and unadj_end vectors
 		StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
 
 
