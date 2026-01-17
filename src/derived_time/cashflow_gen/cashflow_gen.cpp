@@ -204,40 +204,9 @@ CashflowGen::Options::stub_date(time::Date date)
 			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
-		//normally we dont insert in the front but this is one time operation so it should be ok maybe a good idea to crate a private static function and move this logic there but not sure as it would mutate the unadj_starta and unadj_end vectors
 
-		// stub adjustment logic
-		// TODO: handle invalid combinations of stub type + date direction
-		switch (opts.date_direction()) {
-		// backwards date direction
-		case DateDirection::kBackward:
-			switch (opts.stub_type()) {
-			case StubType::kLongFirst:
-				unadjusted_start_dates.erase(unadjusted_start_dates.begin());
-				unadjusted_end_dates.erase(unadjusted_end_dates.begin());
-				[[fallthrough]];
-			case StubType::kShortFirst:
-				unadjusted_start_dates.front() = opts.stub_date().value_or(start_date);
-				break;
-			default:
-				break;
-			}
-			break;
-		// forward date direction
-		case DateDirection::kForward:
-			switch (opts.stub_type()) {
-			case StubType::kLongLast:
-				unadjusted_end_dates.pop_back();
-				unadjusted_start_dates.pop_back();
-				[[fallthrough]];
-			case StubType::kShortLast:
-				unadjusted_end_dates.back() = opts.stub_date().value_or(mat_date);
-				break;
-			default:
-				break;
-			}
-			break;
-		}
+		StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
+
 
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {
 			auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
@@ -279,6 +248,48 @@ CashflowGen::Options::stub_date(time::Date date)
 
 	}
 
+	void CashflowGen::StubDateAdjustments(
+		const oa::time::Date& start_date,
+		const oa::time::Date& mat_date,
+		std::vector<oa::time::Date>& unadjusted_start_dates,
+		std::vector<oa::time::Date>& unadjusted_end_dates,
+		const Options& opts
+	) 
+	{
+		// stub adjustment logic
+		// TODO: handle invalid combinations of stub type + date direction
+		switch (opts.date_direction()) {
+			// backwards date direction
+		case DateDirection::kBackward:
+			switch (opts.stub_type()) {
+			case StubType::kLongFirst:
+				unadjusted_start_dates.erase(unadjusted_start_dates.begin());
+				unadjusted_end_dates.erase(unadjusted_end_dates.begin());
+				[[fallthrough]];
+			case StubType::kShortFirst:
+				unadjusted_start_dates.front() = opts.stub_date().value_or(start_date);
+				break;
+			default:
+				break;
+			}
+			break;
+			// forward date direction
+		case DateDirection::kForward:
+			switch (opts.stub_type()) {
+			case StubType::kLongLast:
+				unadjusted_end_dates.pop_back();
+				unadjusted_start_dates.pop_back();
+				[[fallthrough]];
+			case StubType::kShortLast:
+				unadjusted_end_dates.back() = opts.stub_date().value_or(mat_date);
+				break;
+			default:
+				break;
+			}
+			break;
+		}
+	}
+	
 	time::Tenor CashflowGen::MapResetFreqEnumToTenor(const Frequency reset_freq)
 	{
 		const static std::unordered_map<Frequency, time::Tenor> reset_freq_enum_to_tenor{
