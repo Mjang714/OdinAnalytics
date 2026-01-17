@@ -1,57 +1,188 @@
 #ifndef OA_DERIVED_TIME_CASHFLOW_GEN_CASHFLOW_GEN_H_
 #define OA_DERIVED_TIME_CASHFLOW_GEN_CASHFLOW_GEN_H_
 
-#include <memory>
-#include <string>
+#include <vector>
 
 #include "oa/dllexport.h"
-#include "derived_time/derived_time_enums.h"
 #include "derived_time/cashflow_gen/cashflow_struct.h"
-#include "derived_time/date_formula/date_formula.h"
 #include "derived_time/date_formula/business_date_formula.h"
-#include "time/calendar.h"
+#include "derived_time/derived_time_enums.h"
 #include "time/date.h"
-#include "time/tenor.h"
-#include "time/date_adjust/date_adjust_base.h"
-#include "time/day_count/day_counter_factory.h"
-#include "helpers/utils.h"
 
-
-namespace deriv_time = oa::derived_time;
 namespace oa::derived_time {
+
 	class OA_DERIVED_TIME_API CashflowGen {
 	public:
-		CashflowGen() = default;
+		/**
+		 * Options class for cashflow generation.
+		 *
+		 * This provides a fluent API to make setting values transparent.
+		 */
+		class OA_DERIVED_TIME_API Options {
+		public:
+			/**
+			 * Default ctor.
+			 *
+			 * Surprisingly, it is technically required to explicitly define
+			 * `Options()` as being default-constructible to use it in
+			 * `CreateFixedCashflows()` below. This is because the nested
+			 * `Options` class is considered *incomplete* until the enclosing
+			 * `CashflowGen` class is complete. Therefore, using `{}` to
+			 * initialize a default in `CreateFixedCashflows()` is use of an
+			 * incomplete type, which triggers a compiler error.
+			 *
+			 * This is surprising behavior because using `= default` results in
+			 * the same error, although the reason is that using `default`
+			 * means the compiler needs to define `Options()`, and therefore
+			 * needs to complete the type before making this determination.
+			 * Notably, MSVC is happy with implicitly declaring + defining the
+			 * `Options()` default constructor, while both GCC and Clang
+			 * require us to provide an explicit `Options()` definition.
+			 *
+			 * StackOverflow: https://stackoverflow.com/q/53408962/14227825
+			 * LLVM GitHub: https://github.com/llvm/llvm-project/issues/36032
+			 * GCC Bugzilla: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88165
+			 *
+			 * Jonathan Wakely's comment is the reference for the above:
+			 * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88165#c10
+			 */
+			Options() noexcept;
+
+			/**
+			 * Return the cash flow currency.
+			 */
+			Currency currency() const noexcept;
+
+			/**
+			 * Update the cash flow currency.
+			 */
+			Options& currency(Currency ccy) noexcept;
+
+			/**
+			 * Return the date direction.
+			 */
+			DateDirection date_direction() const noexcept;
+
+			/**
+			 * Update the cash flow date direction.
+			 */
+			Options& date_direction(DateDirection dir) noexcept;
+
+			/**
+			 * Return the cash flow type.
+			 */
+			CashflowType cashflow_type() const noexcept;
+
+			/**
+			 * Update the cash flow type.
+			 */
+			Options& cashflow_type(CashflowType type) noexcept;
+
+			/**
+			 * Return the reset direction.
+			 */
+			ResetDirection reset_direction() const noexcept;
+
+			/**
+			 * Update the reset direction.
+			 */
+			Options& reset_direction(ResetDirection dir) noexcept;
+
+			/**
+			 * Return the stub type.
+			 */
+			StubType stub_type() const noexcept;
+
+			/**
+			 * Update the stub type.
+			 */
+			Options& stub_type(StubType type) noexcept;
+
+			/**
+			 * Return the start date adjustment.
+			 */
+			const BusinessDateFormula& start_adjustment() const noexcept;
+
+			/**
+			 * Update the start date adjustment.
+			 */
+			Options& start_adjustment(BusinessDateFormula adj);
+
+			/**
+			 * Return the end date adjustment.
+			 */
+			const BusinessDateFormula& end_adjustment() const noexcept;
+
+			/**
+			 * Update the end date adjustment.
+			 */
+			Options& end_adjustment(BusinessDateFormula adj);
+
+			/**
+			 * Return the payment date adjustment.
+			 */
+			const BusinessDateFormula& pay_adjustment() const noexcept;
+
+			/**
+			 * Update the payment date adjustment.
+			 */
+			Options& pay_adjustment(BusinessDateFormula adj);
+
+			/**
+			 * Return the fixing date adjustment.
+			 */
+			const BusinessDateFormula& fix_adjustment() const noexcept;
+
+			/**
+			 * Update the fixing date adjustment.
+			 */
+			Options& fix_adjustment(BusinessDateFormula adj);
+
+			/**
+			 * Return the optional cash flow stub date.
+			 */
+			time::Date stub_date() const;
+
+			/**
+			 * Update the cash flow stub date.
+			 */
+			Options& stub_date(time::Date date);
+
+		private:
+			Currency currency_{Currency::kUSD};                   // currency
+			DateDirection date_dir_{DateDirection::kBackward};    // date direction
+			CashflowType cashflow_type_{CashflowType::kFixed};    // cashflow type
+			ResetDirection reset_dir_{ResetDirection::kAdvance};  // reset direction
+			StubType stub_type_{StubType::kNone};                 // stub type
+			BusinessDateFormula start_adj_;                       // start date adjustment
+			BusinessDateFormula end_adj_;                         // end date adjustment
+			BusinessDateFormula pay_adj_;                         // payment date adjustment
+			BusinessDateFormula fix_adj_;                         // fixing date adjustment
+			time::Date stub_date_;                                // stub date
+		};
+
 		static std::vector<CashflowStruct> CreateFixedCashflows(
-			const oa::time::Date& start_date,
-			const oa::time::Date& mat_date,
-			const oa::derived_time::Frequency reset_freq,
+			const time::Date& start_date,
+			const time::Date& mat_date,
+			const Frequency reset_freq,
 			const double notional,
 			const double rate,
-			const oa::time::DayCountRule day_count_rule,
-			const oa::derived_time::Currency cf_curr = oa::derived_time::Currency::kUSD,
-			const oa::derived_time::DateDirection date_dir = deriv_time::DateDirection::kBackward,
-			const oa::derived_time::CashflowType cf_type = oa::derived_time::CashflowType::kFixed,
-			const oa::derived_time::ResetDirection rest_dir = oa::derived_time::ResetDirection::kAdvance,
-			const oa::derived_time::StubType& stub_type = deriv_time::StubType::kNone,
-			const std::optional<oa::derived_time::BusinessDateFormula>& start_date_adj = {},
-			const std::optional<oa::derived_time::BusinessDateFormula>& end_date_adj = {},
-			const std::optional<oa::derived_time::BusinessDateFormula>& payment_date_adj = {},
-			const std::optional<oa::derived_time::BusinessDateFormula>& fixing_date_adj = {},
-			const std::optional<oa::time::Date>& stub_date = {}
-			);
+			const time::DayCountRule day_count_rule,
+			const Options& opts = {}
+		);
+
 	private:
+
 		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
 		static void StubDateAdjustments(
-			const oa::derived_time::StubType& stub_type,
-			const oa::derived_time::DateDirection date_dir,
 			const oa::time::Date& start_date,
 			const oa::time::Date& mat_date,
 			std::vector<oa::time::Date>& unadjusted_start_dates,
 			std::vector<oa::time::Date>& unadjusted_end_dates,
-			const std::optional<oa::time::Date>& stub_date
+			const Options& opts
 		);
-		
+
 	};
 }
+
 #endif // !OA_DERIVED_TIME_CASHFLOW_GEN_CASHFLOW_GEN_H_

@@ -1,5 +1,14 @@
 #include "adjustment_factory.h"
 
+#include <memory>
+
+#include "time/calendar.h"
+#include "date_adjust_base.h"
+#include "date_adjust_preceding.h"
+#include "date_adjust_following.h"
+#include "date_adjust_plain.h"
+#include "date_adjust_modified_following.h"
+
 namespace oa::time
 {
 	std::unique_ptr<DateAdjustBase> AdjustmentFactory::CreateDateAdjust(const AdjRule biz_day_convnetion, const Calendar& given_calendar)
