@@ -33,12 +33,12 @@ endfunction()
 
 # target install directory for install tests. multi-config generators will have
 # an extra per-config subdirectory so we can look at results independently
-set(oa_test_install_dir "${PROJECT_BINARY_DIR}/oa_install_test")
+set(oa_test_install_dir "${PROJECT_BINARY_DIR}/OA.InstallTest")
 if(ODIN_MULTI_CONFIG)
     string(APPEND oa_test_install_dir "/$<CONFIG>")
 endif()
 # cleanup fixture step to ensure every run gets a fresh directory
-oa_cleanup_fixture(oa_install_test_clean TARGET_DIR "${oa_test_install_dir}")
+oa_cleanup_fixture(OA.InstallTestClean TARGET_DIR "${oa_test_install_dir}")
 # install test arguments. multi-config generators need --config
 set(
     install_test_args
@@ -51,24 +51,25 @@ endif()
 # install test
 # note: assumes that both Runtime and Development are included
 add_test(
-    NAME oa_install_test
+    NAME OA.InstallTest
     COMMAND ${CMAKE_COMMAND} ${install_test_args}
     COMMAND_EXPAND_LISTS
 )
 # require clean step to run first + add as new fixture
 set_tests_properties(
-    oa_install_test PROPERTIES
-    FIXTURES_SETUP oa_install_test
-    FIXTURES_REQUIRED oa_install_test_clean
+    OA.InstallTest PROPERTIES
+    FIXTURES_SETUP OA.InstallTest
+    FIXTURES_REQUIRED OA.InstallTestClean
 )
 
-# directory for external usage test build directory
-set(oa_ext_usage_test_dir "${PROJECT_BINARY_DIR}/oa_ext_usage_test")
+# directory for external usage test source + build directories
+set(oa_ext_usage_test_srcdir "${CMAKE_CURRENT_SOURCE_DIR}/OA.ExtUsageTest")
+set(oa_ext_usage_test_bindir "${PROJECT_BINARY_DIR}/OA.ExtUsageTest")
 # cleanup fixture step to ensure every run gets a fresh directory
-oa_cleanup_fixture(oa_ext_usage_test_clean TARGET_DIR "${oa_ext_usage_test_dir}")
+oa_cleanup_fixture(OA.ExtUsageTestClean TARGET_DIR "${oa_ext_usage_test_bindir}")
 
 # external configuration test args. this only runs the CMake configuration step
-set(ext_usage_config_test_args -S . -B "${oa_ext_usage_test_dir}")
+set(ext_usage_config_test_args -S . -B "${oa_ext_usage_test_bindir}")
 # for Visual Studio generators we need to match the arch exactly
 if(CMAKE_VS_PLATFORM_NAME)
     list(APPEND ext_usage_config_test_args -A ${CMAKE_VS_PLATFORM_NAME})
@@ -93,19 +94,19 @@ list(
 )
 # add external configuration test. cleanup + install step must succeed
 add_test(
-    NAME oa_ext_usage_config_test
+    NAME OA.ExtUsageConfigTest
     COMMAND ${CMAKE_COMMAND} ${ext_usage_config_test_args}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/oa_ext_usage_test
+    WORKING_DIRECTORY "${oa_ext_usage_test_srcdir}"
     COMMAND_EXPAND_LISTS
 )
 set_tests_properties(
-    oa_ext_usage_config_test PROPERTIES
-    FIXTURES_SETUP oa_ext_usage_config_test
-    FIXTURES_REQUIRED "oa_ext_usage_test_clean;oa_install_test"
+    OA.ExtUsageConfigTest PROPERTIES
+    FIXTURES_SETUP OA.ExtUsageConfigTest
+    FIXTURES_REQUIRED "OA.ExtUsageTestClean;OA.InstallTest"
 )
 
 # external build test args. this only runs the CMake build step
-set(ext_usage_build_test_args "${oa_ext_usage_test_dir}")
+set(ext_usage_build_test_args "${oa_ext_usage_test_bindir}")
 # for multi-config generators we need to use --config
 if(ODIN_MULTI_CONFIG)
     list(APPEND ext_usage_build_test_args --config "$<CONFIG>")
@@ -114,19 +115,19 @@ endif()
 list(APPEND ext_usage_build_test_args -j)
 # add external build test (requires configuration success)
 add_test(
-    NAME oa_ext_usage_build_test
+    NAME OA.ExtUsageBuildTest
     COMMAND ${CMAKE_COMMAND} --build ${ext_usage_build_test_args}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/oa_ext_usage_test
+    WORKING_DIRECTORY "${oa_ext_usage_test_srcdir}"
     COMMAND_EXPAND_LISTS
 )
 set_tests_properties(
-    oa_ext_usage_build_test PROPERTIES
-    FIXTURES_SETUP oa_ext_usage_build_test
-    FIXTURES_REQUIRED oa_ext_usage_config_test
+    OA.ExtUsageBuildTest PROPERTIES
+    FIXTURES_SETUP OA.ExtUsageBuildTest
+    FIXTURES_REQUIRED OA.ExtUsageConfigTest
 )
 
 # external CTest test args. this runs the CTest testing step
-set(ext_usage_ctest_test_args --test-dir "${oa_ext_usage_test_dir}")
+set(ext_usage_ctest_test_args --test-dir "${oa_ext_usage_test_bindir}")
 # for multi-config generators we need to use -C
 if(ODIN_MULTI_CONFIG)
     list(APPEND ext_usage_ctest_test_args -C "$<CONFIG>")
@@ -135,12 +136,12 @@ endif()
 list(APPEND ext_usage_ctest_test_args -V)
 # add external test execution using CTest (required build success)
 add_test(
-    NAME oa_ext_usage_run_test
+    NAME OA.ExtUsageRunTest
     COMMAND ${CMAKE_CTEST_COMMAND} ${ext_usage_ctest_test_args}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/oa_ext_usage_test
+    WORKING_DIRECTORY "${oa_ext_usage_test_srcdir}"
     COMMAND_EXPAND_LISTS
 )
 set_tests_properties(
-    oa_ext_usage_run_test PROPERTIES
-    FIXTURES_REQUIRED oa_ext_usage_build_test
+    OA.ExtUsageRunTest PROPERTIES
+    FIXTURES_REQUIRED OA.ExtUsageBuildTest
 )
