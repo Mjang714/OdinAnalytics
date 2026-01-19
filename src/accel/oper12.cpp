@@ -21,6 +21,7 @@
 #include <optional>
 #include <ostream>
 #include <memory>
+#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -78,6 +79,43 @@ void to(xloper12* out, const T* buf, std::size_t length)
   // update XLOPER12 values
   out->val.str = data.release();
   out->xltype = xltypeStr;
+}
+
+/**
+ * Helper function to create an array `XLOPER12` from a floating-point span.
+ *
+ * This copies the span data and produces a single-column `xltypeMulti` array.
+ * The allocated `array.lparray` member must be freed with `delete[]` to
+ * prevent memory from leaking if an exception is thrown.
+ *
+ * @tparam T Floating-point type
+ *
+ * @param out `XLOPER12` to populate
+ * @param vals Input span
+ */
+template <std::floating_point T>
+void to(xloper12* out, std::span<const T> vals)
+{
+  // max length
+  constexpr auto max_rows = (std::numeric_limits<RW>::max)();
+  // throw if span size would cause an overflow
+  if (vals.size() > max_rows)
+    throw std::runtime_error{
+      "span size " + std::to_string(vals.size()) + " exceeds max " +
+      std::to_string(max_rows)
+    };
+  // since no extra memory is needed for doubles we directly allocate buffer
+  auto buf = std::make_unique<xloper12[]>(vals.size());
+  // populate each xloper12 in array
+  for (auto i = 0u; i < vals.size(); i++) {
+    buf[i].val.num = vals[i];
+    buf[i].xltype = xltypeNum;
+  }
+  // update XLOPER12 members
+  out->val.array.lparray = buf.release();
+  out->val.array.rows = static_cast<RW>(vals.size());
+  out->val.array.columns = 1;
+  out->xltype = xltypeMulti;
 }
 
 }  // namespace
@@ -306,6 +344,26 @@ oper12::oper12(mref12&& mref) : value_{new xloper12{}}
   value_->val.mref.lpmref = mref.release();  // noexcept
   value_->val.mref.idSheet = mref.sheet();   // noexcept
   value_->xltype = xltypeRef;
+  owning_ = true;
+}
+
+oper12::oper12(std::span<const float> vals)
+{
+  // use unique_ptr to be exception-safe if to() throws
+  auto val = std::make_unique<xloper12>();
+  to(val.get(), vals);
+  // update value_ + owning
+  value_ = val.release();
+  owning_ = true;
+}
+
+oper12::oper12(std::span<const double> vals)
+{
+  // use unique_ptr to be exception-safe if to() throws
+  auto val = std::make_unique<xloper12>();
+  to(val.get(), vals);
+  // update value_ + owning
+  value_ = val.release();
   owning_ = true;
 }
 

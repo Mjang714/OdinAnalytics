@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -216,7 +217,27 @@ public:
   /**
    * Ctor.
    *
-   * Constructs a `xltypeBigData` input `XLOPER12 using the given buffer
+   * Constructs an `XLOPER12` of type `xltypeMulti` from the given span. The
+   * resulting Excel array will be a single-column array.
+   *
+   * @param vals Values to construct array from
+   */
+  oper12(std::span<const float> vals);
+
+  /**
+   * Ctor.
+   *
+   * Constructs an `XLOPER12` of type `xltypeMulti` from the given span. The
+   * resulting Excel array will be a single-column array.
+   *
+   * @param vals Values to construct array from
+   */
+  oper12(std::span<const double> vals);
+
+  /**
+   * Ctor.
+   *
+   * Constructs a `xltypeBigData` input `XLOPER12` using the given buffer
    * pointer and size. No copying of the buffer data is done.
    *
    * @param data Data buffer
@@ -227,7 +248,7 @@ public:
   /**
    * Ctor.
    *
-   * Constructs a `xltypeBigData` input `XLOPER12 using the given buffer
+   * Constructs a `xltypeBigData` input `XLOPER12` using the given buffer
    * pointer and size. No copying of the buffer data is done.
    *
    * @param data Data buffer
