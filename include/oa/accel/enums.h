@@ -32,6 +32,51 @@ enum class xltype : int {
 };
 
 /**
+ * Return a string representation for the type enumeration value.
+ *
+ * For each given `xltype<type>` the string `"xltype<type>"` is returned.
+ *
+ * @param type Excel type value
+ */
+constexpr auto to_string(xltype type) noexcept
+{
+#define OA_ACCEL_XLTYPE_CASE(a, b) case xltype::a: return "xltype" #b
+  switch (type) {
+  OA_ACCEL_XLTYPE_CASE(num, Num);
+  OA_ACCEL_XLTYPE_CASE(str, Str);
+  OA_ACCEL_XLTYPE_CASE(bool_, Bool);
+  OA_ACCEL_XLTYPE_CASE(ref, Ref);
+  OA_ACCEL_XLTYPE_CASE(err, Err);
+  OA_ACCEL_XLTYPE_CASE(flow, Flow);
+  OA_ACCEL_XLTYPE_CASE(multi, Multi);
+  OA_ACCEL_XLTYPE_CASE(missing, Missing);
+  OA_ACCEL_XLTYPE_CASE(nil, Nil);
+  OA_ACCEL_XLTYPE_CASE(sref, SRef);
+  OA_ACCEL_XLTYPE_CASE(int_, Int);
+  OA_ACCEL_XLTYPE_CASE(bigdata, BigData);
+  }
+#undef OA_ACCEL_XLTYPE_CASE
+}
+
+/**
+ * Returns `true` if the given type enumeration requires owning extra memory.
+ *
+ * String, multi-cell reference, and array types have extra memory requirements
+ * besides the `XLOPER12` allocation itself.
+ */
+constexpr bool needs_aux_memory(xltype type) noexcept
+{
+  switch (type) {
+  case xltype::str:
+  case xltype::ref:
+  case xltype::multi:
+    return true;
+  default:
+    return false;
+  }
+}
+
+/**
  * Excel error codes.
  *
  * Each member has the same value as the actual Excel error code integer.
@@ -39,13 +84,36 @@ enum class xltype : int {
 enum class xlerr : int {
   null = 0,          // xlerrNull
   div0 = 7,          // xlerrDiv0
-  value = 15,        // xkerrValue
+  value = 15,        // xlerrValue
   ref = 23,          // xlerrRef
   name = 29,         // xlerrName
   num = 36,          // xlerrNum
   na = 42,           // xlerrNA
   getting_data = 43  // xlerrGettingData
 };
+
+/**
+ * Return a string representation for the error enumeration value.
+ *
+ * For each given `xlerr<error>` the string `"xlerr<error>"` is returned.
+ *
+ * @param err Excel error value
+ */
+constexpr auto to_string(xlerr err) noexcept
+{
+#define OA_ACCEL_XLERR_CASE(a, b) case xlerr::a: return "xlerr" #b
+  switch (err) {
+  OA_ACCEL_XLERR_CASE(null, Null);
+  OA_ACCEL_XLERR_CASE(div0, Div0);
+  OA_ACCEL_XLERR_CASE(value, Value);
+  OA_ACCEL_XLERR_CASE(ref, Ref);
+  OA_ACCEL_XLERR_CASE(name, Name);
+  OA_ACCEL_XLERR_CASE(num, Num);
+  OA_ACCEL_XLERR_CASE(na, NA);
+  OA_ACCEL_XLERR_CASE(getting_data, GettingData);
+  }
+#undef OA_ACCEL_XLERR_CASE
+}
 
 // TODO: add xlflow data enums
 
@@ -68,6 +136,8 @@ enum class xlret : int {
   not_cluster_safe = 512    // xlretNotClusterSafe
 };
 
+// TODO: add to_string() overload
+
 /**
  * XLL event codes.
  *
@@ -78,23 +148,7 @@ enum class xlevent : int {
   calc_cancel = 2  // xleventCalculationCanceled
 };
 
-/**
- * Returns `true` if the given type enumeration requires owning extra memory.
- *
- * String, multi-cell reference, and array types have extra memory requirements
- * besides the `XLOPER12` allocation itself.
- */
-constexpr bool needs_aux_memory(xltype type) noexcept
-{
-  switch (type) {
-  case xltype::str:
-  case xltype::ref:
-  case xltype::multi:
-    return true;
-  default:
-    return false;
-  }
-}
+// TODO: add to_string() overload
 
 }  // namespace accel
 }  // namespace oa
