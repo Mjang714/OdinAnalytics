@@ -13,11 +13,15 @@
 #include <Windows.h>
 #include <XLCALL.H>
 
+#include <concepts>
+#include <cstddef>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "oa/accel/enums.h"
 
@@ -151,6 +155,102 @@ std::wstring_view as_wstring_view(const xloper12& op)
       to_string(xltype{static_cast<int>(op.xltype)}) + " (must be xltypeStr)"
     };
   }
+}
+
+namespace {
+
+/**
+ * Helper function to fill a floating-point buffer with `xltypeMulti` values.
+ *
+ * This implements the non-template `as()` buffer overloads.
+ *
+ * @tparam T Floating-point type
+ *
+ * @param out Output buffer
+ * @param op `XLOPER12` to convert
+ */
+template <std::floating_point T>
+void as_impl(T* out, const xloper12& op)
+{
+  switch (op.xltype) {
+  // support converting a single value
+  case xltypeInt:
+    out[0] = static_cast<T>(op.val.w);
+    return;
+  case xltypeNum:
+    out[0] = static_cast<T>(op.val.num);
+    return;
+  // convert the entire array
+  case xltypeMulti:
+    // note: current as_double() contains all the conversion lotic
+    for (auto i = 0; i < op.val.array.rows * op.val.array.columns; i++)
+      out[i] = static_cast<T>(as_double(op.val.array.lparray[i]));
+    return;
+  default:
+    throw std::runtime_error{
+      std::string{"cannot fill floating-point buffer from XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(op.xltype)})
+    };
+  }
+}
+
+}  // namespace
+
+void as(double* out, const xloper12& op)
+{
+  as_impl(out, op);
+}
+
+void as(float* out, const xloper12& op)
+{
+  as_impl(out, op);
+}
+
+namespace {
+
+/**
+ * Helper function to obtain a float vector from `xltypeMulti` values.
+ *
+ * This implements the `as_<float type>_vector()` overloads.
+ *
+ * @tparam T Floating-point type
+ * @tparam A Allocator
+ *
+ * @param op `XLOPER12` to convert
+ */
+template <std::floating_point T, typename A = std::allocator<T>>
+auto as_vector(const xloper12& op)
+{
+  // get array size (assume zero if not array)
+  auto size = [&op]() -> std::size_t
+  {
+    switch (op.xltype) {
+    case xltypeMulti:
+      return op.val.array.rows * op.val.array.columns;
+    default:
+      return 0;
+    }
+  }();
+  // allocate vector
+  // note: if size if zero we know the type is incorrect. however, as() will
+  // throw appropriately, so we don't need to throw here
+  std::vector<T, A> out(size);
+  // fill + return
+  as_impl(out.data(), op);
+  return out;
+}
+
+}  // namespace
+
+std::vector<double> as_double_vector(const xloper12& op)
+{
+  return as_vector<double>(op);
+}
+
+std::vector<float> as_float_vector(const xloper12& op)
+{
+  return as_vector<float>(op);
 }
 
 }  // namespace accel

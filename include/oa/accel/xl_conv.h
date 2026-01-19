@@ -8,8 +8,10 @@
 #ifndef OA_ACCEL_XL_CONV_H_
 #define OA_ACCEL_XL_CONV_H_
 
+#include <concepts>
 #include <string>
 #include <string_view>
+#include <vector>
 
 // forward decl to avoid pulling in XLCALL.H
 struct xloper12;
@@ -69,6 +71,140 @@ std::wstring as_wstring(const xloper12& op);
  * @param op `XLOPER12` to get view of
  */
 std::wstring_view as_wstring_view(const xloper12& op);
+
+/**
+ * Fill a double buffer from the `xltypeMulti` array data of a `XLOPER12`.
+ *
+ * This flattens the `xltypeMulti` values in row-major order and will throw an
+ * exception if the `XLOPER12` is not a `xltypeMulti` or if one of the members
+ * of the `xltypeMulti` array cannot be converted using `as_double()`.
+ *
+ * Note that `XLOPER12` of type `xltypeNum` or `xltypeInt` are treated as
+ * 1-element arrays. It is assumed the provided buffer is large enough to fit
+ * all the elements of the `xltypeMulti`, i.e. it can hold at least
+ * `array.rows * array.columns` elements.
+ *
+ * @param out Output buffer
+ * @param op `XLOPER12` to convert
+ */
+void as(double* out, const xloper12& op);
+
+/**
+ * Fill a float buffer from the `xltypeMulti` array data of a `XLOPER12`.
+ *
+ * This has the same semantics as the `as(double*, const xloper12&)` overload.
+ *
+ * @param out Output buffer
+ * @param op `XLOPER12` to convert
+ */
+void as(float* out, const xloper12& op);
+
+/**
+ * Get a vector of doubles from the `xltypeMulti` array data of a `XLOPER12`.
+ *
+ * This flattens the `xltypeMulti` values in row-major order and will throw an
+ * exception if the `XLOPER12` is not a `xltypeMulti` or if one of the members
+ * of the `xltypeMulti` array cannot be converted to `double`.
+ *
+ * Note that `XLOPER12` of type `xltypeNum` or `xltypeInt` are converted to
+ * 1-element vectors as an easy-to-implement convenience.
+ *
+ * @param op `XLOPER12` to convert
+ */
+std::vector<double> as_double_vector(const xloper12& op);
+
+/**
+ * Get a vector of flotas from the `xltypeMulti` array data of a `XLOPER12`.
+ *
+ * This has the semantics of `as_double_vector()`.
+ *
+ * @param op `XLOPER12` to convert
+ */
+std::vector<float> as_float_vector(const xloper12& op);
+
+/**
+ * `XLOPER12` converter template.
+ *
+ * Specializations can be provided for user-defined types. Each must provide an
+ * `operator()` that has the following declaration:
+ *
+ * @code{.cc}
+ * T operator()(const xloper12&) const;
+ * @endcode
+ *
+ * A more rigorous concept is defined in `xloper12_convertible`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct xloper12_converter {};
+
+/**
+ * Concept for a C++ type with an appropriate `xloper12_converter`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+concept xloper12_convertible = requires(xloper12_converter<T> f, xloper12 v) {
+  { f(v) } -> std::same_as<T>;
+};
+
+/**
+ * Obtain the value stored in the `XLOPER12` as the given C++ type.
+ *
+ * Depending on the implementation function some conversions are allowed.
+ *
+ * @tparam T Target type
+ *
+ * @param op `XLOPER12` to convert
+ */
+template <xloper12_convertible T>
+T as(const xloper12& op)
+{
+  return xloper12_converter<T>{}(op);
+}
+
+// double specialization
+template <>
+struct xloper12_converter<double> {
+  auto operator()(const xloper12& op) const { return as_double(op); }
+};
+
+// float specialization
+template <>
+struct xloper12_converter<float> {
+  auto operator()(const xloper12& op) const { return as_float(op); }
+};
+
+// std::string specialization
+template <>
+struct xloper12_converter<std::string> {
+  auto operator()(const xloper12& op) const { return as_string(op); }
+};
+
+// std::wstring specialization
+template <>
+struct xloper12_converter<std::wstring> {
+  auto operator()(const xloper12& op) const { return as_wstring(op); }
+};
+
+// std::wstring_view specialization
+template <>
+struct xloper12_converter<std::wstring_view> {
+  auto operator()(const xloper12& op) const { return as_wstring_view(op); }
+};
+
+// std::vector<double> specialization
+template <>
+struct xloper12_converter<std::vector<double>> {
+  auto operator()(const xloper12& op) const { return as_double_vector(op); }
+};
+
+// std::vector<float> specialization
+template <>
+struct xloper12_converter<std::vector<float>> {
+  auto operator()(const xloper12& op) const { return as_float_vector(op); }
+};
 
 }  // namespace oa
 }  // namespace oa
