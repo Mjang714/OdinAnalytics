@@ -84,6 +84,10 @@ std::wstring_view as_wstring_view(const xloper12& op);
  * all the elements of the `xltypeMulti`, i.e. it can hold at least
  * `array.rows * array.columns` elements.
  *
+ * @note Typically this need not be used directly unless implementing an
+ *  `xloper12_converter<T>` specialization for a custom container/matrix type.
+ *  In that case, this function is useful, as it is allocator-agnostic.
+ *
  * @param out Output buffer
  * @param op `XLOPER12` to convert
  */
