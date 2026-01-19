@@ -28,6 +28,15 @@ namespace accel {
 double as_double(const xloper12& op);
 
 /**
+ * Get the `double` value stored in a `XLOPER12` of type `xltypeNum` as float.
+ *
+ * This simply casts the `as_double()` value into a `float`.
+ *
+ * @param op `XLOPER12` to convert
+ */
+float as_float(const xloper12& op);
+
+/**
  * Get the string stored in a `XLOPER12` of type `xltypeStr` as a string.
  *
  * Conversions are done if the type is `xltypeNum`, `xltypeBool`, `xltypeErr`,

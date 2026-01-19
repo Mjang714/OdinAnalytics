@@ -42,6 +42,11 @@ double as_double(const xloper12& op)
   }
 }
 
+float as_float(const xloper12& op)
+{
+  return static_cast<float>(as_double(op));
+}
+
 std::string as_string(const xloper12& op)
 {
   switch (op.xltype) {
