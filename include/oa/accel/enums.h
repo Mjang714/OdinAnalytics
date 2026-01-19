@@ -54,6 +54,9 @@ constexpr auto to_string(xltype type) noexcept
   OA_ACCEL_XLTYPE_CASE(sref, SRef);
   OA_ACCEL_XLTYPE_CASE(int_, Int);
   OA_ACCEL_XLTYPE_CASE(bigdata, BigData);
+  // catch-all case if bad enum value is initialized from int
+  default:
+    return "(invalid)";
   }
 #undef OA_ACCEL_XLTYPE_CASE
 }
@@ -111,6 +114,9 @@ constexpr auto to_string(xlerr err) noexcept
   OA_ACCEL_XLERR_CASE(num, Num);
   OA_ACCEL_XLERR_CASE(na, NA);
   OA_ACCEL_XLERR_CASE(getting_data, GettingData);
+  // catch-all case if bad enum value is initialized from int
+  default:
+    return "(invalid)";
   }
 #undef OA_ACCEL_XLERR_CASE
 }
