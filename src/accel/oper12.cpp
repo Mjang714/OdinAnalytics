@@ -15,6 +15,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <iostream>  // for std::wcout
 #include <limits>
@@ -315,8 +316,9 @@ oper12::oper12(std::wstring_view str)
   owning_ = true;
 }
 
+// note: explicit xlref12 ctor call to avoid ambiguity
 oper12::oper12(std::int32_t row, std::int32_t col)
-  : oper12{{row, row, col, col}}
+  : oper12{xlref12{row, row, col, col}}
 {}
 
 oper12::oper12(xlref12 ref) : value_{new xloper12{}}
@@ -366,6 +368,14 @@ oper12::oper12(std::span<const double> vals)
   value_ = val.release();
   owning_ = true;
 }
+
+oper12::oper12(const std::vector<float>& vec)
+  : oper12{{vec.data(), vec.size()}}
+{}
+
+oper12::oper12(const std::vector<double>& vec)
+  : oper12{{vec.data(), vec.size()}}
+{}
 
 oper12::oper12(const char* data, std::size_t size)
   : oper12{reinterpret_cast<const unsigned char*>(data), size}
@@ -463,6 +473,66 @@ oper12::error() const noexcept
     return xlerr{value_->val.err};
   else
     return {};
+}
+
+xloper12&
+oper12::operator[](std::size_t i) noexcept
+{
+  return value_->val.array.lparray[i];
+}
+
+const xloper12&
+oper12::operator[](std::size_t i) const noexcept
+{
+  return value_->val.array.lparray[i];
+}
+
+xloper12&
+oper12::operator()(std::size_t i, std::size_t j)
+{
+  return const_cast<xloper12&>((*const_cast<const oper12*>(this))(i, j));
+}
+
+const xloper12&
+oper12::operator()(std::size_t i, std::size_t j) const
+{
+  switch (value_->xltype) {
+  case xltypeMulti:
+    return value_->val.array.lparray[i * value_->val.array.columns + j];
+  default:
+    throw std::runtime_error{
+      "cannot call operator() on oper12 of type " +
+      std::string{to_string(type())}
+    };
+  }
+}
+
+std::size_t
+oper12::rows() const noexcept
+{
+  switch (value_->xltype) {
+  case xltypeMulti:
+    return value_->val.array.rows;
+  default:
+    return 0u;
+  }
+}
+
+std::size_t
+oper12::cols() const noexcept
+{
+  switch (value_->xltype) {
+  case xltypeMulti:
+    return value_->val.array.columns;
+  default:
+    return 0u;
+  }
+}
+
+std::size_t
+oper12::size() const noexcept
+{
+  return rows() * cols();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -16,7 +16,9 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include "oa/accel/enums.h"
@@ -198,6 +200,50 @@ TEST_F(Oper12Test, MakeSingleRefTest)
 }
 
 // TODO: add tests for multi-ref
+
+/**
+ * Test that float vector construction works as expected.
+ *
+ * This delegates to the `span` ctor for indirect testing.
+ */
+TEST_F(Oper12Test, MakeFloatVectorTest)
+{
+  std::vector<float> vec{0.f, 1.f, 1.f, 2.f, 3.f, 5.f, 8.f, 13.f, 21.f};
+  oa::accel::oper12 val{vec};
+  ASSERT_TRUE(val.type() == oa::accel::xltype::multi) << "val is not a multi";
+  // note: dimensions should be (vec.size(), 1)
+  EXPECT_EQ(vec.size(), val.rows());
+  EXPECT_EQ(1, val.cols());
+  // get vector for round-trip
+  // TODO: really need conversion functions
+  std::vector<float> out(val.size());
+  for (auto i = 0u; i < out.size(); i++)
+    out[i] = static_cast<float>(val[i].val.num);
+  // compare values
+  EXPECT_THAT(out, ::testing::Pointwise(::testing::FloatEq(), vec));
+}
+
+/**
+ * Test that double vector construction works as expected.
+ *
+ * This delegates to the `span` ctor for indirect testing.
+ */
+TEST_F(Oper12Test, MakeDoubleVectorTest)
+{
+  std::vector<double> vec{2., 4., 8., 16., 32., 64., 128., 256., 512.};
+  oa::accel::oper12 val{vec};
+  ASSERT_TRUE(val.type() == oa::accel::xltype::multi) << "val is not a multi";
+  // note: dimensions should be (vec.size(), 1)
+  EXPECT_EQ(vec.size(), val.rows());
+  EXPECT_EQ(1, val.cols());
+  // get vector for round-trip
+  std::vector<double> out(val.size());
+  for (auto i = 0; i < out.size(); i++)
+    out[i] = val[i].val.num;
+  std::cout << val << std::endl;
+  // compare values
+  EXPECT_THAT(out, ::testing::Pointwise(::testing::DoubleEq(), vec));
+}
 
 /**
  * Test that char buffer construction works as expected.

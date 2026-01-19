@@ -9,6 +9,7 @@
 #define OA_ACCEL_OPER12_H_
 
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
@@ -77,6 +78,10 @@ void xloper12_free(xloper12* op) noexcept;
  * has been modified. For the bigadta, with a zeroed `cbData` member, if the
  * `oper12` is of type `bigdata`, we know the union should contains a `HANDLE`,
  * not a `BYTE*` as when used with `xlDefineBinaryName`.
+ *
+ * @note There is not much that can be done with a moved-from `oper12` except
+ *  to assign to it and check if it has a value. Most operations performed on
+ *  a moved-from `oper12` result in undefined behavior.
  */
 class oper12 {
 public:
@@ -237,6 +242,26 @@ public:
   /**
    * Ctor.
    *
+   * Constructs an `XLOPER12` of type `xltypeMulti` from the given vector. The
+   * resulting Excel array will be a single-column array.
+   *
+   * @param vec Values to construct array from
+   */
+  oper12(const std::vector<float>& vec);
+
+  /**
+   * Ctor.
+   *
+   * Constructs an `XLOPER12` of type `xltypeMulti` from the given vector. The
+   * resulting Excel array will be a single-column array.
+   *
+   * @param vec Values to construct array from
+   */
+  oper12(const std::vector<double>& vec);
+
+  /**
+   * Ctor.
+   *
    * Constructs a `xltypeBigData` input `XLOPER12` using the given buffer
    * pointer and size. No copying of the buffer data is done.
    *
@@ -321,8 +346,6 @@ public:
 
   /**
    * Return the type enumeration corresponding to the `XLOPER12` type.
-   *
-   * Behavior is undefined if called on a moved-from `oper12`.
    */
   xltype type() const noexcept;
 
@@ -332,6 +355,67 @@ public:
    * If the `XLOPER12` does not contain an error the optional is empty.
    */
   std::optional<xlerr> error() const noexcept;
+
+  /**
+   * Obtain a reference to the `i`th `XLOPER12` in a `xltypeMulti`.
+   *
+   * Behavior is undefined if the owned `XLOPER12` is not a `xltypeMulti` or if
+   * indexing out of array bounds is performed.
+   *
+   * @param i Index of desired `XLOPER12`
+   */
+  xloper12& operator[](std::size_t i) noexcept;
+
+  /**
+   * Obtain a const reference to the `i`th `XLOPER12` in a `xltypeMulti`.
+   *
+   * Behavior is undefined if the owned `XLOPER12` is not a `xltypeMulti` or if
+   * indexing out of array bounds is performed.
+   *
+   * @param i Index of desired `XLOPER12`
+   */
+  const xloper12& operator[](std::size_t i) const noexcept;
+
+  /**
+   * Obtain a reference to the given `XLOPER12` in a `xltypeMulti`.
+   *
+   * Behavior is undefined if indexing out of bounds is performed.
+   *
+   * @param i Row index of desired `XLOPER12`
+   * @param j Col index of desired `XLOPER12`
+   */
+  xloper12& operator()(std::size_t i, std::size_t j);
+
+  /**
+   * Obtain a const reference to the given `XLOPER12` in a `xltypeMulti`.
+   *
+   * Behavior is undefined if indexing out of bounds is performed.
+   *
+   * @param i Row index of desired `XLOPER12`
+   * @param j Col index of desired `XLOPER12`
+   */
+  const xloper12& operator()(std::size_t i, std::size_t j) const;
+
+  /**
+   * Return the number of rows in the `xltypeMulti` array.
+   *
+   * Zero is returned if the owned `XLOPER12` is not a `xltypeMulti`.
+   */
+  std::size_t rows() const noexcept;
+
+  /**
+   * Return the number of columns in the `xltypeMulti` array.
+   *
+   * Zero is returned if the owned `XLOPER12` is not a `xltypeMulti`.
+   */
+  std::size_t cols() const noexcept;
+
+  /**
+   * Return the number of elements in the `xltypeMulti` array.
+   *
+   * Zero is returned if the owned `XLOPER12` is not a `xltypeMulti`.
+   */
+  std::size_t size() const noexcept;
 
   // TODO: add as<T>() template for conversion to C++ types (converting allowed)
 
