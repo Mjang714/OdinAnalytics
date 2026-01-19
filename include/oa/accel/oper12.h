@@ -372,7 +372,7 @@ std::ostream& operator<<(std::ostream& out, const oper12& op);
 /**
  * Return a string representation for the `oper12` value.
  *
- * This provides the same representation as that given by `operator<<
+ * This provides the same representation as is given by `operator<<`.
  *
  * @param op `oper12` value
  */
