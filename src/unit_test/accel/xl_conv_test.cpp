@@ -14,6 +14,7 @@
 #include <XLCALL.H>
 
 #include <memory>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
