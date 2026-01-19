@@ -240,7 +240,6 @@ TEST_F(Oper12Test, MakeDoubleVectorTest)
   std::vector<double> out(val.size());
   for (auto i = 0; i < out.size(); i++)
     out[i] = val[i].val.num;
-  std::cout << val << std::endl;
   // compare values
   EXPECT_THAT(out, ::testing::Pointwise(::testing::DoubleEq(), vec));
 }
