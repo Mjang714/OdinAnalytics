@@ -124,11 +124,14 @@ std::ostream& operator<<(std::ostream& out, const xloper12& op)
   case xltypeMulti:
     out << "[";
     for (RW i = 0; i < op.val.array.rows; i++) {
+      if (i)
+        out << ", ";
+      // inner row
       out << "[";
       for (COL j = 0; j < op.val.array.columns; j++) {
         if (j)
           out << ", ";
-        out << op.val.array.lparray[i * op.val.array.rows + j];
+        out << op.val.array.lparray[i * op.val.array.columns + j];
       }
       out << "]";
     }
