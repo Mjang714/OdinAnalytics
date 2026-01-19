@@ -41,7 +41,9 @@ endif()
 if(TARGET oa_accel) # AND TARGET Excel::XLCALL32)
     target_sources(
         oa_unit_test PRIVATE
-        accel/mref12_test.cpp accel/oper12_test.cpp
+        accel/mref12_test.cpp
+        accel/oper12_test.cpp
+        accel/xl_conv_test.cpp
     )
 endif()
 # add xlcall32_stub tests if xlcall32_stub is available

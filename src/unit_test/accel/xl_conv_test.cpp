@@ -1,0 +1,112 @@
+/**
+ * @file xl_conv_test.cpp
+ * @author Derek Huang
+ * @brief xl_conv.h unit tests
+ * @copyright MIT License
+ */
+
+#include "oa/accel/xl_conv.h"
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <XLCALL.H>
+
+#include <memory>
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
+namespace {
+
+/**
+ * `xl_conv.h` unit test fixture.
+ */
+class XlConvTest : public ::testing::Test {};
+
+/**
+ * Test converting to a double.
+ */
+TEST_F(XlConvTest, DoubleTest)
+{
+  constexpr auto val = 3.14159;
+  xloper12 op{};
+  op.val.num = val;
+  op.xltype = xltypeNum;
+  EXPECT_DOUBLE_EQ(val, oa::accel::as<double>(op));
+}
+
+/**
+ * Test converting to a float.
+ */
+TEST_F(XlConvTest, FloatTest)
+{
+  constexpr auto val = 2.71f;
+  xloper12 op{};
+  op.val.num = val;
+  op.xltype = xltypeNum;
+  EXPECT_FLOAT_EQ(val, oa::accel::as<float>(op));
+}
+
+/**
+ * Test converting an int to a float.
+ */
+TEST_F(XlConvTest, Int2FloatTest)
+{
+  constexpr int val = 8888;
+  xloper12 op{};
+  op.val.w = val;
+  op.xltype = xltypeInt;
+  EXPECT_FLOAT_EQ(val, oa::accel::as<float>(op));
+}
+
+// TODO: add conversion tests for strings
+
+/**
+ * Test converting a vector of doubles.
+ *
+ * This test demonstrates how dimensions are flattened on conversion.
+ */
+TEST_F(XlConvTest, DoubleVectorTest)
+{
+  constexpr double val[] = {0., 1., 1., 2., 3., 5., 8., 13., 21., 34.};
+  // allocate buffer for new xloper12 + fill
+  auto buf = std::make_unique<xloper12[]>(std::size(val));
+  for (auto i = 0u; i < std::size(val); i++) {
+    buf[i].val.num = val[i];
+    buf[i].xltype = xltypeNum;
+  }
+  // create xltypeMulti + fill
+  xloper12 op{};
+  op.val.array.lparray = buf.get();
+  // note: act as if we want a real 2D array
+  op.val.array.rows = 2;
+  op.val.array.columns = 5;
+  op.xltype = xltypeMulti;
+  // test conversion
+  auto res = oa::accel::as<std::vector<double>>(op);
+  EXPECT_THAT(res, ::testing::Pointwise(::testing::DoubleEq(), val));
+}
+
+/**
+ * Test converting an int into a float vector of size 1.
+ */
+TEST_F(XlConvTest, Int2FloatVectorTest)
+{
+  constexpr int val[] = {1234};
+  // allocate buffer for new xloper12 + filll
+  auto buf = std::make_unique<xloper12[]>(1u);
+  buf[0].val.num = val[0];
+  buf[0].xltype = xltypeNum;
+  // create xltypeMulti + fill
+  xloper12 op{};
+  op.val.array.lparray = buf.get();
+  op.val.array.rows = op.val.array.columns = 1;
+  op.xltype = xltypeMulti;
+  // test conversion
+  auto res = oa::accel::as<std::vector<float>>(op);
+  EXPECT_THAT(res, ::testing::Pointwise(::testing::FloatEq(), val));
+}
+
+}  // namespace
