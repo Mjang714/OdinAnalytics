@@ -78,22 +78,22 @@ addin::wpath()
 }
 
 addin&
-addin::long_name(std::string str)
+addin::name(std::string str) noexcept
 {
-  long_name_ = std::move(str);
+  name_ = std::move(str);
   return *this;
 }
 
 std::string_view
-addin::long_name() const
+addin::name() const
 {
   // if empty use the default (cannot be called if Excel isn't running)
-  if (long_name_.empty()) {
+  if (name_.empty()) {
     static auto str = std::filesystem::path{path()}.filename().string() + " dev";
     return str;
   }
   else
-    return long_name_;
+    return name_;
 }
 
 addin&
@@ -131,7 +131,7 @@ OA_XLL_EXPORT(xloper12*) xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
   auto res = [&in]
   {
     if (in.value()->val.w == 1)
-      return oper12{addin::instance().long_name()};
+      return oper12{addin::instance().name()};
     else
       return oper12{xlerr::value};
   }();
@@ -146,7 +146,7 @@ OA_XLL_EXPORT(xloper12*) xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
  */
 OA_XLL_EXPORT(int) xlAutoAdd() noexcept
 {
-  alert(std::string{addin::instance().long_name()} + " activated!");
+  alert(std::string{addin::instance().name()} + " activated!");
   return 1;
 }
 
@@ -157,7 +157,7 @@ OA_XLL_EXPORT(int) xlAutoAdd() noexcept
  */
 OA_XLL_EXPORT(int) xlAutoRemove() noexcept
 {
-  alert(std::string{addin::instance().long_name()} + " deactivated!");
+  alert(std::string{addin::instance().name()} + " deactivated!");
   return 1;
 }
 

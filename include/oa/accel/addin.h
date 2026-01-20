@@ -128,17 +128,19 @@ public:
   static std::wstring_view wpath();
 
   /**
-   * Update the string returned by `long_name()`.
+   * Update the XLL name displayed in the add-in menu returned by `name()`.
    *
    * Typically it is suggested to set this to the add-in's human-readable name
-   * and some brief version information and should not be too long.
+   * and some brief version information. It is important not to make the name
+   * string too long, despite the moniker of "long name", as otherwise the text
+   * will not be fully visible in the Excel add-in manager window.
    *
-   * @param str Value to use for `long_name()`
+   * @param str Value to use for `name()`
    */
-  addin& long_name(std::string str);
+  addin& name(std::string str) noexcept;
 
   /**
-   * Return the registered XLL add-in long name displayed in the add-in menu.
+   * Return the registered XLL add-in name displayed in the add-in menu.
    *
    * The string returned by this function will be returned to Excel by Accel's
    * `xlAddInManagerInfo12()` implementation. It should contain the name of the
@@ -147,9 +149,9 @@ public:
    *
    * If not set by the user `"<xll name>.xll dev"` is returned as the default
    * when invoked in Excel XLL interface functions. Therefore, do not call this
-   * overload before Excel is running unless you already set `long_name()`.
+   * overload before Excel is running unless you already set `name()`.
    */
-  std::string_view long_name() const;
+  std::string_view name() const;
 
   /**
    * Set the action run before freeing an XLL-allocated `XLOPER12`.
@@ -181,7 +183,7 @@ private:
    */
   addin();
 
-  std::string long_name_;
+  std::string name_;
   xloper12_callback on_auto_free_;
 };
 
