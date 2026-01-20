@@ -18,6 +18,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "oa/accel/call.h"
@@ -27,54 +28,17 @@
 namespace oa {
 namespace accel {
 
-namespace {
-
-/**
- * Registry for all created `addin` instances.
- *
- * Since we cannot enforce at compile time that a static `addin` is constructed
- * only *once* we instead just track every allocated `addin`.
- *
- * Correctly implemented Accel XLLs will have `addin_registry().size()` be 1.
- */
-auto& addin_registry()
-{
-  static std::vector<addin*> refs;
-  return refs;
-}
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // addin                                                                      //
 ////////////////////////////////////////////////////////////////////////////////
 
-addin::addin()
-{
-  addin_registry().push_back(this);
-}
-
-addin::~addin()
-{
-  // note: if there is an exception just crash
-  addin_registry().pop_back();
-}
+addin::addin() : on_auto_free_{[](const xloper12&) {}} {}
 
 addin&
 addin::instance()
 {
-  static auto ptr = []
-  {
-    // if registry is empty use default instance
-    if (addin_registry().empty()) {
-      static addin xll;
-      return &xll;
-    }
-    // otherwise use first add-in registered
-    else
-      return addin_registry().front();
-  }();
-  return *ptr;
+  static addin xll;
+  return xll;
 }
 
 std::string_view
@@ -87,7 +51,7 @@ addin::path()
     // allocate new string, narrow, and return
     std::string str(wstr.size(), '\0');
     for (auto i = 0u; i < wstr.size(); i++)
-      str[i] = std::wcout.narrow(wstr[i], '?');  // note:
+      str[i] = std::wcout.narrow(wstr[i], '?');  // note: not i18n friendly
     return str;
   }();
   // return view
@@ -113,16 +77,36 @@ addin::wpath()
   return path;
 }
 
-std::string
+addin&
+addin::long_name(std::string str)
+{
+  long_name_ = std::move(str);
+  return *this;
+}
+
+std::string_view
 addin::long_name() const
 {
-  return std::filesystem::path{path()}.filename().string() + " dev";
+  // if empty use the default (cannot be called if Excel isn't running)
+  if (long_name_.empty()) {
+    static auto str = std::filesystem::path{path()}.filename().string() + " dev";
+    return str;
+  }
+  else
+    return long_name_;
+}
+
+addin&
+addin::on_auto_free(xloper12_callback func)
+{
+  on_auto_free_ = std::move(func);
+  return *this;
 }
 
 void
-addin::on_auto_free(const xloper12* /*op*/)
+addin::on_auto_free(const xloper12& op) const
 {
-  /* no-op */;
+  on_auto_free_(op);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +146,7 @@ OA_XLL_EXPORT(xloper12*) xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
  */
 OA_XLL_EXPORT(int) xlAutoAdd() noexcept
 {
-  alert(addin::instance().long_name() + " activated!");
+  alert(std::string{addin::instance().long_name()} + " activated!");
   return 1;
 }
 
@@ -173,7 +157,7 @@ OA_XLL_EXPORT(int) xlAutoAdd() noexcept
  */
 OA_XLL_EXPORT(int) xlAutoRemove() noexcept
 {
-  alert(addin::instance().long_name() + " deactivated!");
+  alert(std::string{addin::instance().long_name()} + " deactivated!");
   return 1;
 }
 
@@ -185,7 +169,7 @@ OA_XLL_EXPORT(int) xlAutoRemove() noexcept
 OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
 {
   // pre-free event
-  addin::instance().on_auto_free(op);
+  addin::instance().on_auto_free(*op);
   // note: xlbitDLLFree should already be set
   xloper12_free(op);
 }
@@ -197,19 +181,6 @@ OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
  */
 OA_XLL_EXPORT(int) xlAutoOpen() noexcept
 {
-  // if more than one instance registered warn the user
-  if (addin_registry().size() > 1)
-    alert(
-      (
-        "Warning:\n"
-        "\n"
-        "(from " + addin::instance().long_name() + ")\n"
-        "\n"
-        "More than one Accel addin instance registered.\n"
-        "Only one instance may be registered per XLL."
-      )
-      .c_str()
-    );
   // TODO: fill in with function/macro registration + UI customizations
   return 1;
 }

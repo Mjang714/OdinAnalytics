@@ -8,8 +8,11 @@
 #ifndef OA_ACCEL_ADDIN_H_
 #define OA_ACCEL_ADDIN_H_
 
+#include <functional>
 #include <string>
 #include <string_view>
+
+#include "oa/common.h"  // for OA_CONCAT()
 
 // forward decl to avoid pulling in XLCALL.H
 struct xloper12;
@@ -84,14 +87,16 @@ namespace accel {
 /**
  * Class representing the overall state of an implemented XLL add-in.
  *
- * This *must* be subclassed and *one* static instance constructed by every XLL
- * using the Accel framework. Any state that should be scoped to an add-in's
- * lifetime can be added to subclasses as an abstraction.
+ * Instead of taking the XLL+ approach where users subclass the base add-in
+ * class, this type provides type-erasure hooks using `std::function<>` that
+ * provide ways to customize add-in behavior during static object construction.
  *
- * Virtual functions for customization are provided.
+ * A fluent API is provided that presents a declarative feel for users.
  */
 class addin {
 public:
+  using xloper12_callback = std::function<void(const xloper12&)>;
+
   /**
    * Deleted copy ctor.
    *
@@ -101,9 +106,6 @@ public:
 
   /**
    * Return the singleton add-in instance loaded by Excel.
-   *
-   * A reference to a default-constructed `addin` is returned if no
-   * user-defined add-in instances have been registered.
    */
   static addin& instance();
 
@@ -126,45 +128,71 @@ public:
   static std::wstring_view wpath();
 
   /**
+   * Update the string returned by `long_name()`.
+   *
+   * Typically it is suggested to set this to the add-in's human-readable name
+   * and some brief version information and should not be too long.
+   *
+   * @param str Value to use for `long_name()`
+   */
+  addin& long_name(std::string str);
+
+  /**
    * Return the registered XLL add-in long name displayed in the add-in menu.
    *
-   * The string returned by this function will be returned by the Accel
+   * The string returned by this function will be returned to Excel by Accel's
    * `xlAddInManagerInfo12()` implementation. It should contain the name of the
    * add-in and optionally a version identifier. What is returned will shown as
    * an entry in the Excel dialog that displays the list of available add-ins.
    *
-   * If not implemented `"<xll name>.xll dev"` is returned as the default.
+   * If not set by the user `"<xll name>.xll dev"` is returned as the default
+   * when invoked in Excel XLL interface functions. Therefore, do not call this
+   * overload before Excel is running unless you already set `long_name()`.
    */
-  virtual std::string long_name() const;
+  std::string_view long_name() const;
 
   /**
-   * `xlAutoFree12()` action run before an XLL-allocated `XLOPER12` is freed.
+   * Set the action run before freeing an XLL-allocated `XLOPER12`.
    *
    * This provides the add-in with an opportunity to perform logging or other
-   * actions using other information about the `XLOPER12` being freed.
+   * actions when `xlAutoFree12()` runs using information about the `XLOPER12`
+   * that will be subsequently freed by the Accel add-in.
    *
-   * @todo Some kind of C++ `XLOPER12` view class would simplify things. Also
-   *  consider using a private virtual pattern for exception handling.
+   * If this is not set by the user a lambda with an empty body is run.
    *
-   * @param op `XLOPER12` to be freed
+   * @todo Some kind of C++ `XLOPER12` view class would simplify things.
+   *
+   * @param func Callable to invoke in `xlAutoFree12()` before `XLOPER12` free
    */
-  virtual void on_auto_free(const xloper12* op);
+  addin& on_auto_free(xloper12_callback func);
 
-protected:
+  /**
+   * Run the `xlAutoFree12()` action before the `XLOPER12` is deleted.
+   *
+   * @param op `XLOPER12` to inspect
+   */
+  void on_auto_free(const xloper12& op) const;
+
+private:
   /**
    * Default ctor.
    *
-   * This is protected as users are not allowed to construct base instances.
+   * This is private as end users are not allowed to construct instances.
    */
   addin();
 
-  /**
-   * Dtor.
-   *
-   * This is protected to prevent manual destruction through base pointers.
-   */
-  virtual ~addin();
+  std::string long_name_;
+  xloper12_callback on_auto_free_;
 };
+
+/**
+ * Macro for instantiating the `addin` singleton and modifying its fields.
+ *
+ * This uses the `__LINE__` macro to ensure multiple uses in a translation unit
+ * are unique and `static` scopes the reference to the translation unit.
+ */
+#define OA_ACCEL_ADDIN_INSTANCE() \
+  static auto& OA_CONCAT(oa_accel_addin_, __LINE__) = oa::accel::addin::instance()
 
 }  // namespace accel
 }  // namespace oa
