@@ -23,6 +23,7 @@
 
 #include "oa/accel/call.h"
 #include "oa/accel/oper12.h"
+#include "oa/accel/udf.h"
 #include "oa/string.h"
 
 namespace oa {
@@ -39,6 +40,13 @@ addin::instance()
 {
   static addin xll;
   return xll;
+}
+
+udf_registry&
+addin::udfs()
+{
+  static udf_registry reg;
+  return reg;
 }
 
 std::string_view
@@ -113,8 +121,6 @@ addin::on_auto_free(const xloper12& op) const
 // XLL interface functions                                                    //
 ////////////////////////////////////////////////////////////////////////////////
 
-extern "C" {
-
 /**
  * Excel callback run the first time the add-in manager is used in Excel.
  *
@@ -186,8 +192,6 @@ OA_XLL_EXPORT(int) xlAutoOpen() noexcept
 }
 
 // TODO: add xlAutoClose() to unregister and undo customizations
-
-}  // extern "C"
 
 }  // namespace accel
 }  // namespace oa

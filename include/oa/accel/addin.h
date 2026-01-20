@@ -12,7 +12,8 @@
 #include <string>
 #include <string_view>
 
-#include "oa/common.h"  // for OA_CONCAT()
+#include "oa/accel/udf.h"  // for udf_registry
+#include "oa/common.h"     // for OA_CONCAT()
 
 // forward decl to avoid pulling in XLCALL.H
 struct xloper12;
@@ -33,11 +34,9 @@ namespace accel {
  * }
  * @endcode
  *
- * @todo Replace `WINAPI` with `__stdcall` directly as it is not 2005 anymore.
- *
  * @param ret Function return type
  */
-#define OA_XLL_EXPORT(ret) __declspec(dllexport) ret WINAPI
+#define OA_XLL_EXPORT(ret) extern "C" __declspec(dllexport) ret __stdcall
 
 /**
  * Macro to mark the beginning of a function try-block.
@@ -108,6 +107,11 @@ public:
    * Return the singleton add-in instance loaded by Excel.
    */
   static addin& instance();
+
+  /**
+   * Return the UDF registry with all registered UDFs.
+   */
+  static udf_registry& udfs();
 
   /**
    * Obtain the full path to the loaded XLL.
@@ -195,6 +199,13 @@ private:
  */
 #define OA_ACCEL_ADDIN_INSTANCE() \
   static auto& OA_CONCAT(oa_accel_addin_, __LINE__) = oa::accel::addin::instance()
+
+// TODO: document
+#define OA_ACCEL_EXPORT_FUNC(func) \
+  static auto& OA_CONCAT(oa_accel_udf_ref_, __LINE__) = oa::accel::addin::udfs() \
+    .add(OA_STRINGIFY(func), func) \
+    /* to obtain a udf reference we use back() */ \
+    .back()
 
 }  // namespace accel
 }  // namespace oa
