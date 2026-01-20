@@ -13,6 +13,7 @@
 #include <Windows.h>
 #include <XLCALL.H>
 
+#include <algorithm>
 #include <filesystem>
 #include <iostream>
 #include <sstream>
@@ -185,9 +186,53 @@ OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
  *
  * @todo Obviously missing function registration.
  */
-OA_XLL_EXPORT(int) xlAutoOpen() noexcept
+OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
 {
-  // TODO: fill in with function/macro registration + UI customizations
+  // XLL name
+  // TODO: should be a separate function honestly
+  oper12 xll_name{std::filesystem::path{addin::path()}.filename().string()};
+  // xlfRegister return value
+  oper12 res;
+  // register functions
+  for (const auto& udf : addin::udfs()) {
+    // create oper12 for all fixed arguments
+    std::vector<oper12> args;
+    args.push_back(xll_name);              // pxModuleText
+    args.emplace_back(udf.export_name());  // pxProcedure
+    args.emplace_back(udf.type_text());    // pxTypeText
+    args.emplace_back(udf.name());         // pxFunctionText
+    args.emplace_back(udf.arg_text());     // pxArgumentText
+    args.emplace_back(udf.type());         // pxMacroType
+    args.emplace_back(udf.category());     // pxCategory
+    // TODO: shortcut empty for now
+    args.emplace_back(std::string{""});    // pxShortcutText
+    args.emplace_back(udf.help_topic());   // pxHelpTopic
+    args.emplace_back(udf.help());         // pxFunctionHelp
+    // insert argument help text
+    for (const auto& arg : udf.args())
+      args.emplace_back(arg.help());
+    // TODO: bug where last string argument has its trailing character chopped
+    // off. need to pad with an empty character as a workaround
+    // create vector of xloper12* for Excel12v()
+    std::vector<xloper12*> xl_args;
+    for (auto& arg : args)
+      xl_args.push_back(arg.value());
+    // register
+    Excel12v(xlfRegister, res.value(), static_cast<int>(args.size()), xl_args.data());
+    // if error, alert, but keep going
+    // TODO: can improve this message
+    if (res.error())
+      alert(
+        "UDF registration error: Could not register exported " +
+        std::string{udf.export_name()} + " as " + std::string{udf.name()}
+      );
+  }
+  // TODO: fill in with UI customizations
+  return 1;
+}
+// TODO: make this a macro
+catch (const std::exception& exc) {
+  alert(std::string{"C++ exception: "} + exc.what());
   return 1;
 }
 
