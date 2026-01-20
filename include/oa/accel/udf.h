@@ -240,6 +240,8 @@ private:
  */
 class udf {
 public:
+  using udf_args = std::vector<udf_arg>;
+
   /**
    * Ctor.
    *
@@ -283,6 +285,13 @@ public:
    * This takes into account volatile and thread-safe qualifiers.
    */
   std::string type_text() const;
+
+  /**
+   * Return the `pxArgumentText` string.
+   *
+   * This is simply the argument names separated by commas.
+   */
+  std::string arg_text() const;
 
   /**
    * Update the name of the function as it appears in Excel.
@@ -369,6 +378,11 @@ public:
   std::string_view help() const noexcept;
 
   /**
+   * Return the vector of UDF arguments.
+   */
+  const udf_args& args() const noexcept;
+
+  /**
    * Mark the XLL UDF as volatile.
    *
    * If not specified the function is marked as non-volatile by default.
@@ -405,7 +419,7 @@ private:
   char shortcut_{};            // shortcut key (pxShortcutText)
   std::string help_topic_;     // help topic link (pxHelpTopic)
   std::string help_;           // function help text (pxFunctionHelp)
-  std::vector<udf_arg> args_;  // UDF arguments
+  udf_args args_;              // UDF arguments
   bool is_volatile_{};         // indicate if UDF is volatile
   bool thread_safe_{true};     // indicate if UDF is thread-safe
 };

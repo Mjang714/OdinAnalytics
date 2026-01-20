@@ -7,6 +7,7 @@
 
 #include "oa/accel/udf.h"
 
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -32,7 +33,7 @@ udf_arg::name() const noexcept
 std::string_view
 udf_arg::help() const noexcept
 {
-  return name_;
+  return help_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,6 +64,19 @@ udf::type_text() const
     text.push_back('!');
   // done
   return text;
+}
+
+std::string
+udf::arg_text() const
+{
+  std::stringstream ss;
+  for (auto it = args_.begin(); it != args_.end(); it++) {
+    if (it != args_.begin())
+      ss << ",";
+    ss << it->name();
+  }
+  // note: can elide copy since C++20 using ref-qualification
+  return std::move(ss).str();
 }
 
 udf&
@@ -143,6 +157,12 @@ std::string_view
 udf::help() const noexcept
 {
   return help_;
+}
+
+const udf::udf_args&
+udf::args() const noexcept
+{
+  return args_;
 }
 
 udf&
