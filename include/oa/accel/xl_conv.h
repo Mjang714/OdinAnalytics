@@ -11,6 +11,7 @@
 #include <concepts>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 // forward decl to avoid pulling in XLCALL.H
@@ -73,6 +74,75 @@ std::wstring as_wstring(const xloper12& op);
 std::wstring_view as_wstring_view(const xloper12& op);
 
 /**
+ * `xltypeMulti` conversion options.
+ */
+class multi_conv_options {
+public:
+  using self = multi_conv_options;
+
+  /**
+   * Indicate whether input must be `xltypeMulti` or not.
+   *
+   * @param v `true` to require only `xltypeMulti`
+   */
+  self& strict(bool v) noexcept;
+
+  /**
+   * Indicate whether input is required to be `xltypeMulti` or not.
+   */
+  bool strict() const noexcept;
+
+  /**
+   * Indicate whether `xltypeMulti` input shape must be a vector.
+   *
+   * This means that at least one dimension, row or column, is 1. Note that
+   * passing `false` also makes `row_vector()` and `col_vector()` be `false`.
+   *
+   * @param v `true` to require `xltypeMulti` input to be a vector
+   */
+  self& vector(bool v) noexcept;
+
+  /**
+   * Indicate whether `xltypeMulti` input shape must be a vector.
+   */
+  bool vector() const noexcept;
+
+  /**
+   * Indicate whether `xltypeMulti` input shape must be a row vector.
+   *
+   * Setting `row_vector()` also directly sets the value of `vector()`.
+   *
+   * @param v `true` to require `xltypeMulti` input to be one row
+   */
+  self& row_vector(bool v) noexcept;
+
+  /**
+   * Indicate whether `xltypeMulti` input shape must be a row vector.
+   */
+  bool row_vector() const noexcept;
+
+  /**
+   * Indicate whether `xltypeMulti` input shape must be a column vector.
+   *
+   * Setting `col_vector()` also directly sets the value of `vector()`.
+   *
+   * @param v `true` to require `xltypeMulti` input to be one column
+   */
+  self& col_vector(bool v) noexcept;
+
+  /**
+   * Indicate whether `xltypeMulti` input shape must be a column vector.
+   */
+  bool col_vector() const noexcept;
+
+private:
+  bool strict_{};
+  bool vector_{};
+  bool row_vector_{};
+  bool col_vector_{};
+};
+
+/**
  * Fill a double buffer from the `xltypeMulti` array data of a `XLOPER12`.
  *
  * This flattens the `xltypeMulti` values in row-major order and will throw an
@@ -90,8 +160,9 @@ std::wstring_view as_wstring_view(const xloper12& op);
  *
  * @param out Output buffer
  * @param op `XLOPER12` to convert
+ * @param opts Additional `xltypeMulti` conversion options
  */
-void as(double* out, const xloper12& op);
+void as(double* out, const xloper12& op, const multi_conv_options& opts = {});
 
 /**
  * Fill a float buffer from the `xltypeMulti` array data of a `XLOPER12`.
@@ -100,8 +171,9 @@ void as(double* out, const xloper12& op);
  *
  * @param out Output buffer
  * @param op `XLOPER12` to convert
+ * @param opts Additional `xltypeMulti` conversion options
  */
-void as(float* out, const xloper12& op);
+void as(float* out, const xloper12& op, const multi_conv_options& opts = {});
 
 /**
  * Get a vector of doubles from the `xltypeMulti` array data of a `XLOPER12`.
@@ -114,17 +186,21 @@ void as(float* out, const xloper12& op);
  * 1-element vectors as an easy-to-implement convenience.
  *
  * @param op `XLOPER12` to convert
+ * @param opts Additional `xltypeMulti` conversion options
  */
-std::vector<double> as_double_vector(const xloper12& op);
+std::vector<double>
+as_double_vector(const xloper12& op, const multi_conv_options& opts = {});
 
 /**
- * Get a vector of flotas from the `xltypeMulti` array data of a `XLOPER12`.
+ * Get a vector of floats from the `xltypeMulti` array data of a `XLOPER12`.
  *
  * This has the semantics of `as_double_vector()`.
  *
  * @param op `XLOPER12` to convert
+ * @param opts Additional `xltypeMulti` conversion options
  */
-std::vector<float> as_float_vector(const xloper12& op);
+std::vector<float>
+as_float_vector(const xloper12& op, const multi_conv_options& opts = {});
 
 /**
  * `XLOPER12` converter template.
@@ -136,7 +212,9 @@ std::vector<float> as_float_vector(const xloper12& op);
  * T operator()(const xloper12&) const;
  * @endcode
  *
- * A more rigorous concept is defined in `xloper12_convertible`.
+ * A more rigorous concept is defined in `xloper12_convertible`. Note that
+ * specific specializations may provide additional arguments to specify how
+ * exactly to perform the conversion for more complex types.
  *
  * @tparam T type
  */
@@ -159,13 +237,15 @@ concept xloper12_convertible = requires(xloper12_converter<T> f, xloper12 v) {
  * Depending on the implementation function some conversions are allowed.
  *
  * @tparam T Target type
+ * @tparam Ts Additional `xloper12_converter<T>::operator()` arguments
  *
  * @param op `XLOPER12` to convert
+ * @param args Additional `xloper12_converter<T>::operator()` arguments
  */
-template <xloper12_convertible T>
-T as(const xloper12& op)
+template <xloper12_convertible T, typename... Ts>
+T as(const xloper12& op, Ts&&... args)
 {
-  return xloper12_converter<T>{}(op);
+  return xloper12_converter<T>{}(op, std::forward<Ts>(args)...);
 }
 
 // double specialization
@@ -201,13 +281,19 @@ struct xloper12_converter<std::wstring_view> {
 // std::vector<double> specialization
 template <>
 struct xloper12_converter<std::vector<double>> {
-  auto operator()(const xloper12& op) const { return as_double_vector(op); }
+  auto operator()(const xloper12& op, const multi_conv_options& opts = {}) const
+  {
+    return as_double_vector(op, opts);
+  }
 };
 
 // std::vector<float> specialization
 template <>
 struct xloper12_converter<std::vector<float>> {
-  auto operator()(const xloper12& op) const { return as_float_vector(op); }
+  auto operator()(const xloper12& op, const multi_conv_options& opts = {}) const
+  {
+    return as_float_vector(op, opts);
+  }
 };
 
 }  // namespace oa

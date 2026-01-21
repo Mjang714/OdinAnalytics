@@ -28,6 +28,10 @@
 namespace oa {
 namespace accel {
 
+////////////////////////////////////////////////////////////////////////////////
+// scalar converters                                                          //
+////////////////////////////////////////////////////////////////////////////////
+
 double as_double(const xloper12& op)
 {
   switch (op.xltype) {
@@ -157,6 +161,68 @@ std::wstring_view as_wstring_view(const xloper12& op)
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// multi_conv_options                                                         //
+////////////////////////////////////////////////////////////////////////////////
+
+multi_conv_options&
+multi_conv_options::strict(bool v) noexcept
+{
+  strict_ = v;
+  return *this;
+}
+
+bool
+multi_conv_options::strict() const noexcept
+{
+  return strict_;
+}
+
+multi_conv_options&
+multi_conv_options::vector(bool v) noexcept
+{
+  vector_ = v;
+  row_vector_ = (row_vector_ && v);
+  col_vector_ = (col_vector_ && v);
+  return *this;
+}
+
+bool
+multi_conv_options::vector() const noexcept
+{
+  return vector_;
+}
+
+multi_conv_options&
+multi_conv_options::row_vector(bool v) noexcept
+{
+  row_vector_ = vector_ = v;
+  return *this;
+}
+
+bool
+multi_conv_options::row_vector() const noexcept
+{
+  return row_vector_;
+}
+
+multi_conv_options::self&
+multi_conv_options::col_vector(bool v) noexcept
+{
+  col_vector_ = vector_ = v;
+  return *this;
+}
+
+bool
+multi_conv_options::col_vector() const noexcept
+{
+  return col_vector_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// multi converters                                                           //
+////////////////////////////////////////////////////////////////////////////////
+
 namespace {
 
 /**
@@ -168,43 +234,71 @@ namespace {
  *
  * @param out Output buffer
  * @param op `XLOPER12` to convert
+ * @param ops Additional `xltypeMulti` conversion options
  */
 template <std::floating_point T>
-void as_impl(T* out, const xloper12& op)
+void as_impl(T* out, const xloper12& op, const multi_conv_options& opts = {})
 {
+  // lambda for exception for strict types
+  auto raise = [type = op.xltype]
+  {
+    throw std::runtime_error{
+      std::string{"cannot fill floating-point buffer from XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(type)})
+    };
+  };
+  // switch on type
   switch (op.xltype) {
   // support converting a single value
   case xltypeInt:
+    if (opts.strict())
+      raise();
     out[0] = static_cast<T>(op.val.w);
     return;
   case xltypeNum:
+    if (opts.strict())
+      raise();
     out[0] = static_cast<T>(op.val.num);
     return;
   // convert the entire array
-  case xltypeMulti:
+  case xltypeMulti: {
+    // dimensions
+    auto n_rows = op.val.array.rows;
+    auto n_cols = op.val.array.columns;
+    // dimension requirements
+    if (opts.vector() && (n_rows != 1) && (n_cols != 1))
+      throw std::runtime_error{"xltypeMulti is not a row or column vector"};
+    if (opts.row_vector() && (n_rows != 1))
+      throw std::runtime_error{
+        "xltypeMulti has " + std::to_string(n_rows) +
+        " rows instead of the required 1 row"
+      };
+    if (opts.col_vector() && (n_cols != 1))
+      throw std::runtime_error{
+        "xltypeMulti has " + std::to_string(n_cols) +
+        " columns instead of the required 1 column"
+      };
     // note: current as_double() contains all the conversion lotic
     for (auto i = 0; i < op.val.array.rows * op.val.array.columns; i++)
       out[i] = static_cast<T>(as_double(op.val.array.lparray[i]));
     return;
+  }
   default:
-    throw std::runtime_error{
-      std::string{"cannot fill floating-point buffer from XLOPER12 of type "} +
-      // note: require cast to avoid narrowing for C++17 enum class list-init
-      to_string(xltype{static_cast<int>(op.xltype)})
-    };
+    raise();
   }
 }
 
 }  // namespace
 
-void as(double* out, const xloper12& op)
+void as(double* out, const xloper12& op, const multi_conv_options& opts)
 {
-  as_impl(out, op);
+  as_impl(out, op, opts);
 }
 
-void as(float* out, const xloper12& op)
+void as(float* out, const xloper12& op, const multi_conv_options& opts)
 {
-  as_impl(out, op);
+  as_impl(out, op, opts);
 }
 
 namespace {
@@ -218,39 +312,41 @@ namespace {
  * @tparam A Allocator
  *
  * @param op `XLOPER12` to convert
+ * @param opts Additional `xltypeMulti` conversion options
  */
 template <std::floating_point T, typename A = std::allocator<T>>
-auto as_vector(const xloper12& op)
+auto as_vector(const xloper12& op, const multi_conv_options& opts = {})
 {
-  // get array size (assume zero if not array)
+  // get array size (assume 1 if not array)
   auto size = [&op]() -> std::size_t
   {
     switch (op.xltype) {
     case xltypeMulti:
       return op.val.array.rows * op.val.array.columns;
     default:
-      return 0;
+      return 1;
     }
   }();
   // allocate vector
-  // note: if size if zero we know the type is incorrect. however, as() will
-  // throw appropriately, so we don't need to throw here
+  // note: as() will throw appropriately so we don't need error checking here
   std::vector<T, A> out(size);
   // fill + return
-  as_impl(out.data(), op);
+  as_impl(out.data(), op, opts);
   return out;
 }
 
 }  // namespace
 
-std::vector<double> as_double_vector(const xloper12& op)
+std::vector<double>
+as_double_vector(const xloper12& op, const multi_conv_options& opts)
 {
-  return as_vector<double>(op);
+  return as_vector<double>(op, opts);
 }
 
-std::vector<float> as_float_vector(const xloper12& op)
+std::vector<float>
+as_float_vector(const xloper12& op, const multi_conv_options& opts)
 {
-  return as_vector<float>(op);
+  return as_vector<float>(op, opts);
 }
 
 }  // namespace accel
