@@ -211,6 +211,10 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
     // insert argument help text
     for (const auto& arg : udf.args())
       args.emplace_back(arg.help());
+    // handle Excel bug where last argument help string has its trailing
+    // character chopped off. this is fixed by appending an empty string to the
+    // list of arguments and is a known issue fortunately
+    args.emplace_back("");
     // TODO: bug where last string argument has its trailing character chopped
     // off. need to pad with an empty character as a workaround
     // create vector of xloper12* for Excel12v()
