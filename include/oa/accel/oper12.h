@@ -82,6 +82,10 @@ void xloper12_free(xloper12* op) noexcept;
  * @note There is not much that can be done with a moved-from `oper12` except
  *  to assign to it and check if it has a value. Most operations performed on
  *  a moved-from `oper12` result in undefined behavior.
+ *
+ * @todo Create an `oper12_view` type instead of providing direct `xloper12`
+ *  references as `xloper12` is an incomplete type in this context. We can use
+ *  an `oper12_base` class to share any common members.
  */
 class oper12 {
 public:
