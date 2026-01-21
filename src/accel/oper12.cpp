@@ -22,7 +22,6 @@
 #include <optional>
 #include <ostream>
 #include <memory>
-#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -31,6 +30,7 @@
 #include <vector>
 
 #include "oa/accel/enums.h"
+#include "oa/accel/matrix_view.h"
 #include "oa/accel/mref12.h"
 #include "oa/accel/xl_ops.h"  // for operator<<
 #include "oa/string.h"        // for oa::hex
@@ -83,39 +83,44 @@ void to(xloper12* out, const T* buf, std::size_t length)
 }
 
 /**
- * Helper function to create an array `XLOPER12` from a floating-point span.
+ * Helper function to create an array `XLOPER12` from a floating-point buffer.
  *
- * This copies the span data and produces a single-column `xltypeMulti` array.
- * The allocated `array.lparray` member must be freed with `delete[]` to
- * prevent memory from leaking if an exception is thrown.
+ * This copies the buffer data and produces a `xltypeMulti` with the specified
+ * dimensions. The allocated `array.lparray` member must be freed with
+ * `delete[]` to prevent memory from leaking if an exception is thrown.
+ *
+ * The buffer data ordering is expected to be row-major.
  *
  * @tparam T Floating-point type
  *
  * @param out `XLOPER12` to populate
- * @param vals Input span
+ * @param vals Input buffer
+ * @param rows Number of rows
+ * @param cols Number of columns
  */
 template <std::floating_point T>
-void to(xloper12* out, std::span<const T> vals)
+void to(xloper12* out, const T* vals, std::size_t rows, std::size_t cols)
 {
   // max length
-  constexpr auto max_rows = (std::numeric_limits<RW>::max)();
-  // throw if span size would cause an overflow
-  if (vals.size() > max_rows)
+  constexpr auto max_size = (std::numeric_limits<RW>::max)();
+  // throw if dimensions are too large
+  if (rows * cols > max_size)
     throw std::runtime_error{
-      "span size " + std::to_string(vals.size()) + " exceeds max " +
-      std::to_string(max_rows)
+      "matrix dimensions (" + std::to_string(rows) + ", " +
+      std::to_string(cols) + ") exceeds total size " + std::to_string(max_size)
     };
   // since no extra memory is needed for doubles we directly allocate buffer
-  auto buf = std::make_unique<xloper12[]>(vals.size());
+  auto size = rows * cols;
+  auto buf = std::make_unique<xloper12[]>(size);
   // populate each xloper12 in array
-  for (auto i = 0u; i < vals.size(); i++) {
+  for (auto i = 0u; i < size; i++) {
     buf[i].val.num = vals[i];
     buf[i].xltype = xltypeNum;
   }
   // update XLOPER12 members
   out->val.array.lparray = buf.release();
-  out->val.array.rows = static_cast<RW>(vals.size());
-  out->val.array.columns = 1;
+  out->val.array.rows = static_cast<RW>(rows);
+  out->val.array.columns = static_cast<COL>(cols);;
   out->xltype = xltypeMulti;
 }
 
@@ -349,33 +354,25 @@ oper12::oper12(mref12&& mref) : value_{new xloper12{}}
   owning_ = true;
 }
 
-oper12::oper12(std::span<const float> vals)
+oper12::oper12(matrix_view<const float> view)
 {
   // use unique_ptr to be exception-safe if to() throws
   auto val = std::make_unique<xloper12>();
-  to(val.get(), vals);
+  to(val.get(), view.data(), view.rows(), view.cols());
   // update value_ + owning
   value_ = val.release();
   owning_ = true;
 }
 
-oper12::oper12(std::span<const double> vals)
+oper12::oper12(matrix_view<const double> view)
 {
   // use unique_ptr to be exception-safe if to() throws
   auto val = std::make_unique<xloper12>();
-  to(val.get(), vals);
+  to(val.get(), view.data(), view.rows(), view.cols());
   // update value_ + owning
   value_ = val.release();
   owning_ = true;
 }
-
-oper12::oper12(const std::vector<float>& vec)
-  : oper12{{vec.data(), vec.size()}}
-{}
-
-oper12::oper12(const std::vector<double>& vec)
-  : oper12{{vec.data(), vec.size()}}
-{}
 
 oper12::oper12(const char* data, std::size_t size)
   : oper12{reinterpret_cast<const unsigned char*>(data), size}

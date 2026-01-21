@@ -13,12 +13,11 @@
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "oa/accel/enums.h"
+#include "oa/accel/matrix_view.h"
 
 // forward decl to avoid pulling in XLCALL.H
 struct xloper12;
@@ -223,42 +222,24 @@ public:
   /**
    * Ctor.
    *
-   * Constructs an `XLOPER12` of type `xltypeMulti` from the given span. The
-   * resulting Excel array will be a single-column array.
+   * Constructs an `XLOPER12` from a matrix view.
    *
-   * @param vals Values to construct array from
+   * @note Ranges that satisfy `contiguous_range` can be converted from.
+   *
+   * @param view Matrix view to construct from
    */
-  oper12(std::span<const float> vals);
+  oper12(matrix_view<const float> view);
 
   /**
    * Ctor.
    *
-   * Constructs an `XLOPER12` of type `xltypeMulti` from the given span. The
-   * resulting Excel array will be a single-column array.
+   * Constructs an `XLOPER12` from a matrix view.
    *
-   * @param vals Values to construct array from
+   * @note Ranges that satisfy `contiguous_range` can be converted from.
+   *
+   * @param view Matrix view to construct from
    */
-  oper12(std::span<const double> vals);
-
-  /**
-   * Ctor.
-   *
-   * Constructs an `XLOPER12` of type `xltypeMulti` from the given vector. The
-   * resulting Excel array will be a single-column array.
-   *
-   * @param vec Values to construct array from
-   */
-  oper12(const std::vector<float>& vec);
-
-  /**
-   * Ctor.
-   *
-   * Constructs an `XLOPER12` of type `xltypeMulti` from the given vector. The
-   * resulting Excel array will be a single-column array.
-   *
-   * @param vec Values to construct array from
-   */
-  oper12(const std::vector<double>& vec);
+  oper12(matrix_view<const double> view);
 
   /**
    * Ctor.
