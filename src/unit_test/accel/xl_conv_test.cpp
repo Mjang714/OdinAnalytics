@@ -65,7 +65,7 @@ TEST_F(XlConvTest, Int2FloatTest)
 // TODO: add conversion tests for strings
 
 /**
- * Test converting a vector of doubles.
+ * Test converting to a vector of doubles.
  *
  * This test demonstrates how dimensions are flattened on conversion.
  */
@@ -87,6 +87,39 @@ TEST_F(XlConvTest, DoubleVectorTest)
   op.xltype = xltypeMulti;
   // test conversion
   auto res = oa::accel::as<std::vector<double>>(op);
+  EXPECT_THAT(res, ::testing::Pointwise(::testing::DoubleEq(), val));
+}
+
+/**
+ * Test converting to a column vector of doubles.
+ *
+ * This test demonstrates the use of `multi_conv_options` in conversion.
+ */
+TEST_F(XlConvTest, DoubleColVectorTest)
+{
+  constexpr double val[] = {1., 2., 4., 8., 16., 32., 64., 128.};
+  // allocate buffer for new xloper12 + fill
+  auto buf = std::make_unique<xloper12[]>(std::size(val));
+  for (auto i = 0u; i < std::size(val); i++) {
+    buf[i].val.num = val[i];
+    buf[i].xltype = xltypeNum;
+  }
+  // create xltypeMulti + fill
+  xloper12 op{};
+  op.val.array.lparray = buf.get();
+  // purposefully set dimensions incorrectly to trigger exception
+  op.val.array.rows = 1;
+  op.val.array.columns = static_cast<RW>(std::size(val));
+  op.xltype = xltypeMulti;
+  // create options + check that vector() is also set
+  auto opts = oa::accel::multi_conv_options{}.col_vector(true);
+  EXPECT_EQ(opts.col_vector(), opts.vector());
+  // test bad conversion
+  EXPECT_ANY_THROW(oa::accel::as<std::vector<double>>(op, opts));
+  // fix dimensions + test conversion
+  op.val.array.rows = static_cast<RW>(std::size(val));
+  op.val.array.columns = 1;
+  auto res = oa::accel::as<std::vector<double>>(op, opts);
   EXPECT_THAT(res, ::testing::Pointwise(::testing::DoubleEq(), val));
 }
 
