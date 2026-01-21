@@ -20,6 +20,9 @@
 struct _FP12;
 struct xloper12;
 
+// note: we can mix typedefs and using decls as long as they are consistent
+using FP12 = _FP12;
+
 namespace oa {
 namespace accel {
 
@@ -112,10 +115,8 @@ OA_ACCEL_XLL_TYPE_MAPPING(int, "J");
 
 /**
  * Type mapping for the `FP12` floating-point grid.
- *
- * @note We use `_FP12` directly since C++ doesn't require `struct` prefix.
  */
-OA_ACCEL_XLL_TYPE_MAPPING(const _FP12*, "K%");
+OA_ACCEL_XLL_TYPE_MAPPING(const FP12*, "K%");
 
 /**
  * Type mapping for a 16-bit character null-terminated input string.
