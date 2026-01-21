@@ -4,7 +4,14 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 if(XLLSDK_FOUND)
     add_library(
         oa_accel STATIC
-        addin.cpp call.cpp mref12.cpp oper12.cpp udf.cpp xl_conv.cpp xl_ops.cpp
+        addin.cpp
+        call.cpp
+        fp12_view.cpp
+        mref12.cpp
+        oper12.cpp
+        udf.cpp
+        xl_conv.cpp
+        xl_ops.cpp
     )
     target_include_directories(
         oa_accel PUBLIC
