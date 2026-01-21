@@ -78,10 +78,10 @@ namespace accel {
     return (expr); \
   } \
   catch (const std::exception& exc) { \
-    return oa::accel::oper12{exc.what()}.release(); \
+    return oa::accel::oper12{std::string{"#ERROR: "} + exc.what()}.release(); \
   } \
   catch (...) { \
-    return oa::accel::oper12{"Unknown C++ exception"}.release()
+    return oa::accel::oper12{"#ERROR: Unknown C++ exception"}.release()
 
 /**
  * Class representing the overall state of an implemented XLL add-in.
