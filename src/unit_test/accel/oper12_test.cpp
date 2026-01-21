@@ -204,7 +204,7 @@ TEST_F(Oper12Test, MakeSingleRefTest)
 /**
  * Test that float vector construction works as expected.
  *
- * This delegates to the `span` ctor for indirect testing.
+ * This delegates to the `matrix_view` ctor for indirect testing.
  */
 TEST_F(Oper12Test, MakeFloatVectorTest)
 {
@@ -226,7 +226,7 @@ TEST_F(Oper12Test, MakeFloatVectorTest)
 /**
  * Test that double vector construction works as expected.
  *
- * This delegates to the `span` ctor for indirect testing.
+ * This delegates to the `matrix_view` ctor for indirect testing.
  */
 TEST_F(Oper12Test, MakeDoubleVectorTest)
 {
@@ -256,7 +256,7 @@ TEST_F(Oper12Test, MakeCharDataTest)
   ASSERT_TRUE(val.type() == oa::accel::xltype::bigdata) << "val is not bigdata";
   // note: cast to satisfy template type deduction
   EXPECT_EQ(reinterpret_cast<const BYTE*>(data), val.value()->val.bigdata.h.lpbData);
-  // note: cast to silence compiler warning
+  // note: cast to silence compiler warning + exclude null terminator
   EXPECT_EQ(static_cast<long>(sizeof data - 1u), val.value()->val.bigdata.cbData);
 }
 
