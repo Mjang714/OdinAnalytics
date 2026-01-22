@@ -26,12 +26,6 @@ oper12_view::oper12_view() noexcept : oper12_view(nullptr) {}
 
 oper12_view::oper12_view(const xloper12* value) noexcept : value_{value} {}
 
-const xloper12*
-oper12_view::value() const noexcept
-{
-  return value_;
-}
-
 bool
 oper12_view::operator!() const noexcept
 {

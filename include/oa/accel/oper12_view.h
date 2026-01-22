@@ -27,7 +27,9 @@ namespace accel {
  * used to obtain information about the `XLOPER12` and perform conversions to
  * obtain C++ values. Interop with Excel SDK C functions is *not* the intention
  * of this type; it is for taking a view of an `XLOPER12` that may be provided
- * from Excel or is owned by an `oper12` allocated from C++ code.
+ * from Excel or is owned by an `oper12` allocated from C++ code. Therefore, we
+ * do not want to enable modification of the underlying `XLOPER12` as it is
+ * difficult to know if there is auxiliary memory associated with it.
  *
  * @note Although the `oper12_view` shares some member functions with the
  *  `oper12` we do not provide any common base class to strengthen the
@@ -51,15 +53,6 @@ public:
    * @param value `XLOPER12` to take a view of
    */
   oper12_view(const xloper12* value) noexcept;
-
-  /**
-   * Return a const-qualified version of the `XLOPER12` pointer member.
-   *
-   * This prevents calling a C function that modifies the `XLOPER12` on
-   * `value()` when the `oper12` is const-qualified. However, unless `XLCALL.H`
-   * is included, it is not useful, as `xloper12` will be incomplete.
-   */
-  const xloper12* value() const noexcept;
 
   /**
    * Indicate if the `oper12` points to an `XLOPER12`.
