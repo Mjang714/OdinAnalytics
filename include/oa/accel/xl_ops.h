@@ -1,13 +1,14 @@
 /**
  * @file xl_ops.h
  * @author Derek Huang
- * @brief C++ header for `XLCALL.H` type non-member operators
+ * @brief C++ header for `XLCALL.H` type non-member operations
  * @copyright MIT License
  */
 
 #ifndef OA_ACCEL_XL_OPS_H_
 #define OA_ACCEL_XL_OPS_H_
 
+#include <cstddef>
 #include <iosfwd>
 
 // forward decls to avoid pulling in XLCALL.H
@@ -70,5 +71,29 @@ std::ostream& operator<<(std::ostream& out, const xlref12& ref);
  * @param op `XLOPER12` to write to stream
  */
 std::ostream& operator<<(std::ostream& out, const xloper12& op);
+
+namespace oa {
+namespace accel {
+
+/**
+ * Return the number of rows in the `xltypeMulti` array.
+ *
+ * Zero is returned if the `XLOPER12` is not a `xltypeMulti`.
+ *
+ * @param op `XLOPER12` to get `xltypeMulti` rows for
+ */
+std::size_t rows(const xloper12& op) noexcept;
+
+/**
+ * Return the number of columns in the `xltypeMulti` array.
+ *
+ * Zero is returned if the `XLOPER12` is not a `xltypeMulti`.
+ *
+ * @param op `XLOPER12` to get `xltypeMulti` columns for
+ */
+std::size_t cols(const xloper12& op) noexcept;
+
+}  // namespace accel
+}  // namespace oa
 
 #endif  // OA_ACCEL_XL_OPS_H_

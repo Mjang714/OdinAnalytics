@@ -1,7 +1,7 @@
 /**
  * @file xl_ops.cpp
  * @author Derek Huang
- * @brief C++ source for `XLCALL.H` type non-member operators
+ * @brief C++ source for `XLCALL.H` type non-member operations
  * @copyright MIT License
  */
 
@@ -13,6 +13,7 @@
 #include <Windows.h>
 #include <XLCALL.H>
 
+#include <cstddef>
 #include <cstdint>
 #include <iostream>     // for std::wcout
 #include <ostream>
@@ -48,6 +49,10 @@ std::ostream& operator<<(std::ostream& out, const xlref12& ref)
   // otherwise multi-cell reference, so stream bottom-right cell
   return out << " ... (" << ref.rwLast << ", " << ref.colLast << ")";
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// xloper12                                                                   //
+////////////////////////////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& out, const xloper12& op)
 {
@@ -167,3 +172,29 @@ std::ostream& operator<<(std::ostream& out, const xloper12& op)
   // chaining
   return out;
 }
+
+namespace oa {
+namespace accel {
+
+std::size_t rows(const xloper12& op) noexcept
+{
+  switch (op.xltype) {
+  case xltypeMulti:
+    return op.val.array.rows;
+  default:
+    return 0u;
+  }
+}
+
+std::size_t cols(const xloper12& op) noexcept
+{
+  switch (op.xltype) {
+  case xltypeMulti:
+    return op.val.array.columns;
+  default:
+    return 0u;
+  }
+}
+
+}  // namespace accel
+}  // namespace oa
