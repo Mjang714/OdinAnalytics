@@ -20,6 +20,9 @@ struct xloper12;
 namespace oa {
 namespace accel {
 
+// forward decl to break dependency cycle
+class oper12_row_view;
+
 /**
  * Excel 12 fundamental data type "operand" read-only view class.
  *
@@ -74,10 +77,20 @@ public:
   std::optional<xlerr> error() const noexcept;
 
   /**
+   * Obtain a view over the `i`th `XLOPER12` row in a `xltypeMulti`.
+   *
+   * Behavior is undefined if the viewed `XLOPER12` is not a `xltypeMulti` or
+   * if indexing out of array bounds is performed.
+   *
+   * @param i Index of desired `XLOPER12` row
+   */
+  oper12_row_view operator[](std::size_t i) const noexcept;
+
+  /**
    * Obtain a view over the `i`th `XLOPER12` in a `xltypeMulti`.
    *
-   * Behavior is undefined if the owned `XLOPER12` is not a `xltypeMulti` or if
-   * indexing out of array bounds is performed.
+   * Behavior is undefined if the viewed `XLOPER12` is not a `xltypeMulti` or
+   * if indexing out of array bounds is performed.
    *
    * @param i Index of desired `XLOPER12`
    */
@@ -86,8 +99,8 @@ public:
   /**
    * Obtain a view over the given `XLOPER12` in a `xltypeMulti`.
    *
-   * Behavior is undefined if the owned `XLOPER12` is not a `xltypeMulti` or if
-   * indexing out of array bounds is performed.
+   * Behavior is undefined if the viewed `XLOPER12` is not a `xltypeMulti` or
+   * if indexing out of array bounds is performed.
    *
    * @param i Row index of desired `XLOPER12`
    * @param j Col index of desired `XLOPER12`
@@ -97,21 +110,21 @@ public:
   /**
    * Return the number of rows in the `xltypeMulti` array.
    *
-   * Zero is returned if the owned `XLOPER12` is not a `xltypeMulti`.
+   * Zero is returned if the viewed `XLOPER12` is not a `xltypeMulti`.
    */
   std::size_t rows() const noexcept;
 
   /**
    * Return the number of columns in the `xltypeMulti` array.
    *
-   * Zero is returned if the owned `XLOPER12` is not a `xltypeMulti`.
+   * Zero is returned if the viewed `XLOPER12` is not a `xltypeMulti`.
    */
   std::size_t cols() const noexcept;
 
   /**
    * Return the number of elements in the `xltypeMulti` array.
    *
-   * Zero is returned if the owned `XLOPER12` is not a `xltypeMulti`.
+   * Zero is returned if the viewed `XLOPER12` is not a `xltypeMulti`.
    */
   std::size_t size() const noexcept;
 
