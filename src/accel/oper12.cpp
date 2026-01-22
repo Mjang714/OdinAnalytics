@@ -354,6 +354,9 @@ oper12::oper12(mref12&& mref) : value_{new xloper12{}}
   owning_ = true;
 }
 
+oper12::oper12(const xloper12& op) : value_{xloper12_copy(&op)}, owning_{true}
+{}
+
 oper12::oper12(matrix_view<const float> view)
 {
   // use unique_ptr to be exception-safe if to() throws

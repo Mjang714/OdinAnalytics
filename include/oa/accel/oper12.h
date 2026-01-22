@@ -18,6 +18,8 @@
 
 #include "oa/accel/enums.h"
 #include "oa/accel/matrix_view.h"
+#include "oa/accel/oper12_view.h"
+#include "oa/accel/xl_conv.h"
 
 // forward decl to avoid pulling in XLCALL.H
 struct xloper12;
@@ -226,6 +228,17 @@ public:
   /**
    * Ctor.
    *
+   * Constructs an `XLOPER12` that is a deep copy of the incoming `XLOPER12`.
+   * This means that for `xltypeStr`, `xltypeMulti`, and `xltypeRef` inputs,
+   * the auxiliary memory for these types are copied as well.
+   *
+   * @param op `XLOPER12` to copy from
+   */
+  oper12(const xloper12& op);
+
+  /**
+   * Ctor.
+   *
    * Constructs an `XLOPER12` from a matrix view.
    *
    * @note Ranges that satisfy `contiguous_range` can be converted from.
@@ -282,7 +295,8 @@ public:
   /**
    * Return the `XLOPER12` pointer owned by the object.
    *
-   * This is useful for C function interop but can be abused.
+   * This is useful for C function interop but can be abused. However, unless
+   * `XLCALL.H` is included, it is not useful, as `xloper12` is incomplete.
    */
   xloper12* value() noexcept;
 
@@ -403,7 +417,20 @@ public:
    */
   std::size_t size() const noexcept;
 
-  // TODO: add as<T>() template for conversion to C++ types (converting allowed)
+  /**
+   * Obtain the `XLOPER12` value as the specified C++ type.
+   *
+   * This is implemented via the `xloper12_converter<T>` templates and
+   * depending on the specialization may take additional arguments.
+   *
+   * @tparam T C++ type with an `xloper12_converter<T>` specialization
+   * @tparam Ts Additional `xloper12_converter<T>::operator()` arguments
+   */
+  template <xloper12_convertible T, typename... Ts>
+  T as(Ts&&... args) const
+  {
+    return xloper12_converter<T>{}(*value_, std::forward<Ts>(args)...);
+  }
 
 private:
   xloper12* value_{};  // heap-allocated XLOPER12
