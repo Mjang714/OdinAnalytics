@@ -9,6 +9,7 @@ if(XLLSDK_FOUND)
         fp12_view.cpp
         mref12.cpp
         oper12.cpp
+        oper12_view.cpp
         udf.cpp
         xl_conv.cpp
         xl_ops.cpp
