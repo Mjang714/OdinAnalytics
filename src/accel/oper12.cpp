@@ -429,9 +429,10 @@ oper12::value() const noexcept
   return value_;
 }
 
-oper12::operator bool() const noexcept
+bool
+oper12::operator!() const noexcept
 {
-  return !!value_;
+  return !value_;
 }
 
 bool

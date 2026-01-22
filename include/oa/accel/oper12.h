@@ -297,10 +297,10 @@ public:
   /**
    * Indicate if the `oper12` owns a value.
    *
-   * This returns `true` when the `value_` pointer is not `nullptr`. The only
-   * case where `false` is returned is when a `oper12` is moved from.
+   * This returns `true` when the `value_` pointer is `nullptr`. The only case
+   * where `false` is *not* returned is when a `oper12` is moved from.
    */
-  operator bool() const noexcept;
+  bool operator!() const noexcept;
 
   /**
    * Indicate if the `oper12` is responsible for allocated `XLOPER12` data.
