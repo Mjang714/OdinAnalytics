@@ -65,6 +65,14 @@ public:
   bool operator!() const noexcept;
 
   /**
+   * Obtain access to a member of the viewed `XLOPER12`.
+   *
+   * This reduces the likelihood of the underlying `XLOPER12` being modified by
+   * providing const-qualification while still enabling raw member access.
+   */
+  const xloper12* operator->() const noexcept;
+
+  /**
    * Return the type enumeration corresponding to the `XLOPER12` type.
    */
   xltype type() const noexcept;
@@ -160,10 +168,10 @@ public:
   /**
    * Ctor.
    *
-   * @param buf Buffer of `xloper12` instances
+   * @param data Buffer of `xloper12` instances
    * @param size Number of `xloper12` instances in row view
    */
-  oper12_row_view(const xloper12* buf, std::size_t size) noexcept;
+  oper12_row_view(const xloper12* data, std::size_t size) noexcept;
 
   /**
    * Return an `oper12_view` to the `i`th `XLOPER12` in the row view.
@@ -175,6 +183,11 @@ public:
   oper12_view operator[](std::size_t i) const noexcept;
 
   /**
+   * Return a pointer to the first `XLOPER12` in the row.
+   */
+  const xloper12* data() const noexcept;
+
+  /**
    * Return the number of elements in the `XLOPER12` row view.
    */
   std::size_t size() const noexcept;
@@ -183,7 +196,7 @@ public:
   // TODO: add vector<T>() overload for converting to a std::vector<T>
 
 private:
-  const xloper12* buf_;
+  const xloper12* data_;
   std::size_t size_;
 };
 

@@ -36,6 +36,12 @@ oper12_view::operator!() const noexcept
   return !value_;
 }
 
+const xloper12*
+oper12_view::operator->() const noexcept
+{
+  return value_;
+}
+
 xltype
 oper12_view::type() const noexcept
 {
@@ -50,6 +56,14 @@ oper12_view::error() const noexcept
     return xlerr{value_->val.err};
   else
     return {};
+}
+
+oper12_row_view
+oper12_view::operator[](std::size_t i) const noexcept
+{
+  // use unsigned to avoid C2398 on init
+  unsigned n_cols = value_->val.array.columns;
+  return {&value_->val.array.lparray[i * n_cols], n_cols};
 }
 
 oper12_view
@@ -86,14 +100,20 @@ oper12_view::size() const noexcept
 // oper12_row_view                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-oper12_row_view::oper12_row_view(const xloper12* buf, std::size_t size) noexcept
-  : buf_{buf}, size_{size}
+oper12_row_view::oper12_row_view(const xloper12* data, std::size_t size) noexcept
+  : data_{data}, size_{size}
 {}
 
 oper12_view
 oper12_row_view::operator[](std::size_t i) const noexcept
 {
-  return buf_ + i;
+  return data_ + i;
+}
+
+const xloper12*
+oper12_row_view::data() const noexcept
+{
+  return data_;
 }
 
 std::size_t
