@@ -280,4 +280,13 @@ TEST_F(Oper12Test, MakeMissingTest)
   EXPECT_EQ("[owning=false] missing", oa::accel::to_string(op));
 }
 
+/**
+ * Test that `operator!` works as expected.
+ */
+TEST_F(Oper12Test, NullCheckTest)
+{
+  oa::accel::oper12 op;
+  EXPECT_FALSE(!op);     // contains value
+}
+
 }  // namespace
