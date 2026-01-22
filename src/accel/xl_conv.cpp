@@ -50,11 +50,6 @@ double as_double(const xloper12& op)
   }
 }
 
-float as_float(const xloper12& op)
-{
-  return static_cast<float>(as_double(op));
-}
-
 std::string as_string(const xloper12& op)
 {
   switch (op.xltype) {
@@ -157,6 +152,38 @@ std::wstring_view as_wstring_view(const xloper12& op)
       std::string{"cannot get std::wstring_view from XLOPER12 of type "} +
       // note: require cast to avoid narrowing for C++17 enum class list-init
       to_string(xltype{static_cast<int>(op.xltype)}) + " (must be xltypeStr)"
+    };
+  }
+}
+
+bool as_bool(const xloper12& op)
+{
+  switch (op.xltype) {
+  case xltypeBool:
+    return !!op.val.xbool;
+  case xltypeInt:
+    return !!op.val.w;
+  default:
+    throw std::runtime_error{
+      std::string{"cannot convert XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(op.xltype)}) + " to bool"
+    };
+  }
+}
+
+int as_int(const xloper12& op)
+{
+  switch (op.xltype) {
+  case xltypeBool:
+    return !!op.val.xbool;
+  case xltypeInt:
+    return op.val.w;
+  default:
+    throw std::runtime_error{
+      std::string{"cannot convert XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(op.xltype)}) + " to int"
     };
   }
 }

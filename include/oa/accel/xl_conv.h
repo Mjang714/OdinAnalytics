@@ -31,15 +31,6 @@ namespace accel {
 double as_double(const xloper12& op);
 
 /**
- * Get the `double` value stored in a `XLOPER12` of type `xltypeNum` as float.
- *
- * This simply casts the `as_double()` value into a `float`.
- *
- * @param op `XLOPER12` to convert
- */
-float as_float(const xloper12& op);
-
-/**
  * Get the string stored in a `XLOPER12` of type `xltypeStr` as a string.
  *
  * Conversions are done if the type is `xltypeNum`, `xltypeBool`, `xltypeErr`,
@@ -72,6 +63,26 @@ std::wstring as_wstring(const xloper12& op);
  * @param op `XLOPER12` to get view of
  */
 std::wstring_view as_wstring_view(const xloper12& op);
+
+/**
+ * Get the boolean value stored in a `XLOPER12` of type `xltypeBool`.
+ *
+ * Converting from a `xltypeInt` is allowed and an exception is otherwise
+ * thrown to indicate conversion failure.
+ *
+ * @param op `XLOPER12` to convert
+ */
+bool as_bool(const xloper12& op);
+
+/**
+ * Get the integer value stored in a `XLOPER12` of type `xltypeInt`.
+ *
+ * Converting from a `xltypeBool` is allowed and an exception is otherwise
+ * thrown to indicate conversion failure.
+ *
+ * @param op `XLOPER12` to convert
+ */
+int as_int(const xloper12& op);
 
 /**
  * `xltypeMulti` conversion options.
@@ -251,31 +262,46 @@ T as(const xloper12& op, Ts&&... args)
 // double specialization
 template <>
 struct xloper12_converter<double> {
-  auto operator()(const xloper12& op) const { return as_double(op); }
+  auto operator()(const xloper12& op) const
+  {
+    return as_double(op);
+  }
 };
 
 // float specialization
 template <>
 struct xloper12_converter<float> {
-  auto operator()(const xloper12& op) const { return as_float(op); }
+  auto operator()(const xloper12& op) const
+  {
+    return static_cast<float>(as_double(op));
+  }
 };
 
 // std::string specialization
 template <>
 struct xloper12_converter<std::string> {
-  auto operator()(const xloper12& op) const { return as_string(op); }
+  auto operator()(const xloper12& op) const
+  {
+    return as_string(op);
+  }
 };
 
 // std::wstring specialization
 template <>
 struct xloper12_converter<std::wstring> {
-  auto operator()(const xloper12& op) const { return as_wstring(op); }
+  auto operator()(const xloper12& op) const
+  {
+    return as_wstring(op);
+  }
 };
 
 // std::wstring_view specialization
 template <>
 struct xloper12_converter<std::wstring_view> {
-  auto operator()(const xloper12& op) const { return as_wstring_view(op); }
+  auto operator()(const xloper12& op) const
+  {
+    return as_wstring_view(op);
+  }
 };
 
 // std::vector<double> specialization
@@ -293,6 +319,18 @@ struct xloper12_converter<std::vector<float>> {
   auto operator()(const xloper12& op, const multi_conv_options& opts = {}) const
   {
     return as_float_vector(op, opts);
+  }
+};
+
+// integral type partial specialization
+template <std::integral T>
+struct xloper12_converter<T> {
+  auto operator()(const xloper12& op) const
+  {
+    if constexpr (std::same_as<std::remove_cv_t<T>, bool>)
+      return as_bool(op);
+    else
+      return static_cast<T>(as_int(op));
   }
 };
 
