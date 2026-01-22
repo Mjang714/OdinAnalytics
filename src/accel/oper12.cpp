@@ -32,6 +32,7 @@
 #include "oa/accel/enums.h"
 #include "oa/accel/matrix_view.h"
 #include "oa/accel/mref12.h"
+#include "oa/accel/oper12_view.h"
 #include "oa/accel/xl_ops.h"  // for operator<<, rows, cols
 #include "oa/string.h"        // for oa::hex
 
@@ -438,6 +439,18 @@ oper12::operator!() const noexcept
   return !value_;
 }
 
+xloper12*
+oper12::operator->() noexcept
+{
+  return value_;
+}
+
+const xloper12*
+oper12::operator->() const noexcept
+{
+  return value_;
+}
+
 bool
 oper12::owning() const noexcept
 {
@@ -476,36 +489,24 @@ oper12::error() const noexcept
     return {};
 }
 
-xloper12&
-oper12::operator[](std::size_t i) noexcept
-{
-  return value_->val.array.lparray[i];
-}
-
-const xloper12&
+oper12_row_view
 oper12::operator[](std::size_t i) const noexcept
 {
-  return value_->val.array.lparray[i];
+  // use unsigned to avoid C2398 on init
+  unsigned n_cols = value_->val.array.columns;
+  return {&value_->val.array.lparray[i * n_cols], n_cols};
 }
 
-xloper12&
-oper12::operator()(std::size_t i, std::size_t j)
+oper12_view
+oper12::operator()(std::size_t i) const noexcept
 {
-  return const_cast<xloper12&>((*const_cast<const oper12*>(this))(i, j));
+  return &value_->val.array.lparray[i];
 }
 
-const xloper12&
-oper12::operator()(std::size_t i, std::size_t j) const
+oper12_view
+oper12::operator()(std::size_t i, std::size_t j) const noexcept
 {
-  switch (value_->xltype) {
-  case xltypeMulti:
-    return value_->val.array.lparray[i * value_->val.array.columns + j];
-  default:
-    throw std::runtime_error{
-      "cannot call operator() on oper12 of type " +
-      std::string{to_string(type())}
-    };
-  }
+  return &value_->val.array.lparray[i * value_->val.array.columns + j];
 }
 
 std::size_t

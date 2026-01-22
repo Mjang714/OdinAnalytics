@@ -317,6 +317,21 @@ public:
   bool operator!() const noexcept;
 
   /**
+   * Obtain access to a member of the viewed `XLOPER12`.
+   *
+   * This provides some syntactic sugar for member access.
+   */
+  xloper12* operator->() noexcept;
+
+  /**
+   * Obtain access to a member of the owned `XLOPER12`.
+   *
+   * This reduces the likelihood of the underlying `XLOPER12` being modified by
+   * providing const-qualification while still enabling raw member access.
+   */
+  const xloper12* operator->() const noexcept;
+
+  /**
    * Indicate if the `oper12` is responsible for allocated `XLOPER12` data.
    *
    * Some `XLOPER12` data, e.g. for strings when type is `xltypeStr`, requires
@@ -357,44 +372,35 @@ public:
   std::optional<xlerr> error() const noexcept;
 
   /**
-   * Obtain a reference to the `i`th `XLOPER12` in a `xltypeMulti`.
+   * Obtain a view over the `i`th `XLOPER12` row in a `xltypeMulti`.
+   *
+   * Behavior is undefined if the owned `XLOPER12` is not a `xltypeMulti` or if
+   * indexing out of array bounds is performed.
+   *
+   * @param i Index of desired `XLOPER12` row
+   */
+  oper12_row_view operator[](std::size_t i) const noexcept;
+
+  /**
+   * Obtain a view over the `i`th `XLOPER12` in a `xltypeMulti`.
    *
    * Behavior is undefined if the owned `XLOPER12` is not a `xltypeMulti` or if
    * indexing out of array bounds is performed.
    *
    * @param i Index of desired `XLOPER12`
    */
-  xloper12& operator[](std::size_t i) noexcept;
+  oper12_view operator()(std::size_t i) const noexcept;
 
   /**
-   * Obtain a const reference to the `i`th `XLOPER12` in a `xltypeMulti`.
+   * Obtain a view over the given `XLOPER12` in a `xltypeMulti`.
    *
    * Behavior is undefined if the owned `XLOPER12` is not a `xltypeMulti` or if
    * indexing out of array bounds is performed.
    *
-   * @param i Index of desired `XLOPER12`
-   */
-  const xloper12& operator[](std::size_t i) const noexcept;
-
-  /**
-   * Obtain a reference to the given `XLOPER12` in a `xltypeMulti`.
-   *
-   * Behavior is undefined if indexing out of bounds is performed.
-   *
    * @param i Row index of desired `XLOPER12`
    * @param j Col index of desired `XLOPER12`
    */
-  xloper12& operator()(std::size_t i, std::size_t j);
-
-  /**
-   * Obtain a const reference to the given `XLOPER12` in a `xltypeMulti`.
-   *
-   * Behavior is undefined if indexing out of bounds is performed.
-   *
-   * @param i Row index of desired `XLOPER12`
-   * @param j Col index of desired `XLOPER12`
-   */
-  const xloper12& operator()(std::size_t i, std::size_t j) const;
+  oper12_view operator()(std::size_t i, std::size_t j) const noexcept;
 
   /**
    * Return the number of rows in the `xltypeMulti` array.

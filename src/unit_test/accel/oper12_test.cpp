@@ -51,7 +51,7 @@ TEST_F(Oper12Test, MakeBoolTest)
   oa::accel::oper12 val{x};
   ASSERT_TRUE(val.type() == oa::accel::xltype::bool_) << "val is not bool_";
   // TODO: add conversion for value inspection
-  EXPECT_EQ(x, !!val.value()->val.xbool);
+  EXPECT_EQ(x, !!val->val.xbool);
 }
 
 /**
@@ -63,7 +63,7 @@ TEST_F(Oper12Test, MakeIntTest)
   oa::accel::oper12 val{x};
   ASSERT_TRUE(val.type() == oa::accel::xltype::int_) << "val is not int_";
   // TODO: add conversion for value inspection
-  EXPECT_EQ(x, val.value()->val.w);
+  EXPECT_EQ(x, val->val.w);
 }
 
 /**
@@ -75,7 +75,7 @@ TEST_F(Oper12Test, MakeDoubleTest)
   oa::accel::oper12 val{x};
   ASSERT_TRUE(val.type() == oa::accel::xltype::num) << "val is not a number";
   // TODO: add conversion for value inspection
-  EXPECT_DOUBLE_EQ(x, val.value()->val.num);
+  EXPECT_DOUBLE_EQ(x, val->val.num);
 }
 
 /**
@@ -94,7 +94,7 @@ TEST_F(Oper12Test, MakeCStringTest)
     // note: subtract one from end(str) to avoid null terminator
     (L"\013" + std::wstring{std::begin(str), std::end(str) - 1u}),
     // note: use sizeof str because Excel string has prepended size
-    (std::wstring_view{val.value()->val.str, sizeof str})
+    (std::wstring_view{val->val.str, sizeof str})
   );
 }
 
@@ -112,7 +112,7 @@ TEST_F(Oper12Test, MakeStringTest)
   // Excel 12 uses wide strings and size is in first code point
   EXPECT_EQ(
     (L"\013" + std::wstring{str.begin(), str.end()}),
-    (std::wstring_view{val.value()->val.str, str.size() + 1u})
+    (std::wstring_view{val->val.str, str.size() + 1u})
   );
 }
 
@@ -128,10 +128,7 @@ TEST_F(Oper12Test, MakeWstringTest)
   EXPECT_TRUE(val.owning());
   // TODO: add conversion for value inspection
   // Excel 12 wide string size is in first code point
-  EXPECT_EQ(
-    L"\013" + str,
-    (std::wstring_view{val.value()->val.str, str.size() + 1u})
-  );
+  EXPECT_EQ(L"\013" + str, (std::wstring_view{val->val.str, str.size() + 1u}));
 }
 
 /**
@@ -147,8 +144,8 @@ TEST_F(Oper12Test, CopyWStringTest)
   // TODO: add conversion for value inspection
   // note: Excel strings have size prepended into first character
   EXPECT_EQ(
-    (std::wstring_view{v1.value()->val.str, str.size() + 1u}),
-    (std::wstring_view{v2.value()->val.str, str.size() + 1u})
+    (std::wstring_view{v1->val.str, str.size() + 1u}),
+    (std::wstring_view{v2->val.str, str.size() + 1u})
   );
 }
 
@@ -165,10 +162,7 @@ TEST_F(Oper12Test, MoveWStringTest)
   // v2 will have the contents
   ASSERT_TRUE(v2.type() == oa::accel::xltype::str);
   // TODO: add conversion for value inspection
-  EXPECT_EQ(
-    L"\013" + str,
-    (std::wstring_view{v2.value()->val.str, str.size() + 1u})
-  );
+  EXPECT_EQ(L"\013" + str, (std::wstring_view{v2->val.str, str.size() + 1u}));
 }
 
 /**
@@ -181,9 +175,9 @@ TEST_F(Oper12Test, MakeSingleCellTest)
   oa::accel::oper12 val{row, col};
   ASSERT_TRUE(val.type() == oa::accel::xltype::sref) << "val is not an sref";
   // note: count is always 1
-  EXPECT_EQ(1, val.value()->val.sref.count);
+  EXPECT_EQ(1, val->val.sref.count);
   // note: need parentheses as otherwise macro gets confused
-  EXPECT_EQ((xlref12{row, row, col, col}), val.value()->val.sref.ref);
+  EXPECT_EQ((xlref12{row, row, col, col}), val->val.sref.ref);
 }
 
 /**
@@ -195,8 +189,8 @@ TEST_F(Oper12Test, MakeSingleRefTest)
   oa::accel::oper12 val{ref};
   ASSERT_TRUE(val.type() == oa::accel::xltype::sref) << "val is not an sref";
   // note: count is always 1
-  EXPECT_EQ(1, val.value()->val.sref.count);
-  EXPECT_EQ(ref, val.value()->val.sref.ref);
+  EXPECT_EQ(1, val->val.sref.count);
+  EXPECT_EQ(ref, val->val.sref.ref);
 }
 
 // TODO: add tests for multi-ref
@@ -218,7 +212,7 @@ TEST_F(Oper12Test, MakeFloatVectorTest)
   // TODO: really need conversion functions
   std::vector<float> out(val.size());
   for (auto i = 0u; i < out.size(); i++)
-    out[i] = static_cast<float>(val[i].val.num);
+    out[i] = static_cast<float>(val(i)->val.num);
   // compare values
   EXPECT_THAT(out, ::testing::Pointwise(::testing::FloatEq(), vec));
 }
@@ -239,7 +233,7 @@ TEST_F(Oper12Test, MakeDoubleVectorTest)
   // get vector for round-trip
   std::vector<double> out(val.size());
   for (auto i = 0; i < out.size(); i++)
-    out[i] = val[i].val.num;
+    out[i] = val(i)->val.num;
   // compare values
   EXPECT_THAT(out, ::testing::Pointwise(::testing::DoubleEq(), vec));
 }
@@ -255,9 +249,9 @@ TEST_F(Oper12Test, MakeCharDataTest)
   oa::accel::oper12 val{data, sizeof data - 1u};
   ASSERT_TRUE(val.type() == oa::accel::xltype::bigdata) << "val is not bigdata";
   // note: cast to satisfy template type deduction
-  EXPECT_EQ(reinterpret_cast<const BYTE*>(data), val.value()->val.bigdata.h.lpbData);
+  EXPECT_EQ(reinterpret_cast<const BYTE*>(data), val->val.bigdata.h.lpbData);
   // note: cast to silence compiler warning + exclude null terminator
-  EXPECT_EQ(static_cast<long>(sizeof data - 1u), val.value()->val.bigdata.cbData);
+  EXPECT_EQ(static_cast<long>(sizeof data - 1u), val->val.bigdata.cbData);
 }
 
 /**
