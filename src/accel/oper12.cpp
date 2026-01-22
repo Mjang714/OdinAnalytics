@@ -32,7 +32,7 @@
 #include "oa/accel/enums.h"
 #include "oa/accel/matrix_view.h"
 #include "oa/accel/mref12.h"
-#include "oa/accel/xl_ops.h"  // for operator<<
+#include "oa/accel/xl_ops.h"  // for operator<<, rows, cols
 #include "oa/string.h"        // for oa::hex
 
 namespace oa {
@@ -508,23 +508,13 @@ oper12::operator()(std::size_t i, std::size_t j) const
 std::size_t
 oper12::rows() const noexcept
 {
-  switch (value_->xltype) {
-  case xltypeMulti:
-    return value_->val.array.rows;
-  default:
-    return 0u;
-  }
+  return accel::rows(*value_);
 }
 
 std::size_t
 oper12::cols() const noexcept
 {
-  switch (value_->xltype) {
-  case xltypeMulti:
-    return value_->val.array.columns;
-  default:
-    return 0u;
-  }
+  return accel::cols(*value_);
 }
 
 std::size_t
