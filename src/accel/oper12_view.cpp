@@ -1,7 +1,7 @@
 /**
  * @file oper12_view.cpp
  * @author Derek Huang
- * @brief C++ source for a view type over the Excel 12 fundamental data type
+ * @brief C++ source for view types over the Excel 12 fundamental data type
  * @copyright MIT License
  */
 
@@ -21,6 +21,10 @@
 
 namespace oa {
 namespace accel {
+
+////////////////////////////////////////////////////////////////////////////////
+// oper12_view                                                                //
+////////////////////////////////////////////////////////////////////////////////
 
 oper12_view::oper12_view() noexcept : oper12_view(nullptr) {}
 
@@ -76,6 +80,26 @@ std::size_t
 oper12_view::size() const noexcept
 {
   return rows() * cols();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// oper12_row_view                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+oper12_row_view::oper12_row_view(const xloper12* buf, std::size_t size) noexcept
+  : buf_{buf}, size_{size}
+{}
+
+oper12_view
+oper12_row_view::operator[](std::size_t i) const noexcept
+{
+  return buf_ + i;
+}
+
+std::size_t
+oper12_row_view::size() const noexcept
+{
+  return size_;
 }
 
 }  // namespace accel
