@@ -27,7 +27,7 @@ namespace {
 class XlConvTest : public ::testing::Test {};
 
 /**
- * Test converting to a double.
+ * Test converting `xltypeNum` to a double.
  */
 TEST_F(XlConvTest, DoubleTest)
 {
@@ -39,7 +39,7 @@ TEST_F(XlConvTest, DoubleTest)
 }
 
 /**
- * Test converting to a float.
+ * Test converting `xltypeNum` to a float.
  */
 TEST_F(XlConvTest, FloatTest)
 {
@@ -51,7 +51,7 @@ TEST_F(XlConvTest, FloatTest)
 }
 
 /**
- * Test converting an int to a float.
+ * Test converting `xltypeInt` to a float.
  */
 TEST_F(XlConvTest, Int2FloatTest)
 {
@@ -60,6 +60,51 @@ TEST_F(XlConvTest, Int2FloatTest)
   op.val.w = val;
   op.xltype = xltypeInt;
   EXPECT_FLOAT_EQ(val, oa::accel::as<float>(op));
+}
+
+/**
+ * Test converting `xltypeBool` to a float.
+ */
+TEST_F(XlConvTest, Bool2FloatTest)
+{
+  xloper12 op{};
+  op.val.xbool = 1;
+  op.xltype = xltypeBool;
+  EXPECT_FLOAT_EQ(1.f, oa::accel::as<float>(op));
+}
+
+/**
+ * Test converting `xltypeInt` to an int.
+ */
+TEST_F(XlConvTest, IntTest)
+{
+  constexpr int val = 123;
+  xloper12 op{};
+  op.val.w = val;
+  op.xltype = xltypeInt;
+  EXPECT_EQ(val, oa::accel::as<int>(op));
+}
+
+/**
+ * Test converting from `xltypeBool` to an unsigned int.
+ */
+TEST_F(XlConvTest, Bool2UIntTest)
+{
+  xloper12 op{};
+  op.val.xbool = 1;
+  op.xltype = xltypeBool;
+  EXPECT_EQ(1u, oa::accel::as<unsigned>(op));
+}
+
+/**
+ * Test converting from `xltypeInt` to a `bool`.
+ */
+TEST_F(XlConvTest, Int2BoolTest)
+{
+  xloper12 op{};
+  op.val.w = 123;
+  op.xltype = xltypeInt;
+  EXPECT_TRUE(oa::accel::as<bool>(op));
 }
 
 // TODO: add conversion tests for strings
@@ -129,7 +174,7 @@ TEST_F(XlConvTest, DoubleColVectorTest)
 TEST_F(XlConvTest, Int2FloatVectorTest)
 {
   constexpr int val[] = {1234};
-  // allocate buffer for new xloper12 + filll
+  // allocate buffer for new xloper12 + fill
   auto buf = std::make_unique<xloper12[]>(1u);
   buf[0].val.num = val[0];
   buf[0].xltype = xltypeNum;
