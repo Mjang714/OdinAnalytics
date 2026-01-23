@@ -200,7 +200,13 @@ private:
 #define OA_ACCEL_ADDIN_INSTANCE() \
   static auto& OA_CONCAT(oa_accel_addin_, __LINE__) = oa::accel::addin::instance()
 
-// TODO: document
+/**
+ * Register a standard UDF using an exported XLL function.
+ *
+ * Method chaining can be used to set properties of the exported UDF.
+ *
+ * @param func Exported XLL function to register
+ */
 #define OA_ACCEL_EXPORT_FUNC(func) \
   static auto& OA_CONCAT(oa_accel_udf_ref_, __LINE__) = oa::accel::addin::udfs() \
     .add(OA_STRINGIFY(func), func) \
