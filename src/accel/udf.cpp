@@ -94,12 +94,12 @@ udf::name() const noexcept
 }
 
 udf&
-udf::type(int v)
+udf::type(udf_type v)
 {
   switch (v) {
-  case 0:
-  case 1:
-  case 2:
+  case udf_type::hidden:
+  case udf_type::function:
+  case udf_type::macro:
     type_ = v;
     break;
   default:
@@ -108,7 +108,7 @@ udf::type(int v)
   return *this;
 }
 
-int
+udf_type
 udf::type() const noexcept
 {
   return type_;

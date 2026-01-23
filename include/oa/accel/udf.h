@@ -247,6 +247,18 @@ private:
 };
 
 /**
+ * Enum for the different Excel UDF types.
+ *
+ * The value of each member corresponds to the associated `pxMacroType` value
+ * that is passed to the `xlfRegister` function.
+ */
+enum udf_type {
+  hidden,    // hidden UDF (not in Function Wizard)
+  function,  // standard UDF
+  macro      // command/macro UDF
+};
+
+/**
  * XLL add-in user-defined function (UDF).
  *
  * This class represents all the necessary state required for a call to
@@ -324,23 +336,16 @@ public:
 
   /**
    * Update the XLL function type.
-   *
-   * The only valid values are 0, 1, and 2, where 1 is for standard worksheet
-   * functions, 0 is for a worksheet function not available in the Function
-   * Wizard, and 2 is for macro sheet functions.
-   *
-   * If not specified the value is 1 by default.
-   *
-   * @todo Need to think a bit harder about how to do this.
+   * If not specified the value is `udf_type::function` by default.
    *
    * @param v Function type
    */
-  udf& type(int v);
+  udf& type(udf_type v);
 
   /**
    * Return the XLL function type.
    */
-  int type() const noexcept;
+  udf_type type() const noexcept;
 
   /**
    * Update the XLL function category.
@@ -426,17 +431,17 @@ public:
   bool thread_safe() const noexcept;
 
 private:
-  std::string export_name_;    // DLL export name (pxProcedure)
-  std::string type_template_;  // [partial] type text template (pxTypeText)
-  std::string name_;           // Excel function name (pxFunctionText)
-  int type_{1};                // function/macro type (pxMacroType)
-  std::string category_;       // function category (pxCategory)
-  char shortcut_{};            // shortcut key (pxShortcutText)
-  std::string help_topic_;     // help topic link (pxHelpTopic)
-  std::string help_;           // function help text (pxFunctionHelp)
-  udf_args args_;              // UDF arguments
-  bool is_volatile_{};         // indicate if UDF is volatile
-  bool thread_safe_{true};     // indicate if UDF is thread-safe
+  std::string export_name_;            // DLL export name (pxProcedure)
+  std::string type_template_;          // type text template (pxTypeText)
+  std::string name_;                   // Excel function name (pxFunctionText)
+  udf_type type_{udf_type::function};  // function/macro type (pxMacroType)
+  std::string category_;               // function category (pxCategory)
+  char shortcut_{};                    // shortcut key (pxShortcutText)
+  std::string help_topic_;             // help topic link (pxHelpTopic)
+  std::string help_;                   // function help text (pxFunctionHelp)
+  udf_args args_;                      // UDF arguments
+  bool is_volatile_{};                 // indicate if UDF is volatile
+  bool thread_safe_{true};             // indicate if UDF is thread-safe
 };
 
 /**
