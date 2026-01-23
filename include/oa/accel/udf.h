@@ -449,7 +449,15 @@ public:
   using container = std::vector<udf>;
   using iterator = typename container::const_iterator;
 
-  // TODO: document
+  /**
+   * Add a new UDF with the given DLL export name to the UDF registry.
+   *
+   * @tparam R Function return type
+   * @tparam Ts Function argument types
+   *
+   * @param name Function name as exported from DLL
+   * @param func Function exported from DLL
+   */
   template <typename R, typename... Ts>
   auto& add(std::string name, R(__stdcall *func)(Ts...))
   {
@@ -457,10 +465,25 @@ public:
     return *this;
   }
 
-  // TODO: document
+  /**
+   * Return an iterator to the first `udf` in the registry.
+   */
   iterator begin() const;
+
+  /**
+   * Return an iterator to one past the last `udf` in the registry.
+   */
   iterator end() const;
+
+  /**
+   * Return a reference to the last `udf` in the registry.
+   */
   udf& back();
+
+  /**
+   * Return the number of UDFs registered in the registry.
+   */
+  std::size_t size() const noexcept;
 
 private:
   container udfs_;

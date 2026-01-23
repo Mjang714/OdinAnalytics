@@ -7,6 +7,7 @@
 
 #include "oa/accel/udf.h"
 
+#include <cstddef>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -211,6 +212,12 @@ udf&
 udf_registry::back()
 {
   return udfs_.back();
+}
+
+std::size_t
+udf_registry::size() const noexcept
+{
+  return udfs_.size();
 }
 
 }  // namespace accel
