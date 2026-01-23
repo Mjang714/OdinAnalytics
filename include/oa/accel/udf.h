@@ -210,7 +210,9 @@ struct xll_type_text_impl<
  * @tparam Ts Function argument types
  */
 template <typename R, typename... Ts>
-struct xll_type_text<R(__stdcall *)(Ts...)> : xll_type_text_impl<R, Ts...> {};
+struct xll_type_text<R(__stdcall *)(Ts...)> : xll_type_text_impl<R, Ts...> {
+  static_assert(sizeof...(Ts) < 256, "max number of Excel 12 arguments is 255");
+};
 
 }  // namespace detail
 
