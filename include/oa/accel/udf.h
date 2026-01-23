@@ -151,6 +151,7 @@ OA_ACCEL_XLL_TYPE_MAPPING(xloper12*, "Q");
 template <typename T, typename... Ts>
 struct xll_type_text_impl
   : xll_type_text_impl<
+      // indices ascending from 0 for type text for T minus null terminator
       std::make_index_sequence<sizeof xll_type_text<T>::value - 1u>,
       std::make_index_sequence<
         (sizeof xll_type_text<Ts>::value + ...) -  // remaining type text
@@ -168,7 +169,18 @@ struct xll_type_text_impl
 template <typename T>
 struct xll_type_text_impl<T> : xll_type_text<T> {};
 
-// TODO: document more
+/**
+ * `xll_type_text<R(__stdcall *)(Ts...)` index sequence implementation.
+ *
+ * This performs the real work of compile-time array creation by recursively
+ * copying characters at compile time into a `constexpr const char[]`. Indexing
+ * is accomplished via the `index_sequence<...>` partial specializations, where
+ * `Is...` indexes `xll_type_text<T>::value`, excluding the trailing `'\0'`,
+ * and `Js...` indexes `xll_type_text<Ts...>::value`, excluding the `'\0'`.
+ *
+ * @tparam Is Indices ascending from 0 for indexing the type text of `T`
+ * @tparam Js Indices ascending from 0 for indexing the type text of `Ts`
+ */
 template <std::size_t... Is, std::size_t... Js, typename T, typename... Ts>
 struct xll_type_text_impl<
   std::index_sequence<Is...>,  // length of xll_type_text<T>::value - 1
