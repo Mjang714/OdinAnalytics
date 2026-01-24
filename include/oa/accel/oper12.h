@@ -518,8 +518,7 @@ private:
  *
  * The object formatting is implemented using the `operator<<` for the
  * `xloper12`. If the `oper12` doesn't manage a `xloper12`, e.g. because it has
- * been default-constructed or was moved from, the object representation of
- * the `oper12` is simply `"[owning=false] (empty)"`.
+ * was moved from, the streamed output is `"[owning=false] (empty)"`.
  *
  * @param out Output stream
  * @param op `oper12` value to write
