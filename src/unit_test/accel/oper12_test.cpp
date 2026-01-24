@@ -371,8 +371,24 @@ TEST_F(Oper12Test, Oper12VectorTest)
   oa::accel::oper12 op{vec};
   // note: need exact types due to template deduction rules
   std::tuple vals{2., 1, std::string{"hello"}, true, std::string{"no way bro"}};
-  std::cout << op << std::endl;
   EXPECT_TRUE(check(op, vals));
+}
+
+/**
+ * Test creating an `oper12` from a 2D array of `oper12` values.
+ */
+TEST_F(Oper12Test, Oper12MatrixTest)
+{
+  std::vector<oa::accel::oper12> vec{1., 2, "hello", true, false, "world"};
+  constexpr auto n_rows = 3u;
+  constexpr auto n_cols = 2u;
+  oa::accel::oper12 op{{vec.data(), n_rows, n_cols}};
+  // note: need exact types due to template deduction rules
+  std::tuple vals{1., 2, std::string{"hello"}, true, false, std::string{"world"}};
+  EXPECT_TRUE(check(op, vals));
+  // dimensions should also match
+  EXPECT_EQ(n_rows, op.rows());
+  EXPECT_EQ(n_cols, op.cols());
 }
 
 }  // namespace
