@@ -86,6 +86,20 @@ addin::wpath()
   return path;
 }
 
+std::string_view
+addin::filename()
+{
+  static auto name = std::filesystem::path{path()}.filename().string();
+  return name;
+}
+
+std::string_view
+addin::stem()
+{
+  static auto str = std::filesystem::path{path()}.stem().string();
+  return str;
+}
+
 addin&
 addin::name(std::string str) noexcept
 {
@@ -98,7 +112,7 @@ addin::name() const
 {
   // if empty use the default (cannot be called if Excel isn't running)
   if (name_.empty()) {
-    static auto str = std::filesystem::path{path()}.filename().string() + " dev";
+    static auto str = std::string{addin::filename()} + " dev";
     return str;
   }
   else
@@ -190,7 +204,7 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
 {
   // XLL name
   // TODO: should be a separate function honestly
-  oper12 xll_name{std::filesystem::path{addin::path()}.filename().string()};
+  oper12 xll_name{addin::filename()};
   // xlfRegister return value
   oper12 res;
   // register functions

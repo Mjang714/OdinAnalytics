@@ -118,7 +118,7 @@ public:
    *
    * The path can be used by `GetModuleHandleA()` to obtain the XLL `HMODULE`.
    *
-   * @note This uses `xlfGetName` and so can only be used when XLL is loaded.
+   * @note This uses `xlfGetName` and so must only be used if Excel is running.
    */
   static std::string_view path();
 
@@ -127,9 +127,25 @@ public:
    *
    * Ths path can be used by `GetModuleHandleW()` to obtain the XLL `HMODULE`.
    *
-   * @note This uses `xlfGetName` and so can only be used when XLL is loaded.
+   * @note This uses `xlfGetName` and so must only be used if Excel is running.
    */
   static std::wstring_view wpath();
+
+  /**
+   * Obtain the filename of the loaded XLL.
+   *
+   * @note This uses `xlfGetName` and so must only be used if Excel is running.
+   */
+  static std::string_view filename();
+
+  /**
+   * Obtain the filename stem of the loaded XLL.
+   *
+   * This is the filename of the XLL without its trailing extension.
+   *
+   * @note This uses `xlfGetName` and so must only be used if Excel is running.
+   */
+  static std::string_view stem();
 
   /**
    * Update the XLL name displayed in the add-in menu returned by `name()`.
