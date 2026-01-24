@@ -14,7 +14,9 @@
 #include <Windows.h>
 #include <XLCALL.H>
 
+#include <cstddef>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -29,7 +31,81 @@ namespace {
 /**
  * `oper12` test fixture.
  */
-class Oper12Test : public ::testing::Test {};
+class Oper12Test : public ::testing::Test {
+private:
+  using oper12 = oa::accel::oper12;
+
+  /**
+   * Check that an `oper12` of type `xltypeMulti` converts to the given values.
+   *
+   * The conversion is a strict conversion for testing purposes.
+   *
+   * @tparam Is Indices 0 through `sizeof...(Ts)` - 1
+   * @tparam Ts Input types
+   */
+  template <std::size_t... Is, typename... Ts>
+  auto check(
+    std::index_sequence<Is...>,
+    const oper12& op,
+    const std::tuple<Ts...>& values)
+  {
+    static_assert(sizeof...(Is) == sizeof...(Ts));
+    // not xltypeMulti
+    // TODO: add operator<< for enums
+    if (op.type() != oa::accel::xltype::multi)
+      return ::testing::AssertionFailure() << "op.type() is " <<
+        oa::accel::to_string(op.type()) << " != xltypeMulti";
+    // assume success for now
+    auto res = ::testing::AssertionSuccess();
+    // fold over pack to check
+    (
+      [&op, &values, &res]
+      {
+        // helper lambda to reset res to AssertionFailure()
+        auto mark_fail = [&res]() mutable
+        {
+          if (res)
+            res = ::testing::AssertionFailure();
+        };
+        // out of bounds
+        if (Is >= op.size()) {
+          mark_fail();
+          res << "\nop(" << Is << ") missing";
+          return;
+        }
+        // attempt conversion (could throw)
+        try {
+          if (op(Is).as<Ts>(oa::accel::strict) != std::get<Is>(values)) {
+            mark_fail();
+            res << "\nop(" << Is << ") != values[" << Is << "] [" << op <<
+              " != " << std::get<Is>(values) << "]";
+          }
+        }
+        catch (const std::exception& exc) {
+          mark_fail();
+          res << "\nop(" << Is << ") != values[" << Is << "]: exception: " <<
+            exc.what();
+        }
+      }(), ...
+    );
+    // return
+    return res;
+  }
+
+protected:
+  /**
+   * Check that an `oper12` of type `xltypeMulti` converts to the given values.
+   *
+   * The conversion is a strict conversion for testing purposes.
+   *
+   * @tparam Ts Expected input values
+   */
+  template <typename... Ts>
+  auto check(const oper12& op, const std::tuple<Ts...>& values)
+  {
+    return check(std::index_sequence_for<Ts...>{}, op, values);
+  }
+};
 
 /**
  * Test that `xlerr` construction works as expected.
@@ -49,7 +125,7 @@ TEST_F(Oper12Test, MakeBoolTest)
 {
   constexpr bool x = true;
   oa::accel::oper12 val{x};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::bool_) << "val is not bool_";
+  ASSERT_EQ(oa::accel::xltype::bool_, val.type());
   // TODO: add conversion for value inspection
   EXPECT_EQ(x, !!val->val.xbool);
 }
@@ -61,7 +137,7 @@ TEST_F(Oper12Test, MakeIntTest)
 {
   constexpr int x = 100;
   oa::accel::oper12 val{x};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::int_) << "val is not int_";
+  ASSERT_EQ(oa::accel::xltype::int_, val.type());
   // TODO: add conversion for value inspection
   EXPECT_EQ(x, val->val.w);
 }
@@ -73,7 +149,7 @@ TEST_F(Oper12Test, MakeDoubleTest)
 {
   constexpr double x = 2.;
   oa::accel::oper12 val{x};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::num) << "val is not a number";
+  ASSERT_EQ(oa::accel::xltype::num, val.type());
   // TODO: add conversion for value inspection
   EXPECT_DOUBLE_EQ(x, val->val.num);
 }
@@ -86,7 +162,7 @@ TEST_F(Oper12Test, MakeCStringTest)
   // note: using character array so we can use begin() and end()
   constexpr const char str[] = "hello world";
   oa::accel::oper12 val{str};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::str) << "val is not a string";
+  ASSERT_EQ(oa::accel::xltype::str, val.type());
   // owns extra memory
   EXPECT_TRUE(val.owning());
   // TODO: add conversion for value inspection
@@ -105,7 +181,7 @@ TEST_F(Oper12Test, MakeStringTest)
 {
   std::string str{"hello world"};
   oa::accel::oper12 val{str};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::str) << "val is not a string";
+  ASSERT_EQ(oa::accel::xltype::str, val.type());
   // owns extra memory
   EXPECT_TRUE(val.owning());
   // TODO: add conversion for value inspection
@@ -123,7 +199,7 @@ TEST_F(Oper12Test, MakeWstringTest)
 {
   std::wstring str{L"hello world"};
   oa::accel::oper12 val{str};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::str) << "val is not a string";
+  ASSERT_EQ(oa::accel::xltype::str, val.type());
   // owns extra memory
   EXPECT_TRUE(val.owning());
   // TODO: add conversion for value inspection
@@ -139,7 +215,7 @@ TEST_F(Oper12Test, CopyWStringTest)
   std::wstring str{L"hello world"};
   oa::accel::oper12 v1{str};
   auto v2 = v1;
-  ASSERT_TRUE(v1.type() == v2.type());
+  ASSERT_EQ(v1.type(), v2.type());
   EXPECT_EQ(v1.owning(), v2.owning());
   // TODO: add conversion for value inspection
   // note: Excel strings have size prepended into first character
@@ -160,7 +236,7 @@ TEST_F(Oper12Test, MoveWStringTest)
   // v1 has no value now
   ASSERT_FALSE(v1);
   // v2 will have the contents
-  ASSERT_TRUE(v2.type() == oa::accel::xltype::str);
+  ASSERT_EQ(oa::accel::xltype::str, v2.type());
   // TODO: add conversion for value inspection
   EXPECT_EQ(L"\013" + str, (std::wstring_view{v2->val.str, str.size() + 1u}));
 }
@@ -173,7 +249,7 @@ TEST_F(Oper12Test, MakeSingleCellTest)
   constexpr int row = 1;
   constexpr int col = 5;
   oa::accel::oper12 val{row, col};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::sref) << "val is not an sref";
+  ASSERT_EQ(oa::accel::xltype::sref, val.type());
   // note: count is always 1
   EXPECT_EQ(1, val->val.sref.count);
   // note: need parentheses as otherwise macro gets confused
@@ -187,7 +263,7 @@ TEST_F(Oper12Test, MakeSingleRefTest)
 {
   xlref12 ref{1, 3, 8, 45};
   oa::accel::oper12 val{ref};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::sref) << "val is not an sref";
+  ASSERT_EQ(oa::accel::xltype::sref, val.type());
   // note: count is always 1
   EXPECT_EQ(1, val->val.sref.count);
   EXPECT_EQ(ref, val->val.sref.ref);
@@ -204,7 +280,7 @@ TEST_F(Oper12Test, MakeFloatVectorTest)
 {
   std::vector<float> vec{0.f, 1.f, 1.f, 2.f, 3.f, 5.f, 8.f, 13.f, 21.f};
   oa::accel::oper12 val{vec};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::multi) << "val is not a multi";
+  ASSERT_EQ(oa::accel::xltype::multi, val.type());
   // note: dimensions should be (vec.size(), 1)
   EXPECT_EQ(vec.size(), val.rows());
   EXPECT_EQ(1, val.cols());
@@ -226,7 +302,7 @@ TEST_F(Oper12Test, MakeDoubleVectorTest)
 {
   std::vector<double> vec{2., 4., 8., 16., 32., 64., 128., 256., 512.};
   oa::accel::oper12 val{vec};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::multi) << "val is not a multi";
+  ASSERT_EQ(oa::accel::xltype::multi, val.type());
   // note: dimensions should be (vec.size(), 1)
   EXPECT_EQ(vec.size(), val.rows());
   EXPECT_EQ(1, val.cols());
@@ -247,7 +323,7 @@ TEST_F(Oper12Test, MakeCharDataTest)
 {
   constexpr const char data[] = {"arbitrary character data"};
   oa::accel::oper12 val{data, sizeof data - 1u};
-  ASSERT_TRUE(val.type() == oa::accel::xltype::bigdata) << "val is not bigdata";
+  ASSERT_EQ(oa::accel::xltype::bigdata, val.type());
   // note: cast to satisfy template type deduction
   EXPECT_EQ(reinterpret_cast<const BYTE*>(data), val->val.bigdata.h.lpbData);
   // note: cast to silence compiler warning + exclude null terminator
@@ -281,6 +357,22 @@ TEST_F(Oper12Test, NullCheckTest)
 {
   oa::accel::oper12 op;
   EXPECT_FALSE(!op);     // contains value
+}
+
+/**
+ * Test creating an `oper12` from an array of `oper12` values.
+ *
+ * By implicit conversion to `matrix_view<T>` the resulting `oper12` creates a
+ * single-column matrix when returned to Excel.
+ */
+TEST_F(Oper12Test, Oper12VectorTest)
+{
+  std::vector<oa::accel::oper12> vec{2., 1, "hello", true, "no way bro"};
+  oa::accel::oper12 op{vec};
+  // note: need exact types due to template deduction rules
+  std::tuple vals{2., 1, std::string{"hello"}, true, std::string{"no way bro"}};
+  std::cout << op << std::endl;
+  EXPECT_TRUE(check(op, vals));
 }
 
 }  // namespace
