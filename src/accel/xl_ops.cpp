@@ -72,7 +72,7 @@ std::ostream& operator<<(std::ostream& out, const xloper12& op)
     break;
   // boolean
   case xltypeBool:
-    out << op.val.xbool;
+    out << (!!op.val.xbool ? "true" : "false");
     break;
   // error
   case xltypeErr:
