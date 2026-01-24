@@ -126,7 +126,9 @@ void to(xloper12* out, matrix_view<const T> view)
   // release(xloper12&) to transfer fields one-by-one
   else {
     // note: if this throws XLOPER12 memory will be cleaned up correctly
-    std::vector<oper12> values{view.begin(), view.end()};
+    // TODO: can't use begin() and end() with list-initialization due to
+    // implicit pointer -> bool conversion. should strengthen iterator types
+    std::vector<oper12> values(view.begin(), view.end());
     // call release(xloper12&) to orphan each XLOPER12
     for (auto i = 0u; i < values.size(); i++)
       values[i].release(buf[i]);
