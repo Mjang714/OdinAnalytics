@@ -386,7 +386,8 @@ public:
   /**
    * Update the UDF help text.
    *
-   * This can be a multi-line string so as to provide appropriate detail.
+   * This can be a multi-line string so as to provide appropriate detail. It
+   * sadly must not exceed 255 characters as otherwise `xlfRegister` will fail.
    *
    * @param text Help text
    */
