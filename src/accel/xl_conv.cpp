@@ -50,6 +50,20 @@ double as_double(const xloper12& op)
   }
 }
 
+double as_double(const xloper12& op, detail::strict_tag)
+{
+  switch (op.xltype) {
+  case xltypeNum:
+    return op.val.num;
+  default:
+    throw std::runtime_error{
+      std::string{"cannot strictly convert XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(op.xltype)}) + " to double"
+    };
+  }
+}
+
 std::string as_string(const xloper12& op)
 {
   switch (op.xltype) {
@@ -90,6 +104,27 @@ std::string as_string(const xloper12& op)
   default:
     throw std::runtime_error{
       std::string{"cannot convert XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(op.xltype)}) + " to std::string"
+    };
+  }
+}
+
+std::string as_string(const xloper12& op, detail::strict_tag)
+{
+  switch (op.xltype) {
+  case xltypeStr: {
+    // TODO: should try and reduce duplication of this logic
+    // note: size of string is first character
+    std::string s(static_cast<unsigned>(op.val.str[0]), '\0');
+    // narrow + return
+    for (auto i = 0u; i < s.size(); i++)
+      s[i] = std::wcout.narrow(op.val.str[i + 1], '?');
+    return s;
+  }
+  default:
+    throw std::runtime_error{
+      std::string{"cannot strictly convert XLOPER12 of type "} +
       // note: require cast to avoid narrowing for C++17 enum class list-init
       to_string(xltype{static_cast<int>(op.xltype)}) + " to std::string"
     };
@@ -141,6 +176,26 @@ std::wstring as_wstring(const xloper12& op)
   }
 }
 
+std::wstring as_wstring(const xloper12& op, detail::strict_tag)
+{
+  switch (op.xltype) {
+  case xltypeStr: {
+    // TODO: should try and reduce duplication of thisl logic
+    // note: size of string is first character
+    std::wstring s(static_cast<unsigned>(op.val.str[0]), L'\0');
+    // copy + return
+    std::memcpy(s.data(), &op.val.str[1], sizeof(XCHAR) * s.size());
+    return s;
+  }
+  default:
+    throw std::runtime_error{
+      std::string{"cannot strictly convert XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(op.xltype)}) + " to std::wstring"
+    };
+  }
+}
+
 std::wstring_view as_wstring_view(const xloper12& op)
 {
   switch (op.xltype) {
@@ -172,9 +227,25 @@ bool as_bool(const xloper12& op)
   }
 }
 
+bool as_bool(const xloper12& op, detail::strict_tag)
+{
+  switch (op.xltype) {
+  case xltypeBool:
+    return !!op.val.xbool;
+  default:
+    throw std::runtime_error{
+      std::string{"cannot strictly convert XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(op.xltype)}) + " to bool"
+    };
+  }
+}
+
 int as_int(const xloper12& op)
 {
   switch (op.xltype) {
+  case xltypeNum:
+    return static_cast<int>(op.val.num);
   case xltypeBool:
     return !!op.val.xbool;
   case xltypeInt:
@@ -182,6 +253,20 @@ int as_int(const xloper12& op)
   default:
     throw std::runtime_error{
       std::string{"cannot convert XLOPER12 of type "} +
+      // note: require cast to avoid narrowing for C++17 enum class list-init
+      to_string(xltype{static_cast<int>(op.xltype)}) + " to int"
+    };
+  }
+}
+
+int as_int(const xloper12& op, detail::strict_tag)
+{
+  switch (op.xltype) {
+  case xltypeInt:
+    return op.val.w;
+  default:
+    throw std::runtime_error{
+      std::string{"cannot strictly convert XLOPER12 of type "} +
       // note: require cast to avoid narrowing for C++17 enum class list-init
       to_string(xltype{static_cast<int>(op.xltype)}) + " to int"
     };
@@ -306,7 +391,8 @@ void as_impl(T* out, const xloper12& op, const multi_conv_options& opts = {})
         "xltypeMulti has " + std::to_string(n_cols) +
         " columns instead of the required 1 column"
       };
-    // note: current as_double() contains all the conversion lotic
+    // note: current as_double() contains all the conversion logic
+    // TODO: enable strict double conversion for a bit more speed?
     for (auto i = 0; i < op.val.array.rows * op.val.array.columns; i++)
       out[i] = static_cast<T>(as_double(op.val.array.lparray[i]));
     return;

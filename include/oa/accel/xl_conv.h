@@ -20,6 +20,29 @@ struct xloper12;
 namespace oa {
 namespace accel {
 
+namespace detail {
+
+/**
+ * Tag type to indicate that strict Excel to C++ type conversion is required.
+ *
+ * This is used through `strict` to select supported conversion function
+ * overloads that disallow some common type conversions. For example,
+ * `as_int()` can convert an `xltypeNum` value, which is a `double`, to an
+ * `int` in C++, truncating from `double` to `int`. If this conversion is not
+ * desired the stricter overload can be selected using `strict`.
+ */
+struct strict_tag {};
+
+}  // namespace detail
+
+/**
+ * Tag global to indicate exact Excel to C++ type conversion is required.
+ *
+ * This selects supported conversion function overloads that are stricter, i.e.
+ * which disallow some common type conversions.
+ */
+inline constexpr detail::strict_tag strict;
+
 /**
  * Get the `double` value stored in a `XLOPER12` of type `xltypeNum`.
  *
@@ -29,6 +52,15 @@ namespace accel {
  * @param op `XLOPER12` to convert
  */
 double as_double(const xloper12& op);
+
+/**
+ * Get the `double` value stored in a `XLOPER12` of type `xltypeNum`.
+ *
+ * This conversion is strict and requires the input is of type `xltypeNum`.
+ *
+ * @param op `XLOPER12` to convert
+ */
+double as_double(const xloper12& op, detail::strict_tag);
 
 /**
  * Get the string stored in a `XLOPER12` of type `xltypeStr` as a string.
@@ -44,6 +76,15 @@ double as_double(const xloper12& op);
 std::string as_string(const xloper12& op);
 
 /**
+ * Get the string stored in a `XLOPER12` of type `xltypeStr` as a string.
+ *
+ * This conversion is strict and requires the input is of type `xltypeStr`.
+ *
+ * @param op `XLOPER12` to convert
+ */
+std::string as_string(const xloper12& op, detail::strict_tag);
+
+/**
  * Get the string stored in a `XLOPER12` of type `xltypeStr` as a wide string.
  *
  * Conversions are done if the type is `xltypeNum`, `xltypeBool`, `xltypeErr`,
@@ -55,6 +96,15 @@ std::string as_string(const xloper12& op);
  * @param op `XLOPER12` to convert
  */
 std::wstring as_wstring(const xloper12& op);
+
+/**
+ * Get the string stored in a `XLOPER12` of type `xltypeStr` as a wide string.
+ *
+ * This conversion is strict and requires the input is of type `xltypeStr`.
+ *
+ * @param op `XLOPER12` to convert
+ */
+std::wstring as_wstring(const xloper12& op, detail::strict_tag);
 
 /**
  * Get a view of the wide string stored in a `XLOPER12` of type `xltypeStr`.
@@ -78,14 +128,35 @@ std::wstring_view as_wstring_view(const xloper12& op);
 bool as_bool(const xloper12& op);
 
 /**
+ * Get the boolean value stored in a `XLOPER12` of type `xltypeBool`.
+ *
+ * This conversion is strict and requires the input is of type `xltypeBool`.
+ *
+ * @param op `XLOPER12` to convert
+ */
+bool as_bool(const xloper12& op, detail::strict_tag);
+
+/**
  * Get the integer value stored in a `XLOPER12` of type `xltypeInt`.
  *
- * Converting from a `xltypeBool` is allowed and an exception is otherwise
- * thrown to indicate conversion failure.
+ * Converting from a `xltypeBool` and `xltypeNum` is allowed and an exception
+ * is otherwise thrown to indicate conversion failure.
  *
  * @param op `XLOPER12` to convert
  */
 int as_int(const xloper12& op);
+
+/**
+ * Get the integer value stored in a `XLOPER12` of type `xltypeInt`.
+ *
+ * This conversion is strict and requires the input is of type `xltypeInt`.
+ *
+ * @note This is not quite useful in practice as numeric values always come
+ *  from Excel as `xltypeNum` and booleans will come as `xltypeBool`.
+ *
+ * @param op `XLOPER12` to convert
+ */
+int as_int(const xloper12& op, detail::strict_tag);
 
 /**
  * `xltypeMulti` conversion options.
@@ -227,8 +298,9 @@ as_float_vector(const xloper12& op, const multi_conv_options& opts = {});
  * @endcode
  *
  * A more rigorous concept is defined in `xloper12_convertible`. Note that
- * specific specializations may provide additional arguments to specify how
- * exactly to perform the conversion for more complex types.
+ * specific specializations may provide additional arguments or `operator()`
+ * overloads to specify how exactly to perform the conversion for more complex
+ * types or for particular scenarios, e.g. when strict conversion is desired.
  *
  * @tparam T type
  */
@@ -265,36 +337,64 @@ T as(const xloper12& op, Ts&&... args)
 // double specialization
 template <>
 struct xloper12_converter<double> {
+  // non-strict overload
   auto operator()(const xloper12& op) const
   {
     return as_double(op);
+  }
+
+  // strict overload
+  auto operator()(const xloper12& op, detail::strict_tag tag) const
+  {
+    return as_double(op, tag);
   }
 };
 
 // float specialization
 template <>
 struct xloper12_converter<float> {
+  // non-strict overload
   auto operator()(const xloper12& op) const
   {
     return static_cast<float>(as_double(op));
+  }
+
+  // strict overload
+  auto operator()(const xloper12& op, detail::strict_tag tag) const
+  {
+    return static_cast<float>(as_double(op, tag));
   }
 };
 
 // std::string specialization
 template <>
 struct xloper12_converter<std::string> {
+  // non-strict overload
   auto operator()(const xloper12& op) const
   {
     return as_string(op);
+  }
+
+  // strict overload
+  auto operator()(const xloper12& op, detail::strict_tag tag) const
+  {
+    return as_string(op, tag);
   }
 };
 
 // std::wstring specialization
 template <>
 struct xloper12_converter<std::wstring> {
+  // non-strict overload
   auto operator()(const xloper12& op) const
   {
     return as_wstring(op);
+  }
+
+  // strict overload
+  auto operator()(const xloper12& op, detail::strict_tag tag) const
+  {
+    return as_wstring(op, tag);
   }
 };
 
@@ -328,12 +428,22 @@ struct xloper12_converter<std::vector<float>> {
 // integral type partial specialization
 template <std::integral T>
 struct xloper12_converter<T> {
+  // non-strict overload
   auto operator()(const xloper12& op) const
   {
     if constexpr (std::same_as<std::remove_cv_t<T>, bool>)
       return as_bool(op);
     else
       return static_cast<T>(as_int(op));
+  }
+
+  // strict overload
+  auto operator()(const xloper12& op, detail::strict_tag tag) const
+  {
+    if constexpr (std::same_as<std::remove_cv_t<T>, bool>)
+      return as_bool(op, tag);
+    else
+      return static_cast<T>(as_int(op, tag));
   }
 };
 
