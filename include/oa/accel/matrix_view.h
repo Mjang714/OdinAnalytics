@@ -59,7 +59,7 @@ constexpr bool is_matrix_view_v = is_matrix_view<T>::value;
  * One can also access elements as a 2D row-major matrix view:
  *
  * @code{.cc}
- * st::cout << view(r, c) << std::endl;
+ * std::cout << view(r, c) << std::endl;
  * @endcode
  *
  * Bracket notation is supported to get a row slice to iterate on:
@@ -238,7 +238,7 @@ public:
    * @param i Row index
    * @param j Col index
    */
-  constexpr auto& operator()(std::size_t i, std::size_t j) noexcept
+  constexpr auto& operator()(std::size_t i, std::size_t j) const noexcept
   {
     return data_[i * cols_ + j];
   }
