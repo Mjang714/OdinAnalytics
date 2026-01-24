@@ -5,8 +5,12 @@
  * @copyright MIT License
  */
 
+#include <cmath>
+#include <limits>
+#include <optional>
 #include <numeric>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "oa/accel/addin.h"
@@ -61,7 +65,7 @@ OA_XLL_EXPORT(xloper12*) OaToUpper(const char* in) OA_ACCEL_SAFE()
     if (c >= 'a' && c <= 'z')
       c -= ('a' - 'A');
   // provide back to Excel
-  OA_ACCEL_SAFE_RETURN(accel::oper12{str}.release());
+  OA_ACCEL_SAFE_RETURN(str);
 }
 
 OA_ACCEL_EXPORT_FUNC(OaToUpper)
@@ -86,8 +90,7 @@ OA_XLL_EXPORT(xloper12*) OaInner(
   if (v1.size() != v2.size())
     throw std::runtime_error{"v1 and v2 have different sizes"};
   // compute inner product + return
-  auto res = std::inner_product(v1.begin(), v1.end(), v2.begin(), 0.f);
-  OA_ACCEL_SAFE_RETURN(accel::oper12{res}.release());
+  OA_ACCEL_SAFE_RETURN(std::inner_product(v1.begin(), v1.end(), v2.begin(), 0.f));
 }
 
 OA_ACCEL_EXPORT_FUNC(OaInner)
@@ -123,9 +126,8 @@ OA_XLL_EXPORT(xloper12*) OaMatMul(const FP12* a, const FP12* b) OA_ACCEL_SAFE()
       data[i * m2.cols() + j] = xij;
     }
   }
-  // create matrix view with correct dimensions, create oper12, release
-  accel::matrix_view res{data.data(), m1.rows(), m2.cols()};
-  OA_ACCEL_SAFE_RETURN(accel::oper12{res}.release());
+  // create matrix view with correct dimensions + return
+  OA_ACCEL_SAFE_RETURN((accel::matrix_view{data.data(), m1.rows(), m2.cols()}));
 }
 
 OA_ACCEL_EXPORT_FUNC(OaMatMul)
@@ -133,5 +135,259 @@ OA_ACCEL_EXPORT_FUNC(OaMatMul)
   .help("Compute the matrix inner product of two square arrays")
   .arg("m1", "First matrix shape (n1, n2)")
   .arg("m2", "Second matrix shape (n2, n3)");
+
+/**
+ * Return the date on which the given dates + values has the max value.
+ *
+ * The shape of the input must be `(n, 2)` for `n` rows with the Excel integral
+ * date value in the first column and value in the second column.
+ */
+OA_XLL_EXPORT(xloper12*) OaMaxDate(const xloper12* in) OA_ACCEL_SAFE()
+{
+  // get view as xloper12 is opaque
+  accel::oper12_view view{in};
+  // if not an array this is an error
+  if (view.type() != accel::xltype::multi)
+    throw std::runtime_error{
+      std::string{"input has type "} + accel::to_string(view.type()) +
+      " instead of type " + accel::to_string(accel::xltype::multi)
+    };
+  // shape must be correct
+  if (view.cols() != 2)
+    throw std::runtime_error{
+      "input has " + std::to_string(view.cols()) +
+      " columns instead of the expected 2"
+    };
+  // date + value maximums to track
+  int max_date = 0;
+  auto max_value = std::numeric_limits<double>::lowest();
+  // loop through dates and times
+  for (auto i = 0u; i < view.rows(); i++) {
+    // convert date + value
+    auto date = view(i, 0).as<int>();
+    auto value = view(i, 1).as<double>(accel::strict);
+    // update as necessary
+    if (value > max_value) {
+      max_date = date;
+      max_value = value;
+    }
+  }
+  // return date back to Excel
+  OA_ACCEL_SAFE_RETURN(max_date);
+}
+
+OA_ACCEL_EXPORT_FUNC(OaMaxDate)
+  .category("OA Time")
+  .help(
+    "Return the date corresponding to the maximum input value.\n"
+    "\n"
+    "The format of the input should consist of rows of a date + a number."
+  )
+  .arg("in", "Rows of date + time entries");
+
+namespace {
+
+/**
+ * Discretely discounted zero-coupon bond.
+ *
+ * This is used to demonstrate how `xloper12_converter<T>` can be specialized.
+ */
+class zcb {
+public:
+  /**
+   * Ctor.
+   *
+   * If not specified the notional defaults to 1.
+   *
+   * @param id Bond string ID
+   * @param yield Bond yield under annual compounding
+   * @param maturity Bond maturity
+   * @param notional Bond notional
+   */
+  zcb(std::string id, double yield, double maturity, double notional = 1.)
+    : id_{std::move(id)}, yield_{yield}, maturity_{maturity}, notional_{notional}
+  {
+    // note: we allow negative yield due to QE
+    if (maturity_ < 0)
+      throw std::runtime_error{"cannot have negative maturity"};
+    if (notional_ < 0)
+      throw std::runtime_error{"cannot have negative notional"};
+  }
+
+  /**
+   * Return the bond ID.
+   */
+  auto& id() const noexcept { return id_; }
+
+  /**
+   * Return the annual bond yield.
+   */
+  auto yield() const noexcept { return yield_; }
+
+  /**
+   * Return the bond notional.
+   */
+  auto notional() const noexcept { return notional_; }
+
+  /**
+   * Return the bond maturity.
+   */
+  auto maturity() const noexcept { return maturity_; }
+
+  /**
+   * Return the PV of the bond.
+   */
+  auto operator()() const noexcept
+  {
+    return std::pow(1 + yield_, -maturity_);
+  }
+
+private:
+  std::string id_;
+  double yield_;
+  double notional_;
+  double maturity_;
+};
+
+}  // namespace
+
+namespace accel {
+
+/**
+ * Converter specialization for the `zcb`.
+ *
+ * This requires an `xltypeMulti` with the following structure:
+ *
+ * @code
+ * +----------+-----------------+
+ * | ID       | <bond name>     |
+ * | Yield    | <bond yield>    |
+ * | Notional | <bond notional> |
+ * | Maturity | <bond maturity> |
+ * +----------+-----------------+
+ * @endcode
+ *
+ * The "Notional" field is optional. If omitted, the default is used.
+ */
+template <>
+struct xloper12_converter<zcb> {
+  auto operator()(const xloper12& op) const
+  {
+    // take view as xloper12 is opaque
+    oper12_view view{&op};
+    // must be xltypeMulti
+    if (view.type() != xltype::multi)
+      throw std::runtime_error{
+        std::string{"input must have type xltypeMulti instead of "} +
+        to_string(view.type())
+      };
+    // must have 2 columns
+    if (view.cols() != 2)
+      throw std::runtime_error{
+        "input has " + std::to_string(view.cols()) +
+        " columns instead of the required 2"
+      };
+    // optionals for our required fields
+    std::optional<std::string> id;
+    std::optional<double> yield;
+    std::optional<double> notional;
+    std::optional<double> maturity;
+    // cycle through values
+    for (auto i = 0u; i < view.rows(); i++) {
+      // field name
+      auto name = view(i, 0).as<std::string>(strict);
+      // view of value
+      auto value = view(i, 1);
+      // ID
+      if (name == "ID")
+        id = value.as<std::string>(strict);
+      // yield
+      else if (name == "Yield")
+        yield = value.as<double>(strict);
+      // notional
+      else if (name == "Notional")
+        notional = value.as<double>(strict);
+      // maturity
+      else if (name == "Maturity")
+        maturity = value.as<double>(strict);
+      // unknown
+      else
+        throw std::runtime_error{"unknown input field \"" + name + "\""};
+    }
+    // if optional has not been set, error
+    if (!id)
+      throw std::runtime_error{"missing required field ID"};
+    if (!yield)
+      throw std::runtime_error{"missing required field Yield"};
+    // note: notional can be defaulted to 1
+    if (!notional)
+      notional = 1.;
+    if (!maturity)
+      throw std::runtime_error{"missing required field Maturity"};
+    // otherwise, return our new bond
+    return zcb{std::move(*id), *yield, *maturity, *notional};
+  }
+};
+
+}  // namespace accel
+
+/**
+ * Return the price for a zero-coupon bond with annual compounding.
+ */
+OA_XLL_EXPORT(xloper12*) OaZeroBondPV(const xloper12* in) OA_ACCEL_SAFE()
+{
+  // convert to ZCB + return PV to Excel
+  OA_ACCEL_SAFE_RETURN(accel::as<zcb>(*in)());
+}
+
+OA_ACCEL_EXPORT_FUNC(OaZeroBondPV)
+  .category("OA Bonds")
+  // note: cannot exceed 255 chars or Excel will fail to register the function
+  .help(
+    "Return the price of an annually compounding zero bond.\n"
+    "\n"
+    "The input array has a key-value form of the following:\n"
+    "\n"
+    "ID: bond name\n"
+    "Yield: annual bond yield\n"
+    "Notional: bond notional (optional)\n"
+    "Maturity: bond maturity\n"
+    "\n"
+    "If omitted the notional defaults to 1."
+  )
+  .arg("in", "Key-value array of ZCB input fields");
+
+/**
+ * Return the ID cheaper of the two annually-compounded zero bonds.
+ */
+OA_XLL_EXPORT(xloper12*) OaCheapestOfZCB(
+  const xloper12* a,
+  const xloper12* b) OA_ACCEL_SAFE()
+{
+  // convert to ZCBs
+  auto bond_a = accel::as<zcb>(*a);
+  auto bond_b = accel::as<zcb>(*b);
+  // get ID of cheaper bond
+  auto id = [&bond_a, &bond_b]
+  {
+    if (bond_a() < bond_b())
+      return bond_a.id();
+    else
+      return bond_b.id();
+  }();
+  // return to Excel
+  OA_ACCEL_SAFE_RETURN(id);
+}
+
+OA_ACCEL_EXPORT_FUNC(OaCheapestOfZCB)
+  .category("OA Bonds")
+  .help(
+    "Return the ID of the cheaper of the two annually-compounded zero bonds.\n"
+    "\n"
+    "Each input array has a key-value form requiring the \"ID\", \"Yield\", "
+    "and \"Maturity\" fields, with \"Notional\" being optional (default 1)."
+  )
+  .arg("a", "Key-value array of ZCB input fields")
+  .arg("b", "Key-value array of ZCB input fields");
 
 }  // namespace oa
