@@ -72,10 +72,15 @@ namespace accel {
  * @note If `expr` is multi-line or has control flow consider using a lambda
  *  for `expr` to enable wrapping of the relevant logic.
  *
- * @param expr Expression to return when no exception is thrown
+ * @par
+ *
+ * @note We purposefully use list-initialization with the `oper12` to disallow
+ *  some dangerous narrowing conversions, e.g. pointer to `bool`.
+ *
+ * @param expr Expression to list-initialize the `oper12` to return
  */
 #define OA_ACCEL_SAFE_RETURN(expr) \
-    return (expr); \
+    return oa::accel::oper12{expr}.release(); \
   } \
   catch (const std::exception& exc) { \
     return oa::accel::oper12{std::string{"#ERROR: "} + exc.what()}.release(); \

@@ -156,8 +156,8 @@ OA_XLL_EXPORT(xloper12*) xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
     else
       return oper12{xlerr::value};
   }();
-  // release raw value back to excel
-  OA_ACCEL_SAFE_RETURN(res.release());
+  // release value back to Excel
+  OA_ACCEL_SAFE_RETURN(std::move(res));
 }
 
 /**
@@ -203,7 +203,6 @@ OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
 OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
 {
   // XLL name
-  // TODO: should be a separate function honestly
   oper12 xll_name{addin::filename()};
   // xlfRegister return value
   oper12 res;
@@ -239,11 +238,17 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
     Excel12v(xlfRegister, res.value(), static_cast<int>(args.size()), xl_args.data());
     // if error, alert, but keep going
     // TODO: can improve this message
-    if (res.error())
-      alert(
-        "UDF registration error: Could not register exported " +
-        std::string{udf.export_name()} + " as " + std::string{udf.name()}
-      );
+    if (res.error()) {
+      // error message
+      auto err_text = "UDF registration error: Could not register exported " +
+        std::string{udf.export_name()} + " as " + std::string{udf.name()};
+      // if help is too long (over 255 chars) Excel will fail to register
+      if (udf.help().size() > 255)
+        err_text += ": UDF help text length " +
+          std::to_string(udf.help().size()) + " exceeds Excel limit of 255";
+      // emit alert
+      alert(err_text);
+    }
   }
   // TODO: fill in with UI customizations
   return 1;
