@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <optional>
+#include <ostream>
 
 #include "oa/accel/enums.h"
 #include "oa/accel/xl_ops.h"
@@ -120,6 +121,20 @@ std::size_t
 oper12_row_view::size() const noexcept
 {
   return size_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// operator<<                                                                 //
+////////////////////////////////////////////////////////////////////////////////
+
+std::ostream& operator<<(std::ostream& out, const oper12_view& op)
+{
+  out << "[view] ";
+  // empty
+  if (!op)
+    return out << "(empty)";
+  // otherwise, format value
+  return out << *op.operator->();
 }
 
 }  // namespace accel

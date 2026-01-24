@@ -8,6 +8,7 @@
 #ifndef OA_ACCEL_OPER12_VIEW_H_
 #define OA_ACCEL_OPER12_VIEW_H_
 
+#include <iosfwd>
 #include <optional>
 #include <utility>
 
@@ -199,6 +200,26 @@ private:
   const xloper12* data_;
   std::size_t size_;
 };
+
+/**
+ * Stream the `oper12_view` value to an output stream.
+ *
+ * The formatted value will look something like the following:
+ *
+ * @code
+ * [view] ...
+ * @endcode
+ *
+ * The object formatting is implemented using the `operator<<` for the
+ * `xloper12`. If the underlying `oper12` doesn't manage a `xloper12`, e.g.
+ * because it was moved from, the streamed value is `"[view] (empty)"`.
+ *
+ * @note `op` taken by const reference to avoid MSVC emitting C4866.
+ *
+ * @param out Output stream
+ * @param op `oper12` value to write
+ */
+std::ostream& operator<<(std::ostream& out, const oper12_view& op);
 
 }  // namespace accel
 }  // namespace oa
