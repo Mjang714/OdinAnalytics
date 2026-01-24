@@ -281,6 +281,12 @@ struct xloper12_converter<zcb> {
         std::string{"input must have type xltypeMulti instead of "} +
         to_string(view.type())
       };
+    // must have at most 4 rows
+    if (view.rows() > 4)
+      throw std::runtime_error{
+        "input has " + std::to_string(view.rows()) +
+        " rows instead of the maximum of 4"
+      };
     // must have 2 columns
     if (view.cols() != 2)
       throw std::runtime_error{
@@ -367,16 +373,8 @@ OA_XLL_EXPORT(xloper12*) OaCheapestOfZCB(
   // convert to ZCBs
   auto bond_a = accel::as<zcb>(*a);
   auto bond_b = accel::as<zcb>(*b);
-  // get ID of cheaper bond
-  auto id = [&bond_a, &bond_b]
-  {
-    if (bond_a() < bond_b())
-      return bond_a.id();
-    else
-      return bond_b.id();
-  }();
-  // return to Excel
-  OA_ACCEL_SAFE_RETURN(id);
+  // return ID of cheaper bond to Excel
+  OA_ACCEL_SAFE_RETURN((bond_a() < bond_b()) ? bond_a.id() : bond_b.id());
 }
 
 OA_ACCEL_EXPORT_FUNC(OaCheapestOfZCB)
