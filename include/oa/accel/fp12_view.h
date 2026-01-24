@@ -12,6 +12,8 @@
 
 // forward decls to avoid pulling in XLCALL.H
 struct _FP12;
+
+// note: we can mix typedefs and using decls as long as they are consistent
 using FP12 = _FP12;
 
 namespace oa {
