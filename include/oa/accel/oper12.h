@@ -350,7 +350,7 @@ public:
   /**
    * Release ownership of the allocated `XLOPER12` back to Excel.
    *
-   * After this call, the `oper12` will have no owned value. If `owning()`
+   * After this call the `oper12` will have no owned value. If `owning()`
    * returns `true`, then `xlbitDLLFree` will be set. Otherwise, `xlbitXLFree`
    * will be set in the `XLOPER12` if the type is `xltypeStr`, `xltypeMulti`,
    * or `xltypeRef`, all of which have extra memory to free.
@@ -361,6 +361,25 @@ public:
    *  will get confused, and may behave unexpectedly.
    */
   xloper12* release() noexcept;
+
+  /**
+   * Release ownership of the allocated `XLOPER12` back to Excel.
+   *
+   * After this call the `oper12` will have no owned value. The `XLOPER12`
+   * itself is copied into the target, essentially performing a shallow copy,
+   * and the originally owned `XLOPER12` is freed with `delete`.
+   *
+   * Most importantly, this function does *not* set `xlbitDLLFree` or
+   * `xlbitXLFree`. This overload should *only* be used when populating the
+   * members of an allocated `array.lparray` for an `xltypeMulti`. Care must be
+   * taken that no exceptions will be thrown until all `release(xloper12&)`
+   * calls are done as otherwise you *will* leak memory.
+   *
+   * @warning Do *not* call this on a moved-from `oper12` to avoid UB.
+   *
+   * @param target `XLOPER12` target
+   */
+  void release(xloper12& target) noexcept;
 
   /**
    * Return the type enumeration corresponding to the `XLOPER12` type.

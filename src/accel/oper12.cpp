@@ -84,7 +84,7 @@ void to(xloper12* out, const T* buf, std::size_t length)
 }
 
 /**
- * Helper function to create an array `XLOPER12` from a floating-point buffer.
+ * Helper function to create an array `XLOPER12` from a `matrix_view<T>`.
  *
  * This copies the buffer data and produces a `xltypeMulti` with the specified
  * dimensions. The allocated `array.lparray` member must be freed with
@@ -95,33 +95,31 @@ void to(xloper12* out, const T* buf, std::size_t length)
  * @tparam T Floating-point type
  *
  * @param out `XLOPER12` to populate
- * @param vals Input buffer
- * @param rows Number of rows
- * @param cols Number of columns
+ * @param view Input 2D view
  */
 template <std::floating_point T>
-void to(xloper12* out, const T* vals, std::size_t rows, std::size_t cols)
+void to(xloper12* out, matrix_view<const T> view)
 {
   // max length
   constexpr auto max_size = (std::numeric_limits<RW>::max)();
   // throw if dimensions are too large
-  if (rows * cols > max_size)
+  if (view.size() > max_size)
     throw std::runtime_error{
-      "matrix dimensions (" + std::to_string(rows) + ", " +
-      std::to_string(cols) + ") exceeds total size " + std::to_string(max_size)
+      "matrix dimensions (" +
+      std::to_string(view.rows()) + ", " + std::to_string(view.cols()) +
+      ") exceeds maximum total size " + std::to_string(max_size)
     };
   // since no extra memory is needed for doubles we directly allocate buffer
-  auto size = rows * cols;
-  auto buf = std::make_unique<xloper12[]>(size);
+  auto buf = std::make_unique<xloper12[]>(view.size());
   // populate each xloper12 in array
-  for (auto i = 0u; i < size; i++) {
-    buf[i].val.num = vals[i];
+  for (auto i = 0u; i < view.size(); i++) {
+    buf[i].val.num = view(i);
     buf[i].xltype = xltypeNum;
   }
   // update XLOPER12 members
   out->val.array.lparray = buf.release();
-  out->val.array.rows = static_cast<RW>(rows);
-  out->val.array.columns = static_cast<COL>(cols);;
+  out->val.array.rows = static_cast<RW>(view.rows());
+  out->val.array.columns = static_cast<COL>(view.cols());
   out->xltype = xltypeMulti;
 }
 
@@ -362,7 +360,7 @@ oper12::oper12(matrix_view<const float> view)
 {
   // use unique_ptr to be exception-safe if to() throws
   auto val = std::make_unique<xloper12>();
-  to(val.get(), view.data(), view.rows(), view.cols());
+  to(val.get(), view);
   // update value_ + owning
   value_ = val.release();
   owning_ = true;
@@ -372,7 +370,7 @@ oper12::oper12(matrix_view<const double> view)
 {
   // use unique_ptr to be exception-safe if to() throws
   auto val = std::make_unique<xloper12>();
-  to(val.get(), view.data(), view.rows(), view.cols());
+  to(val.get(), view);
   // update value_ + owning
   value_ = val.release();
   owning_ = true;
@@ -471,6 +469,19 @@ oper12::release() noexcept
   auto res = value_;
   value_ = nullptr;
   return res;
+}
+
+void
+oper12::release(xloper12& target) noexcept
+{
+  // release value
+  auto val = release();
+  // orphan by unsetting ownership bits, copy, and delete original
+  val->xltype &= ~xlbitDLLFree;
+  val->xltype &= ~xlbitXLFree;
+  // note: unchecked because we want release() to be noexcept
+  target = *val;
+  delete val;
 }
 
 xltype
