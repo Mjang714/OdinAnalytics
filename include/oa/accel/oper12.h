@@ -139,6 +139,9 @@ public:
    *
    * Constructs a boolean `XLOPER12` value.
    *
+   * @note Due to pointer -> bool being a valid narrowing conversion it is
+   *  recommended to use list-initialization, e.g. `oper12{}`, to prevent this.
+   *
    * @param val Boolean value
    */
   oper12(bool val);
