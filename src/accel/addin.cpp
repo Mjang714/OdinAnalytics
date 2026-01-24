@@ -217,7 +217,8 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
     args.emplace_back(udf.arg_text());     // pxArgumentText
     args.emplace_back(udf.type());         // pxMacroType
     args.emplace_back(udf.category());     // pxCategory
-    // TODO: shortcut empty for now
+    // TODO: shortcut key empty for now. it's also kind of a bad idea because
+    // it can easily conflict with existing Ctrl + <key> Excel shortcuts
     args.emplace_back(std::string{""});    // pxShortcutText
     args.emplace_back(udf.help_topic());   // pxHelpTopic
     args.emplace_back(udf.help());         // pxFunctionHelp
