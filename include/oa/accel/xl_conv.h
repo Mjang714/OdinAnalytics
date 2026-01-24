@@ -49,6 +49,9 @@ std::string as_string(const xloper12& op);
  * Conversions are done if the type is `xltypeNum`, `xltypeBool`, `xltypeErr`,
  * and `xltypeInt`, with exception thrown otherwise.
  *
+ * @note This does *not* provide the same result as `operator<<` as only a few
+ *  conversions are allowed due to different intended semantics.
+ *
  * @param op `XLOPER12` to convert
  */
 std::wstring as_wstring(const xloper12& op);
