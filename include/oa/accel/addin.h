@@ -21,6 +21,18 @@ struct xloper12;
 namespace oa {
 namespace accel {
 
+namespace detail {
+
+/**
+ * Type alias providing the `OA_XLL_EXPORT()` default return type.
+ *
+ * @tparam T type
+ */
+template <typename T = xloper12*>
+using udf_return_t = T;
+
+}  // namespace detail
+
 /**
  * Macro for exporting an XLL function.
  *
@@ -28,15 +40,28 @@ namespace accel {
  * use the `WINAPI`, i.e. `__stdcall`, calling convention. For example:
  *
  * @code{.cc}
- * OA_XLL_EXPORT(double) MyFunc(long v)
+ * OA_XLL_EXPORT() AddOne(double v) OA_ACCEL_SAFE()
  * {
- *   // ...
+ *   OA_ACCEL_SAFE_RETURN(v + 1);
  * }
  * @endcode
  *
- * @param ret Function return type
+ * If no arguments are provided then the return type is implicitly `xloper12*`
+ * for ease of integration with `OA_ACCEL_SAFE_RETURN()`. In this case, we do
+ * not currently have `OA_ACCEL_SAFE_RETURN()` integration:
+ *
+ * @code{.cc}
+ * OA_XLL_EXPORT(double) AddOneRaw(double v) noexcept
+ * {
+ *   return v + 1;
+ * }
+ * @endcode
+ *
+ * @param ... Function return type
  */
-#define OA_XLL_EXPORT(ret) extern "C" __declspec(dllexport) ret __stdcall
+#define OA_XLL_EXPORT(...) \
+  extern "C" __declspec(dllexport) \
+  oa::accel::detail::udf_return_t<__VA_ARGS__> __stdcall
 
 /**
  * Macro to mark the beginning of a function try-block.
@@ -45,10 +70,9 @@ namespace accel {
  * making exported XLL functions exception safe:
  *
  * @code{.cc}
- * OA_XLL_EXPORT(xloper12*) HelloWorld() OA_ACCEL_SAFE(noexcept)
+ * OA_XLL_EXPORT() HelloWorld() OA_ACCEL_SAFE(noexcept)
  * {
- *   oper12 res{"hello world"};
- *   OA_ACCEL_SAFE_RETURN(res.release()));
+ *   OA_ACCEL_SAFE_RETURN("hello world");
  * }
  * @endcode
  */

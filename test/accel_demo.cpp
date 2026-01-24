@@ -57,7 +57,7 @@ OA_ACCEL_EXPORT_FUNC(OaMax)
 /**
  * Convert all the characters in the string to upper case.
  */
-OA_XLL_EXPORT(xloper12*) OaToUpper(const char* in) OA_ACCEL_SAFE()
+OA_XLL_EXPORT() OaToUpper(const char* in) OA_ACCEL_SAFE()
 {
   std::string str{in};
   // change to uppercase as appropriate
@@ -78,9 +78,7 @@ OA_ACCEL_EXPORT_FUNC(OaToUpper)
  *
  * @note This flattens 2D matrices into vectors in row-major order.
  */
-OA_XLL_EXPORT(xloper12*) OaInner(
-  const xloper12* a,
-  const xloper12* b) OA_ACCEL_SAFE()
+OA_XLL_EXPORT() OaInner(const xloper12* a, const xloper12* b) OA_ACCEL_SAFE()
 {
   // get vectors (must be vectors)
   auto opts = accel::multi_conv_options{}.vector(true);
@@ -102,7 +100,7 @@ OA_ACCEL_EXPORT_FUNC(OaInner)
 /**
  * Compute the single-precision matrix multiplication.
  */
-OA_XLL_EXPORT(xloper12*) OaMatMul(const FP12* a, const FP12* b) OA_ACCEL_SAFE()
+OA_XLL_EXPORT() OaMatMul(const FP12* a, const FP12* b) OA_ACCEL_SAFE()
 {
   // get views as FP12 is opaque
   accel::fp12_view m1{*a};
@@ -142,7 +140,7 @@ OA_ACCEL_EXPORT_FUNC(OaMatMul)
  * The shape of the input must be `(n, 2)` for `n` rows with the Excel integral
  * date value in the first column and value in the second column.
  */
-OA_XLL_EXPORT(xloper12*) OaMaxDate(const xloper12* in) OA_ACCEL_SAFE()
+OA_XLL_EXPORT() OaMaxDate(const xloper12* in) OA_ACCEL_SAFE()
 {
   // get view as xloper12 is opaque
   accel::oper12_view view{in};
@@ -340,7 +338,7 @@ struct xloper12_converter<zcb> {
 /**
  * Return the price for a zero-coupon bond with annual compounding.
  */
-OA_XLL_EXPORT(xloper12*) OaZeroBondPV(const xloper12* in) OA_ACCEL_SAFE()
+OA_XLL_EXPORT() OaZeroBondPV(const xloper12* in) OA_ACCEL_SAFE()
 {
   // convert to ZCB + return PV to Excel
   OA_ACCEL_SAFE_RETURN(accel::as<zcb>(*in)());
@@ -366,7 +364,7 @@ OA_ACCEL_EXPORT_FUNC(OaZeroBondPV)
 /**
  * Return the ID cheaper of the two annually-compounded zero bonds.
  */
-OA_XLL_EXPORT(xloper12*) OaCheapestOfZCB(
+OA_XLL_EXPORT() OaCheapestOfZCB(
   const xloper12* a,
   const xloper12* b) OA_ACCEL_SAFE()
 {
