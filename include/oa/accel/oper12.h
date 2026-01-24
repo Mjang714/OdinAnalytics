@@ -242,7 +242,7 @@ public:
   /**
    * Ctor.
    *
-   * Constructs an `XLOPER12` from a matrix view.
+   * Constructs an `XLOPER12` of type `xltypeMulti` from a matrix view.
    *
    * @note Ranges that satisfy `contiguous_range` can be converted from.
    *
@@ -253,13 +253,24 @@ public:
   /**
    * Ctor.
    *
-   * Constructs an `XLOPER12` from a matrix view.
+   * Constructs an `XLOPER12` of type `xltypeMulti` from a matrix view.
    *
    * @note Ranges that satisfy `contiguous_range` can be converted from.
    *
    * @param view Matrix view to construct from
    */
   oper12(matrix_view<const double> view);
+
+  /**
+   * Ctor.
+   *
+   * Constructs an `XLOPER12` of type `xltypeMulti` from a matrix view.
+   *
+   * @note Ranges that satisfy `contiguous_range` can be converted from.
+   *
+   * @param view Matrix view to construct from
+   */
+  oper12(matrix_view<const oper12> view);
 
   /**
    * Ctor.
@@ -284,14 +295,14 @@ public:
   oper12(const unsigned char* data, std::size_t size);
 
   /**
-   * Return a `oper12` owning an `XLOPER12` of type `xltypeNil`.
+   * Return an `oper12` owning an `XLOPER12` of type `xltypeNil`.
    *
    * This has the same effect as default-constructing an `oper12`.
    */
   static oper12 nil();
 
   /**
-   * Return a `oper12` owning an `XLOPER12` of type `xltypeMissing`.
+   * Return an `oper12` owning an `XLOPER12` of type `xltypeMissing`.
    */
   static oper12 missing();
 

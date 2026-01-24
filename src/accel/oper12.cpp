@@ -87,8 +87,11 @@ void to(xloper12* out, const T* buf, std::size_t length)
  * Helper function to create an array `XLOPER12` from a `matrix_view<T>`.
  *
  * This copies the buffer data and produces a `xltypeMulti` with the specified
- * dimensions. The allocated `array.lparray` member must be freed with
- * `delete[]` to prevent memory from leaking if an exception is thrown.
+ * dimensions. If populated from a floating-point `matrix_view<T>`, the
+ * allocated `array.lparray` member must be freed with `delete[]` to prevent
+ * memory from leaking if an exception is thrown. If populated from a
+ * `matrix_view<oper12>` however, then `xloper12_free()` must be used to free
+ * `out`, as otherwise auxiliary memory won't be correctly freed.
  *
  * The buffer data ordering is expected to be row-major.
  *
@@ -97,7 +100,8 @@ void to(xloper12* out, const T* buf, std::size_t length)
  * @param out `XLOPER12` to populate
  * @param view Input 2D view
  */
-template <std::floating_point T>
+template <typename T>
+requires (std::floating_point<T> || std::same_as<T, oper12>)
 void to(xloper12* out, matrix_view<const T> view)
 {
   // max length
@@ -109,12 +113,23 @@ void to(xloper12* out, matrix_view<const T> view)
       std::to_string(view.rows()) + ", " + std::to_string(view.cols()) +
       ") exceeds maximum total size " + std::to_string(max_size)
     };
-  // since no extra memory is needed for doubles we directly allocate buffer
+  // allocate xltypeMulti buffer
   auto buf = std::make_unique<xloper12[]>(view.size());
-  // populate each xloper12 in array
-  for (auto i = 0u; i < view.size(); i++) {
-    buf[i].val.num = view(i);
-    buf[i].xltype = xltypeNum;
+  // populate each xloper12 in array. for floats we can copy the view(i) values
+  if constexpr (std::floating_point<T>) {
+    for (auto i = 0u; i < view.size(); i++) {
+      buf[i].val.num = view(i);
+      buf[i].xltype = xltypeNum;
+    }
+  }
+  // for oper12, we copy into a new vector for exception safety and then use
+  // release(xloper12&) to transfer fields one-by-one
+  else {
+    // note: if this throws XLOPER12 memory will be cleaned up correctly
+    std::vector<oper12> values{view.begin(), view.end()};
+    // call release(xloper12&) to orphan each XLOPER12
+    for (auto i = 0u; i < values.size(); i++)
+      values[i].release(buf[i]);
   }
   // update XLOPER12 members
   out->val.array.lparray = buf.release();
@@ -367,6 +382,16 @@ oper12::oper12(matrix_view<const float> view)
 }
 
 oper12::oper12(matrix_view<const double> view)
+{
+  // use unique_ptr to be exception-safe if to() throws
+  auto val = std::make_unique<xloper12>();
+  to(val.get(), view);
+  // update value_ + owning
+  value_ = val.release();
+  owning_ = true;
+}
+
+oper12::oper12(matrix_view<const oper12> view)
 {
   // use unique_ptr to be exception-safe if to() throws
   auto val = std::make_unique<xloper12>();
