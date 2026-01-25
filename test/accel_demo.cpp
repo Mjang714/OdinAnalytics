@@ -17,7 +17,7 @@
 #include "oa/accel/addin.h"
 #include "oa/accel/fp12_view.h"
 #include "oa/accel/oper12.h"
-#include "oa/accel/xl_conv.h"  // TODO: stop using xl_conv.h (too low-level)
+#include "oa/accel/xl_conv.h"
 #include "oa/config/paths.h"
 #include "oa/version.h"
 
