@@ -137,7 +137,26 @@ udf::arg(std::string name, std::string help)
 udf&
 udf::help_topic(std::string text) noexcept
 {
+  // use initial value
   help_topic_ = std::move(text);
+  // determine if text already has a ! suffix
+  auto topic_has_suffix = [this]
+  {
+    for (auto it = help_topic_.rbegin(); it != help_topic_.rend(); it++)
+      if (*it == '!')
+        return true;
+    return false;
+  };
+  // if suffixed with ! use text directly
+  if (topic_has_suffix())
+    return *this;
+  // otherwise, check if it begins with "http://" or "https://". if so, we just
+  // need to append "!0" suffix and are done
+  if (help_topic_.starts_with("http://") || help_topic_.starts_with("https://")) {
+    help_topic_ += "!0";
+    return *this;
+  }
+  // otherwise, just use directly
   return *this;
 }
 

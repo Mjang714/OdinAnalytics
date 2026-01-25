@@ -372,6 +372,14 @@ public:
   /**
    * Update the help topic for the UDF.
    *
+   * A file path, a URL can be specified, or either with the correct `!` suffix
+   * as specified in the `pxHelpTopic` documentation can be used. If no `!`
+   * suffix is provided, for URLs, `"!0"` will be automatically appended.
+   *
+   * @note CHM file building is harder to come by in 2026 so it is likely
+   *  easier to host a static site using GitHub Pages or directly link to some
+   *  documentation hosted on GitLab, GitHUb, etc.
+   *
    * @param text Help topic URL or file path
    */
   udf& help_topic(std::string text) noexcept;
