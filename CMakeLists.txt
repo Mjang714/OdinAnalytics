@@ -76,6 +76,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(CTest)
 
 include(oa_pdb_install)
+include(oa_repair_gtest_version)
 include(oa_unity_enable_unique_id)
 
 # find Boost [headers]
@@ -98,6 +99,9 @@ message(STATUS "Magic Enum version: ${magic_enum_VERSION}")
 # find GoogleTest
 find_package(GTest 1.8)
 if(GTest_FOUND)
+    # set GTest_VERSION approximately if GTest found using FindGTest.cmake
+    # note: if GTest_VERSION already set nothing is done
+    oa_repair_gtest_version()
     message(STATUS "GoogleTest version: ${GTest_VERSION}")
 else()
     message(STATUS "GoogleTest version: None")
