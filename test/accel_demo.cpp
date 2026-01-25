@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <limits>
+#include <map>
 #include <optional>
 #include <numeric>
 #include <string>
@@ -385,5 +386,51 @@ OA_ACCEL_EXPORT_FUNC(OaCheapestOfZCB)
   )
   .arg("a", "Key-value array of ZCB input fields")
   .arg("b", "Key-value array of ZCB input fields");
+
+/**
+ * Return a table of the character frequencies in an input string.
+ *
+ * The format of the table is as follows:
+ *
+ * @code
+ * +------+------+
+ * | Char | Freq |
+ * +------+------+
+ * | a    | ...  |
+ * | ...  | ...  |
+ * +------+------+
+ * @endcode
+ *
+ * The header of the table consists of the strings "Char" and "Freq" and each
+ * subsequent row consists of an ASCII character and its frequency.
+ */
+OA_XLL_EXPORT() OaCharFreq(const char* s) OA_ACCEL_SAFE()
+{
+  // map of characters to frequencies
+  std::map<char, unsigned> map;
+  // iterate to populate map
+  while (*s != '\0')
+    map[*s++]++;
+  // create oper12 to represent table
+  std::vector<accel::oper12> tab_data{"Char", "Freq"};
+  // populate using map keys + values
+  // note: widen since oper12 cannot directly store unsigned as int
+  for (auto [k, v] : map) {
+    tab_data.emplace_back(std::string{k});
+    tab_data.emplace_back(double(v));
+  }
+  // return array back to Excel after correctly taking view
+  accel::matrix_view tab_view{tab_data.data(), tab_data.size() / 2u, 2u};
+  OA_ACCEL_SAFE_RETURN(tab_view);
+}
+
+OA_ACCEL_EXPORT_FUNC(OaCharFreq)
+  .category("OA String")
+  .help(
+    "Return a table showing the frequencies of characters in the input.\n"
+    "\n"
+    "This function returns a table with \"Char\" and \"Freq\" as the header."
+  )
+  .arg("s", "Input string to get character frequency table for");
 
 }  // namespace oa
