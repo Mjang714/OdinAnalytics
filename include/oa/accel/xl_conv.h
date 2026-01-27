@@ -666,8 +666,8 @@ private:
     // determine indices of all the arguments (Is -> arg row index)
     std::array<std::optional<std::size_t>, sizeof...(Is)> arg_map;
     for (auto i = 0u; i < view.rows(); i++) {
-      // convert to argument name
-      auto name_i = view(i, 0u).as<std::string>();
+      // convert to argument name strictly (no TRUE/FALSE -> string)
+      auto name_i = view(i, 0u).as<std::string>(strict);
       // fold to filter out unknown names
       // note: need extra parentheses to tell compiler this is a fold
       if (((name_i != args.name()) && ...))
