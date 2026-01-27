@@ -37,7 +37,7 @@ namespace {
 /**
  * Visitor to convert any compatible `std::variant<Ts...>` to an `oper12`.
  */
-struct var2oper12 {
+struct oper12_visitor {
   /**
    * Convert the variant value to an `oper12` if possible.
    *
@@ -68,7 +68,7 @@ auto to_oper12(const oxl::xl_api::XlArray arr)
   // iterate
   for (auto i = 0u; i < arr.rows(); i++)
     for (auto j = 0u; j < arr.cols(); j++)
-      vals[i * arr.cols() + j] = std::visit(var2oper12{}, arr(i, j));
+      vals[i * arr.cols() + j] = std::visit(oper12_visitor{}, arr(i, j));
   // create view and return new oper12
   return accel::oper12{{vals.data(), arr.rows(), arr.cols()}};
 }
@@ -134,5 +134,16 @@ OA_ACCEL_EXPORT_FUNC(AxDictionary)
   )
   .arg("keys", "1D range to use as dictionary keys")
   .arg("vals", "1D range to use as dictionary values");
+
+//
+// TODO:
+//
+// OXL "polymorphic" logic works as follows:
+//
+// 1. if 1st and 2nd args are both xltypeMulti convert to XlDictionary
+// 2. if only 1st is xltypeMulti also convert to XlDictioanry
+// 3. if 1st is string assume this is a handle to XlDictionary
+// 4. else convert positional arguments one-by-one into XlDictionary
+//
 
 }  // namespace oa
