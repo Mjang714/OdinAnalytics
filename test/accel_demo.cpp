@@ -238,7 +238,7 @@ public:
    */
   auto operator()() const noexcept
   {
-    return std::pow(1 + yield_, -maturity_);
+    return notional_ * std::pow(1 + yield_, -maturity_);
   }
 
 private:
@@ -267,70 +267,28 @@ namespace accel {
  * @endcode
  *
  * The "Notional" field is optional. If omitted, the default is used.
+ *
+ * @note The order of the named parameters does not matter.
  */
 template <>
 struct xloper12_converter<zcb> {
   auto operator()(const xloper12& op) const
   {
-    // take view as xloper12 is opaque
-    oper12_view view{&op};
-    // must be xltypeMulti
-    if (view.type() != xltype::multi)
-      throw std::runtime_error{
-        std::string{"input must have type xltypeMulti instead of "} +
-        to_string(view.type())
-      };
-    // must have at most 4 rows
-    if (view.rows() > 4)
-      throw std::runtime_error{
-        "input has " + std::to_string(view.rows()) +
-        " rows instead of the maximum of 4"
-      };
-    // must have 2 columns
-    if (view.cols() != 2)
-      throw std::runtime_error{
-        "input has " + std::to_string(view.cols()) +
-        " columns instead of the required 2"
-      };
-    // optionals for our required fields
-    std::optional<std::string> id;
-    std::optional<double> yield;
-    std::optional<double> notional;
-    std::optional<double> maturity;
-    // cycle through values
-    for (auto i = 0u; i < view.rows(); i++) {
-      // field name
-      auto name = view(i, 0).as<std::string>(strict);
-      // view of value
-      auto value = view(i, 1);
-      // ID
-      if (name == "ID")
-        id = value.as<std::string>(strict);
-      // yield
-      else if (name == "Yield")
-        yield = value.as<double>(strict);
-      // notional
-      else if (name == "Notional")
-        notional = value.as<double>(strict);
-      // maturity
-      else if (name == "Maturity")
-        maturity = value.as<double>(strict);
-      // unknown
-      else
-        throw std::runtime_error{"unknown input field \"" + name + "\""};
-    }
-    // if optional has not been set, error
-    if (!id)
-      throw std::runtime_error{"missing required field ID"};
-    if (!yield)
-      throw std::runtime_error{"missing required field Yield"};
-    // note: notional can be defaulted to 1
-    if (!notional)
-      notional = 1.;
-    if (!maturity)
-      throw std::runtime_error{"missing required field Maturity"};
-    // otherwise, return our new bond
-    return zcb{std::move(*id), *yield, *maturity, *notional};
+    // convert from named arguments (notional can be defaulted)
+    auto tup = accel::as<std::tuple<std::string, double, double, double>>(
+      op,
+      accel::arg_spec{"ID", accel::strict},
+      accel::arg_spec{"Yield", accel::strict},
+      accel::arg_spec{"Maturity", accel::strict},
+      accel::arg_spec{"Notional", accel::strict, [] { return 1.; }}
+    );
+    // return our new bond
+    return zcb{
+      std::move(std::get<0>(tup)),
+      std::get<1>(tup),
+      std::get<2>(tup),
+      std::get<3>(tup)
+    };
   }
 };
 
