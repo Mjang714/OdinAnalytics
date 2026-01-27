@@ -511,8 +511,9 @@ concept maybe_strict = std::same_as<T, strict_tag> || std::same_as<T, void>;
  * used to provide an argument default if desired.
  *
  * @tparam F Nullary invocable returning `void` or a value type
+ * @tparam S Strict conversion indicator
  */
-template <std::invocable F, typename = void>
+template <std::invocable F, detail::maybe_strict S = void>
 class arg_spec {
 public:
   using value_type = std::invoke_result_t<F>;
@@ -700,7 +701,7 @@ private:
       {
         // mapping exists so an input was specified for the argument name
         if (arg_map[Is]) {
-          // use strict conversion is specified
+          // use strict conversion if specified
           if constexpr (std::same_as<Ss, detail::strict_tag>)
             return view(*arg_map[Is], 1u).as<Ts>(strict);
           else
