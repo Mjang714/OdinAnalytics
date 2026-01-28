@@ -23,6 +23,7 @@
 #include "oa/accel/udf.h"
 #include "oa/version.h"
 #include "oxl/excel_base_funcs.h"
+#include "oxl/time_xl.h"
 #include "oxl/xl_api/cache_xl_obj.h"
 #include "oxl/xl_api/xl_array.h"
 
@@ -102,7 +103,7 @@ OA_XLL_EXPORT() AxArray(/*const*/ xloper12* values) OA_ACCEL_SAFE()
 }
 
 OA_ACCEL_EXPORT_FUNC(AxArray)
-  .category("AXL tools")
+  .category("AXL Tools")
   .help(
     "Creates an array from the given range data.\n"
     "\n"
@@ -135,15 +136,94 @@ OA_ACCEL_EXPORT_FUNC(AxDictionary)
   .arg("keys", "1D range to use as dictionary keys")
   .arg("vals", "1D range to use as dictionary values");
 
+/**
+ * Indicate if the given date is on a business day or not.
+ */
+OA_XLL_EXPORT() AxIsBusinessDay(
+  /*const*/ xloper12* date,
+  /*const*/ xloper12* hol_centers) OA_ACCEL_SAFE()
+{
+  OA_ACCEL_SAFE_RETURN(oxl::OxlIsBizDay(date, hol_centers));
+}
+
+OA_ACCEL_EXPORT_FUNC(AxIsBusinessDay)
+  .category("AXL Time")
+  .help("Check if the given date is a business day or not")
+  .arg("date", "Calendar date")
+  .arg("centers", "Holiday center specification, e.g. \"NYB;LNB\"");
+
+/**
+ * Indicate if the given date is a holiday or not.
+ */
+OA_XLL_EXPORT() AxIsHoliday(
+  /*const*/ xloper12* date,
+  /*const*/ xloper12* hol_centers) OA_ACCEL_SAFE()
+{
+  OA_ACCEL_SAFE_RETURN(oxl::OxlIsHolDay(date, hol_centers));
+}
+
+OA_ACCEL_EXPORT_FUNC(AxIsHoliday)
+  .category("AXL Time")
+  .help("Check if the given date is a holiday or not")
+  .arg("date", "Calendar date")
+  .arg("centers", "Holiday center specification, e.g. \"NYB;LNB\"");
+
+/**
+ * Return the number of days between two dates given a day count convention.
+ */
+OA_XLL_EXPORT() AxDayCount(
+  /*const*/ xloper12* start,
+  /*const*/ xloper12* end,
+  /*const*/ xloper12* convention) OA_ACCEL_SAFE()
+{
+  OA_ACCEL_SAFE_RETURN(oxl::OxlComputeDayCount(start, end, convention));
+}
+
+OA_ACCEL_EXPORT_FUNC(AxDayCount)
+  .category("AXL Time")
+  .help(
+    "Return the number of days between the two dates.\n"
+    "\n"
+    "The number of days depends on the given day count convention."
+  )
+  .arg("start", "Start date")
+  .arg("end", "End date")
+  .arg("convention", "Day count convention, e.g. \"ACT/360\", \"ACT/ACT\"");
+
+/**
+ * Return the year fraction between two dates given a day count convention.
+ */
+OA_XLL_EXPORT() AxYearFraction(
+  /*const*/ xloper12* start,
+  /*const*/ xloper12* end,
+  /*const*/ xloper12* convention) OA_ACCEL_SAFE()
+{
+  OA_ACCEL_SAFE_RETURN(oxl::OxlComputeYearFraction(start, end, convention));
+}
+
+OA_ACCEL_EXPORT_FUNC(AxYearFraction)
+  .category("AXL Time")
+  .help(
+    "Return the year fraction between the two dates.\n"
+    "\n"
+    "The year fraction depends on the given day count convention."
+  )
+  .arg("start", "Start date")
+  .arg("end", "End date")
+  .arg("convention", "Day count convention, e.g. \"ACT/360\", \"ACT/ACT\"");
+
 //
 // TODO:
 //
 // OXL "polymorphic" logic works as follows:
 //
 // 1. if 1st and 2nd args are both xltypeMulti convert to XlDictionary
-// 2. if only 1st is xltypeMulti also convert to XlDictioanry
+// 2. if only 1st is xltypeMulti also convert to XlDictionary
 // 3. if 1st is string assume this is a handle to XlDictionary
 // 4. else convert positional arguments one-by-one into XlDictionary
+//
+// 1 through 3 are relatively simple to replicate without copy-pasting but 4
+// requires something similar to the arg_spec to prevent lots of manual work
 //
 
 }  // namespace oa
