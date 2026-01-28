@@ -14,6 +14,7 @@
  */
 
 #include <concepts>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -224,7 +225,57 @@ OA_ACCEL_EXPORT_FUNC(AxYearFraction)
 // 4. else convert positional arguments one-by-one into XlDictionary
 //
 // 1 through 3 are relatively simple to replicate without copy-pasting but 4
-// requires something similar to the arg_spec to prevent lots of manual work
+// requires something similar to the arg_spec to prevent lots of manual work.
+// It is also error-prone to keep the input key names in sync with the OXL key
+// names since two places would have to be updated at once.
 //
+
+OA_XLL_EXPORT() AxComputeDate(
+  /*const*/ xloper12* a1,
+  /*const*/ xloper12* a2) OA_ACCEL_SAFE()
+{
+  // convert to XlDictionary input
+  auto dict = [a1, a2]
+  {
+    using oxl::xl_api::XLoperObj;
+    using oxl::xl_api::XlCacheObj;
+    // get views of opaque type
+    accel::oper12_view v1{a1};
+    accel::oper12_view v2{a2};
+    // if v1 + v2 are multi, assume v1 has keys, v2 has values
+    if (v1.type() == accel::xltype::multi && v2.type() == accel::xltype::multi)
+      return XLoperObj::LPXloperToDictionary(a1, a2);
+    // if v1 is string, assume it is a handle
+    if (v1.type() == accel::xltype::str) {
+      // get cache key from handle + cache object
+      auto key = XlCacheObj::GetKeyFromHandle(v1.as<std::string>());
+      auto obj = XlCacheObj::GetVariant(key);
+      // return dictionary (throws if not actually a dictionary)
+      return *std::get<std::shared_ptr<oxl::xl_api::XlDictionary>>(obj);
+    }
+    // otherwise, assume v1 has keys and values
+    return XLoperObj::LPXloperToDictionary(a1);
+  }();
+  // return new date
+  OA_ACCEL_SAFE_RETURN(oxl::OxlComputeDate(dict));
+}
+
+OA_ACCEL_EXPORT_FUNC(AxComputeDate)
+  .category("AXL Time")
+  // TODO: have web documentation since the help is limited to 255 chars here
+  .help(
+    "Compute a new date given a base date, tenor, calendar, and modifier.\n"
+    "\n"
+    "The input has the following key-value input format:\n"
+    "\n"
+    "Base_Date: date, e.g. 2024-05-06\n"
+    "Tenor: tenor, e.g. \"1Y\"\n"
+    "Adjustment_Rule: rule, e.g. \"Following\"\n"
+    "Calendar: calendarm eg. \"NYB\""
+  )
+  .arg("keys_or_dict", "Rows of input keys or key + value rows")
+  .arg("values", "Rows of input values (may be omitted)");
+
+// TODO: add AxAddBusinessDays()
 
 }  // namespace oa
