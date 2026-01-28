@@ -6,7 +6,8 @@
  *
  * This add-in example demonstrates the seamless integration of OXL API
  * functions with the Accel add-in framework. Each function is a duplicate of
- * the OXL exported functions except with the "Ax" instead of "oxl" prefix.
+ * the OXL exported functions except with the "Ax" instead of "oxl" prefix,
+ * although in some cases the function name is also shortened.
  *
  * @note OXL functions incorrectly take a const reference to a `xloper12*`,
  *  i.e. a `LPXLOPER12`, instead of directly taking the pointer.
