@@ -271,7 +271,7 @@ OA_ACCEL_EXPORT_FUNC(AxComputeDate)
     "Base_Date: date, e.g. 2024-05-06\n"
     "Tenor: tenor, e.g. \"1Y\"\n"
     "Adjustment_Rule: rule, e.g. \"Following\"\n"
-    "Calendar: calendarm eg. \"NYB\""
+    "Calendar: calendar, e.g. \"NYB\""
   )
   .arg("keys_or_dict", "Rows of input keys or key + value rows")
   .arg("values", "Rows of input values (may be omitted)");
