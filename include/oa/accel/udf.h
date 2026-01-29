@@ -475,7 +475,7 @@ public:
   template <typename R, typename... Ts>
   auto& add(std::string name, R(__stdcall *func)(Ts...))
   {
-    udfs_.emplace_back(name, func);
+    udfs_.emplace_back(std::move(name), func);
     return *this;
   }
 
