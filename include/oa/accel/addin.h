@@ -193,7 +193,7 @@ public:
    *
    * The string returned by this function will be returned to Excel by Accel's
    * `xlAddInManagerInfo12()` implementation. It should contain the name of the
-   * add-in and optionally a version identifier. What is returned will shown as
+   * add-in and optionally a version identifier. What is returned will show as
    * an entry in the Excel dialog that displays the list of available add-ins.
    *
    * If not set by the user `"<xll name>.xll dev"` is returned as the default
