@@ -8,12 +8,14 @@
 #ifndef OA_ACCEL_ADDIN_H_
 #define OA_ACCEL_ADDIN_H_
 
+#include <exception>
 #include <functional>
 #include <string>
 #include <string_view>
 
-#include "oa/accel/udf.h"  // for udf_registry
-#include "oa/common.h"     // for OA_CONCAT()
+#include "oa/accel/oper12.h"
+#include "oa/accel/udf.h"     // for udf_registry
+#include "oa/common.h"        // for OA_CONCAT()
 
 // forward decl to avoid pulling in XLCALL.H
 struct xloper12;
@@ -90,8 +92,6 @@ using udf_return_t = T;
  *
  * The exception message will be returned back to Excel so any XLL function
  * using this macro must return an `LPXLOPER12`.
- *
- * Include `<exception>` and `oper12.h` before using this macro.
  *
  * @note If `expr` is multi-line or has control flow consider using a lambda
  *  for `expr` to enable wrapping of the relevant logic.
