@@ -197,8 +197,6 @@ OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
 
 /**
  * Excel callback required by every XLL for add-in activation.
- *
- * @todo Obviously missing function registration.
  */
 OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
 {
@@ -260,7 +258,14 @@ catch (const std::exception& exc) {
   return 1;
 }
 
-// TODO: add xlAutoClose() to unregister and undo customizations
+/**
+ * Excel callback run on XLL deactivation.
+ */
+OA_XLL_EXPORT(int) xlAutoClose() noexcept
+{
+  // TODO: undo UI customizations
+  return 1;
+}
 
 }  // namespace accel
 }  // namespace oa
