@@ -276,6 +276,8 @@ void add(oper12& res, const udf& fn, const oper12& xll_name)
   }
 }
 
+// TODO: add add() overload for a menu item
+
 }  // namespace
 
 /**
@@ -294,7 +296,7 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
   // create add-in menu
   if (!worksheet_menu(addin::menu()))
     alert(
-      "UDF registration error: Could not create " +
+      "XLL activation error: Could not create " +
       std::string{addin::filename()} + " add-in menu"
     );
   return 1;
@@ -310,7 +312,11 @@ catch (const std::exception& exc) {
  */
 OA_XLL_EXPORT(int) xlAutoClose() noexcept
 {
-  delete_worksheet_menu(addin::menu().clean_name());
+  if (!delete_worksheet_menu(addin::menu().clean_name()))
+    alert(
+      "XLL deactivation error: Failed to delete addin-menu "
+      "\"" + addin::menu().clean_name() + "\""
+    );
   return 1;
 }
 
