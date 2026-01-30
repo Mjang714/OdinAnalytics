@@ -7,6 +7,7 @@ if(XLLSDK_FOUND)
         addin.cpp
         call.cpp
         fp12_view.cpp
+        menu.cpp
         mref12.cpp
         oper12.cpp
         oper12_view.cpp
@@ -14,6 +15,8 @@ if(XLLSDK_FOUND)
         xl_conv.cpp
         xl_ops.cpp
     )
+    # use of generated headers is private
+    target_include_directories(oa_accel PRIVATE ${PROJECT_BINARY_DIR}/include)
     target_include_directories(
         oa_accel PUBLIC
         $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>

@@ -14,6 +14,7 @@
 #include <string_view>
 
 #include "oa/accel/oper12.h"
+#include "oa/accel/menu.h"
 #include "oa/accel/udf.h"     // for udf_registry
 #include "oa/common.h"        // for OA_CONCAT()
 
@@ -141,6 +142,11 @@ public:
    * Return the UDF registry with all registered UDFs.
    */
   static udf_registry& udfs();
+
+  /**
+   * Return the add-in menu containing the menu items.
+   */
+  static menu& menu();
 
   /**
    * Obtain the full path to the loaded XLL.

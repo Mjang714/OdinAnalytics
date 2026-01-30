@@ -23,9 +23,11 @@
 #include <vector>
 
 #include "oa/accel/call.h"
+#include "oa/accel/menu.h"
 #include "oa/accel/oper12.h"
 #include "oa/accel/udf.h"
 #include "oa/string.h"
+#include "oa/version.h"
 
 namespace oa {
 namespace accel {
@@ -48,6 +50,13 @@ addin::udfs()
 {
   static udf_registry reg;
   return reg;
+}
+
+menu&
+addin::menu()
+{
+  static accel::menu m;
+  return m;
 }
 
 std::string_view
@@ -131,6 +140,26 @@ addin::on_auto_free(const xloper12& op) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// add-in menu commands                                                       //
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Displays an informational dialog box about the loaded Accel XLL.
+ *
+ * This contains the version of Accel used, where the XLL was loaded from, and
+ * the date + time the XLL was last compiled.
+ */
+OA_XLL_EXPORT(int) accel_about()
+{
+  alert(
+    "Accel version: " + std::string{ODIN_VERSION} + "\n"
+    "Accel XLL path: " + std::string{addin::path()} + "\n"
+    "XLL build date: " + __DATE__ + " " + __TIME__
+  );
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // XLL interface functions                                                    //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -193,6 +222,62 @@ OA_XLL_EXPORT(void) xlAutoFree12(xloper12* op) noexcept
   xloper12_free(op);
 }
 
+namespace {
+
+/**
+ * Register a single Excel UDF.
+ *
+ * @param res `xlfRegister` return value
+ * @param fn UDF to register
+ * @param xll_name XLL file name
+ */
+void add(oper12& res, const udf& fn, const oper12& xll_name)
+{
+  // create oper12 for all fixed arguments
+  std::vector<oper12> args;
+  args.push_back(xll_name);             // pxModuleText
+  args.emplace_back(fn.export_name());  // pxProcedure
+  args.emplace_back(fn.type_text());    // pxTypeText
+  args.emplace_back(fn.name());         // pxFunctionText
+  args.emplace_back(fn.arg_text());     // pxArgumentText
+  args.emplace_back(fn.type());         // pxMacroType
+  args.emplace_back(fn.category());     // pxCategory
+  // note: Accel doesn't allow registering UDFs with a Ctrl + <key> Excel
+  // shortcut to avoid conflicts with existing key bindings. the shortcuts
+  // also cannot be unbound unless excel is restarted.
+  args.emplace_back(std::string{""});   // pxShortcutText
+  args.emplace_back(fn.help_topic());   // pxHelpTopic
+  args.emplace_back(fn.help());         // pxFunctionHelp
+  // insert argument help text
+  for (const auto& arg : fn.args())
+    args.emplace_back(arg.help());
+  // handle Excel bug where last argument help string has its trailing
+  // character chopped off. this is fixed by appending an empty string to the
+  // list of arguments and is a known issue fortunately
+  args.emplace_back("");
+  // create vector of xloper12* for Excel12v()
+  std::vector<xloper12*> xl_args;
+  for (auto& arg : args)
+    xl_args.push_back(arg.value());
+  // register
+  Excel12v(xlfRegister, res.value(), static_cast<int>(args.size()), xl_args.data());
+  // if error, alert, but keep going
+  // TODO: can improve this message
+  if (res.error()) {
+    // error message
+    auto err_text = "UDF registration error: Could not register exported " +
+      std::string{fn.export_name()} + " as " + std::string{fn.name()};
+    // if help is too long (over 255 chars) Excel will fail to register
+    if (fn.help().size() > 255)
+      err_text += ": UDF help text length " +
+        std::to_string(fn.help().size()) + " exceeds Excel limit of 255";
+    // emit alert
+    alert(err_text);
+  }
+}
+
+}  // namespace
+
 /**
  * Excel callback required by every XLL for add-in activation.
  */
@@ -202,53 +287,16 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
   oper12 xll_name{addin::filename()};
   // xlfRegister return value
   oper12 res;
-  // register functions
-  for (const auto& udf : addin::udfs()) {
-    // create oper12 for all fixed arguments
-    std::vector<oper12> args;
-    args.push_back(xll_name);              // pxModuleText
-    args.emplace_back(udf.export_name());  // pxProcedure
-    args.emplace_back(udf.type_text());    // pxTypeText
-    args.emplace_back(udf.name());         // pxFunctionText
-    args.emplace_back(udf.arg_text());     // pxArgumentText
-    args.emplace_back(udf.type());         // pxMacroType
-    args.emplace_back(udf.category());     // pxCategory
-    // note: Accel doesn't allow registering UDFs with a Ctrl + <key> Excel
-    // shortcut to avoid conflicts with existing key bindings. the shortcuts
-    // also cannot be unbound unless excel is restarted.
-    args.emplace_back(std::string{""});    // pxShortcutText
-    args.emplace_back(udf.help_topic());   // pxHelpTopic
-    args.emplace_back(udf.help());         // pxFunctionHelp
-    // insert argument help text
-    for (const auto& arg : udf.args())
-      args.emplace_back(arg.help());
-    // handle Excel bug where last argument help string has its trailing
-    // character chopped off. this is fixed by appending an empty string to the
-    // list of arguments and is a known issue fortunately
-    args.emplace_back("");
-    // TODO: bug where last string argument has its trailing character chopped
-    // off. need to pad with an empty character as a workaround
-    // create vector of xloper12* for Excel12v()
-    std::vector<xloper12*> xl_args;
-    for (auto& arg : args)
-      xl_args.push_back(arg.value());
-    // register
-    Excel12v(xlfRegister, res.value(), static_cast<int>(args.size()), xl_args.data());
-    // if error, alert, but keep going
-    // TODO: can improve this message
-    if (res.error()) {
-      // error message
-      auto err_text = "UDF registration error: Could not register exported " +
-        std::string{udf.export_name()} + " as " + std::string{udf.name()};
-      // if help is too long (over 255 chars) Excel will fail to register
-      if (udf.help().size() > 255)
-        err_text += ": UDF help text length " +
-          std::to_string(udf.help().size()) + " exceeds Excel limit of 255";
-      // emit alert
-      alert(err_text);
-    }
-  }
-  // TODO: fill in with UI customizations
+  // register worksheet functions
+  for (const auto& udf : addin::udfs())
+    add(res, udf, xll_name);
+  // TODO: register menu commands
+  // create add-in menu
+  if (!worksheet_menu(addin::menu()))
+    alert(
+      "UDF registration error: Could not create " +
+      std::string{addin::filename()} + " add-in menu"
+    );
   return 1;
 }
 // TODO: make this a macro
@@ -262,7 +310,7 @@ catch (const std::exception& exc) {
  */
 OA_XLL_EXPORT(int) xlAutoClose() noexcept
 {
-  // TODO: undo UI customizations
+  delete_worksheet_menu(addin::menu().clean_name());
   return 1;
 }
 
