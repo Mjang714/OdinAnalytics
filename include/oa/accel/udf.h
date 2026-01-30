@@ -264,6 +264,11 @@ enum udf_type {
  * This class represents all the necessary state required for a call to
  * `xlfRegister` (Form 1) in order to register an exported DLL function as an
  * Excel add-in function or macro available for use in Excel.
+ *
+ * @note We do not provide a `char` member for *pxShortcutText* because adding
+ *  new Ctrl + <key> shortcuts for an Excel command can easily conflict with
+ *  existing keyboard shortcuts. Furthermore, to undo these new shortcuts, one
+ *  will need to restart Excel, as unregistering the UDFs won't work.
  */
 class udf {
 public:
@@ -445,7 +450,6 @@ private:
   std::string name_;                   // Excel function name (pxFunctionText)
   udf_type type_{udf_type::function};  // function/macro type (pxMacroType)
   std::string category_;               // function category (pxCategory)
-  char shortcut_{};                    // shortcut key (pxShortcutText)
   std::string help_topic_;             // help topic link (pxHelpTopic)
   std::string help_;                   // function help text (pxFunctionHelp)
   udf_args args_;                      // UDF arguments

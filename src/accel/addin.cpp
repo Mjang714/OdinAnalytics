@@ -215,8 +215,9 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
     args.emplace_back(udf.arg_text());     // pxArgumentText
     args.emplace_back(udf.type());         // pxMacroType
     args.emplace_back(udf.category());     // pxCategory
-    // TODO: shortcut key empty for now. it's also kind of a bad idea because
-    // it can easily conflict with existing Ctrl + <key> Excel shortcuts
+    // note: Accel doesn't allow registering UDFs with a Ctrl + <key> Excel
+    // shortcut to avoid conflicts with existing key bindings. the shortcuts
+    // also cannot be unbound unless excel is restarted.
     args.emplace_back(std::string{""});    // pxShortcutText
     args.emplace_back(udf.help_topic());   // pxHelpTopic
     args.emplace_back(udf.help());         // pxFunctionHelp
