@@ -141,7 +141,7 @@ addin::on_auto_free(const xloper12& op) const
  *
  * This provides the add-in long name to display in the add-in manager dialog.
  */
-OA_XLL_EXPORT(xloper12*) xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
+OA_XLL_EXPORT() xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
 {
   // coerced input from Excel + xlCoerce bitmask
   oper12 in;
