@@ -13,6 +13,12 @@
 #include <Windows.h>
 #include <XLCALL.H>
 
+#include <cstdint>
+#include <string_view>
+#include <vector>
+
+#include "oa/accel/addin.h"
+#include "oa/accel/menu.h"
 #include "oa/accel/oper12.h"
 
 namespace oa {
@@ -40,6 +46,59 @@ bool alert(std::string_view str, alert_type type)
   oper12 style{static_cast<int>(type)};
   Excel12(xlcAlert, res.value(), 2, message.value(), style.value());
   return !!res.value()->val.xbool;
+}
+
+bool worksheet_menu(std::string_view name)
+{
+  oper12 res;
+  oper12 menu_id{10};      // worksheet menu bar ID
+  oper12 menu_name{name};
+  oper12 menu_pos{0};      // or xltypeMissing
+  // get menu on worksheet menu bar
+  Excel12(
+    xlfGetBar,
+    res.value(),
+    3,
+    menu_id.value(),
+    menu_name.value(),
+    menu_pos.value()
+  );
+  // if error then not found
+  return !res.error();
+}
+
+bool worksheet_menu(const menu& m)
+{
+  // menu rows (name + command name)
+  std::vector<oper12> rows{m.name(), ""};
+  // register menu commands
+  for (const auto& item : m) {
+    // item name
+    rows.emplace_back(item.text());
+    rows.emplace_back(
+      // if command is provided (non-empty), decorate with addin::stem() + _
+      item.func().empty() ?
+        std::string{""} :
+        std::string{addin::stem()} + "_" + std::string{item.func()}
+    );
+  }
+  // result, worksheet menu bar ID, menu data table
+  oper12 res;
+  oper12 menu_id{10};
+  oper12 menu_data{{rows.data(), rows.size() / 2u, 2u}};
+  Excel12(xlfAddMenu, res.value(), 2, menu_id.value(), menu_data.value());
+  // if error then failed
+  return !res.error();
+}
+
+bool delete_worksheet_menu(std::string_view name)
+{
+  oper12 res;
+  oper12 menu_id{10};      // worksheet menu bar ID
+  oper12 menu_name{name};
+  Excel12(xlfDeleteMenu, res.value(), 2, menu_id.value(), menu_name.value());
+  // if error then failed
+  return !res.error();
 }
 
 }  // namespace accel

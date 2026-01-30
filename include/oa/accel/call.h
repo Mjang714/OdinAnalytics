@@ -14,6 +14,9 @@
 namespace oa {
 namespace accel {
 
+// forward decl
+class menu;
+
 /**
  * Return a handle that corresponds to the top-level Excel window.
  *
@@ -58,6 +61,41 @@ void alert(std::string_view str);
  * @returns `true` if "OK" was clicked, `false` if "Cancel" was clicked
  */
 bool alert(std::string_view str, alert_type type);
+
+/**
+ * Indicate if the specified worksheet menu exists or not.
+ *
+ * @param name Menu name sans `'&'` character
+ * @returns `true` if menu was found in worksheet menu bar, `false` otherwise
+ */
+bool worksheet_menu(std::string_view name);
+
+/**
+ * Add a worksheet menu with the specified name and commands.
+ *
+ * All commands and menu separator lines are registered in order. If the menu
+ * exists, nothing will be done and `false` will be returned.
+ *
+ * @note You must ensure that all the menu commands are registered using
+ *  `xlfRegister` as otherwise clicking menu buttons pops up an error box.
+ *
+ * @par
+ *
+ * @note All command names will have `addin::stem()` + an underscore prefixed
+ *  to the name of the exported DLL function used as the command.
+ *
+ * @param m Menu object to add to the worksheet menu bar
+ * @returns `true` if menu registration succeeded, `false` otherwise
+ */
+bool worksheet_menu(const menu& m);
+
+/**
+ * Delete the specified worksheet menu with the specified name.
+ *
+ * @param name Menu name sans `'&'` character
+ * @returns `true` if menu was successfully deleted, `false` otherwise
+ */
+bool delete_worksheet_menu(std::string_view name);
 
 }  // namespace accel
 }  // namespace oa
