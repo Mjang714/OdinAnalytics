@@ -486,12 +486,12 @@ public:
   /**
    * Return an iterator to the first `udf` in the registry.
    */
-  iterator begin() const;
+  iterator begin() const noexcept;
 
   /**
    * Return an iterator to one past the last `udf` in the registry.
    */
-  iterator end() const;
+  iterator end() const noexcept;
 
   /**
    * Return a reference to the last `udf` in the registry.

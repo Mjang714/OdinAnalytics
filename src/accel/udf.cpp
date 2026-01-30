@@ -216,13 +216,13 @@ udf::thread_safe() const noexcept
 ////////////////////////////////////////////////////////////////////////////////
 
 udf_registry::iterator
-udf_registry::begin() const
+udf_registry::begin() const noexcept
 {
   return udfs_.begin();
 }
 
 udf_registry::iterator
-udf_registry::end() const
+udf_registry::end() const noexcept
 {
   return udfs_.end();
 }
