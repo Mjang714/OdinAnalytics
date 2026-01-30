@@ -196,8 +196,8 @@ public:
    * add-in and optionally a version identifier. What is returned will show as
    * an entry in the Excel dialog that displays the list of available add-ins.
    *
-   * If not set by the user `"<xll name>.xll dev"` is returned as the default
-   * when invoked in Excel XLL interface functions. Therefore, do not call this
+   * If not set by the user `"<xll name>.xll"` is returned as the default when
+   * invoked in Excel XLL interface functions. Therefore, do not call this
    * overload before Excel is running unless you already set `name()`.
    */
   std::string_view name() const;

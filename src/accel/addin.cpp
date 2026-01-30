@@ -111,10 +111,8 @@ std::string_view
 addin::name() const
 {
   // if empty use the default (cannot be called if Excel isn't running)
-  if (name_.empty()) {
-    static auto str = std::string{addin::filename()} + " dev";
-    return str;
-  }
+  if (name_.empty())
+    return addin::filename();
   else
     return name_;
 }
