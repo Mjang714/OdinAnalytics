@@ -146,15 +146,15 @@ addin::on_auto_free(const xloper12& op) const
 /**
  * Displays an informational dialog box about the loaded Accel XLL.
  *
- * This contains the version of Accel used, where the XLL was loaded from, and
- * the date + time the XLL was last compiled.
+ * This contains where the XLL was loaded from, the date + time the XLL was
+ * last compiled, and the version of Accel used.
  */
 OA_XLL_EXPORT(int) accel_about()
 {
   alert(
-    "Accel version: " + std::string{ODIN_VERSION} + "\n"
-    "Accel XLL path: " + std::string{addin::path()} + "\n"
-    "XLL build date: " + __DATE__ + " " + __TIME__
+    "XLL path: " + std::string{addin::path()} + "\n"
+    "XLL build date: " __DATE__ " " __TIME__ "\n"
+    "Accel version: " ODIN_VERSION
   );
   return 1;
 }
@@ -276,7 +276,42 @@ void add(oper12& res, const udf& fn, const oper12& xll_name)
   }
 }
 
-// TODO: add add() overload for a menu item
+/**
+ * Register a single Excel menu command.
+ *
+ * `addin::stem()` + and an underscore is always prepended to the name of the
+ * exported DLL function used for the command automatically.
+ *
+ * @param res `xlfRegister` return value
+ * @param m Menu item to register
+ * @param xll_name XLL file name
+ */
+void add(oper12& res, const menu::item& m, const oper12& xll_name)
+{
+  // DLL function export name with prepended XLL stem
+  auto cmd_name = std::string{addin::stem()} + "_" + std::string{m.func()};
+  // create oper12 for all fixed arguments
+  std::vector<oper12> args;
+  args.push_back(xll_name);     // pxModuleText
+  args.emplace_back(m.func());  // pxProcedure
+  args.emplace_back("J");       // pxTypeText (always "J")
+  args.emplace_back(cmd_name);  // pxFunctionText
+  args.emplace_back();          // pxArgumentText (xltypeMissing)
+  args.emplace_back(2);         // pxMacroType (2 for command)
+  // note: other fixed xlfRegister arguments omitted as they are unneeded
+  // create vector of xloper12* for Excel12v()
+  std::vector<xloper12*> xl_args;
+  for (auto& arg : args)
+    xl_args.push_back(arg.value());
+  // register
+  Excel12v(xlfRegister, res.value(), static_cast<int>(args.size()), xl_args.data());
+  // alert on error
+  if (res.error())
+    alert(
+      "UDF registration error: Could not register exported " +
+      std::string{m.func()} + " as menu command " + cmd_name
+    );
+}
 
 }  // namespace
 
@@ -292,8 +327,20 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
   // register worksheet functions
   for (const auto& udf : addin::udfs())
     add(res, udf, xll_name);
-  // TODO: register menu commands
+  // register non-separator menu commands
+  for (const auto& item : addin::menu())
+    if (!item.func().empty())
+      add(res, item, xll_name);
+  // ensure that any existing add-in menu is removed (ignore return value)
+  delete_worksheet_menu(addin::menu());
   // create add-in menu
+  //
+  // note:
+  //
+  // if the menu already exists another menu with the same name is added. this
+  // is why we first ensure that the relevant menu has been removed, e.g. in
+  // case the XLL was unregistered from a different workbook.
+  //
   if (!worksheet_menu(addin::menu()))
     alert(
       "XLL activation error: Could not create add-in menu "
@@ -312,11 +359,8 @@ catch (const std::exception& exc) {
  */
 OA_XLL_EXPORT(int) xlAutoClose() noexcept
 {
-  if (!delete_worksheet_menu(addin::menu().clean_name()))
-    alert(
-      "XLL deactivation error: Failed to delete add-in menu "
-      "\"" + addin::menu().clean_name() + "\""
-    );
+  // note: ignore return value
+  delete_worksheet_menu(addin::menu());
   return 1;
 }
 
