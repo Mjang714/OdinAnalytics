@@ -16,6 +16,9 @@
 namespace oa {
 namespace accel {
 
+// forward decl to avoid including addin.h
+class addin;
+
 /**
  * Class representing the XLL add-in's own custom menu.
  *
@@ -133,6 +136,15 @@ public:
    * Return the number of separator line items in the menu.
    */
   std::size_t separators() const noexcept;
+
+  /**
+   * Return a reference to the parent addin instance.
+   *
+   * This simply returns the singleton `addin::instance()` and does not need to
+   * be invoked unless additional `addin` member functions need to be called
+   * after constructing the menu with `OA_ACCEL_ADDIN_INSTANCE()`.
+   */
+  addin& operator()() const;
 
 private:
   std::string name_;          // menu name (empty to use add-in file name)

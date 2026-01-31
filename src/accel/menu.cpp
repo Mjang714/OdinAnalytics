@@ -110,5 +110,11 @@ menu::separators() const noexcept
   return separators_;
 }
 
+addin&
+menu::operator()() const
+{
+  return addin::instance();
+}
+
 }  // namespace accel
 }  // namespace oa
