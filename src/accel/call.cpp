@@ -91,11 +91,11 @@ bool worksheet_menu(const menu& m)
   return !res.error();
 }
 
-bool delete_worksheet_menu(std::string_view name)
+bool delete_worksheet_menu(const menu& m)
 {
   oper12 res;
-  oper12 menu_id{10};      // worksheet menu bar ID
-  oper12 menu_name{name};
+  oper12 menu_id{10};                // worksheet menu bar ID
+  oper12 menu_name{m.clean_name()};  // menu name without '&'
   Excel12(xlfDeleteMenu, res.value(), 2, menu_id.value(), menu_name.value());
   // if error then failed
   return !res.error();

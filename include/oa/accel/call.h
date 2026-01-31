@@ -63,7 +63,7 @@ void alert(std::string_view str);
 bool alert(std::string_view str, alert_type type);
 
 /**
- * Indicate if the specified worksheet menu exists or not.
+ * Indicate if the specified worksheet menu exists in the active workbook.
  *
  * @param name Menu name sans `'&'` character
  * @returns `true` if menu was found in worksheet menu bar, `false` otherwise
@@ -71,7 +71,7 @@ bool alert(std::string_view str, alert_type type);
 bool worksheet_menu(std::string_view name);
 
 /**
- * Add a worksheet menu with the specified name and commands.
+ * Add the given worksheet menu in the active workbook's add-in menu bar.
  *
  * All commands and menu separator lines are registered in order. If the menu
  * exists, nothing will be done and `false` will be returned.
@@ -90,12 +90,12 @@ bool worksheet_menu(std::string_view name);
 bool worksheet_menu(const menu& m);
 
 /**
- * Delete the specified worksheet menu with the specified name.
+ * Delete the given worksheet menu from the active workbook's add-in menu bar.
  *
- * @param name Menu name sans `'&'` character
+ * @param m Menu object to remove from the worksheet menu bar
  * @returns `true` if menu was successfully deleted, `false` otherwise
  */
-bool delete_worksheet_menu(std::string_view name);
+bool delete_worksheet_menu(const menu& m);
 
 }  // namespace accel
 }  // namespace oa
