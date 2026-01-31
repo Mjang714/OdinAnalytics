@@ -146,12 +146,14 @@ addin::on_auto_free(const xloper12& op) const
 /**
  * Displays an informational dialog box about the loaded Accel XLL.
  *
- * This contains where the XLL was loaded from, the date + time the XLL was
- * last compiled, and the version of Accel used.
+ * This contains the XLL name as shown in the add-in manager, the path the XLL
+ * was loaded from, the date + time the XLL was last compiled, and the version
+ * of the Accel framework used to build the XLL.
  */
 OA_XLL_EXPORT(int) accel_about()
 {
   alert(
+    "XLL name: " + std::string{addin::instance().name()} + "\n"
     "XLL path: " + std::string{addin::path()} + "\n"
     "XLL build date: " __DATE__ " " __TIME__ "\n"
     "Accel version: " ODIN_VERSION
