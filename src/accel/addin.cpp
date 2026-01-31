@@ -296,8 +296,8 @@ OA_XLL_EXPORT(int) xlAutoOpen() OA_ACCEL_SAFE(noexcept)
   // create add-in menu
   if (!worksheet_menu(addin::menu()))
     alert(
-      "XLL activation error: Could not create " +
-      std::string{addin::filename()} + " add-in menu"
+      "XLL activation error: Could not create add-in menu "
+      "\"" + addin::menu().clean_name() + "\""
     );
   return 1;
 }
@@ -314,7 +314,7 @@ OA_XLL_EXPORT(int) xlAutoClose() noexcept
 {
   if (!delete_worksheet_menu(addin::menu().clean_name()))
     alert(
-      "XLL deactivation error: Failed to delete addin-menu "
+      "XLL deactivation error: Failed to delete add-in menu "
       "\"" + addin::menu().clean_name() + "\""
     );
   return 1;
