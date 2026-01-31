@@ -10,11 +10,13 @@
 #include <map>
 #include <optional>
 #include <numeric>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "oa/accel/addin.h"
+#include "oa/accel/call.h"
 #include "oa/accel/fp12_view.h"
 #include "oa/accel/oper12.h"
 #include "oa/accel/oper12_view.h"
@@ -24,9 +26,9 @@
 
 namespace oa {
 
-// basic add-in
-OA_ACCEL_ADDIN_INSTANCE()
-  .name("Accel Demo " + std::string{ODIN_VERSION});
+////////////////////////////////////////////////////////////////////////////////
+// worksheet functions                                                        //
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Return the location of the OA static data directory.
@@ -45,7 +47,7 @@ OA_ACCEL_EXPORT_FUNC(OaDataDir)
 /**
  * Return the maximum of the two values.
  */
-OA_XLL_EXPORT(double) OaMax(double a, double b)
+OA_XLL_EXPORT(double) OaMax(double a, double b) noexcept
 {
   return (a > b) ? a : b;
 }
@@ -391,5 +393,33 @@ OA_ACCEL_EXPORT_FUNC(OaCharFreq)
     "This function returns a table with \"Char\" and \"Freq\" as the header."
   )
   .arg("s", "Input string to get character frequency table for");
+
+////////////////////////////////////////////////////////////////////////////////
+// menu commands                                                              //
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Draw + display two integers from 1 through 6 inclusive independently.
+ */
+OA_XLL_EXPORT(int) roll_dice()
+{
+  // entropy source + distribution
+  std::mt19937 rng{std::random_device{}()};
+  std::uniform_int_distribution dist(1u, 6u);
+  // sample and print
+  auto v1 = dist(rng);
+  auto v2 = dist(rng);
+  accel::alert("Rolled " + std::to_string(v1) + " and " + std::to_string(v2));
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// addin                                                                      //
+////////////////////////////////////////////////////////////////////////////////
+
+OA_ACCEL_ADDIN_INSTANCE()
+  .name("Accel Demo " + std::string{ODIN_VERSION})
+  .menu()
+    OA_ACCEL_MENU_ITEM("&Roll...", roll_dice)();
 
 }  // namespace oa
