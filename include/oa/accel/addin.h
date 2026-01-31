@@ -12,11 +12,12 @@
 #include <functional>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #include "oa/accel/oper12.h"
 #include "oa/accel/menu.h"
 #include "oa/accel/udf.h"     // for udf_registry
-#include "oa/common.h"        // for OA_CONCAT()
+#include "oa/common.h"        // for OA_CONCAT(), OA_STRINGIFY()
 
 // forward decl to avoid pulling in XLCALL.H
 struct xloper12;
@@ -263,6 +264,48 @@ private:
     .add(OA_STRINGIFY(func), func) \
     /* to obtain a udf reference we use back() */ \
     .back()
+
+/**
+ * Add a menu item to the XLL add-in workbook menu.
+ *
+ * This adds a "standard" menu item that when clicked will invoke a registered
+ * command that calls the specified exported DLL function. To add a separator
+ * line on the menu use the `separator()` member function.
+ *
+ * For example, one can add menu items when constructign the add-in instance:
+ *
+ * @code{.cc}
+ * OA_ACCEL_ADDIN_INSTANCE()
+ *   .name("My Addin")
+ *   .menu()
+ *     OA_ACCEL_MENU_ITEM("&Open...", open_dialog)
+ *     .separator()
+ *     OA_ACCEL_MENU_ITEM("&Close...", close_dialog)();
+ * @endcode
+ *
+ * Here the `open_dialog()` and `close_dialog()` function or function pointers
+ * should be declared as an extern "C" functions with the following signature:
+ *
+ * @code{.cc}
+ * int (__stdcall *)();
+ * @endcode
+ *
+ * By convention, if the menu command will open a pop-up window or dialog, the
+ * menu item text should end with ellipses, i.e. `"..."`.
+ *
+ * @param text Menu item text with optional ampersand preceding alt-key
+ * @param func DLL function exported to register as the menu item's command
+ */
+#define OA_ACCEL_MENU_ITEM(text, func) \
+  .command( \
+    text, \
+    /* lambda with static_assert() to force type check */ \
+    [] \
+    { \
+      static_assert(std::is_same_v<int (__stdcall *)(), decltype(&func)>); \
+      return OA_STRINGIFY(func); \
+    }() \
+  )
 
 }  // namespace accel
 }  // namespace oa
