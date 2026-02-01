@@ -80,9 +80,9 @@ public:
    * `addin::name()` will be used during the actual menu registration.
    *
    * By default, a menu item called "About..." will be added that displays the
-   * Accel version used, the path the XLL was loaded from, and some other TBD
-   * info in a dialog box. One separator line is also added to separate the
-   * about command from user-defined menu items.
+   * path the XLL was loaded from, the date + time the XLL was built, and the
+   * Accel version used in a dialog box. One separator line is also added to
+   * separate the about command from user-defined menu items.
    *
    * @param name Menu name with optional `&` before alt-key character
    */
