@@ -22,7 +22,6 @@
 #include "oa/accel/oper12_view.h"
 #include "oa/accel/xl_conv.h"
 #include "oa/config/paths.h"
-#include "oa/version.h"
 
 namespace oa {
 
@@ -418,7 +417,7 @@ OA_XLL_EXPORT(int) roll_dice()
 ////////////////////////////////////////////////////////////////////////////////
 
 OA_ACCEL_ADDIN_INSTANCE()
-  .name("Accel Demo " + std::string{ODIN_VERSION})
+  .name("Accel Demo")
   .menu()
     OA_ACCEL_MENU_ITEM("&Roll...", roll_dice)();
 

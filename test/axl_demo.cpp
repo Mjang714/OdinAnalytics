@@ -23,7 +23,6 @@
 #include "oa/accel/oper12.h"
 #include "oa/accel/oper12_view.h"
 #include "oa/accel/udf.h"
-#include "oa/version.h"
 #include "oxl/excel_base_funcs.h"
 #include "oxl/time_xl.h"
 #include "oxl/xl_api/cache_xl_obj.h"
@@ -33,7 +32,7 @@ namespace oa {
 
 // basic add-in
 OA_ACCEL_ADDIN_INSTANCE()
-  .name("AXL Demo " + std::string{ODIN_VERSION});
+  .name("AXL Demo");
 
 namespace {
 
