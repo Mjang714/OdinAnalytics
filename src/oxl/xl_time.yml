@@ -1,10 +1,9 @@
 OutputFile : auto_gen_time.cpp
-RegFile : auto_gen_time_reg_fns.h
+RegFile : oxl/auto_gen_time_reg_fns.h
 RegPreFix : time
 Category: oxl_time
 HeaderFiles:
--
-  FileName : time_xl.h
+  - oxl/time_xl.h
 Functions :
   -
    ExcelName : oxlIsBusinessDay
