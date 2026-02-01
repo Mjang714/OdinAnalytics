@@ -65,6 +65,17 @@ jobs:
       # and __cpuidex directly in a C/C++ program but this is more complication
       - name: CPU Info
         run: systeminfo
+      # Python setup
+      # note: exact version doesn't really matter honestly
+      - name: Python Setup
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+      # check Python + install dependencies (oxlgen.py needs PyYAML)
+      - name: Install Python dependencies
+        run: |
+          python --version
+          pip install pyyaml>=6.0
       # installs + builds required Boost libraries with CMake. see
       # https://www.boost.org/doc/user-guide/getting-started.html#_individual_modules
       # note: originally we used curl to pull an entire Boost release but the
