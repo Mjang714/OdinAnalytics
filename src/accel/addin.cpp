@@ -88,8 +88,7 @@ addin::wpath()
     // copy to wstring because calling Excel12() during static object
     // destruction is likely undefined behavior
     // note: Excel string size is in first code point + not null-terminated
-    auto v = &*op;
-    return {&v->val.str[1], static_cast<unsigned>(v->val.str[0])};
+    return {&op->val.str[1], static_cast<unsigned>(op->val.str[0])};
   }();
   // return view from conversion
   return path;

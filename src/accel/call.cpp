@@ -55,14 +55,7 @@ bool worksheet_menu(std::string_view name)
   oper12 menu_name{name};
   oper12 menu_pos{0};      // or xltypeMissing
   // get menu on worksheet menu bar
-  Excel12(
-    xlfGetBar,
-    &*res,
-    3,
-    &*menu_id,
-    &*menu_name,
-    &*menu_pos
-  );
+  Excel12(xlfGetBar, &*res, 3, &*menu_id, &*menu_name, &*menu_pos);
   // if error then not found
   return !res.error();
 }
