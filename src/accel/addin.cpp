@@ -84,11 +84,11 @@ addin::wpath()
   {
     // get path from Excel
     oper12 op;
-    Excel12(xlGetName, op.value(), 0);
+    Excel12(xlGetName, &*op, 0);
     // copy to wstring because calling Excel12() during static object
     // destruction is likely undefined behavior
     // note: Excel string size is in first code point + not null-terminated
-    auto v = op.value();
+    auto v = &*op;
     return {&v->val.str[1], static_cast<unsigned>(v->val.str[0])};
   }();
   // return view from conversion
@@ -174,11 +174,11 @@ OA_XLL_EXPORT() xlAddInManagerInfo12(xloper12* op) OA_ACCEL_SAFE()
   oper12 in;
   oper12 mask{xltypeInt};
   // coerce input using mask
-  Excel12(xlCoerce, in.value(), 2, op, mask.value());
+  Excel12(xlCoerce, &*in, 2, op, &*mask);
   // if 1, return XLL long name, otherwise return #VALUE!
   auto res = [&in]
   {
-    if (in.value()->val.w == 1)
+    if (in->val.w == 1)
       return oper12{addin::instance().name()};
     else
       return oper12{xlerr::value};
@@ -258,9 +258,9 @@ void add(oper12& res, const udf& fn, const oper12& xll_name)
   // create vector of xloper12* for Excel12v()
   std::vector<xloper12*> xl_args;
   for (auto& arg : args)
-    xl_args.push_back(arg.value());
+    xl_args.push_back(&*arg);
   // register
-  Excel12v(xlfRegister, res.value(), static_cast<int>(args.size()), xl_args.data());
+  Excel12v(xlfRegister, &*res, static_cast<int>(args.size()), xl_args.data());
   // if error, alert, but keep going
   // TODO: can improve this message
   if (res.error()) {
@@ -302,9 +302,9 @@ void add(oper12& res, const menu::item& m, const oper12& xll_name)
   // create vector of xloper12* for Excel12v()
   std::vector<xloper12*> xl_args;
   for (auto& arg : args)
-    xl_args.push_back(arg.value());
+    xl_args.push_back(&*arg);
   // register
-  Excel12v(xlfRegister, res.value(), static_cast<int>(args.size()), xl_args.data());
+  Excel12v(xlfRegister, &*res, static_cast<int>(args.size()), xl_args.data());
   // alert on error
   if (res.error())
     alert(

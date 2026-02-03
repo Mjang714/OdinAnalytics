@@ -446,18 +446,6 @@ oper12::missing()
 // public member functions                                                    //
 ////////////////////////////////////////////////////////////////////////////////
 
-xloper12*
-oper12::value() noexcept
-{
-  return value_;
-}
-
-const xloper12*
-oper12::value() const noexcept
-{
-  return value_;
-}
-
 xloper12&
 oper12::operator*() noexcept
 {

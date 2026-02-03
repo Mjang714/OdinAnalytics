@@ -27,8 +27,8 @@ namespace accel {
 std::uintptr_t window()
 {
   oper12 res;
-  Excel12(xlGetHwnd, res.value(), 0);
-  return static_cast<std::uintptr_t>(res.value()->val.w);
+  Excel12(xlGetHwnd, &*res, 0);
+  return static_cast<std::uintptr_t>(res->val.w);
 }
 
 void alert(std::string_view str)
@@ -36,7 +36,7 @@ void alert(std::string_view str)
   oper12 res;
   oper12 message{str};
   // note: return value ignored since we know it is always true
-  Excel12(xlcAlert, res.value(), 1, message.value());
+  Excel12(xlcAlert, &*res, 1, &*message);
 }
 
 bool alert(std::string_view str, alert_type type)
@@ -44,8 +44,8 @@ bool alert(std::string_view str, alert_type type)
   oper12 res;
   oper12 message{str};
   oper12 style{static_cast<int>(type)};
-  Excel12(xlcAlert, res.value(), 2, message.value(), style.value());
-  return !!res.value()->val.xbool;
+  Excel12(xlcAlert, &*res, 2, &*message, &*style);
+  return !!res->val.xbool;
 }
 
 bool worksheet_menu(std::string_view name)
@@ -57,11 +57,11 @@ bool worksheet_menu(std::string_view name)
   // get menu on worksheet menu bar
   Excel12(
     xlfGetBar,
-    res.value(),
+    &*res,
     3,
-    menu_id.value(),
-    menu_name.value(),
-    menu_pos.value()
+    &*menu_id,
+    &*menu_name,
+    &*menu_pos
   );
   // if error then not found
   return !res.error();
@@ -86,7 +86,7 @@ bool worksheet_menu(const menu& m)
   oper12 res;
   oper12 menu_id{10};
   oper12 menu_data{{rows.data(), rows.size() / 2u, 2u}};
-  Excel12(xlfAddMenu, res.value(), 2, menu_id.value(), menu_data.value());
+  Excel12(xlfAddMenu, &*res, 2, &*menu_id, &*menu_data);
   // if error then failed
   return !res.error();
 }
@@ -96,7 +96,7 @@ bool delete_worksheet_menu(const menu& m)
   oper12 res;
   oper12 menu_id{10};                // worksheet menu bar ID
   oper12 menu_name{m.clean_name()};  // menu name without '&'
-  Excel12(xlfDeleteMenu, res.value(), 2, menu_id.value(), menu_name.value());
+  Excel12(xlfDeleteMenu, &*res, 2, &*menu_id, &*menu_name);
   // if error then failed
   return !res.error();
 }

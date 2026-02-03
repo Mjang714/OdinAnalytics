@@ -307,14 +307,6 @@ public:
   static oper12 missing();
 
   /**
-   * Return the `XLOPER12` pointer owned by the object.
-   *
-   * This is useful for C function interop but can be abused. However, unless
-   * `XLCALL.H` is included, it is not useful, as `xloper12` is incomplete.
-   */
-  xloper12* value() noexcept;
-
-  /**
    * Return a reference to the `XLOPER12` pointer owned by the object.
    *
    * Unless `XLCALL.H` is included this member function is not useful as the
@@ -329,14 +321,6 @@ public:
    * `xloper12` type is purposefully left incomplete.
    */
   const xloper12& operator*() const noexcept;
-
-  /**
-   * Return a const-qualified version of the owned `XLOPER12` pointer.
-   *
-   * This prevents calling a C function that modifies the `XLOPER12` on
-   * `value()` when the `oper12` is const-qualified.
-   */
-  const xloper12* value() const noexcept;
 
   /**
    * Indicate if the `oper12` owns a value.
