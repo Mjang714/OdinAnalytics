@@ -315,6 +315,22 @@ public:
   xloper12* value() noexcept;
 
   /**
+   * Return a reference to the `XLOPER12` pointer owned by the object.
+   *
+   * Unless `XLCALL.H` is included this member function is not useful as the
+   * `xloper12` type is purposefully left incomplete.
+   */
+  xloper12& operator*() noexcept;
+
+  /**
+   * Return a const reference to the `XLOPER12` pointer owned by the object.
+   *
+   * Unless `XLCALL.H` is included this member function is not useful as the
+   * `xloper12` type is purposefully left incomplete.
+   */
+  const xloper12& operator*() const noexcept;
+
+  /**
    * Return a const-qualified version of the owned `XLOPER12` pointer.
    *
    * This prevents calling a C function that modifies the `XLOPER12` on
@@ -333,7 +349,8 @@ public:
   /**
    * Obtain access to a member of the viewed `XLOPER12`.
    *
-   * This provides some syntactic sugar for member access.
+   * This provides some syntactic sugar for member access which is possible
+   * only when `XLCALL.H` is included to complete `xloper12`.
    */
   xloper12* operator->() noexcept;
 

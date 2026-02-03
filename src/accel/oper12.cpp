@@ -458,6 +458,18 @@ oper12::value() const noexcept
   return value_;
 }
 
+xloper12&
+oper12::operator*() noexcept
+{
+  return *value_;
+}
+
+const xloper12&
+oper12::operator*() const noexcept
+{
+  return *value_;
+}
+
 bool
 oper12::operator!() const noexcept
 {
@@ -623,10 +635,10 @@ std::ostream& operator<<(std::ostream& out, const oper12& op)
   out << "[owning=" <<
     [own = op.owning()] { return (own) ? "true" : "false"; }() << "] ";
   // empty
-  if (!op.value())
+  if (!op)
     return out << "(empty)";
   // otherwise, format value
-  return out << *op.value();
+  return out << *op;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
