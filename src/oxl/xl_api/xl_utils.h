@@ -38,7 +38,7 @@ namespace oxl::xl_api
 	/// <param name="function_arr"></param>
 	/// <param name="number_funcs"></param>
 	template <size_t N>
-	inline void RegisterXLFunctions(XLOPER12& xDLL, const WCHAR* (&function_arr)[N][12])
+	void RegisterXLFunctions(XLOPER12& xDLL, const WCHAR* (&function_arr)[N][12])
 	{
 		for (size_t index = 0; index < N; index++)
 		{
