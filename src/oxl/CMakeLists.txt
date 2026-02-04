@@ -20,8 +20,8 @@ if(XLLSDK_FOUND)
         # note: not installable just yet
         $<INSTALL_INTERFACE:include>
     )
-    # note: XLCALL.H and FRAMEWRK.H show up in some headers so we can't make
-    # the linkage private. xl_utils.h also uses Excel12f() directly
+    # xl_utils.h uses Excel12f() and needs XLCALL.H and FRAMEWRK.H so we can't
+    # make the linkage of the XLL SDK libraries private
     target_link_libraries(oxl_api PUBLIC XLLSDK::frmwrk32 XLLSDK::xlcall32)
 else()
     message(STATUS "Skipping oxl_api (requires XLL SDK)")
