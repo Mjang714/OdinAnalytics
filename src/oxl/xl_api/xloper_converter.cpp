@@ -75,7 +75,7 @@ namespace oxl::xl_api {
 		{
 			return false;
 		}
-		
+
 	}
 
 	void XLoperObj::ConvertToLPXloper(double value, LPXLOPER12 xl_oper_res)
@@ -93,28 +93,28 @@ namespace oxl::xl_api {
 
 	void XLoperObj::ConvertToLPXloper(bool value, LPXLOPER12 xl_oper_res)
 	{
-		
+
 		xl_oper_res->xltype = xltypeBool;
 		xl_oper_res->val.xbool = value;
-	
+
 	}
 
 	void XLoperObj::ConvertToLPXloper(const std::string& value, LPXLOPER12 xl_oper_res)
-	{	
+	{
 
 		// Convert to wide string
 		std::wstring wide_str = ToWString(value);
 
-		//declare the xloper12 type as str and DLL free bit that will be freed later on 
+		//declare the xloper12 type as str and DLL free bit that will be freed later on
 		xl_oper_res->xltype = xltypeStr | xlbitDLLFree;
-		//allocate the memory size of the wide char array +2 bytes wide character string are not the same size as 
+		//allocate the memory size of the wide char array +2 bytes wide character string are not the same size as
 		// normal strings
 		xl_oper_res->val.str = static_cast<XCHAR*> (calloc(wide_str.length() + 2, sizeof(XCHAR)));
 
 		//the first wide character is the size of the wide char array
 		xl_oper_res->val.str[0] = static_cast<XCHAR> (wide_str.length());
 
-		
+
 		for (size_t i = 0; i < wide_str.length(); i++)
 		{
 			// orignal line was check to see if this one works
@@ -149,7 +149,7 @@ namespace oxl::xl_api {
 					ConvertToLPXloper(std::get<double>(value(i, j)), &xl_oper_res->val.array.lparray[i * cols + j]);
 				}
 
-				//return a string in the defualt case 
+				//return a string in the defualt case
 				else
 				{
 					ConvertToLPXloper(std::get<std::string>(value(i, j)), &xl_oper_res->val.array.lparray[i * cols + j]);
@@ -166,7 +166,7 @@ namespace oxl::xl_api {
 			std::cout << "Not a xlTypeMulti please check input \n";
 			throw std::invalid_argument("Input was not 2D array check the input:xloper_converter.cpp line 155 LPXloperToArray()");
 		}
-		
+
 		int rows = xl_oper->val.array.rows;
 		int cols = xl_oper->val.array.columns;
 
@@ -176,7 +176,7 @@ namespace oxl::xl_api {
 		{
 			for (size_t j = 0; j < cols; j++)
 			{
-				
+
 				if (xl_oper->val.array.lparray[(i * cols) + j].xltype == xltypeNum)
 				{
 					xl_array_data(i, j) = xl_oper->val.array.lparray[(i * cols) + j].val.num;
@@ -193,7 +193,7 @@ namespace oxl::xl_api {
 						xl_array_data(i, j) = LPXloperToStr(&xl_oper->val.array.lparray[(i * cols) + j]);
 					}
 					//if it is empty then use empty string
-					else 
+					else
 					{
 						xl_array_data(i, j) = "";
 					}
@@ -209,7 +209,7 @@ namespace oxl::xl_api {
 		{
 			throw std::invalid_argument("Input was not xltypeMulti check the input: xloper_converter.cpp line 190 LPXloperToDictionary()");
 		}
-		
+
 		XlArray xl_array = LPXloperToXlArray(xl_oper);
 
 		return XlArrayToXlDictionary(xl_array);
@@ -260,21 +260,24 @@ namespace oxl::xl_api {
 		}
 		return xl_oper->val.num;
 	}
+
 	std::string XLoperObj::CellName(void)
 	{
 		xloper12 cell_loc;
 		xloper12 sheet_name;
-		xloper12 sheet_id;
 
 		Excel12(xlfCaller, &cell_loc, 0);
-		Excel12(xlSheetNm, &sheet_name,1, &cell_loc);
-		Excel12(xlSheetId, &sheet_id, 1,sheet_name);
+		Excel12(xlSheetNm, &sheet_name, 1, &cell_loc);
 
+		// note: if this throws Excel memory is leaked (xlFree not called)
 		std::string sheet_name_str = LPXloperToStr(&sheet_name);
+		// free string memory allocated by Excel
+		Excel12(xlFree, nullptr, 1, &sheet_name);
 
 		int row = cell_loc.val.sref.ref.rwFirst;
 		int col = cell_loc.val.sref.ref.colFirst;
 
 		return std::format("{}_${}${}", sheet_name_str, row, col);
 	}
-}
+
+}  // namespace oxl::xl_api
