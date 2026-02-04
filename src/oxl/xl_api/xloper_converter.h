@@ -1,23 +1,17 @@
 #ifndef OXL_XL_API_XLOPER_CONVERTER_H_
 #define OXL_XL_API_XLOPER_CONVERTER_H_
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-#include <stdlib.h>
-
-#include <format>
-#include <iostream>
 #include <string>
-
-#include "xlcall.h"
-#include "framewrk.h"
+#include <variant>
 
 #include "xl_variant.h"
 #include "xl_array.h"
 #include "xl_dictionary.h"
-#include "xl_converter_funcs.h"
+
+// forward decl to avoid bringing in XLCALL.H
+struct xloper12;
+// note: can mix using decls with typedefs as long as they are consistent
+using LPXLOPER12 = xloper12*;
 
 namespace oxl::xl_api
 {
@@ -36,28 +30,30 @@ namespace oxl::xl_api
 			//constructors to store the value for XLoper type
 			explicit XLoperObj(const double input);
 			explicit XLoperObj(const char* input);
-			explicit XLoperObj(const LPXLOPER12 input);
+			// FIXME: leaky + no way to specify memory ownership semantics.
+			// seems like external ownership is required for now
+			explicit XLoperObj(LPXLOPER12 input);
 
 			/// <summary>
 			/// a function to check if a given LPXLOPER12 is missing data that we can extract
 			/// </summary>
 			/// <param name="input"></param>
 			/// <returns></returns>
-			static bool IsEmpty(const LPXLOPER12 input);
+			static bool IsEmpty(const xloper12* input);
 
 			/// <summary>
 			/// check to see if the LPXLOPER is multi from excel
 			/// </summary>
 			/// <param name="input"></param>
 			/// <returns></returns>
-			static bool IsMulti(const LPXLOPER12 input);
+			static bool IsMulti(const xloper12* input);
 
 			/// <summary>
 			/// checks to see if the xloper is a string type
 			/// </summary>
 			/// <param name="input"></param>
 			/// <returns></returns>
-			static bool IsStr(const LPXLOPER12 input);
+			static bool IsStr(const xloper12* input);
 
 			/// <summary>
 			/// checks to see if the data is empty.
@@ -82,24 +78,24 @@ namespace oxl::xl_api
 			/// </summary>
 			/// <param name="xl_oper"></param>
 			/// <returns></returns>
-			static XlArray LPXloperToXlArray(const LPXLOPER12& xl_oper);
+			static XlArray LPXloperToXlArray(const xloper12* xl_oper);
 
-			static XlDictionary LPXloperToDictionary(const LPXLOPER12& xl_oper);
-			static XlDictionary LPXloperToDictionary(const LPXLOPER12& xl_oper_keys, const LPXLOPER12& xl_oper_values);
+			static XlDictionary LPXloperToDictionary(const xloper12* xl_oper);
+			static XlDictionary LPXloperToDictionary(const xloper12* xl_oper_keys, const xloper12* xl_oper_values);
 
 			/// <summary>
 			/// converts xloper to a string
 			/// </summary>
 			/// <param name="xl_oper"></param>
 			/// <returns></returns>
-			static std::string LPXloperToStr(const LPXLOPER12& xl_oper);
-			
+			static std::string LPXloperToStr(const xloper12* xl_oper);
+
 			/// <summary>
-			/// convert teh xloper to a double 
+			/// convert teh xloper to a double
 			/// </summary>
 			/// <param name="xl_oper"></param>
 			/// <returns></returns>
-			static double LPXloperToDouble(const LPXLOPER12& xl_oper);
+			static double LPXloperToDouble(const xloper12* xl_oper);
 
 			//static std::string GenHandleName(const CachedObjVar& cached_obj);
 			static std::string CellName(void);
@@ -127,8 +123,3 @@ namespace oxl::xl_api
 }
 
 #endif // !OXL_XL_API_XLOPER_CONVERTER_H_
-
-
-
-
-

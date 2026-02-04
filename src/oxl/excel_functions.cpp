@@ -2,12 +2,19 @@
 #include "oxl/autogen_excel_reg_funcs.h"
 #include "oxl/auto_gen_time_reg_fns.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <XLCALL.H>
+#include <FRAMEWRK.H>
 
+#include <stdlib.h>
 
 namespace oxl
 {
 
-	//	Registers the functions when the xll is laoded 
+	//	Registers the functions when the xll is laoded
 	extern "C" __declspec(dllexport)
 	int WINAPI xlAutoOpen(void)
 	{
@@ -15,8 +22,8 @@ namespace oxl
 
 		Excel12f(xlGetName, &xDLL, 0);
 
-		oxl::xl_api::RegisterXLFunctions(xDLL, excel_base_ngFuncs, excel_base_num_reg_functions_rows);
-		oxl::xl_api::RegisterXLFunctions(xDLL, time_ngFuncs, time_num_reg_functions_rows);
+		xl_api::RegisterXLFunctions(xDLL, excel_base_ngFuncs);
+		xl_api::RegisterXLFunctions(xDLL, time_ngFuncs);
 
 		/* Free the XLL filename */
 		Excel12f(xlFree, 0, 1,   (LPXLOPER12)&xDLL);
@@ -28,7 +35,8 @@ namespace oxl
 	extern "C" __declspec(dllexport)
 	int WINAPI xlAutoClose(void)
 	{
-		oxl::xl_api::UnregisterXLFunctions(excel_base_ngFuncs, excel_base_num_reg_functions_rows);
+		xl_api::UnregisterXLFunctions(excel_base_ngFuncs);
+		xl_api::UnregisterXLFunctions(time_ngFuncs);
 		return 1;
 	}
 
