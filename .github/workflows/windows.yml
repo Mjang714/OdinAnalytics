@@ -55,6 +55,8 @@ jobs:
         arch: [Win32, x64]
         # whether or not to use unity build
         unity: [off, on]
+      # keep running the rest of the matrix jobs even if one fails
+      fail-fast: false
     # job steps
     steps:
       - name: Checkout
