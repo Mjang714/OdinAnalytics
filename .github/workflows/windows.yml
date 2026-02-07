@@ -55,6 +55,8 @@ jobs:
         arch: [Win32, x64]
         # whether or not to use unity build
         unity: [off, on]
+      # keep running the rest of the matrix jobs even if one fails
+      fail-fast: false
     # job steps
     steps:
       - name: Checkout
@@ -65,6 +67,17 @@ jobs:
       # and __cpuidex directly in a C/C++ program but this is more complication
       - name: CPU Info
         run: systeminfo
+      # Python setup
+      # note: exact version doesn't really matter honestly
+      - name: Python Setup
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+      # check Python + install dependencies (oxlgen.py needs PyYAML)
+      - name: Install Python dependencies
+        run: |
+          python --version
+          pip install pyyaml>=6.0
       # installs + builds required Boost libraries with CMake. see
       # https://www.boost.org/doc/user-guide/getting-started.html#_individual_modules
       # note: originally we used curl to pull an entire Boost release but the
@@ -83,6 +96,10 @@ jobs:
             echo "Initializing Boost module $module"
             git submodule update --depth 1 -q --init libs\$module
             python tools\boostdep\depinst\depinst.py -X test -g "--depth 1" $module
+            # if depinst.py failed abort the stage
+            If ($LastExitCode -ne 0) {
+              throw "depinst.py failed to initialize libs/$module correctly"
+            }
           }
           # build just the required components we need. the entire Boost suite
           # of libraries is huge so we don't want to build everything. in most
