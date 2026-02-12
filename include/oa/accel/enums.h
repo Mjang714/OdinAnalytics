@@ -1,12 +1,14 @@
 /**
  * @file accel/enums.h
  * @author Derek Huang
- * @brief C++ header for Excel type, error, return enumerations
+ * @brief C++ header for Excel type, error, return enumerations + helpers
  * @copyright MIT License
  */
 
 #ifndef OA_ACCEL_ENUMS_H_
 #define OA_ACCEL_ENUMS_H_
+
+#include <iosfwd>
 
 namespace oa {
 namespace accel {
@@ -60,6 +62,14 @@ constexpr auto to_string(xltype type) noexcept
   }
 #undef OA_ACCEL_XLTYPE_CASE
 }
+
+/**
+ * Stream the string representation for the type enum value.
+ *
+ * @param out Output stream
+ * @param type Excel type value
+ */
+std::ostream& operator<<(std::ostream& out, xltype type);
 
 /**
  * Returns `true` if the given type enumeration requires owning extra memory.
@@ -120,6 +130,14 @@ constexpr auto to_string(xlerr err) noexcept
   }
 #undef OA_ACCEL_XLERR_CASE
 }
+
+/**
+ * Stream the string representation for the error enum value.
+ *
+ * @param out Output stream
+ * @param err Excel error value
+ */
+std::ostream& operator<<(std::ostream& out, xlerr err);
 
 // TODO: add xlflow data enums
 

@@ -6,6 +6,7 @@ if(XLLSDK_FOUND)
         oa_accel STATIC
         addin.cpp
         call.cpp
+        enums.cpp
         fp12_view.cpp
         menu.cpp
         mref12.cpp
