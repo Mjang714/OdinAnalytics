@@ -43,6 +43,7 @@ if(TARGET oa_accel) # AND TARGET Excel::XLCALL32)
         oa_unit_test PRIVATE
         accel/mref12_test.cpp
         accel/oper12_test.cpp
+        accel/oper12_variant_test.cpp
         accel/xl_conv_test.cpp
     )
 endif()
