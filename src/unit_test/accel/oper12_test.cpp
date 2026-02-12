@@ -52,10 +52,9 @@ private:
   {
     static_assert(sizeof...(Is) == sizeof...(Ts));
     // not xltypeMulti
-    // TODO: add operator<< for enums
     if (op.type() != oa::accel::xltype::multi)
-      return ::testing::AssertionFailure() << "op.type() is " <<
-        oa::accel::to_string(op.type()) << " != xltypeMulti";
+      return ::testing::AssertionFailure() << "op.type() is " << op.type() <<
+        " != xltypeMulti";
     // assume success for now
     auto res = ::testing::AssertionSuccess();
     // fold over pack to check
