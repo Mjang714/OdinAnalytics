@@ -27,6 +27,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "oa/accel/enums.h"
@@ -423,6 +424,8 @@ oper12::oper12(const unsigned char* data, std::size_t size)
   value_->val.bigdata.cbData = static_cast<long>(size);
   value_->xltype = xltypeBigData;
 }
+
+oper12::oper12(std::monostate /*v*/) : oper12{} {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // nil + missing                                                              //

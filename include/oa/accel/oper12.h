@@ -296,6 +296,17 @@ public:
   oper12(const unsigned char* data, std::size_t size);
 
   /**
+   * Ctor.
+   *
+   * Constructs an `oper12` owning an `XLOPER12` of type `xltypeNil`.
+   *
+   * This has the same effect as default-constructing an `oper12` and is
+   * provided for compatibility with `std::variant<std::monostate, Ts..>` when
+   * using the `oper12::from()` static function for conversion.
+   */
+  oper12(std::monostate /*v*/);
+
+  /**
    * Return an `oper12` owning an `XLOPER12` of type `xltypeNil`.
    *
    * This has the same effect as default-constructing an `oper12`.
