@@ -223,7 +223,7 @@ public:
   }
 
   /**
-   * Return a view of the specified matrix view.
+   * Return a view of the specified matrix view row.
    *
    * @param i Row index
    */
