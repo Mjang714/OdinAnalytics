@@ -18,6 +18,7 @@
 #include <string>
 #include <tuple>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -372,6 +373,9 @@ TEST_F(Oper12Test, Oper12VectorTest)
   // note: need exact types due to template deduction rules
   std::tuple vals{2., 1, std::string{"hello"}, true, std::string{"no way bro"}};
   EXPECT_TRUE(check(op, vals));
+  // dimensions should also match
+  EXPECT_EQ(vec.size(), op.rows());
+  EXPECT_EQ(1u, op.cols());
 }
 
 /**
