@@ -37,26 +37,6 @@ OA_ACCEL_ADDIN_INSTANCE()
 namespace {
 
 /**
- * Visitor to convert any compatible `std::variant<Ts...>` to an `oper12`.
- */
-struct oper12_visitor {
-  /**
-   * Convert the variant value to an `oper12` if possible.
-   *
-   * @tparam T Type convertible to `oper12`
-   *
-   * @param v Value to convert to `oper12`
-   */
-  template <typename T>
-  requires (std::constructible_from<accel::oper12, T>)
-  auto operator()(T v) const
-  {
-    // note: no implicit conversion unless we list-init from string_view
-    return accel::oper12{v};
-  }
-};
-
-/**
  * Helper function to convert an OXL `XlArray` to an `oper12`.
  *
  * This enables cooperation with the Accel memory management framework.
@@ -70,7 +50,7 @@ auto to_oper12(const oxl::xl_api::XlArray arr)
   // iterate
   for (auto i = 0u; i < arr.rows(); i++)
     for (auto j = 0u; j < arr.cols(); j++)
-      vals[i * arr.cols() + j] = std::visit(oper12_visitor{}, arr(i, j));
+      vals[i * arr.cols() + j] = accel::oper12::from(arr(i, j));
   // create view and return new oper12
   return accel::oper12{{vals.data(), arr.rows(), arr.cols()}};
 }
