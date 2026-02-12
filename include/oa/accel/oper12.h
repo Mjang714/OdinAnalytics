@@ -15,6 +15,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <variant>
 
 #include "oa/accel/enums.h"
 #include "oa/accel/matrix_view.h"
@@ -305,6 +306,41 @@ public:
    * Return an `oper12` owning an `XLOPER12` of type `xltypeMissing`.
    */
   static oper12 missing();
+
+  /**
+   * `std::variant<Ts...>` to `oper12` conversion visitor.
+   *
+   * This converts any compatible `std::variant<Ts...>` to an `oper12`.
+   */
+  struct visitor {
+    /**
+     * Convert the variant value to an `oper12` if possible.
+     *
+     * @tparam T Type accepted by the `oper12` ctor
+     *
+     * @param v Value to construct an `oper12` from
+     */
+    template <typename T>
+    requires (std::constructible_from<accel::oper12, T>)
+    auto operator()(const T& v) const
+    {
+      // note: no implicit conversion unless we list-init from string_view
+      return oper12{v};
+    }
+  };
+
+  /**
+   * Convert a `std::variant<Ts...>` to an `oper12` if possible.
+   *
+   * @tparam Ts Variant types
+   *
+   * @param v Variant to construct from
+   */
+  template <typename... Ts>
+  static auto from(const std::variant<Ts...>& v)
+  {
+    return std::visit(visitor{}, v);
+  }
 
   /**
    * Return a reference to the `XLOPER12` pointer owned by the object.
