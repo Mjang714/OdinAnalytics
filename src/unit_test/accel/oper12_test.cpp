@@ -48,7 +48,7 @@ private:
   auto check(
     std::index_sequence<Is...>,
     const oper12& op,
-    const std::tuple<Ts...>& values)
+    const std::tuple<Ts...>& values) const
   {
     static_assert(sizeof...(Is) == sizeof...(Ts));
     // not xltypeMulti
@@ -102,7 +102,7 @@ protected:
    * @tparam Ts Expected input values
    */
   template <typename... Ts>
-  auto check(const oper12& op, const std::tuple<Ts...>& values)
+  auto check(const oper12& op, const std::tuple<Ts...>& values) const
   {
     return check(std::index_sequence_for<Ts...>{}, op, values);
   }
