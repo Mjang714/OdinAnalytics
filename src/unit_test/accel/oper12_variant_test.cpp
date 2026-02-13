@@ -241,9 +241,11 @@ protected:
     std::vector<float> vec{1.f, 2.f, 3.f, 4.f};
     std::variant<Ts...> v{vec};
     auto op = oa::accel::oper12::from(v);
-    auto res = op.as<decltype(vec)>();
+    // check dimensions
     EXPECT_EQ(vec.size(), op.rows());
     EXPECT_EQ(1u, op.cols());
+    // check values
+    auto res = op.as<decltype(vec)>();
     EXPECT_THAT(res, ::testing::Pointwise(::testing::FloatEq(), vec));
   }
 };
@@ -263,9 +265,11 @@ protected:
     std::vector<double> vec{2., 4., 6., 8.};
     std::variant<Ts...> v{vec};
     auto op = oa::accel::oper12::from(v);
-    auto res = op.as<decltype(vec)>();
+    // check dimensions
     EXPECT_EQ(vec.size(), op.rows());
     EXPECT_EQ(1u, op.cols());
+    // check values
+    auto res = op.as<decltype(vec)>();
     EXPECT_THAT(res, ::testing::Pointwise(::testing::DoubleEq(), vec));
   }
 };
