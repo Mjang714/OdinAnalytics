@@ -22,7 +22,7 @@ if(XLLSDK_FOUND)
     )
     # xl_utils.h uses Excel12f() and needs XLCALL.H and FRAMEWRK.H so we can't
     # make the linkage of the XLL SDK libraries private
-    target_link_libraries(oxl_api PUBLIC XLLSDK::frmwrk32 XLLSDK::xlcall32)
+    target_link_libraries(oxl_api INTERFACE XLLSDK::Framework XLLSDK::SDK)
 else()
     message(STATUS "Skipping oxl_api (requires XLL SDK)")
 endif()
@@ -89,8 +89,8 @@ if(Python3_FOUND AND XLLSDK_FOUND)
     set_target_properties(oxl PROPERTIES SUFFIX .xll DEBUG_POSTFIX d)
     target_link_libraries(
         oxl PRIVATE
-            XLLSDK::frmwrk32
-            XLLSDK::xlcall32
+            XLLSDK::Framework
+            XLLSDK::SDK
             oa_dao
             oa_derived_time
             oa_enum_mappers
