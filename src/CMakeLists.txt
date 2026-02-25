@@ -11,8 +11,7 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 #
 if(XLLSDK_FOUND)
     add_library(xlcall32_stub MODULE xlcall32_stub.cpp xlcall32_stub.def)
-    # TODO: refactor XLLSDK::xlcall32 to XLLSDK::SDK later
-    target_link_libraries(xlcall32_stub PRIVATE XLLSDK::xlcall32)
+    target_link_libraries(xlcall32_stub PRIVATE XLLSDK::SDK)
     # make output name the same as the "real" XLCALL32.DLL
     set_target_properties(
         xlcall32_stub PROPERTIES

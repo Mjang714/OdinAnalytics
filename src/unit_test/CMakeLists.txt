@@ -38,7 +38,7 @@ if(TARGET oxl_api)
 endif()
 # add oa_accel tests if oa_accel is available
 # note: no need to check if on Windows as oa_accel is Windows-only
-if(TARGET oa_accel) # AND TARGET Excel::XLCALL32)
+if(TARGET oa_accel)
     target_sources(
         oa_unit_test PRIVATE
         accel/mref12_test.cpp
@@ -74,9 +74,8 @@ if(TARGET oxl_api)
     target_link_libraries(oa_unit_test PRIVATE oxl_api)
 endif()
 # link against oa_accel and XLL SDK as necessary
-if(TARGET oa_accel) # AND TARGET Excel::XLCALL32)
-    # TODO: refactor XLLSDK::xlcall32 to XLLSDK::SDK later
-    target_link_libraries(oa_unit_test PRIVATE oa_accel XLLSDK::xlcall32)
+if(TARGET oa_accel)
+    target_link_libraries(oa_unit_test PRIVATE oa_accel XLLSDK::SDK)
     # ensure that target is built after xlcall32_stub to ensure XLCALL32 DLL
     # exists before gtest_discover_tests() invokes oa_unit_test
     add_dependencies(oa_unit_test xlcall32_stub)
