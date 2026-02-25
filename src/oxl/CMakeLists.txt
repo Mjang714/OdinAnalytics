@@ -22,7 +22,7 @@ if(XLLSDK_FOUND)
     )
     # xl_utils.h uses Excel12f() and needs XLCALL.H and FRAMEWRK.H so we can't
     # make the linkage of the XLL SDK libraries private
-    target_link_libraries(oxl_api INTERFACE XLLSDK::Framework XLLSDK::SDK)
+    target_link_libraries(oxl_api PUBLIC XLLSDK::Framework XLLSDK::SDK)
 else()
     message(STATUS "Skipping oxl_api (requires XLL SDK)")
 endif()
