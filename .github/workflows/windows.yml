@@ -55,6 +55,8 @@ jobs:
         arch: [Win32, x64]
         # whether or not to use unity build
         unity: [off, on]
+      # keep running the rest of the matrix jobs even if one fails
+      fail-fast: false
     # job steps
     steps:
       - name: Checkout
@@ -94,6 +96,10 @@ jobs:
             echo "Initializing Boost module $module"
             git submodule update --depth 1 -q --init libs\$module
             python tools\boostdep\depinst\depinst.py -X test -g "--depth 1" $module
+            # if depinst.py failed abort the stage
+            If ($LastExitCode -ne 0) {
+              throw "depinst.py failed to initialize libs/$module correctly"
+            }
           }
           # build just the required components we need. the entire Boost suite
           # of libraries is huge so we don't want to build everything. in most

@@ -14,19 +14,34 @@ cmake_minimum_required(VERSION 3.21)
 #
 # The following CMake IMPORTED STATIC target is defined:
 #
-#   XLLSDK::xlcall32        Target for linking against xlcall32.lib
+#   XLLSDK::SDK             Target for linking against xlcall32.lib
 #
-# On a typical Excel 2013 XLL SDK download there is a SAMPLES\FRAMEWRK
+# Furthermore, using the SRC\XLCALL.CPP source file provided since the 2007
+# Excel XLL SDK, the following CMake ALIAS static library target is provided:
+#
+#   XLLSDK::SDK12           Target for linking against xlcall32.lib and the
+#                           Excel12() and Excel12v() definitions in XLCALL.CPP
+#
+# The SDK12 target is an alias to the XLCALL2012 static library target that
+# will be added to the calling project's build tree for simpler code reuse.
+#
+# A typical Excel 2013 XLL SDK install will also provide a SAMPLES\FRAMEWRK
 # directory for the frmwrk32 library. If this directory exists the following
-# CMake ALIAS static library target will also be defined:
+# CMake ALIAS static library target will be defined if requested:
 #
-#   XLLSDK::frmwrk32        Target for linking against frmwrk32.lib
+#   XLLSDK::Framework       Target for linking against frmwrk32.lib
+#
+# The Excel 2013 XLL SDK tree also contains a SAMPLES\GENERIC directory for the
+# GENERIC sample XLL. If this directory exists the following CMake ALIAS module
+# library target will be defined if requested:
+#
+#   XLLSDK::Generic         Target representing the generic.xll add-in
 #
 # Selection of 32-bit and 64-bit libraries is automatically done.
 #
-# Note that the frmwrk32 target itself will be an alias to an actual target
-# added to the calling project's build tree. This is because in 2025 the
-# Microsoft-provided NMake Makefiles in the Excel2013XLLSDK\SAMPLES subdirs
+# Note that both the Framework and Generic targets will be aliases to actual
+# targets added to the calling project's build tree. This is because in 2025
+# the Microsoft-provided NMake Makefiles in the Excel2013XLLSDK\SAMPLES subdirs
 # are out of date and won't build under newer Visual Studio compiler versions,
 # e.g. 2022. The BUILD.BAT and MAKE.BAT have the additional issue of looking
 # for vcvarsalls.bat in %VCINSTALLDIR% directly when this script has now been
@@ -34,17 +49,20 @@ cmake_minimum_required(VERSION 3.21)
 #
 # Example:
 #
-#   # require XLL SDK xlcall32
+#   # require xlcall32.lib, XLCALL.CPP
 #   find_package(XLLSDK 15.0 REQUIRED)
 #
-#   # require frmwrk32.lib as well
-#   find_package(XLLSDK 15.0 REQUIRED COMPONENTS frmwrk32)
+#   # require xlcall32.lib, XLCALL.CPP, frmwrk32.lib
+#   find_package(XLLSDK 15.0 REQUIRED COMPONENTS Framework)
+#
+#   # require xlcall32.lib, XLCALL.CPP, frmwrk32.lib, generic.xll
+#   find_package(XLLSDK 15.0 REQUIRED COMPONENTS Framework Generic)
 #
 
 include(FindPackageHandleStandardArgs)
 
 # supported components
-set(XLLSDK_SUPPORTED_COMPONENTS xlcall32 frmwrk32)
+set(XLLSDK_SUPPORTED_COMPONENTS SDK Framework Generic)
 # check that all specified components are valid
 foreach(_comp ${XLLSDK_FIND_COMPONENTS})
     list(FIND XLLSDK_SUPPORTED_COMPONENTS ${_comp} _xllsdk_${_comp}_pos)
@@ -128,17 +146,23 @@ if(NOT XLLSDK_XLCALL32)
     return()
 endif()
 
-# define xlcall32 IMPORTED target
-add_library(XLLSDK::xlcall32 STATIC IMPORTED)
-target_include_directories(XLLSDK::xlcall32 INTERFACE "${XLLSDK_INCLUDE_DIRS}")
+# define SDK IMPORTED target
+add_library(XLLSDK::SDK STATIC IMPORTED)
+target_include_directories(XLLSDK::SDK INTERFACE "${XLLSDK_INCLUDE_DIRS}")
 set_target_properties(
-    XLLSDK::xlcall32 PROPERTIES
+    XLLSDK::SDK PROPERTIES
     IMPORTED_LOCATION "${XLLSDK_XLCALL32}"
 )
+# define XLCALL2012 target + SDK12 IMPORTED targets for Excel12() + Excel12v()
+add_library(XLCALL2012 STATIC "${_xllsdk_root}/src/xlcall.cpp")
+add_library(XLLSDK::SDK12 ALIAS XLCALL2012)
+target_link_libraries(XLCALL2012 PUBLIC XLLSDK::SDK)
+# never use unity build for XLCALL2012 to make it clear what is being built
+set_target_properties(XLCALL2012 PROPERTIES UNITY_BUILD FALSE)
 # mark as located + set XLLSDK_LIBRARIES
-# note: usually never need to pass xlcall32 to COMPONENTS
-set(XLLSDK_xlcall32_FOUND TRUE)
-set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}")
+# note: usually never need to pass SDK to COMPONENTS
+set(XLLSDK_SDK_FOUND TRUE)
+set(XLLSDK_LIBRARIES "${XLLSDK_XLCALL32}" XLLSDK::SDK12)
 
 # get framework library source directory
 set(_xllsdk_frmwrk_srcdir "${_xllsdk_root}/samples/framewrk")
@@ -152,7 +176,7 @@ if(EXISTS "${_xllsdk_frmwrk_srcdir}")
         "${_xllsdk_frmwrk_srcdir}/MemoryManager.cpp"
         "${_xllsdk_frmwrk_srcdir}/MemoryPool.cpp"
     )
-    add_library(XLLSDK::frmwrk32 ALIAS frmwrk32)
+    add_library(XLLSDK::Framework ALIAS frmwrk32)
     # expose _xllsdk_frmwrk_srcdir as part of include interface due to use of
     # <memorymanager.h> include + CMake won't be running in same directory
     # note: MemoryManager.h and MemoryPool.h are not specified in Microsoft
@@ -180,14 +204,48 @@ if(EXISTS "${_xllsdk_frmwrk_srcdir}")
         UNITY_BUILD FALSE
     )
     # mark as found + add target to XLLSDK_LIBRARIES
-    set(XLLSDK_frmwrk32_FOUND TRUE)
-    list(APPEND XLLSDK_LIBRARIES "XLLSDK::frmwrk32")
+    set(XLLSDK_Framework_FOUND TRUE)
+    list(APPEND XLLSDK_LIBRARIES "XLLSDK::Framework")
+endif()
+
+# get generic library source directory
+set(_xllsdk_generic_srcdir "${_xllsdk_root}/samples/generic")
+
+# directly build generic XLL as part of the calling project
+# note: not defining _USRDLL during compilation. do we need to (for MFC)?
+if(EXISTS "${_xllsdk_generic_srcdir}")
+    add_library(
+        generic MODULE
+        "${_xllsdk_generic_srcdir}/generic.c"
+        # note: excluding generic.def because DLL exported functions already
+        # have __declspec(dllexport) attributes
+        "${_xllsdk_generic_srcdir}/generic.rc"
+    )
+    add_library(XLLSDK::Generic ALIAS generic)
+    # suppress C4312 we cannot do anything about
+    target_compile_options(generic PRIVATE /wd4312)
+    # since _xllsdk_generic_srcdir is not part of the project's source tree we
+    # need to add it to the list of include directories
+    target_include_directories(generic PRIVATE "${_xllsdk_generic_srcdir}")
+    # generic XLL uses both SDK and Framework library
+    target_link_libraries(generic PRIVATE XLLSDK::SDK XLLSDK::Framework)
+    # again, explicitly need to compile GENERIC.C as C code
+    set_source_files_properties(
+        "${_xllsdk_generic_srcdir}/generic.c" PROPERTIES
+        LANGUAGE C
+    )
+    # make the extension .xll + never use unity build with generic XLL
+    set_target_properties(generic PROPERTIES SUFFIX .xll UNITY_BUILD FALSE)
+    # mark as found
+    # note: not added to XLLSDK_LIBRARIES since generic.xll is not a library
+    set(XLLSDK_Generic_FOUND TRUE)
 endif()
 
 # clean up
 unset(_xllsdk_libdir)
 unset(_xllsdk_root)
 unset(_xllsdk_frmwrk_srcdir)
+unset(_xllsdk_generic_srcdir)
 unset(XLLSDK_XLCALL32)
 
 # check version and required variables

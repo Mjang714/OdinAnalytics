@@ -127,8 +127,9 @@ else()
 endif()
 
 # look for Excel 2013 XLL SDK
+# note: we don't actually need the GENERIC sample XLL but it is a nice example
 if(WIN32)
-    find_package(XLLSDK 15.0 COMPONENTS frmwrk32)
+    find_package(XLLSDK 15.0 COMPONENTS Framework Generic)
 endif()
 if(XLLSDK_FOUND)
     message(STATUS "XLL SDK version: ${XLLSDK_VERSION}")
