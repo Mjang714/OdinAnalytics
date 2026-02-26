@@ -26,6 +26,7 @@
 #include "enum_mappers/time_enum_mappers.h"
 
 #include "xl_api/cache_xl_obj.h"
+#include "xl_api/excel_base.h"
 #include "xl_api/xl_variant.h"
 #include "xl_api/xl_array.h"
 #include "xl_api/xl_converter_funcs.h"
@@ -38,6 +39,9 @@ namespace oxl
 	double OxlComputeYearFraction(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count);
 	double OxlComputeDate(const xl_api::XlDictionary& dictionary);
 	double OxlAddBusinessDays(const xl_api::XlDictionary& dictionary);
+	xl_api::XlArray OxlGenerateCashflow(const xl_api::XlDictionary& dictionary);
+
+	xl_api::XlArray ConvertCFStructToXlArray(std::vector<oa::derived_time::CashflowStruct> cf_struct_array);
 }
 
 #endif //OXL_TIME_XL_H_

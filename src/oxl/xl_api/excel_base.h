@@ -13,10 +13,12 @@
 #include "xloper_converter.h"
 #include "xl_array.h"
 #include "cache_xl_obj.h"
+#include "derived_time/cashflow_gen/cashflow_struct.h"
 
 namespace oxl::xl_api
 {
 	std::shared_ptr<XlArray> ToXLArrayPtr(const LPXLOPER12& data_range);
+	xl_api::XlArray ConvertCFStructToXlArray(const std::vector<oa::derived_time::CashflowStruct>& cf_struct_array);
 }
 
 #endif // !OXL_XL_API_EXCEL_BASE_H_

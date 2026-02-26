@@ -110,6 +110,12 @@ namespace oa::time
 		return m_julian_int_;
 	}
 
+	int Date::ToExcelJulian() const
+	{
+		return m_julian_int_- kXlJulianOffSet;
+	}
+
+
 	int Date::GetDOWInt() const
 	{
 		return GetDOWInt(m_julian_int_);

@@ -13,6 +13,8 @@ namespace oxl::xl_api
 		for (size_t i = 0; i < keys.size(); i++)
 		{
 			std::string key = std::get<std::string>(keys.at(i));
+			//line to remove blank spaces from the key
+			key.erase(std::remove_if(key.begin(), key.end(), [](char c) {return std::isspace(c);}), key.end());
 			m_dict_[key] = values[i];
 		}
 	}
@@ -52,5 +54,10 @@ namespace oxl::xl_api
 		{
 			m_dict_[key] = value;
 		}
+	}
+
+	bool XlDictionary::IsEmpty() const 
+	{
+		return !this->GetKeyValuePair().size();
 	}
 }

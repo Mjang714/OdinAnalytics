@@ -41,6 +41,8 @@ namespace oxl::xl_api
 
 			void ApplyOverrides(const XlDictionary& overrides_dict);
 
+
+			bool IsEmpty() const;
 		private:
 			std::map<std::string, XlVariant> m_dict_;
 			std::map<std::string, XlVariant> dict(void) { return m_dict_; };

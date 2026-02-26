@@ -1,6 +1,10 @@
 #include "time_xl.h"
 #include "derived_time/date_formula/date_formula.h"
 #include "derived_time/date_formula/business_date_formula.h"
+#include "derived_time/derived_time_enums.h"
+#include "derived_time/cashflow_gen/cashflow_struct.h"
+#include "derived_time/cashflow_gen/cashflow_gen.h"
+#include "helpers/utils.h"
 
 namespace oxl {
 	typedef oa::time::Date DateAlias;
@@ -172,5 +176,22 @@ namespace oxl {
 		auto calendar = std::get<std::string>(dictionary["Calendar"]);
 		auto date_formula = oa::derived_time::BusinessDateFormula(num_of_days, calendar);
 		return static_cast<double>(date_formula.Adjust(base_date).GetJulian() - DateAlias::kXlJulianOffSet);
+	}
+
+	xl_api::XlArray OxlGenerateCashflow(const xl_api::XlDictionary& dictionary)
+	{
+		oa::derived_time::CashflowGen::Options opt{};
+		auto start_date = DateAlias(static_cast<int> (std::get<double>(dictionary["Start_Date"])) + DateAlias::kXlJulianOffSet);
+		auto mat_date = DateAlias(static_cast<int> (std::get<double>(dictionary["Mat_Date"])) + DateAlias::kXlJulianOffSet);
+		auto notional = std::get<double>(dictionary["Notional"]);
+		auto rate = std::get<double>(dictionary["Rate"]);
+		auto day_cnt_frac = oa::enum_mappers::MapInputToDayCountEnum(std::get<std::string>(dictionary["Day_Count_Frac"]));
+		auto freq = oa::enum_mappers::MapInputToFreq(std::get<std::string>(dictionary["Frequency"]));
+		opt.date_direction(oa::enum_mappers::MapInputToDateDir(std::get<std::string>(dictionary["Date_Dir"])));
+		opt.stub_type(oa::enum_mappers::MapInputToStub(std::get<std::string>(dictionary["Stub_Type"])));
+
+		auto cf_results = oa::derived_time::CashflowGen::CreateFixedCashflows(start_date, mat_date,freq, notional, rate, day_cnt_frac, opt);
+
+		return oxl::xl_api::ConvertCFStructToXlArray(cf_results);
 	}
 }
