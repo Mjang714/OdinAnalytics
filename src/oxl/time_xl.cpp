@@ -202,7 +202,28 @@ namespace oxl {
 		{
 			opt.pay_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Payment_Date_Rule"));
 		}
+
+		//case for when we want the same adjusment rule for both the start and end date
+		if(dictionary.Contains("Acc_Adj_Rule"))
+		{
+			opt.start_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Acc_Adj_Rule"));
+			opt.end_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Acc_Adj_Rule"));
+		}
+
+		else if(dictionary.Contains("Start_Adj_Rule") || dictionary.Contains("End_Adj_Rule"))
+		{
+			if(dictionary.Contains("End_Adj_Rule"))
+			{
+				opt.end_adjustment(GetBusinessDateFormulaFromDict(dictionary, "End_Adj_Rule"));
+			}
+
+			if(dictionary.Contains("Start_Adj_Rule"))
+			{
+				opt.start_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Start_Adj_Rule"));
+			}
+		}
 		
+
 		auto cf_results = CFGen::CreateFixedCashflows(start_date, mat_date,freq, notional, rate, day_cnt_frac, opt);
 
 		return oxl::xl_api::ConvertCFStructToXlArray(cf_results, oa::derived_time::CashflowType::kFixed);
