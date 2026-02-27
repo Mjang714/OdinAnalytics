@@ -3,6 +3,7 @@
 #include "derived_time/date_formula/business_date_formula.h"
 #include "derived_time/derived_time_enums.h"
 #include "derived_time/cashflow_gen/cashflow_struct.h"
+#include "derived_time/derived_time_enums.h"
 #include "derived_time/cashflow_gen/cashflow_gen.h"
 #include "helpers/utils.h"
 
@@ -10,6 +11,7 @@ namespace oxl {
 	typedef oa::time::Date DateAlias;
 	typedef oxl::xl_api::XLoperObj XLoperAlias;
 	typedef oa::static_cache::CalendarCache CalCacheAlias;
+	typedef oa::derived_time::CashflowGen CFGen;
 
 	bool OxlIsBizDay(LPXLOPER12 date, LPXLOPER12 centers)
 	{
@@ -180,18 +182,30 @@ namespace oxl {
 
 	xl_api::XlArray OxlGenerateCashflow(const xl_api::XlDictionary& dictionary)
 	{
-		oa::derived_time::CashflowGen::Options opt{};
+		CFGen::Options opt{};
 		auto start_date = DateAlias(static_cast<int> (std::get<double>(dictionary["Start_Date"])) + DateAlias::kXlJulianOffSet);
 		auto mat_date = DateAlias(static_cast<int> (std::get<double>(dictionary["Mat_Date"])) + DateAlias::kXlJulianOffSet);
 		auto notional = std::get<double>(dictionary["Notional"]);
 		auto rate = std::get<double>(dictionary["Rate"]);
 		auto day_cnt_frac = oa::enum_mappers::MapInputToDayCountEnum(std::get<std::string>(dictionary["Day_Count_Frac"]));
-		auto freq = oa::enum_mappers::MapInputToFreq(std::get<std::string>(dictionary["Frequency"]));
+		auto freq_tenor_str = std::get<std::string>(dictionary["Frequency"]);
+		auto freq = (oa::utils::CheckTenorStr(freq_tenor_str)) ? oa::time::Tenor(freq_tenor_str) : CFGen::MapResetFreqEnumToTenor(oa::enum_mappers::MapInputToFreq(freq_tenor_str));
 		opt.date_direction(oa::enum_mappers::MapInputToDateDir(std::get<std::string>(dictionary["Date_Dir"])));
 		opt.stub_type(oa::enum_mappers::MapInputToStub(std::get<std::string>(dictionary["Stub_Type"])));
+		
+		if(dictionary.Contains("Fixing_Date_Rule"))
+		{
+			opt.fix_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Fixing_Date_Rule"));
+		}
 
-		auto cf_results = oa::derived_time::CashflowGen::CreateFixedCashflows(start_date, mat_date,freq, notional, rate, day_cnt_frac, opt);
+		if(dictionary.Contains("Payment_Date_Rule"))
+		{
+			opt.pay_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Payment_Date_Rule"));
+		}
+		
+		auto cf_results = CFGen::CreateFixedCashflows(start_date, mat_date,freq, notional, rate, day_cnt_frac, opt);
 
-		return oxl::xl_api::ConvertCFStructToXlArray(cf_results);
+		return oxl::xl_api::ConvertCFStructToXlArray(cf_results, oa::derived_time::CashflowType::kFixed);
 	}
+
 }
