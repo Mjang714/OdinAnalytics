@@ -11,6 +11,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <iosfwd>
 #include <optional>
 #include <string>
@@ -272,6 +273,19 @@ public:
    * @param view Matrix view to construct from
    */
   oper12(matrix_view<const oper12> view);
+
+  /**
+   * Ctor.
+   *
+   * Constructs an `XLOPER12` of type `xltypeMulti` from nested init-lists.
+   * This is provided as a convenience when constructing from known values and
+   * will copy each `oper12` into the managed `XLOPER12` array buffer.
+   *
+   * At least one row and column are required when constructing.
+   *
+   * @param data Nested `oper12` initializer lists
+   */
+  oper12(std::initializer_list<std::initializer_list<oper12>> data);
 
   /**
    * Ctor.

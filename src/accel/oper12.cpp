@@ -141,6 +141,80 @@ void to(xloper12* out, matrix_view<const T> view)
   out->xltype = xltypeMulti;
 }
 
+/**
+ * Helper to create an array `XLOPER12` from a nested initializer list.
+ *
+ * Initializer lists represent read-only values so we cannot directly call
+ * `release(xloper12&)` on the `oper12` values and must copy. Therefore, the
+ * output `xloper12` needs to have been allocated in an exception-safe manner.
+ *
+ * This function will copy the `oper12` values before invoking the
+ * `release(xloper12&)` call to transfer state to an `xloper12` buffer. When no
+ * longer needed, call `xloper12_free()` on the allocated `xloper12` buffer
+ * to prevent memory from leaking if an exception is thrown. This ensure that
+ * any auxiliary memory allocated for strings is correctly freed.
+ *
+ * Ragged or empty rows are not allowed and an exception will be thrown if
+ * encountered. Overall, at least one row and column is required.
+ *
+ * @param out `XLOPER12` to populate
+ * @param data Nested initializer list of `oper12` value
+ */
+void to(xloper12* out, std::initializer_list<std::initializer_list<oper12>> data)
+{
+  // max dimensions
+  constexpr auto max_rows = (std::numeric_limits<RW>::max)();
+  constexpr auto max_cols = (std::numeric_limits<COL>::max)();
+  // required at least one row
+  if (!data.size())
+    throw std::runtime_error{"zero rows provided when at least 1 required"};
+  // dimensions
+  auto n_rows = data.size();
+  auto n_cols = data.begin()->size();
+  // row and column size checks
+  if (n_rows > max_rows)
+    throw std::runtime_error{
+      "number of rows " + std::to_string(max_rows) + " exceeded maximum " +
+      std::to_string(max_rows)
+    };
+  if (n_cols > max_cols)
+    throw std::runtime_error{
+      "number of cols " + std::to_string(max_cols) + " exceeded maximum " +
+      std::to_string(max_cols)
+    };
+  // note: could end up with oper12{{}, {...}} so need to check if row is empty
+  if (!n_cols)
+    throw std::runtime_error{"row must provide at least 1 element"};
+  // allocate xltypeMulti buffer
+  auto buf = std::make_unique<xloper12[]>(n_rows * n_cols);
+  // populate rows while tracking row index
+  auto i = 0u;
+  for (auto row : data) {
+    // dimension mismatch
+    if (row.size() != n_cols)
+      throw std::runtime_error{
+        "row " + std::to_string(i) + " has size " +
+        std::to_string(row.size()) + " != expected row size " +
+        std::to_string(n_cols)
+      };
+    // perform full copy so we can call release(xloper12&)
+    // note: not using list-init to avoid wrapping the initializer list
+    std::vector rcopy(row);
+    // get correct offset into buffer
+    auto row_out = buf.get() + (i * n_cols);
+    // release oper12 values into raw xloper12
+    for (auto j = 0u; j < n_cols; j++)
+      rcopy[j].release(row_out[j]);
+    // advance
+    i++;
+  }
+  // update XLOPER12 members
+  out->val.array.lparray = buf.release();
+  out->val.array.rows = static_cast<RW>(n_rows);
+  out->val.array.columns = static_cast<COL>(n_cols);
+  out->xltype = xltypeMulti;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -399,6 +473,16 @@ oper12::oper12(matrix_view<const oper12> view)
   // use unique_ptr to be exception-safe if to() throws
   auto val = std::make_unique<xloper12>();
   to(val.get(), view);
+  // update value_ + owning
+  value_ = val.release();
+  owning_ = true;
+}
+
+oper12::oper12(std::initializer_list<std::initializer_list<oper12>> data)
+{
+  // use unique_ptr to be exception-safe
+  auto val = std::make_unique<xloper12>();
+  to(val.get(), data);
   // update value_ + owning
   value_ = val.release();
   owning_ = true;
