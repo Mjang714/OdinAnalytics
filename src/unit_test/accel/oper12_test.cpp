@@ -369,12 +369,12 @@ TEST_F(Oper12Test, Oper12VectorTest)
 {
   std::vector<oa::accel::oper12> vec{2., 1, "hello", true, "no way bro"};
   oa::accel::oper12 op{vec};
+  // check dimensions and values
+  EXPECT_EQ(vec.size(), op.rows());
+  EXPECT_EQ(1u, op.cols());
   // note: need exact types due to template deduction rules
   std::tuple vals{2., 1, std::string{"hello"}, true, std::string{"no way bro"}};
   EXPECT_TRUE(check(op, vals));
-  // dimensions should also match
-  EXPECT_EQ(vec.size(), op.rows());
-  EXPECT_EQ(1u, op.cols());
 }
 
 /**
@@ -386,12 +386,35 @@ TEST_F(Oper12Test, Oper12MatrixTest)
   constexpr auto n_rows = 3u;
   constexpr auto n_cols = 2u;
   oa::accel::oper12 op{{vec.data(), n_rows, n_cols}};
+  // check dimensions and values
+  EXPECT_EQ(n_rows, op.rows());
+  EXPECT_EQ(n_cols, op.cols());
   // note: need exact types due to template deduction rules
   std::tuple vals{1., 2, std::string{"hello"}, true, false, std::string{"world"}};
   EXPECT_TRUE(check(op, vals));
-  // dimensions should also match
-  EXPECT_EQ(n_rows, op.rows());
-  EXPECT_EQ(n_cols, op.cols());
+}
+
+/**
+ * Test creating an `oper12` from a nested initializer list.
+ */
+TEST_F(Oper12Test, InitListTest)
+{
+  // direct list-initialization
+  oa::accel::oper12 op{
+    {1., "hello", true, 5},
+    {2., "world", false, 10},
+    {3., "water", true, 15}
+  };
+  // check dimensions
+  EXPECT_EQ(3u, op.rows());
+  EXPECT_EQ(4u, op.cols());
+  // flat value comparison should work
+  std::tuple vals{
+    1., std::string{"hello"}, true, 5,
+    2., std::string{"world"}, false, 10,
+    3., std::string{"water"}, true, 15
+  };
+  EXPECT_TRUE(check(op, vals));
 }
 
 }  // namespace
