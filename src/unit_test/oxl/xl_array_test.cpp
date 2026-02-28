@@ -25,8 +25,6 @@ protected:
   // convenience type aliases
   using XlArray = oxl::xl_api::XlArray;
   using XlVariant = oxl::xl_api::XlVariant;
-  using RowView = XlArray::RowView;
-  using CRowView = XlArray::CRowView;
 
   // starting value for every test
   XlArray value_{
