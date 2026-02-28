@@ -1,18 +1,108 @@
 #include "xl_array.h"
 
+#include <cstddef>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "xl_variant.h"
+
 namespace oxl::xl_api
 {
-	XlArray::XlArray(size_t rows, size_t cols) : m_rows_(rows), m_cols_(cols), m_data_(rows,std::vector<XlVariant>(cols))
+
+////////////////////////////////////////////////////////////////////////////////
+// XlArray::RowView                                                           //
+////////////////////////////////////////////////////////////////////////////////
+
+XlArray::RowView::RowView(RowData& data) noexcept : data_{&data} {}
+
+std::size_t
+XlArray::RowView::size() const noexcept
+{
+	return data_->size();
+}
+
+XlArray::RowView::Iter
+XlArray::RowView::begin() noexcept
+{
+	return data_->begin();
+}
+
+XlArray::RowView::Iter
+XlArray::RowView::end() noexcept
+{
+	return data_->end();
+}
+
+XlVariant&
+XlArray::RowView::operator[](std::size_t i)
+{
+	return data_->at(i);
+}
+
+XlArray::RowView&
+XlArray::RowView::operator=(RowData data)
+{
+	// size mismatch
+	if (data.size() != data_->size())
+		throw std::invalid_argument{
+			"new row data size " + std::to_string(data.size()) +
+			" != expected row data size " + std::to_string(data_->size())
+		};
+	// otherwise, move-assign
+	*data_ = std::move(data);
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// XlArray::CRowView                                                          //
+////////////////////////////////////////////////////////////////////////////////
+
+XlArray::CRowView::CRowView(const RowData& data) noexcept : data_{&data} {}
+
+std::size_t
+XlArray::CRowView::size() const noexcept
+{
+	return data_->size();
+}
+
+XlArray::CRowView::Iter
+XlArray::CRowView::begin() const noexcept
+{
+	return data_->begin();
+}
+
+XlArray::CRowView::Iter
+XlArray::CRowView::end() const noexcept
+{
+	return data_->end();
+}
+
+const XlVariant&
+XlArray::CRowView::operator[](std::size_t i) const
+{
+	return data_->at(i);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// XlArray                                                                    //
+////////////////////////////////////////////////////////////////////////////////
+
+	XlArray::XlArray(size_t rows, size_t cols)
+	  : m_rows_(rows), m_cols_(cols), m_data_(rows, RowData(cols))
 	{
 
 	}
 
-	std::vector<XlVariant>& XlArray::operator[] (size_t index)
+	XlArray::RowView
+	XlArray::operator[](size_t index)
 	{
 		return m_data_.at(index);
 	}
 
-	const std::vector<XlVariant>& XlArray::operator[] (const size_t index) const
+	XlArray::CRowView
+	XlArray::operator[](const size_t index) const
 	{
 		return m_data_.at(index);
 	}
