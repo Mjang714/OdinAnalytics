@@ -30,11 +30,11 @@ namespace oxl::xl_api
 	 *   ;
 	 * @endcode
 	 *
-	 * The row data itself can be copied by using the `copy()` member:
+	 * The row data itself can be copy-assigned from `operator*`:
 	 *
 	 * @code{.cc}
 	 * // assuming arr is an XlArray shape (4, 4)
-	 * auto row = arr[0].copy();
+	 * auto row = *arr[0];
 	 * // row is unchanged after assigning values
 	 * arr[0] = {2., std::string{"a"}, false, 50.};
 	 * assert(row[1] != arr[0][1]);
