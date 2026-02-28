@@ -34,7 +34,13 @@ add_executable(
 # add oxl tests if oxl_api is available
 # note: no need to check if on Windows as oxl_api is Windows-only
 if(TARGET oxl_api)
-    target_sources(oa_unit_test PRIVATE oxl/handle_prefixer_test.cpp)
+    target_sources(
+        oa_unit_test PRIVATE
+        oxl/handle_prefixer_test.cpp
+        oxl/xl_array_test.cpp
+        # FIXME: build oxl_api as a static library to avoid this
+        ${ODIN_SOURCE_DIR}/oxl/xl_api/xl_array.cpp
+    )
 endif()
 # MSVC emits C5264 a lot for Google Test fixtures
 if(MSVC)
