@@ -2,6 +2,7 @@
 #define OXL_XL_API_XL_ARRAY_H_
 
 #include <cstddef>
+#include <initializer_list>
 #include <vector>
 
 #include "xl_variant.h"
@@ -28,6 +29,16 @@ namespace oxl::xl_api
 	 * for (auto& value : arr[0])
 	 *   ;
 	 * @endcode
+	 *
+	 * The row data itself can be copied by using the `copy()` member:
+	 *
+	 * @code{.cc}
+	 * // assuming arr is an XlArray shape (4, 4)
+	 * auto row = arr[0].copy();
+	 * // row is unchanged after assigning values
+	 * arr[0] = {2., std::string{"a"}, false, 50.};
+	 * assert(row[1] != arr[0][1]);
+	 * @endcode
 	 */
 	class XlArray
 	{
@@ -35,12 +46,16 @@ namespace oxl::xl_api
 		// row data type
 		using RowData = std::vector<XlVariant>;
 
+		// forward decl for RowView::operator==
+		class CRowView;
+
 		/**
 		 * Modifiable view of the `XlArray` row data.
 		 */
 		class RowView {
 		public:
 			using Iter = RowData::iterator;
+			using value_type = XlVariant;    // EXPECT_THAT() compatibility
 
 			/**
 			 * Ctor.
@@ -57,12 +72,12 @@ namespace oxl::xl_api
 			/**
 			 * Return an iterator to the first row element.
 			 */
-			Iter begin() noexcept;
+			Iter begin() const noexcept;
 
 			/**
 			 * Return an iterator one past the last row element.
 			 */
-			Iter end() noexcept;
+			Iter end() const noexcept;
 
 			/**
 			 * Return a reference to the specified row element.
@@ -71,7 +86,29 @@ namespace oxl::xl_api
 			 *
 			 * @param i Element index
 			 */
-			XlVariant& operator[](std::size_t i);
+			XlVariant& operator[](std::size_t i) const;
+
+			/**
+			 * Compare row elements for equality.
+			 *
+			 * @param view Row view
+			 */
+			bool operator==(RowView view) const;
+
+			/**
+			 * Compare row elements for equality.
+			 *
+			 * @param view Row view
+			 */
+			bool operator==(CRowView view) const;
+
+			/**
+			 * Return a const reference to the row data.
+			 *
+			 * This is useful when a direct reference to the row data is needed
+			 * but is mostly intended to enable succinct copying.
+			 */
+			const RowData& operator*() const noexcept;
 
 			/**
 			 * Assign new row data.
@@ -92,6 +129,7 @@ namespace oxl::xl_api
 		class CRowView {
 		public:
 			using Iter = RowData::const_iterator;
+			using value_type = XlVariant;    // EXPECT_THAT() compatibility
 
 			/**
 			 * Ctor.
@@ -124,6 +162,28 @@ namespace oxl::xl_api
 			 */
 			const XlVariant& operator[](std::size_t i) const;
 
+			/**
+			 * Compare row elements for equality.
+			 *
+			 * @param view Row view
+			 */
+			bool operator==(CRowView view) const;
+
+			/**
+			 * Compare row elements for equality.
+			 *
+			 * @param view Row view
+			 */
+			bool operator==(RowView view) const;
+
+			/**
+			 * Return a const reference to the row data.
+			 *
+			 * This is useful when a direct reference to the row data is needed
+			 * but is mostly intended to enable succinct copying.
+			 */
+			const RowData& operator*() const noexcept;
+
 		private:
 			const RowData* data_;  // trivially copyable
 		};
@@ -135,6 +195,13 @@ namespace oxl::xl_api
 		 * @param cols Number of columns
 		 */
 		XlArray(size_t rows, size_t cols);
+
+		/**
+		 * Ctor.
+		 *
+		 * @param data Nested init-lists of elements
+		 */
+		XlArray(std::initializer_list<std::initializer_list<XlVariant>> data);
 
 		/**
 		 * Returns a modifiable view of the specified row.
