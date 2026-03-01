@@ -1,5 +1,10 @@
 #include "xl_dictionary.h"
 
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include "xl_variant.h"
 
 namespace oxl::xl_api
 {
@@ -47,7 +52,7 @@ namespace oxl::xl_api
 
 	void XlDictionary::ApplyOverrides(const XlDictionary& overrides_dict)
 	{
-		//when applying overides use structured bindings 
+		//when applying overides use structured bindings
 		for (const auto &[key, value] : overrides_dict.GetKeyValuePair())
 		{
 			m_dict_[key] = value;

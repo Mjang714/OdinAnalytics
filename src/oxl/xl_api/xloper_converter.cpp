@@ -1,5 +1,19 @@
 #include "xloper_converter.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <XLCALL.H>
+
+#include <stdlib.h>
+
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <variant>
+
+#include "xl_converter_funcs.h"
 
 namespace oxl::xl_api {
 
@@ -13,12 +27,13 @@ namespace oxl::xl_api {
 		m_data_ = std::string(input);
 	}
 
-	XLoperObj::XLoperObj(const LPXLOPER12 input)
+	// FIXME: do not use! no well-defined ownership semantics
+	XLoperObj::XLoperObj(LPXLOPER12 input)
 	{
 		m_data_ = input;
 	}
 
-	bool XLoperObj::IsEmpty(const LPXLOPER12 input)
+	bool XLoperObj::IsEmpty(const xloper12* input)
 	{
 		if (input->xltype == xltypeMissing || input->xltype == xltypeNil)
 		{
@@ -29,7 +44,7 @@ namespace oxl::xl_api {
 		return false;
 	}
 
-	bool XLoperObj::IsMulti(const LPXLOPER12 input)
+	bool XLoperObj::IsMulti(const xloper12* input)
 	{
 		if (input->xltype == xltypeMulti)
 		{
@@ -39,7 +54,7 @@ namespace oxl::xl_api {
 		return false;
 	}
 
-	bool XLoperObj::IsStr(const LPXLOPER12 input)
+	bool XLoperObj::IsStr(const xloper12* input)
 	{
 		return input->xltype == xltypeStr ? true : false;
 	}
@@ -159,11 +174,10 @@ namespace oxl::xl_api {
 	}
 
 
-	XlArray XLoperObj::LPXloperToXlArray(const LPXLOPER12& xl_oper)
+	XlArray XLoperObj::LPXloperToXlArray(const xloper12* xl_oper)
 	{
 		if (!IsMulti(xl_oper))
 		{
-			std::cout << "Not a xlTypeMulti please check input \n";
 			throw std::invalid_argument("Input was not 2D array check the input:xloper_converter.cpp line 155 LPXloperToArray()");
 		}
 
@@ -203,7 +217,7 @@ namespace oxl::xl_api {
 		return xl_array_data;
 	}
 
-	XlDictionary XLoperObj::LPXloperToDictionary(const LPXLOPER12& xl_oper)
+	XlDictionary XLoperObj::LPXloperToDictionary(const xloper12* xl_oper)
 	{
 		if (!IsMulti(xl_oper))
 		{
@@ -215,7 +229,7 @@ namespace oxl::xl_api {
 		return XlArrayToXlDictionary(xl_array);
 	}
 
-	XlDictionary XLoperObj::LPXloperToDictionary(const LPXLOPER12& xl_oper_keys, const LPXLOPER12& xl_oper_values)
+	XlDictionary XLoperObj::LPXloperToDictionary(const xloper12* xl_oper_keys, const xloper12* xl_oper_values)
 	{
 		XlArray xl_array_key = LPXloperToXlArray(xl_oper_keys);
 		XlArray xl_array_values = LPXloperToXlArray(xl_oper_values);
@@ -242,7 +256,7 @@ namespace oxl::xl_api {
 		return utf8_str;
 	}
 
-	std::string XLoperObj::LPXloperToStr(const LPXLOPER12& xl_oper)
+	std::string XLoperObj::LPXloperToStr(const xloper12* xl_oper)
 	{
 		if (xl_oper->xltype != xltypeStr)
 		{
@@ -252,7 +266,7 @@ namespace oxl::xl_api {
 		std::string str  = ToUTF8String(xl_oper->val.str + 1);
 		return str.substr(0, static_cast<int> (xl_oper->val.str[0]));
 	}
-	double XLoperObj::LPXloperToDouble(const LPXLOPER12& xl_oper)
+	double XLoperObj::LPXloperToDouble(const xloper12* xl_oper)
 	{
 		if (xl_oper->xltype != xltypeNum)
 		{

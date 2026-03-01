@@ -1,29 +1,30 @@
 #ifndef XL_UTILS_H_
 #define XL_UTILS_H_
 
-#define NOMINMAX
+// note: must include Windows.h, XLCALL.H, FRAMEWRK.H due to templates
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-
-#include <stdlib.h>
+#include <XLCALL.H>
+#include <FRAMEWRK.H>  // include after XLCALL.H
 
 #include <string>
 
-#include "xlcall.h"
-#include "framewrk.h"
+// FIXME: register/unregister functions take fixed-size arrays and don't allow
+// for more flexible specification of the registration inputs
 
 namespace oxl::xl_api
 {
 	/// <summary>
 	/// This is function that will unregister xll functions
-	/// Note: it is important for this work correctly that you set
-	/// Conformance Mode to No (/permissive)
 	/// </summary>
 	/// <param name="function_arr"></param>
 	/// <param name="number_funcs"></param>
-	inline void UnregisterXLFunctions(const WCHAR* function_arr[][12], size_t number_funcs)
+	template <size_t N>
+	void UnregisterXLFunctions(const WCHAR* (&function_arr)[N][12])
 	{
-		for (size_t index = 0; index <number_funcs; index++)
+		for (size_t index = 0; index < N; index++)
 		{
 			Excel12f(xlfSetName, 0, 1, TempStr12(function_arr[index][2]));
 		}
@@ -31,16 +32,15 @@ namespace oxl::xl_api
 
 	/// <summary>
 	/// this is a function that is used to register excel functions
-	/// Note: it is important for this work correctly that you set
-	/// Conformance Mode to No (/permissive)
 	/// </summary>
 	/// <param name="DLL"></param>
 	/// <param name="DLL"></param>
 	/// <param name="function_arr"></param>
 	/// <param name="number_funcs"></param>
-	inline void RegisterXLFunctions(XLOPER12& xDLL, const WCHAR* function_arr[][12], size_t number_funcs)
+	template <size_t N>
+	void RegisterXLFunctions(XLOPER12& xDLL, const WCHAR* (&function_arr)[N][12])
 	{
-		for (size_t index = 0; index < number_funcs; index++)
+		for (size_t index = 0; index < N; index++)
 		{
 			Excel12f(xlfRegister,0,12,
 				(LPXLOPER12) &xDLL,
@@ -56,7 +56,6 @@ namespace oxl::xl_api
 				(LPXLOPER12)TempStr12(function_arr[index][9]),
 				(LPXLOPER12)TempStr12(function_arr[index][10]),
 				(LPXLOPER12)TempStr12(function_arr[index][11])
-
 			);
 		}
 	}
