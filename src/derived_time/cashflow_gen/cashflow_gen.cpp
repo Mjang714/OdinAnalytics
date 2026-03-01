@@ -254,87 +254,9 @@ CashflowGen::Options::stub_date(time::Date date)
 		const time::DayCountRule day_count_rule,
 		const Options& opts)
 	{
-		// std::vector<CashflowStruct> cashflows{};
-
-		// std::vector<time::Date> unadjusted_start_dates{};
-		// std::vector<time::Date> unadjusted_end_dates{};
 
 		auto tenor_freq = MapResetFreqEnumToTenor(reset_freq);
 		return CreateFixedCashflows(start_date, mat_date, tenor_freq, notional, rate, day_count_rule, opts);
-		// auto time_length = tenor_pair.first;
-		// auto tenor_enum = tenor_pair.second;
-
-		// if (opts.date_direction() == DateDirection::kForward) {
-		// 	auto curr_start_date = start_date;
-		// 	auto total_length = time_length;
-		// 	while (curr_start_date < mat_date) {
-
-		// 		if (curr_start_date < mat_date) {
-		// 			unadjusted_start_dates.emplace_back(curr_start_date);
-		// 			unadjusted_end_dates.emplace_back(curr_start_date.AddTenor({time_length, tenor_enum}));
-		// 		}
-		// 		curr_start_date = start_date.AddTenor({total_length, tenor_enum});
-		// 		total_length += time_length;
-		// 	}
-		// }
-
-		// else {
-		// 	auto curr_end_date = mat_date;
-		// 	auto total_length = -time_length;
-		// 	while (curr_end_date > start_date) {
-		// 		if (curr_end_date > start_date) {
-		// 			unadjusted_end_dates.emplace_back(curr_end_date);
-		// 			unadjusted_start_dates.emplace_back(curr_end_date.AddTenor({-time_length, tenor_enum}));
-		// 		}
-		// 		curr_end_date = mat_date.AddTenor({total_length, tenor_enum});
-		// 		total_length -= time_length;
-		// 	}
-		// 	//this ensure that the cashflows dates are in the same chonological order.
-		// 	std::reverse(unadjusted_start_dates.begin(), unadjusted_start_dates.end());
-		// 	std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
-		// }
-
-
-		// StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
-
-
-		// for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {
-		// 	auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
-		// 	CashflowStruct cf{};
-		// 	cf.unadj_start_date = unadjusted_start_dates[i];
-		// 	cf.unadj_end_date = unadjusted_end_dates[i];
-		// 	cf.start_date = cf.unadj_start_date + opts.start_adjustment();
-		// 	cf.end_date = cf.unadj_end_date + opts.end_adjustment();
-		// 	cf.payment_date = cf.end_date + opts.pay_adjustment();
-		// 	cf.notional = notional;
-		// 	cf.rate = rate;
-		// 	cf.days = day_count->DayCount(cf.start_date, cf.end_date);
-		// 	cf.cf_type = opts.cashflow_type();
-		// 	cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-		// 	cf.cashflow_amount = notional * (rate * cf.day_count_fraction);
-		// 	cf.cf_curr = opts.currency();
-
-		// 	// no fixing adjustment -- use start date
-		// 	if (!opts.fix_adjustment())
-		// 		cf.fixing_date = cf.start_date;
-		// 	// otherwise, if advance reset, adjust start date
-		// 	else if (opts.reset_direction() == ResetDirection::kAdvance)
-		// 		cf.fixing_date = cf.start_date + opts.fix_adjustment();
-		// 	// otherwise, adjust end date
-		// 	else
-		// 		cf.fixing_date = cf.end_date + opts.fix_adjustment();
-		// 	// using emplace_back and std::move though not sure if it is necessary here
-		// 	cashflows.emplace_back(std::move(cf));
-		// }
-		// //add the princple to the last cashflow
-
-		// CashflowStruct cf(cashflows.back());
-		// cf.cashflow_amount = notional;
-		// cf.rate = 1.0;
-		// cf.cf_type = CashflowType::kPrincipal;
-		// cashflows.emplace_back(std::move(cf));
-		// // Implementation logic to generate cashflows goes here
-		// return cashflows;
 
 	}
 
