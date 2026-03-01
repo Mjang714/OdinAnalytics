@@ -206,8 +206,8 @@ namespace oxl {
 		//case for when we want the same adjusment rule for both the start and end date
 		if(dictionary.Contains("Acc_Adj_Rule"))
 		{
-			opt.start_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Acc_Adj_Rule"));
-			opt.end_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Acc_Adj_Rule"));
+			opt.start_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Acc_Adj_Rule"))
+			.end_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Acc_Adj_Rule"));
 		}
 
 		else if(dictionary.Contains("Start_Adj_Rule") || dictionary.Contains("End_Adj_Rule"))
