@@ -22,10 +22,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\helpers\library_error_utils.cpp" />
     <ClCompile Include="..\..\src\helpers\str_utils\str_utils.cpp" />
     <ClCompile Include="..\..\src\helpers\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\helpers\library_error_utils.h" />
     <ClInclude Include="..\..\src\helpers\str_utils\str_utils.h" />
     <ClInclude Include="..\..\src\helpers\utils.h" />
   </ItemGroup>

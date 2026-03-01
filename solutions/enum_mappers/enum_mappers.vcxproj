@@ -176,6 +176,11 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\enum_mappers\time_enum_mappers.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\helpers\Helpers.vcxproj">
+      <Project>{0be2b5d3-70ff-4c20-8c7e-24cf4938ad9d}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
