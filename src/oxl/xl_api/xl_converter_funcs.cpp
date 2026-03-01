@@ -1,5 +1,13 @@
 #include "oxl/xl_api/xl_converter_funcs.h"
 
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "xl_array.h"
+#include "xl_dictionary.h"
+
 namespace oxl::xl_api
 {
 	XlDictionary XlArrayToXlDictionary(const XlArray& xl_array)

@@ -1,5 +1,7 @@
 #include "xl_array.h"
 
+#include <vector>
+
 namespace oxl::xl_api
 {
 	XlArray::XlArray(size_t rows, size_t cols) : m_rows_(rows), m_cols_(cols), m_data_(rows,std::vector<XlVariant>(cols))

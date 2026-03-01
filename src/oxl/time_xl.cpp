@@ -1,19 +1,38 @@
 #include "time_xl.h"
-#include "derived_time/date_formula/date_formula.h"
-#include "derived_time/date_formula/business_date_formula.h"
-#include "derived_time/derived_time_enums.h"
-#include "derived_time/cashflow_gen/cashflow_struct.h"
-#include "derived_time/derived_time_enums.h"
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <XLCALL.H>
+
+#include <format>
+#include <stdexcept>
+#include <string>
+
 #include "derived_time/cashflow_gen/cashflow_gen.h"
+#include "derived_time/cashflow_gen/cashflow_struct.h"
+#include "derived_time/date_formula/business_date_formula.h"
+#include "derived_time/date_formula/date_formula.h"
+#include "derived_time/derived_time_enums.h"
+#include "enum_mappers/time_enum_mappers.h"
 #include "helpers/utils.h"
+#include "static_data_cache/calendar_cache.h"
+#include "time/calendar.h"
+#include "time/date.h"
+#include "time/day_count/day_counter_factory.h"
+#include "time/time_enums.h"
+#include "xl_api/xl_dictionary.h"
+#include "xl_api/xloper_converter.h"
 
 namespace oxl {
+
 	typedef oa::time::Date DateAlias;
 	typedef oxl::xl_api::XLoperObj XLoperAlias;
 	typedef oa::static_cache::CalendarCache CalCacheAlias;
 	typedef oa::derived_time::CashflowGen CFGen;
 
-	bool OxlIsBizDay(LPXLOPER12 date, LPXLOPER12 centers)
+	bool OxlIsBizDay(const xloper12* date, const xloper12* centers)
 	{
 		int julian_date = DateAlias::kXlJulianOffSet;
 		if (date->xltype == xltypeStr)
@@ -47,7 +66,7 @@ namespace oxl {
 
 	}
 
-	bool OxlIsHolDay(LPXLOPER12 date, LPXLOPER12 centers)
+	bool OxlIsHolDay(const xloper12* date, const xloper12* centers)
 	{
 		int julian_date = DateAlias::kXlJulianOffSet;
 		if (date->xltype == xltypeStr)
@@ -81,7 +100,7 @@ namespace oxl {
 
 	}
 
-	int OxlComputeDayCount(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count)
+	int OxlComputeDayCount(const xloper12* start_date, const xloper12* end_date, const xloper12* busines_day_count)
 	{
 		int start_julian_date = DateAlias::kXlJulianOffSet;
 		int end_julian_date = DateAlias::kXlJulianOffSet;
@@ -98,7 +117,7 @@ namespace oxl {
 				"Invlaid start date was given please check the date input", "excel_base_funcs.cpp line 91 ComputeDayCount()"));
 		}
 
-		//get end date julian		
+		//get end date julian
 		if (end_date->xltype == xltypeNum)
 		{
 			end_julian_date += static_cast<int> (end_date->val.num);
@@ -120,7 +139,7 @@ namespace oxl {
 			DayCount(DateAlias::Date(start_julian_date), DateAlias::Date(end_julian_date));
 	}
 
-	double OxlComputeYearFraction(LPXLOPER12 start_date, LPXLOPER12 end_date, LPXLOPER12 busines_day_count)
+	double OxlComputeYearFraction(const xloper12* start_date, const xloper12* end_date, const xloper12* busines_day_count)
 	{
 		int start_julian_date = DateAlias::kXlJulianOffSet;
 		int end_julian_date = DateAlias::kXlJulianOffSet;
@@ -137,7 +156,7 @@ namespace oxl {
 				"Invlaid start date was given please check the date input", "excel_base_funcs.cpp line 91 ComputeDayCount()"));
 		}
 
-		//get end date julian		
+		//get end date julian
 		if (end_date->xltype == xltypeNum)
 		{
 			end_julian_date += static_cast<int> (end_date->val.num);

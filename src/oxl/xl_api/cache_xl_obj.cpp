@@ -7,6 +7,8 @@
 #include <string>
 #include <variant>
 
+#include "xloper_converter.h"
+
 namespace oxl::xl_api {
 
 XlCacheObj::XlCacheObj(const CachedObjVar& cached_obj, const std::string& key)
@@ -49,7 +51,7 @@ bool XlCacheObj::IsDictionary(const std::string& handle) {
 		return false;
 	}
 
-	/*get the cached obj and see if it is dictionary not checking the cache 
+	/*get the cached obj and see if it is dictionary not checking the cache
 	handle str incase I ever change that naming scheme*/
 	else {
 		std::string key = oxl::xl_api::XlCacheObj::GetKeyFromHandle(handle);
