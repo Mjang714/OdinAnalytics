@@ -22,6 +22,7 @@
 #include "time/date.h"
 #include "time/day_count/day_counter_factory.h"
 #include "time/time_enums.h"
+#include "xl_api/excel_base.h"
 #include "xl_api/xl_dictionary.h"
 #include "xl_api/xloper_converter.h"
 
@@ -211,7 +212,7 @@ namespace oxl {
 		auto freq = (oa::utils::CheckTenorStr(freq_tenor_str)) ? oa::time::Tenor(freq_tenor_str) : CFGen::MapResetFreqEnumToTenor(oa::enum_mappers::MapInputToFreq(freq_tenor_str));
 		opt.date_direction(oa::enum_mappers::MapInputToDateDir(std::get<std::string>(dictionary["Date_Dir"])));
 		opt.stub_type(oa::enum_mappers::MapInputToStub(std::get<std::string>(dictionary["Stub_Type"])));
-		
+
 		if(dictionary.Contains("Fixing_Date_Rule"))
 		{
 			opt.fix_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Fixing_Date_Rule"));
@@ -241,7 +242,7 @@ namespace oxl {
 				opt.start_adjustment(GetBusinessDateFormulaFromDict(dictionary, "Start_Adj_Rule"));
 			}
 		}
-		
+
 
 		auto cf_results = CFGen::CreateFixedCashflows(start_date, mat_date,freq, notional, rate, day_cnt_frac, opt);
 
