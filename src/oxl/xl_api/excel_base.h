@@ -7,8 +7,8 @@
 #include "derived_time/cashflow_gen/cashflow_struct.h"
 #include "derived_time/date_formula/business_date_formula.h"
 #include "derived_time/derived_time_enums.h"
-#include "xl_array.h"
-#include "xl_dictionary.h"
+#include "oxl/xl_api/xl_array.h"
+#include "oxl/xl_api/xl_dictionary.h"
 
 // forward decl to avoid bringing in XLCALL.H
 struct xloper12;

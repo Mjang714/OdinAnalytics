@@ -1,8 +1,9 @@
 #include "excel_base.h"
 
 #include "helpers/utils.h"
-#include "xl_array.h"
-#include "xloper_converter.h"
+#include "oxl/xl_api/cache_xl_obj.h"
+#include "oxl/xl_api/xl_array.h"
+#include "oxl/xl_api/xloper_converter.h"
 
 namespace oxl::xl_api
 {
@@ -15,9 +16,9 @@ namespace oxl::xl_api
 	xl_api::XlArray ConvertCFStructToXlArray(const std::vector<oa::derived_time::CashflowStruct>& cf_struct_array, oa::derived_time::CashflowType cf_type)
 	{
 
-		switch(cf_type) 
+		switch(cf_type)
 		{
-			
+
 			case oa::derived_time::CashflowType::kFixed:
 			{
 				xl_api::XlArray xl_results(cf_struct_array.size() + 1, 14);
@@ -35,7 +36,7 @@ namespace oxl::xl_api
 				xl_results(0, 11) = std::string("Day_Count_Fraction");
 				xl_results(0, 12) = std::string("Currency");
 				xl_results(0, 13) = std::string("Cashflow_Type");
-				//may want to put this into a seperate function that converts different cashflows into output idk feel free to comment. 
+				//may want to put this into a seperate function that converts different cashflows into output idk feel free to comment.
 				for(size_t i = 1; i < xl_results.rows(); i++) {
 					auto cf_index = i - 1;
 					xl_results(i, 0) = static_cast<double>(cf_struct_array.at(cf_index).unadj_start_date.ToExcelJulian());
@@ -55,19 +56,19 @@ namespace oxl::xl_api
 				}
 				return xl_results;
 			}
-			
+
 			default:
 			{
 				xl_api::XlArray xl_results(1,1);
 				xl_results(1,1) = std::string("Invlaid input was given");
 				return xl_results;
 			}
-				
+
 
 		}
 	}
 
-	std::shared_ptr<xl_api::XlDictionary> RetrieveXLDict(const xl_api::XlDictionary& dictionary, const std::string& chached_str) 
+	std::shared_ptr<xl_api::XlDictionary> RetrieveXLDict(const xl_api::XlDictionary& dictionary, const std::string& chached_str)
 	{
 
 		auto fixing_dict_handle = std::get<std::string>(dictionary[chached_str]);
@@ -80,7 +81,7 @@ namespace oxl::xl_api
 		auto xl_dictionary = std::get<std::shared_ptr<xl_api::XlDictionary>>(cache_variant);
 		return xl_dictionary;
 
-		
+
 	}
 
 	bool ValidBusinessDateDictionary(const xl_api::XlDictionary& dict)
@@ -98,5 +99,5 @@ namespace oxl::xl_api
 		auto num_of_days = static_cast<int>(std::get<double>((*date_rule_dict)["Days"]));
 		auto calendar = std::get<std::string>((*date_rule_dict)["Calendar"]);
 		return oa::derived_time::BusinessDateFormula(num_of_days, calendar);
-	}	
+	}
 }
