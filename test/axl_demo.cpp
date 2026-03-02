@@ -27,6 +27,7 @@
 #include "oxl/time_xl.h"
 #include "oxl/xl_api/cache_xl_obj.h"
 #include "oxl/xl_api/xl_array.h"
+#include "oxl/xl_api/xloper_converter.h"
 
 namespace oa {
 
