@@ -1,20 +1,28 @@
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
-# oxl_api: Odin XLL C++ headers
-# TODO: need to decide if this should be a "real" library or not. some of the
-# oxl sources (xl_api directory) should be compiled here instead
+# oxl_api: OXL C++ support library
+# note: built as static library since it should be an XLL implementation detail
 if(XLLSDK_FOUND)
-    add_library(oxl_api INTERFACE)
+    add_library(
+        oxl_api STATIC
+            xl_api/cache_xl_obj.cpp
+            xl_api/excel_base.cpp
+            xl_api/xl_array.cpp
+            xl_api/xl_converter_funcs.cpp
+            xl_api/xl_dictionary.cpp
+            xl_api/xloper_converter.cpp
+    )
     add_library(OdinAnalytics::oxl_api ALIAS oxl_api)
     target_include_directories(
-        oxl_api INTERFACE
+        oxl_api PUBLIC
         $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${ODIN_SOURCE_DIR}>
         # note: not installable just yet
         $<INSTALL_INTERFACE:include>
     )
-    # note: since xlcall.h and framewrk.h show up in some headers
-    target_link_libraries(oxl_api INTERFACE XLLSDK::Framework XLLSDK::SDK)
+    # xl_utils.h uses Excel12f() and needs XLCALL.H and FRAMEWRK.H so we can't
+    # make the linkage of the XLL SDK libraries private
+    target_link_libraries(oxl_api PUBLIC XLLSDK::Framework XLLSDK::SDK)
 else()
     message(STATUS "Skipping oxl_api (requires XLL SDK)")
 endif()
@@ -74,12 +82,6 @@ if(Python3_FOUND AND XLLSDK_FOUND)
             excel_base_funcs.cpp
             excel_functions.cpp
             time_xl.cpp
-            xl_api/cache_xl_obj.cpp
-            xl_api/excel_base.cpp
-            xl_api/xl_array.cpp
-            xl_api/xl_converter_funcs.cpp
-            xl_api/xl_dictionary.cpp
-            xl_api/xloper_converter.cpp
     )
     # add generated headers to include path
     target_include_directories(oxl PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

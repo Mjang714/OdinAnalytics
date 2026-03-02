@@ -1,8 +1,9 @@
 #ifndef OXL_XL_API_XL_DICTIONARY_H_
 #define OXL_XL_API_XL_DICTIONARY_H_
 
-#include <iostream>
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "oxl/xl_api/xl_variant.h"
