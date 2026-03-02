@@ -16,6 +16,7 @@
 #include <concepts>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "oa/accel/addin.h"
@@ -38,20 +39,20 @@ OA_ACCEL_ADDIN_INSTANCE()
 namespace {
 
 /**
- * Helper function to convert an OXL `XlArray` to an `oper12`.
+ * Helper function to obtain an `oper12` by consuming an OXL `XlArray`.
  *
  * This enables cooperation with the Accel memory management framework.
  *
  * @param arr OXL array to convert
  */
-auto to_oper12(const oxl::xl_api::XlArray arr)
+auto to_oper12(oxl::xl_api::XlArray&& arr)
 {
   // allocate values
   std::vector<accel::oper12> vals(arr.rows() * arr.cols());
-  // iterate
+  // consume each incoming value
   for (auto i = 0u; i < arr.rows(); i++)
     for (auto j = 0u; j < arr.cols(); j++)
-      vals[i * arr.cols() + j] = accel::oper12::from(arr(i, j));
+      vals[i * arr.cols() + j] = accel::oper12::from(std::move(arr(i, j)));
   // create view and return new oper12
   return accel::oper12{{vals.data(), arr.rows(), arr.cols()}};
 }
