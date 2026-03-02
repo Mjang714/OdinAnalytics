@@ -10,7 +10,6 @@
 
 #include "xl_array.h"
 #include "xl_dictionary.h"
-#include "xloper_converter.h"
 
 namespace oxl::xl_api {
 

@@ -1,42 +1,26 @@
 #ifndef OXL_EXCEL_BASE_FUNCTIONS_H
 #define OXL_EXCEL_BASE_FUNCTIONS_H
 
-#define NOMINMAX
-#define WIN32_MEAN_AND_LEAN
-#include <Windows.h>
-
-#include <stdlib.h>  // does not seem to be used here
-
-#include <format>
-#include <iostream>
-#include <string>
-
-#include "xlcall.h"
-#include "framewrk.h"
-
 #include "xl_api/cache_xl_obj.h"
-#include "xl_api/xl_variant.h"
-#include "xl_api/xl_array.h"
-#include "xl_api/xl_converter_funcs.h"
+
+// forward decl to avoid bringing in XLCALL.H
+struct xloper12;
 
 namespace oxl
 {
-	typedef xl_api::XLoperObj XlOper;
-	typedef xl_api::XlArray XlArray;
-
 	/// <summary>
 	/// create a cahedobjvar that stores the conveted type from the xloper obj
 	/// </summary>
 	/// <param name="xloper_input"></param>
 	/// <returns></returns>
-	xl_api::CachedObjVar OxlCreateArray(const LPXLOPER12 &xloper_input);
+	xl_api::CachedObjVar OxlCreateArray(const xloper12* xloper_input);
 
 	/// <summary>
 	/// takes in multi data type and turns it into ta dictionary
 	/// </summary>
 	/// <param name="xloper_input"></param>
 	/// <returns></returns>
-	xl_api::CachedObjVar OxlCreateDict(const LPXLOPER12& xloper_input);
+	xl_api::CachedObjVar OxlCreateDict(const xloper12* xloper_input);
 
 	/// <summary>
 	/// takes in two 1XN or Nx1 matrix or one large Nx2 and 2xN
@@ -44,14 +28,14 @@ namespace oxl
 	/// <param name="xloper_key"></param>
 	/// <param name="xloper_values"></param>
 	/// <returns></returns>
-	xl_api::CachedObjVar OxlCreateDict(const LPXLOPER12& xloper_key, const LPXLOPER12& xloper_values);
+	xl_api::CachedObjVar OxlCreateDict(const xloper12* xloper_key, const xloper12* xloper_values);
 
 	/// <summary>
 	/// takes in a handle string and spits outthe cached results as an LPXLOPER12
 	/// </summary>
 	/// <param name="xloper_input"></param>
 	/// <returns></returns>
-	xl_api::XlArray OxlDisplay(const LPXLOPER12 &xloper_input);
+	xl_api::XlArray OxlDisplay(const xloper12* xloper_input);
 }
 
 #endif // !OXL_EXCEL_BASE_FUNCTIONS_H
