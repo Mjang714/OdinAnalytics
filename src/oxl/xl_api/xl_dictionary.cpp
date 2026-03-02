@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <format>
 
 #include "xl_variant.h"
 
@@ -18,8 +19,10 @@ namespace oxl::xl_api
 		for (size_t i = 0; i < keys.size(); i++)
 		{
 			std::string key = std::get<std::string>(keys.at(i));
-			//line to remove blank spaces from the key
-			key.erase(std::remove_if(key.begin(), key.end(), [](char c) {return std::isspace(c);}), key.end());
+			if(!IsKeyValid(key))
+			{	
+				throw std::invalid_argument(std::format("{}:{}","XlDictionary(vector, vector):Key cannot end or begin with empty space", "\"" + key + "\""));
+			}
 			m_dict_[key] = values[i];
 		}
 	}
@@ -32,11 +35,19 @@ namespace oxl::xl_api
 
 	const XlVariant& XlDictionary::operator[] (const std::string& key) const
 	{
+		if(!IsKeyValid(key))
+		{
+			throw std::invalid_argument(std::format("{}:{}","XlDictionary[] (str):Key cannot end or begin with empty space", "\"" + key + "\""));
+		}
 		return  m_dict_.at(key);
 	}
 
 	bool XlDictionary::Contains(const std::string& key) const
 	{
+		if(!IsKeyValid(key))
+		{
+			throw std::invalid_argument(std::format("{}:{}","Contains(str) Key cannot end or begin with empty space", "\"" + key + "\""));
+		}
 		return m_dict_.contains(key);
 	}
 
@@ -64,5 +75,10 @@ namespace oxl::xl_api
 	bool XlDictionary::IsEmpty() const 
 	{
 		return !this->GetKeyValuePair().size();
+	}
+
+	bool XlDictionary::IsKeyValid(const std::string_view& key)
+	{
+		return !std::isspace(key.back()) && !std::isspace(key.front());
 	}
 }

@@ -45,6 +45,10 @@ namespace oxl::xl_api
 
 			bool IsEmpty() const;
 		private:
+			/// @brief A function to check if there are any trialing white spaces in the key as this can cause confusion for users when trying to access values in the dictionary
+			/// @param key string_view of the key to be checked
+			/// @return boolean indicating whether the key is valid or not
+			static bool IsKeyValid(const std::string_view& key);
 			std::map<std::string, XlVariant> m_dict_;
 			std::map<std::string, XlVariant> dict(void) { return m_dict_; };
 			std::map<std::string, XlVariant> dict(void) const { return m_dict_; };
