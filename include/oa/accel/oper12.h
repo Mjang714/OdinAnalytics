@@ -16,6 +16,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <variant>
 
 #include "oa/accel/enums.h"
@@ -347,15 +348,17 @@ public:
      */
     template <typename T>
     requires (std::constructible_from<accel::oper12, T>)
-    auto operator()(const T& v) const
+    auto operator()(T&& v) const
     {
       // note: no implicit conversion unless we list-init from string_view
-      return oper12{v};
+      return oper12{std::forward<T>(v)};
     }
   };
 
   /**
    * Convert a `std::variant<Ts...>` to an `oper12` if possible.
+   *
+   * This overload copies values from the incoming variant.
    *
    * @tparam Ts Variant types
    *
@@ -365,6 +368,22 @@ public:
   static auto from(const std::variant<Ts...>& v)
   {
     return std::visit(visitor{}, v);
+  }
+
+  /**
+   * Convert a `std::variant<Ts...>` to an `oper12` if possible.
+   *
+   * This overload moves values from the incoming variant and therefore should
+   * be preferred when possible if the original variant can be moved from.
+   *
+   * @tparam Ts Variant types
+   *
+   * @param v Variant to construct from
+   */
+  template <typename... Ts>
+  static auto from(std::variant<Ts...>&& v)
+  {
+    return std::visit(visitor{}, std::move(v));
   }
 
   /**
