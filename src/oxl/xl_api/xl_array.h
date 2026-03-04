@@ -191,6 +191,10 @@ namespace oxl::xl_api
 		/**
 		 * Ctor.
 		 *
+		 * This initializes an `XlArray` of the given dimensions with
+		 * value-initialized `XlVariant` values. Therefore, each `XlVariant`
+		 * will contain a value-initialized value of its first alternative.
+		 *
 		 * @param rows Number of rows
 		 * @param cols Number of columns
 		 */
@@ -198,6 +202,16 @@ namespace oxl::xl_api
 
 		/**
 		 * Ctor.
+		 *
+		 * Constructs from a non-ragged list of initializer lists, e.g.
+		 *
+		 * @code{.cc}
+		 * XlArray arr{
+		 *   {1., std::string{"hello"}, true},
+		 *   {2., std::string{"world"}, false}
+		 *   {true, 3., std::string{"beta"}}
+		 * };
+		 * @endcode
 		 *
 		 * @param data Nested init-lists of elements
 		 */
@@ -233,14 +247,15 @@ namespace oxl::xl_api
 		/// <returns></returns>
 		const XlVariant& operator () (const size_t row, const size_t col) const;
 
-		std::vector<XlVariant> ToVector();
+		// TODO: can add ref-qualified overload that moves values
+		std::vector<XlVariant> ToVector() const;
 
 		size_t rows() const { return m_rows_; };
 		size_t cols() const { return m_cols_; };
 
 	private:
-		size_t m_rows_;
-		size_t m_cols_;
+		size_t m_rows_{};
+		size_t m_cols_{};
 		std::vector<RowData> m_data_;
 	};
 
