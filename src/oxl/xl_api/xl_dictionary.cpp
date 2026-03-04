@@ -64,7 +64,7 @@ namespace oxl::xl_api
 
 	bool XlDictionary::IsEmpty() const 
 	{
-		return !this->GetKeyValuePair().size();
+		return m_dict_.empty();
 	}
 	
 	void  XlDictionary::checkKeyValid(const std::string& key)
