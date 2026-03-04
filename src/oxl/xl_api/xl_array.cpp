@@ -139,12 +139,15 @@ XlArray::CRowView::operator*() const noexcept
 
 	XlArray::XlArray(std::initializer_list<std::initializer_list<XlVariant>> data)
 	{
-		// allow empty array
-		if (!data.size())
-			return;
+		// require at least one row
+		if (data.size() < 1u)
+			throw std::invalid_argument{"at least 1 row required"};
 		// otherwise, set dimensions
 		m_rows_ = data.size();
 		m_cols_ = data.begin()->size();
+		// require at least one col
+		if (m_cols_ < 1u)
+			throw std::invalid_argument{"at least 1 col required"};
 		// current row index
 		// set values with dimension checking
 		std::size_t i = 0u;
@@ -184,7 +187,8 @@ XlArray::CRowView::operator*() const noexcept
 		return m_data_.at(row).at(cols);
 	}
 
-	std::vector<XlVariant> XlArray::ToVector()
+	// FIXME: clean up implementation
+	std::vector<XlVariant> XlArray::ToVector() const
 	{
 		if ((m_rows_ != 1) && (m_cols_ != 1))
 		{

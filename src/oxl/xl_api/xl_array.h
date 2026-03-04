@@ -254,8 +254,8 @@ namespace oxl::xl_api
 		size_t cols() const { return m_cols_; };
 
 	private:
-		size_t m_rows_{};
-		size_t m_cols_{};
+		size_t m_rows_;
+		size_t m_cols_;
 		std::vector<RowData> m_data_;
 	};
 
