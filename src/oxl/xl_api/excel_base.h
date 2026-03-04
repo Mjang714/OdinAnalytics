@@ -19,6 +19,7 @@ namespace oxl::xl_api
 	xl_api::XlArray ConvertCFStructToXlArray(const std::vector<oa::derived_time::CashflowStruct>& cf_struct_array, oa::derived_time::CashflowType cf_type);
 	std::shared_ptr<xl_api::XlDictionary> RetrieveXLDict(const xl_api::XlDictionary& dictionary, const std::string& chached_str);
 	bool ValidBusinessDateDictionary(const xl_api::XlDictionary& dictionary);
+	bool ValidCashflowGenDictionary(const xl_api::XlDictionary& dictionary);
 	oa::derived_time::BusinessDateFormula GetBusinessDateFormulaFromDict(const xl_api::XlDictionary& dict, const std::string& date_rule_key);
 }
 

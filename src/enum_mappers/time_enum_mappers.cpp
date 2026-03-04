@@ -114,8 +114,8 @@ OA_MSVC_WARNING_POP()
 #if OA_HAS_CPP20_FORMAT
 					std::format(
 						"{}:{}",
-						"Not a Valid day count convention please check input of: " + input_str,
-						"time_enum_mappers.cpp line 115 MapInputToDayAdjustEnum()"
+						"Not a Valid day count convention please check input of: \"" + input_str + "\"",
+						"time_enum_mappers.cpp line 100 MapInputToDayAdjustEnum()"
 					)
 #else
 					// __FILE__, __LINE__, __func__ let us avoid hardcoding
@@ -155,14 +155,14 @@ OA_MSVC_WARNING_POP()
 			#if OA_HAS_CPP20_FORMAT
 					std::format(
 						"{}:{}",
-						"Not a Valid day count convention please check input of: " + input_str,
-						"time_enum_mappers.cpp line 115 MapInputToDayAdjustEnum()"
+						"Not a Valid Date Direction convention please check input of: \"" + input_str + "\"",
+						"time_enum_mappers.cpp line 142 MapInputToDateDir()"
 					)
 			#else
 					// __FILE__, __LINE__, __func__ let us avoid hardcoding
 					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
 						std::string{__func__} + ": " + input_str +
-						" is not a valid day count convention"
+						" is not a valid Date Direction convention"
 			#endif  // !OA_HAS_CPP20_FORMAT
 				};
 			}
@@ -205,14 +205,14 @@ OA_MSVC_WARNING_POP()
 		#if OA_HAS_CPP20_FORMAT
 				std::format(
 					"{}:{}",
-					"Not a Valid day count convention please check input of: " + input_str,
-					"time_enum_mappers.cpp line 115 MapInputToDayAdjustEnum()"
+					"Not a Valid Frequency convention please check input of: \"" + input_str + "\"",
+					"time_enum_mappers.cpp line 192 MapInputToFreq()"
 				)
 		#else
 				// __FILE__, __LINE__, __func__ let us avoid hardcoding
 				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
 					std::string{__func__} + ": " + input_str +
-					" is not a valid day count convention"
+					" is not a valid Frequency convention"
 		#endif  // !OA_HAS_CPP20_FORMAT
 			};
 		}
@@ -250,14 +250,14 @@ OA_MSVC_WARNING_POP()
 		#if OA_HAS_CPP20_FORMAT
 				std::format(
 					"{}:{}",
-					"Not a Valid day count convention please check input of: " + input_str,
-					"time_enum_mappers.cpp line 115 MapInputToDayAdjustEnum()"
+					"Not a Valid Stub Type convention please check input of: \"" + input_str + "\"",
+					"time_enum_mappers.cpp line 237 MapInputToStub()"
 				)
 		#else
 				// __FILE__, __LINE__, __func__ let us avoid hardcoding
 				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
 					std::string{__func__} + ": " + input_str +
-					" is not a valid day count convention"
+					" is not a valid Stub Type"
 		#endif  // !OA_HAS_CPP20_FORMAT
 			};
 		}

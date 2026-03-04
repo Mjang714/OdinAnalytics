@@ -100,4 +100,8 @@ namespace oxl::xl_api
 		auto calendar = std::get<std::string>((*date_rule_dict)["Calendar"]);
 		return oa::derived_time::BusinessDateFormula(num_of_days, calendar);
 	}
+
+	bool ValidCashflowGenDictionary(const xl_api::XlDictionary& dictionary) {
+		return dictionary.Contains("Start_Date") && dictionary.Contains("Mat_Date") && dictionary.Contains("Notional") && dictionary.Contains("Rate") && dictionary.Contains("Day_Count_Frac") && dictionary.Contains("Frequency") && dictionary.Contains("Date_Dir") && dictionary.Contains("Stub_Type");
+	}
 }
