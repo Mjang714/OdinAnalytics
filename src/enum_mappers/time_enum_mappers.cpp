@@ -204,9 +204,8 @@ OA_MSVC_WARNING_POP()
 			throw std::invalid_argument{
 		#if OA_HAS_CPP20_FORMAT
 				std::format(
-					"{}:{}",
-					"Not a Valid Frequency convention please check input of: \"" + input_str + "\"",
-					"time_enum_mappers.cpp line 192 MapInputToFreq()"
+					"{}:{}:{}: {} is not a valid Frequency convention",
+					__FILE__, __LINE__, __func__, input_str
 				)
 		#else
 				// __FILE__, __LINE__, __func__ let us avoid hardcoding
