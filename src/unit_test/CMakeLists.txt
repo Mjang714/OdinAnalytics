@@ -38,8 +38,6 @@ if(TARGET oxl_api)
         oa_unit_test PRIVATE
         oxl/handle_prefixer_test.cpp
         oxl/xl_array_test.cpp
-        # FIXME: build oxl_api as a static library to avoid this
-        ${ODIN_SOURCE_DIR}/oxl/xl_api/xl_array.cpp
     )
 endif()
 # MSVC emits C5264 a lot for Google Test fixtures
