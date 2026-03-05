@@ -9,8 +9,7 @@ namespace oxl::xl_api
 {
 	std::shared_ptr<XlArray> ToXLArrayPtr(const xloper12* data_range)
 	{
-		XlArray xl_array = XLoperObj::LPXloperToXlArray(data_range);
-		return std::shared_ptr<XlArray>(new XlArray(xl_array));
+		return std::make_shared<XlArray>(XLoperObj::LPXloperToXlArray(data_range));
 	}
 
 	xl_api::XlArray ConvertCFStructToXlArray(const std::vector<oa::derived_time::CashflowStruct>& cf_struct_array, oa::derived_time::CashflowType cf_type)
