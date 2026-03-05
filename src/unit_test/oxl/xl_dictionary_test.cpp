@@ -78,12 +78,7 @@ TEST_F(XlDictionaryTest, XlValueInitCheckTest)
  */
 TEST_F(XlDictionaryTest, InitListTest)
 {
-  XlDictionary dict{
-    {"a", 1.},
-    {"b", "world"},
-    {"c", false},
-    {"d", true}
-  };
+  XlDictionary dict{{"a", 1.}, {"b", "world"}, {"c", false}, {"d", true}};
   // check values
   EXPECT_EQ(1., std::get<double>(dict["a"]));
   EXPECT_EQ("world", std::get<std::string>(dict["b"]));
