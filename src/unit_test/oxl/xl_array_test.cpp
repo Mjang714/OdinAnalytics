@@ -28,10 +28,10 @@ protected:
 
   // starting value for every test
   XlArray value_{
-    {1., std::string{"hello"}, true},
-    {2., std::string{"cold"}, false},
-    {3., std::string{"tidal"}, true},
-    {4., std::string{"water"}, false}
+    {1., "hello", true},
+    {2., "cold", false},
+    {3., "tidal", true},
+    {4., "water", false}
   };
 };
 
@@ -50,7 +50,7 @@ TEST_F(XlArrayTest, InitDimTest)
 TEST_F(XlArrayTest, RowUpdateTest)
 {
   // note: purposefully testing setting via initializer list
-  value_[0] = {8., std::string{"a"}, true};
+  value_[0] = {8., "a", true};
   // values should match
   // note: due to template deduction rules no conversion is done. so we either
   // have to use the variant ctor directly, use std::get<T>, or provide our own
@@ -77,8 +77,8 @@ TEST_F(XlArrayTest, BadInitTest)
   auto bad_array = []() -> XlArray
   {
     return {
-      {1., false, std::string{"dog"}},
-      {2., true, std::string{"cat"}, std::string{"goat"}}  // extra value
+      {1., false, "dog"},
+      {2., true, "cat", "goat"}  // extra value
     };
   };
   EXPECT_THROW(bad_array(), std::invalid_argument);
