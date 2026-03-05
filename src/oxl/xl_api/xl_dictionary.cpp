@@ -52,8 +52,7 @@ namespace oxl::xl_api
 	{
 		//when applying overides use structured bindings
 		for (const auto &[key, value] : overrides_dict.GetKeyValuePair())
-		{			
-			checkKeyValid(key);
+		{	
 			m_dict_[key] = value;
 		}
 	}

@@ -37,21 +37,21 @@ namespace oxl::xl_api
 				xl_results(0, 13) = std::string("Cashflow_Type");
 				//may want to put this into a seperate function that converts different cashflows into output idk feel free to comment.
 				for(size_t i = 1; i < xl_results.rows(); i++) {
-					auto cf_index = i - 1;
-					xl_results(i, 0) = static_cast<double>(cf_struct_array.at(cf_index).unadj_start_date.ToExcelJulian());
-					xl_results(i, 1) = static_cast<double>(cf_struct_array.at(cf_index).unadj_end_date.ToExcelJulian());
-					xl_results(i, 2) = static_cast<double>(cf_struct_array.at(cf_index).start_date.ToExcelJulian());
-					xl_results(i, 3) = static_cast<double>(cf_struct_array.at(cf_index).end_date.ToExcelJulian());
-					xl_results(i, 4) = static_cast<double>(cf_struct_array.at(cf_index).fixing_date.ToExcelJulian());
-					xl_results(i, 5) = static_cast<double>(cf_struct_array.at(cf_index).payment_date.ToExcelJulian());
-					xl_results(i, 6) = cf_struct_array.at(cf_index).notional;
-					xl_results(i, 7) = cf_struct_array.at(cf_index).rate;
-					xl_results(i, 8) = cf_struct_array.at(cf_index).cashflow_amount;
-					xl_results(i, 9) = cf_struct_array.at(cf_index).npv_cashflow_amount;
-					xl_results(i, 10) = static_cast<double>(cf_struct_array.at(cf_index).days);
-					xl_results(i, 11) = cf_struct_array.at(cf_index).day_count_fraction;
-					xl_results(i, 12) = oa::utils::GetCleanName<oa::derived_time::Currency>(cf_struct_array.at(cf_index).cf_curr);
-					xl_results(i, 13) = oa::utils::GetCleanName<oa::derived_time::CashflowType>(cf_struct_array.at(cf_index).cf_type);
+					const auto cf_index = i - 1u;
+					xl_results(i, 0) = static_cast<double>(cf_struct_array[cf_index].unadj_start_date.ToExcelJulian());
+					xl_results(i, 1) = static_cast<double>(cf_struct_array[cf_index].unadj_end_date.ToExcelJulian());
+					xl_results(i, 2) = static_cast<double>(cf_struct_array[cf_index].start_date.ToExcelJulian());
+					xl_results(i, 3) = static_cast<double>(cf_struct_array[cf_index].end_date.ToExcelJulian());
+					xl_results(i, 4) = static_cast<double>(cf_struct_array[cf_index].fixing_date.ToExcelJulian());
+					xl_results(i, 5) = static_cast<double>(cf_struct_array[cf_index].payment_date.ToExcelJulian());
+					xl_results(i, 6) = cf_struct_array[cf_index].notional;
+					xl_results(i, 7) = cf_struct_array[cf_index].rate;
+					xl_results(i, 8) = cf_struct_array[cf_index].cashflow_amount;
+					xl_results(i, 9) = cf_struct_array[cf_index].npv_cashflow_amount;
+					xl_results(i, 10) = static_cast<double>(cf_struct_array[cf_index].days);
+					xl_results(i, 11) = cf_struct_array[cf_index].day_count_fraction;
+					xl_results(i, 12) = oa::utils::GetCleanName<oa::derived_time::Currency>(cf_struct_array[cf_index].cf_curr);
+					xl_results(i, 13) = oa::utils::GetCleanName<oa::derived_time::CashflowType>(cf_struct_array[cf_index].cf_type);
 				}
 				return xl_results;
 			}
@@ -59,7 +59,7 @@ namespace oxl::xl_api
 			default:
 			{
 				xl_api::XlArray xl_results(1,1);
-				xl_results(1,1) = std::string("Invlaid input was given");
+				xl_results(0,0) = std::string("Invlaid input was given");
 				return xl_results;
 			}
 
