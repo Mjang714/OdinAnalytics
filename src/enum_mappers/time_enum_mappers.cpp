@@ -102,7 +102,7 @@ OA_MSVC_WARNING_POP()
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
 		OA_MSVC_WARNING_PUSH()
-			OA_MSVC_WARNING_DISABLE(4242 4244)
+		OA_MSVC_WARNING_DISABLE(4242 4244)
 			std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
 		OA_MSVC_WARNING_POP()
 
@@ -157,7 +157,7 @@ OA_MSVC_WARNING_POP()
 						"{}:{}:{}: {} is not a valid Date Direction convention",
 						__FILE__, __LINE__, __func__, input_str
 					)
-					)
+					
 			#else
 					// __FILE__, __LINE__, __func__ let us avoid hardcoding
 					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +

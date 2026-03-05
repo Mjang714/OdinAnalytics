@@ -23,19 +23,16 @@ namespace oxl::xl_api
 
 	XlVariant& XlDictionary::operator[] (const std::string& key)
 	{
-		checkKeyValid(key);
 		return m_dict_[key];
 	}
 
 	const XlVariant& XlDictionary::operator[] (const std::string& key) const
 	{
-		checkKeyValid(key);
 		return  m_dict_.at(key);
 	}
 
 	bool XlDictionary::Contains(const std::string& key) const
 	{
-		checkKeyValid(key);
 		return m_dict_.contains(key);
 	}
 
@@ -45,7 +42,6 @@ namespace oxl::xl_api
 
 		for (const auto& key_value_pair : m_dict_)
 		{	
-			checkKeyValid(key_value_pair.first);
 			key_value_pair_list.push_back(key_value_pair);
 		}
 
