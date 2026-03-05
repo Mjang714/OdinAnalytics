@@ -19,7 +19,7 @@ namespace oxl::xl_api
 	 *
 	 * @code{.cc}
 	 * // assuming arr is an XlArray shape (4, 4)
-	 * arr[0] = {1., std::string{"hello"}, true, 100.};
+	 * arr[0] = {1., "hello", true, 100.};
 	 * @endcode
 	 *
 	 * Rows can also be iterated through like a normal random-access container:
@@ -36,7 +36,7 @@ namespace oxl::xl_api
 	 * // assuming arr is an XlArray shape (4, 4)
 	 * auto row = *arr[0];
 	 * // row is unchanged after assigning values
-	 * arr[0] = {2., std::string{"a"}, false, 50.};
+	 * arr[0] = {2., "a", false, 50.};
 	 * assert(row[1] != arr[0][1]);
 	 * @endcode
 	 */
@@ -207,9 +207,9 @@ namespace oxl::xl_api
 		 *
 		 * @code{.cc}
 		 * XlArray arr{
-		 *   {1., std::string{"hello"}, true},
-		 *   {2., std::string{"world"}, false}
-		 *   {true, 3., std::string{"beta"}}
+		 *   {1., "hello", true},
+		 *   {2., "world", false}
+		 *   {true, 3., "beta"}
 		 * };
 		 * @endcode
 		 *
