@@ -59,7 +59,7 @@ namespace oxl::xl_api
 			default:
 			{
 				xl_api::XlArray xl_results(1,1);
-				xl_results(0,0) = std::string("Invlaid input was given");
+				xl_results(0,0) = std::string("Invalid input was given");
 				return xl_results;
 			}
 
