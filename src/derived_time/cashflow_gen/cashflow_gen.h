@@ -171,9 +171,19 @@ namespace oa::derived_time {
 			const Options& opts = {}
 		);
 
+		static std::vector<CashflowStruct> CreateFixedCashflows(
+			const time::Date& start_date,
+			const time::Date& mat_date,
+			const time::Tenor reset_freq,
+			const double notional,
+			const double rate,
+			const time::DayCountRule day_count_rule,
+			const Options& opts = {}
+		);
+		
+		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
 	private:
 
-		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
 		static void StubDateAdjustments(
 			const oa::time::Date& start_date,
 			const oa::time::Date& mat_date,
