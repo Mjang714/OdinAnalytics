@@ -38,6 +38,7 @@ if(TARGET oxl_api)
         oa_unit_test PRIVATE
         oxl/handle_prefixer_test.cpp
         oxl/xl_array_test.cpp
+        oxl/xl_dictionary_test.cpp
     )
 endif()
 # MSVC emits C5264 a lot for Google Test fixtures
