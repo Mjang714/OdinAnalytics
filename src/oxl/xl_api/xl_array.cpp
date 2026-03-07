@@ -131,8 +131,8 @@ XlArray::CRowView::operator*() const noexcept
 // XlArray                                                                    //
 ////////////////////////////////////////////////////////////////////////////////
 
-	XlArray::XlArray(size_t rows, size_t cols)
-	  : m_rows_(rows), m_cols_(cols), m_data_(rows, RowData(cols))
+	XlArray::XlArray(size_t rows, size_t cols, const XlVariant& var)
+	  : m_rows_(rows), m_cols_(cols), m_data_(rows, RowData(cols, var))
 	{
 
 	}

@@ -191,14 +191,15 @@ namespace oxl::xl_api
 		/**
 		 * Ctor.
 		 *
-		 * This initializes an `XlArray` of the given dimensions with
-		 * value-initialized `XlVariant` values. Therefore, each `XlVariant`
-		 * will contain a value-initialized value of its first alternative.
+		 * This initializes an `XlArray` of the given dimensions with the
+		 * specified `XlVariant` values. The defaulted `XlVariant` will contain
+		 * a value-initialized value of its first alternative.
 		 *
 		 * @param rows Number of rows
 		 * @param cols Number of columns
+		 * @param var Matrix init value
 		 */
-		XlArray(size_t rows, size_t cols);
+		XlArray(size_t rows, size_t cols, const XlVariant& var = {});
 
 		/**
 		 * Ctor.
