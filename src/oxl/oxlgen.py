@@ -328,10 +328,10 @@ def dictionary_functions_base(yml_definition):
     dictionary_code += ["              dictionary_input = *std::get<std::shared_ptr<oxl::xl_api::XlDictionary>>(cache_variant);"]
     dictionary_code += ["            }"]
     dictionary_code += ["         }"]
-    dictionary_code += ["         else"]
-    dictionary_code += ["         {"]
     create_dictionary_line = ""
-    if(yml_definition["Args"]):
+    if(yml_definition["Args"] and yml_definition["GenerateArgDict"]):
+        dictionary_code += ["         else"]
+        dictionary_code += ["         {"]
         for arg in yml_definition["Args"]:
             #print(arg["Name"])
             create_dictionary_line +=  "           dictionary_input[\"" + arg["Name"] + "\"] = "
@@ -340,9 +340,10 @@ def dictionary_functions_base(yml_definition):
             elif(arg["Type"] == "LPXLOPER|Date"):
                 create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"
             elif(arg["Type"] == "Integer" or arg["Type"] == "Double"):
-                create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"          
-    dictionary_code += [create_dictionary_line] 
-    dictionary_code += ["         }"]
+                create_dictionary_line += "oxl::xl_api::XLoperObj::LPXloperToDouble(" + arg["Name"] + "_input); \n"
+            
+        dictionary_code += [create_dictionary_line] 
+        dictionary_code += ["         }"]
     dictionary_code += ["    }"]
     line = "       auto intermediate_result = oxl::" + yml_definition["OxlName"]+ "(dictionary_input);"
     dictionary_code += [line]

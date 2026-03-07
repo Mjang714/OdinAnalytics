@@ -155,11 +155,10 @@ CashflowGen::Options::stub_date(time::Date date)
 ////////////////////////////////////////////////////////////////////////////////
 // CashFlowGen                                                                //
 ////////////////////////////////////////////////////////////////////////////////
-
 	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
 		const time::Date& start_date,
 		const time::Date& mat_date,
-		const Frequency reset_freq,
+		const time::Tenor reset_freq,
 		const double notional,
 		const double rate,
 		const time::DayCountRule day_count_rule,
@@ -169,10 +168,8 @@ CashflowGen::Options::stub_date(time::Date date)
 
 		std::vector<time::Date> unadjusted_start_dates{};
 		std::vector<time::Date> unadjusted_end_dates{};
-
-		auto tenor_pair = MapResetFreqEnumToTenor(reset_freq).GetValues();
-		auto time_length = tenor_pair.first;
-		auto tenor_enum = tenor_pair.second;
+		auto time_length = reset_freq.GetValues().first;
+		auto tenor_enum = reset_freq.GetValues().second;
 
 		if (opts.date_direction() == DateDirection::kForward) {
 			auto curr_start_date = start_date;
@@ -245,6 +242,21 @@ CashflowGen::Options::stub_date(time::Date date)
 		cashflows.emplace_back(std::move(cf));
 		// Implementation logic to generate cashflows goes here
 		return cashflows;
+	}
+
+
+	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
+		const time::Date& start_date,
+		const time::Date& mat_date,
+		const Frequency reset_freq,
+		const double notional,
+		const double rate,
+		const time::DayCountRule day_count_rule,
+		const Options& opts)
+	{
+
+		auto tenor_freq = MapResetFreqEnumToTenor(reset_freq);
+		return CreateFixedCashflows(start_date, mat_date, tenor_freq, notional, rate, day_count_rule, opts);
 
 	}
 
