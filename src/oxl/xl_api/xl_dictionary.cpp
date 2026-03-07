@@ -1,7 +1,13 @@
 #include "xl_dictionary.h"
 
+#include <cctype>
+#include <cstddef>
+#include <format>
+#include <initializer_list>
+#include <span>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 #include <format>
 
@@ -9,26 +15,87 @@
 
 namespace oxl::xl_api
 {
-
-	XlDictionary::XlDictionary(std::vector<XlVariant> keys, std::vector<XlVariant> values)
+	XlDictionary::XlDictionary(KeySpan keys, ValueSpan values)
 	{
-		
-		for (size_t i = 0; i < keys.size(); i++)
-		{
-			std::string key = std::get<std::string>(keys.at(i));
-			checkKeyValid(key);
-			m_dict_[key] = values[i];
+		// size check
+		check_sizes(keys.size(), values.size());
+		// insert
+		// note: could weaken inputs to forward ranges instead
+		for (
+			auto [k_it, v_it] = std::pair{keys.begin(), values.begin()};
+			k_it != keys.end();
+			k_it++, v_it++
+		) {
+			check_key(*k_it);
+			m_dict_[*k_it] = *v_it;
 		}
+	}
+
+	XlDictionary::XlDictionary(ValueSpan keys, ValueSpan values)
+	{
+		// size check
+		check_sizes(keys.size(), values.size());
+		// insert
+		for (
+			auto [k_it, v_it] = std::pair{keys.begin(), values.begin()};
+			k_it != keys.end();
+			k_it++, v_it++
+		) {
+			auto key = std::get<std::string>(*k_it);
+			check_key(key);
+			m_dict_[key] = *v_it;
+		}
+	}
+
+	XlDictionary::XlDictionary(std::initializer_list<PairType> pairs)
+	{
+		for (const auto& [key, value] : pairs) {
+			check_key(key);
+			m_dict_[key] = value;
+		}
+	}
+
+	std::size_t
+	XlDictionary::size() const noexcept
+	{
+		return m_dict_.size();
+	}
+
+	XlDictionary::Iter
+	XlDictionary::begin() noexcept
+	{
+		return m_dict_.begin();
+	}
+
+	XlDictionary::CIter
+	XlDictionary::begin() const noexcept
+	{
+		return m_dict_.begin();
+	}
+
+	XlDictionary::Iter
+	XlDictionary::end() noexcept
+	{
+		return m_dict_.end();
+	}
+
+	XlDictionary::CIter
+	XlDictionary::end() const noexcept
+	{
+		return m_dict_.end();
 	}
 
 	XlVariant& XlDictionary::operator[] (const std::string& key)
 	{
+		// note: since value might be default-inserted we need a check
+		check_key(key);
 		return m_dict_[key];
 	}
 
 	const XlVariant& XlDictionary::operator[] (const std::string& key) const
 	{
-		return  m_dict_.at(key);
+		// note: no key validity check since at() will throw
+		return m_dict_.at(key);
 	}
 
 	bool XlDictionary::Contains(const std::string& key) const
@@ -41,7 +108,7 @@ namespace oxl::xl_api
 		std::vector<std::pair<std::string, XlVariant>> key_value_pair_list;
 
 		for (const auto& key_value_pair : m_dict_)
-		{	
+		{
 			key_value_pair_list.push_back(key_value_pair);
 		}
 
@@ -50,23 +117,40 @@ namespace oxl::xl_api
 
 	void XlDictionary::ApplyOverrides(const XlDictionary& overrides_dict)
 	{
-		//when applying overides use structured bindings
-		for (const auto &[key, value] : overrides_dict.GetKeyValuePair())
-		{	
+		for (const auto& [key, value] : overrides_dict)
 			m_dict_[key] = value;
-		}
 	}
 
-	bool XlDictionary::IsEmpty() const 
+	bool XlDictionary::IsEmpty() const
 	{
 		return m_dict_.empty();
 	}
-	
-	void  XlDictionary::checkKeyValid(const std::string& key)
+
+	void
+	XlDictionary::check_sizes(std::size_t n_keys, std::size_t n_values) const
 	{
-		if (std::isspace(key.back()) || std::isspace(key.front()))
-		{
-			throw std::invalid_argument(std::format("{}:{}","Key cannot end or begin with empty space", "\"" + key + "\""));
-		}
+		// size check
+		if (n_keys != n_values)
+			throw std::invalid_argument{
+				std::format(
+					"{}:{}:{}: number of keys {} != number of values {}",
+					__FILE__, __LINE__, __func__, n_keys, n_values
+				)
+			};
+	}
+
+	void XlDictionary::check_key(const std::string& key)
+	{
+		// key cannot be empty either
+		if (key.empty())
+			throw std::invalid_argument{"empty string not allowed as key"};
+		// no leading or trailing spaces
+		if (std::isspace(key.front()) || std::isspace(key.back()))
+			throw std::invalid_argument{
+				std::format(
+					"key \"{}\" invalid: "
+					"keys cannot contain leading or trailing spaces", key
+				)
+			};
 	}
 }
