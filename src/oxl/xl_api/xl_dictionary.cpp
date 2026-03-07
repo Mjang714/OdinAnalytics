@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <format>
 
 #include "xl_variant.h"
 
@@ -23,8 +24,10 @@ namespace oxl::xl_api
 			auto [k_it, v_it] = std::pair{keys.begin(), values.begin()};
 			k_it != keys.end();
 			k_it++, v_it++
-		)
+		) {
+			checkKeyValid(*k_it);
 			m_dict_[*k_it] = *v_it;
+		}
 	}
 
 	XlDictionary::XlDictionary(ValueSpan keys, ValueSpan values)
@@ -96,7 +99,7 @@ namespace oxl::xl_api
 		std::vector<std::pair<std::string, XlVariant>> key_value_pair_list;
 
 		for (const auto& key_value_pair : m_dict_)
-		{
+		{	
 			key_value_pair_list.push_back(key_value_pair);
 		}
 
@@ -109,6 +112,11 @@ namespace oxl::xl_api
 			m_dict_[key] = value;
 	}
 
+	bool XlDictionary::IsEmpty() const 
+	{
+		return m_dict_.empty();
+	}
+
 	void
 	XlDictionary::check_sizes(std::size_t n_keys, std::size_t n_values) const
 	{
@@ -118,6 +126,17 @@ namespace oxl::xl_api
 				std::format(
 					"{}:{}:{}: number of keys {} != number of values {}",
 					__FILE__, __LINE__, __func__, n_keys, n_values
+				)
+			};
+	}
+	
+	void XlDictionary::checkKeyValid(const std::string& key)
+	{
+		if (std::isspace(key.back()) || std::isspace(key.front()))
+			throw std::invalid_argument{
+				std::format(
+					"key \"{}\" invalid: "
+					"keys cannot contain leading or trailing spaces", key
 				)
 			};
 	}

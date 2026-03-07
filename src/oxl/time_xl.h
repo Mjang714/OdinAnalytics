@@ -1,6 +1,10 @@
 #ifndef OXL_TIME_XL_H_
 #define OXL_TIME_XL_H_
 
+#include <vector>
+
+#include "derived_time/cashflow_gen/cashflow_struct.h"
+#include "xl_api/xl_array.h"
 #include "xl_api/xl_dictionary.h"
 
 // forward decl to avoid bringing in XLCALL.H
@@ -23,6 +27,9 @@ namespace oxl
 
 	double OxlComputeDate(const xl_api::XlDictionary& dictionary);
 	double OxlAddBusinessDays(const xl_api::XlDictionary& dictionary);
+	xl_api::XlArray OxlGenerateCashflow(const xl_api::XlDictionary& dictionary);
+
+	xl_api::XlArray ConvertCFStructToXlArray(std::vector<oa::derived_time::CashflowStruct> cf_struct_array);
 }
 
 #endif //OXL_TIME_XL_H_

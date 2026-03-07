@@ -130,11 +130,18 @@ namespace oxl::xl_api
 
 		void ApplyOverrides(const XlDictionary& overrides_dict);
 
+		bool IsEmpty() const;
+
 	private:
 		MapType m_dict_;
 
 		// ensures key and value ranges are the same size
 		void check_sizes(std::size_t n_keys, std::size_t n_values) const;
+
+		/// @brief A function to check if there are any trialing white spaces in the key as this can cause confusion for users when trying to access values in the dictionary
+		/// @param key string_view of the key to be checked
+		/// @return void but will throw an exception if the key is invalid
+		static void checkKeyValid(const std::string& key);
 	};
 }
 
