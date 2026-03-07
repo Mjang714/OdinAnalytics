@@ -74,6 +74,36 @@ TEST_F(XlDictionaryTest, XlValueInitCheckTest)
 }
 
 /**
+ * Test that the ctor correctly guards against keys with leading whitespace.
+ */
+TEST_F(XlDictionaryTest, LeadingBlanksKeyTest)
+{
+  // use lambda to simplify expression evaluation
+  auto bad_dict = [] { XlDictionary dict{{"a", 1.}, {"   b", 2.}}; };
+  EXPECT_THROW(bad_dict(), std::invalid_argument);
+}
+
+/**
+ * Test that the ctor correctly guards against keys with trailing whitespace.
+ */
+TEST_F(XlDictionaryTest, TrailingBlanksKeyTest)
+{
+  // use lambda to simplify expression evaluation
+  auto bad_dict = [] { XlDictionary dict{{"a", 1.}, {"b    ", 2.}}; };
+  EXPECT_THROW(bad_dict(), std::invalid_argument);
+}
+
+/**
+ * Test that the ctor correctly guards against empty keys.
+ */
+TEST_F(XlDictionaryTest, EmptyKeyTest)
+{
+  // use lambda to simplify expression evaluation
+  auto bad_dict = [] { XlDictionary dict{{"a", 1.}, {"", 2.}}; };
+  EXPECT_THROW(bad_dict(), std::invalid_argument);
+}
+
+/**
  * Test that construction from initializer list works.
  */
 TEST_F(XlDictionaryTest, InitListTest)
