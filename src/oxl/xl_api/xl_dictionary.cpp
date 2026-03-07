@@ -25,7 +25,7 @@ namespace oxl::xl_api
 			k_it != keys.end();
 			k_it++, v_it++
 		) {
-			checkKeyValid(*k_it);
+			check_key(*k_it);
 			m_dict_[*k_it] = *v_it;
 		}
 	}
@@ -41,7 +41,7 @@ namespace oxl::xl_api
 			k_it++, v_it++
 		) {
 			auto key = std::get<std::string>(*k_it);
-			checkKeyValid(key);
+			check_key(key);
 			m_dict_[key] = *v_it;
 		}
 	}
@@ -85,7 +85,7 @@ namespace oxl::xl_api
 	XlVariant& XlDictionary::operator[] (const std::string& key)
 	{
 		// note: since value might be default-inserted we need a check
-		checkKeyValid(key);
+		check_key(key);
 		return m_dict_[key];
 	}
 
@@ -136,9 +136,13 @@ namespace oxl::xl_api
 			};
 	}
 
-	void XlDictionary::checkKeyValid(const std::string& key)
+	void XlDictionary::check_key(const std::string& key)
 	{
-		if (std::isspace(key.back()) || std::isspace(key.front()))
+		// key cannot be empty either
+		if (key.empty())
+			throw std::invalid_argument{"empty string not allowed as key"};
+		// no leading or trailing spaces
+		if (std::isspace(key.front()) || std::isspace(key.back()))
 			throw std::invalid_argument{
 				std::format(
 					"key \"{}\" invalid: "

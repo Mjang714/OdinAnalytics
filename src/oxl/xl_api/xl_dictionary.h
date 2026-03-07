@@ -138,10 +138,8 @@ namespace oxl::xl_api
 		// ensures key and value ranges are the same size
 		void check_sizes(std::size_t n_keys, std::size_t n_values) const;
 
-		/// @brief A function to check if there are any trialing white spaces in the key as this can cause confusion for users when trying to access values in the dictionary
-		/// @param key string_view of the key to be checked
-		/// @return void but will throw an exception if the key is invalid
-		static void checkKeyValid(const std::string& key);
+		// ensures keys are not empty and have no leading/trailing blanks
+		static void check_key(const std::string& key);
 	};
 }
 
