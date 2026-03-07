@@ -4,6 +4,8 @@
 #include "oxl/xl_api/cache_xl_obj.h"
 #include "oxl/xl_api/xl_array.h"
 #include "oxl/xl_api/xloper_converter.h"
+#include "oxl/xl_api/xl_utils.h"
+#include "time/date.h"
 
 namespace oxl::xl_api
 {
@@ -38,12 +40,12 @@ namespace oxl::xl_api
 				//may want to put this into a seperate function that converts different cashflows into output idk feel free to comment.
 				for(size_t i = 1; i < xl_results.rows(); i++) {
 					const auto cf_index = i - 1u;
-					xl_results(i, 0) = static_cast<double>(cf_struct_array[cf_index].unadj_start_date.ToExcelJulian());
-					xl_results(i, 1) = static_cast<double>(cf_struct_array[cf_index].unadj_end_date.ToExcelJulian());
-					xl_results(i, 2) = static_cast<double>(cf_struct_array[cf_index].start_date.ToExcelJulian());
-					xl_results(i, 3) = static_cast<double>(cf_struct_array[cf_index].end_date.ToExcelJulian());
-					xl_results(i, 4) = static_cast<double>(cf_struct_array[cf_index].fixing_date.ToExcelJulian());
-					xl_results(i, 5) = static_cast<double>(cf_struct_array[cf_index].payment_date.ToExcelJulian());
+					xl_results(i, 0) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].unadj_start_date);
+					xl_results(i, 1) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].unadj_end_date);
+					xl_results(i, 2) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].start_date);
+					xl_results(i, 3) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].end_date);
+					xl_results(i, 4) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].fixing_date);
+					xl_results(i, 5) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].payment_date);
 					xl_results(i, 6) = cf_struct_array[cf_index].notional;
 					xl_results(i, 7) = cf_struct_array[cf_index].rate;
 					xl_results(i, 8) = cf_struct_array[cf_index].cashflow_amount;

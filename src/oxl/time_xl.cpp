@@ -25,6 +25,7 @@
 #include "xl_api/excel_base.h"
 #include "xl_api/xl_dictionary.h"
 #include "xl_api/xloper_converter.h"
+#include "xl_api/xl_utils.h"
 
 namespace oxl {
 
@@ -103,32 +104,8 @@ namespace oxl {
 
 	int OxlComputeDayCount(const xloper12* start_date, const xloper12* end_date, const xloper12* busines_day_count)
 	{
-		int start_julian_date = DateAlias::kXlJulianOffSet;
-		int end_julian_date = DateAlias::kXlJulianOffSet;
-
-		//get julian
-		if (start_date->xltype == xltypeNum)
-		{
-			start_julian_date += static_cast<int> (start_date->val.num);
-		}
-
-		else
-		{
-			throw std::invalid_argument(std::format("{}:{}",
-				"Invlaid start date was given please check the date input", "excel_base_funcs.cpp line 91 ComputeDayCount()"));
-		}
-
-		//get end date julian
-		if (end_date->xltype == xltypeNum)
-		{
-			end_julian_date += static_cast<int> (end_date->val.num);
-		}
-
-		else
-		{
-			throw std::invalid_argument(std::format("{}:{}",
-				"Invlaid end date was given please check the date input", "excel_base_funcs.cpp line 103 ComputeDayCount()"));
-		}
+		auto start_date_Obj = oxl::xl_api::ToDateObj(start_date);
+		auto end_date_Obj = oxl::xl_api::ToDateObj(end_date);
 
 		std::string biz_day_count = XLoperAlias::LPXloperToStr(busines_day_count);
 
@@ -137,37 +114,13 @@ namespace oxl {
 		auto day_count_rule = oa::time::DayCounterFactory::GenerateDayCounter(biz_day_count_enum);
 
 		return day_count_rule->
-			DayCount(DateAlias::Date(start_julian_date), DateAlias::Date(end_julian_date));
+			DayCount(start_date_Obj, end_date_Obj);
 	}
 
 	double OxlComputeYearFraction(const xloper12* start_date, const xloper12* end_date, const xloper12* busines_day_count)
 	{
-		int start_julian_date = DateAlias::kXlJulianOffSet;
-		int end_julian_date = DateAlias::kXlJulianOffSet;
-
-		//get julian
-		if (start_date->xltype == xltypeNum)
-		{
-			start_julian_date += static_cast<int> (start_date->val.num);
-		}
-
-		else
-		{
-			throw std::invalid_argument(std::format("{}:{}",
-				"Invlaid start date was given please check the date input", "excel_base_funcs.cpp line 91 ComputeDayCount()"));
-		}
-
-		//get end date julian
-		if (end_date->xltype == xltypeNum)
-		{
-			end_julian_date += static_cast<int> (end_date->val.num);
-		}
-
-		else
-		{
-			throw std::invalid_argument(std::format("{}:{}",
-				"Invlaid end date was given please check the date input", "excel_base_funcs.cpp line 103 ComputeDayCount()"));
-		}
+		auto start_date_Obj = oxl::xl_api::ToDateObj(start_date);
+		auto end_date_Obj = oxl::xl_api::ToDateObj(end_date);
 
 		std::string biz_day_count = XLoperAlias::LPXloperToStr(busines_day_count);
 
@@ -176,24 +129,22 @@ namespace oxl {
 		auto day_count_rule = oa::time::DayCounterFactory::GenerateDayCounter(biz_day_count_enum);
 
 		return day_count_rule->
-			YearFraction(DateAlias::Date(start_julian_date), DateAlias::Date(end_julian_date));
+			YearFraction(start_date_Obj, end_date_Obj);
 	}
 
 	double OxlComputeDate(const xl_api::XlDictionary& dictionary)
 	{
-		auto j_date = static_cast<int> (std::get<double>(dictionary["Base_Date"])) + DateAlias::kXlJulianOffSet;
-		DateAlias base_date(j_date);
+		DateAlias base_date = oxl::xl_api::ToDateObj(dictionary["Base_Date"]);
 		auto tenor = std::get<std::string>(dictionary["Tenor"]);
 		auto adj_rule = std::get<std::string>(dictionary["Adjustment_Rule"]);
 		auto calendar = std::get<std::string>(dictionary["Calendar"]);
 		auto date_formula = oa::derived_time::DateFormula(tenor, adj_rule, calendar);
-		return static_cast<double>(date_formula.Adjust(base_date).GetJulian() - DateAlias::kXlJulianOffSet);
+		return oxl::xl_api::ToExcelDate(date_formula.Adjust(base_date));
 	}
 
 	double OxlAddBusinessDays(const xl_api::XlDictionary& dictionary)
 	{
-		auto j_date = static_cast<int> (std::get<double>(dictionary["Base_Date"])) + DateAlias::kXlJulianOffSet;
-		DateAlias base_date(j_date);
+		DateAlias base_date = oxl::xl_api::ToDateObj(dictionary["Base_Date"]);
 		auto num_of_days = static_cast<int>(std::get<double>(dictionary["Days"]));
 		auto calendar = std::get<std::string>(dictionary["Calendar"]);
 		auto date_formula = oa::derived_time::BusinessDateFormula(num_of_days, calendar);
