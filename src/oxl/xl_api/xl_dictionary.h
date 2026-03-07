@@ -41,8 +41,8 @@ namespace oxl::xl_api
 		/**
 		 * Ctor.
 		 *
-		 * Construct from a span of keys and a span of values. Keys are not
-		 * allowed to have any leading or trailing whitespace.
+		 * Construct from a span of keys and a span of values. Keys must be
+		 * non-empty string with no leading or trailing whitespace.
 		 *
 		 * @param keys Dictionary keys
 		 * @param values Dictionary values
@@ -52,8 +52,8 @@ namespace oxl::xl_api
 		/**
 		 * Ctor.
 		 *
-		 * Construct from a span of keys and a span of values. Keys cannot have
-		 * have any leading or trailing whitespace and must be strings.
+		 * Construct from a span of keys and a span of values. Keys must be
+		 * non-empty strings with no leading or trailing whitespace.
 		 *
 		 * @param keys Dictionary keys
 		 * @param values Dictionary values
@@ -72,6 +72,8 @@ namespace oxl::xl_api
 		 *   {"sky", "blue"}
 		 * };
 		 * @endcode
+		 *
+		 * Keys cannot be empty or contain leading or trailing whitespace.
 		 *
 		 * @param pairs Initializer list of key-value pairs
 		 */

@@ -1,5 +1,6 @@
 #include "xl_dictionary.h"
 
+#include <cctype>
 #include <cstddef>
 #include <format>
 #include <initializer_list>
@@ -48,8 +49,10 @@ namespace oxl::xl_api
 
 	XlDictionary::XlDictionary(std::initializer_list<PairType> pairs)
 	{
-		for (const auto& [key, value] : pairs)
+		for (const auto& [key, value] : pairs) {
+			check_key(key);
 			m_dict_[key] = value;
+		}
 	}
 
 	std::size_t
