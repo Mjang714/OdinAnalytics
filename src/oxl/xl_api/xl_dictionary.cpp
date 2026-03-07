@@ -39,8 +39,11 @@ namespace oxl::xl_api
 			auto [k_it, v_it] = std::pair{keys.begin(), values.begin()};
 			k_it != keys.end();
 			k_it++, v_it++
-		)
-			m_dict_[std::get<std::string>(*k_it)] = *v_it;
+		) {
+			auto key = std::get<std::string>(*k_it);
+			checkKeyValid(key);
+			m_dict_[key] = *v_it;
+		}
 	}
 
 	XlDictionary::XlDictionary(std::initializer_list<PairType> pairs)
@@ -81,12 +84,15 @@ namespace oxl::xl_api
 
 	XlVariant& XlDictionary::operator[] (const std::string& key)
 	{
+		// note: since value might be default-inserted we need a check
+		checkKeyValid(key);
 		return m_dict_[key];
 	}
 
 	const XlVariant& XlDictionary::operator[] (const std::string& key) const
 	{
-		return  m_dict_.at(key);
+		// note: no key validity check since at() will throw
+		return m_dict_.at(key);
 	}
 
 	bool XlDictionary::Contains(const std::string& key) const
@@ -99,7 +105,7 @@ namespace oxl::xl_api
 		std::vector<std::pair<std::string, XlVariant>> key_value_pair_list;
 
 		for (const auto& key_value_pair : m_dict_)
-		{	
+		{
 			key_value_pair_list.push_back(key_value_pair);
 		}
 
@@ -112,7 +118,7 @@ namespace oxl::xl_api
 			m_dict_[key] = value;
 	}
 
-	bool XlDictionary::IsEmpty() const 
+	bool XlDictionary::IsEmpty() const
 	{
 		return m_dict_.empty();
 	}
@@ -129,7 +135,7 @@ namespace oxl::xl_api
 				)
 			};
 	}
-	
+
 	void XlDictionary::checkKeyValid(const std::string& key)
 	{
 		if (std::isspace(key.back()) || std::isspace(key.front()))
