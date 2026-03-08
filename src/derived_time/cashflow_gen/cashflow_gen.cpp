@@ -165,8 +165,14 @@ CashflowGen::Options::stub_date(time::Date date)
 		const Options& opts)
 	{
 		if(start_date > mat_date)
-			throw std::invalid_argument(std::format("{}:{}:{} - Start date {} is before maturity date {}", __FILE__, __LINE__, __func__, start_date.ToString(), mat_date.ToString()));
-
+			throw std::invalid_argument(
+				#if OA_HAS_CPP20_FORMAT 
+					std::format("{}:{}:{} - Start date {} is before maturity date {}", __FILE__, __LINE__, __func__, start_date.ToString(), mat_date.ToString())
+				#else
+					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{__func__} + ": " + "Start date " + start_date.ToString() + " is before maturity date " + mat_date.ToString()
+				#endif
+				);
 		std::vector<CashflowStruct> cashflows{};
 		std::vector<time::Date> unadjusted_start_dates{};
 		std::vector<time::Date> unadjusted_end_dates{};
