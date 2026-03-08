@@ -36,7 +36,7 @@
   oa::fixed_string{__FILE__} \
     /* ensure we have only file name without directory separators. */ \
     /* note that we need to check for both '/' and '\\' */ \
-    .substr<oa::fixed_string{__FILE__}.rfind('/', '\\')>() + ":" + \
+    .substr<oa::fixed_string{__FILE__}.rfind('/', '\\') + 1u>() + ":" + \
     /* function signature + line */ \
     OA_PRETTY_FUNCTION_NAME + ":" OA_STRINGIFY(__LINE__)
 
