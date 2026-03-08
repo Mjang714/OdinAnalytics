@@ -23,37 +23,24 @@ namespace oxl::xl_api
 			case oa::derived_time::CashflowType::kFixed:
 			{
 				xl_api::XlArray xl_results(cf_struct_array.size() + 1, 14);
-				xl_results(0, 0) = std::string("Unadj_Start_Date");
-				xl_results(0, 1) = std::string("Unadj_End_Date");
-				xl_results(0, 2) = std::string("Start_Date");
-				xl_results(0, 3) = std::string("End_Date");
-				xl_results(0, 4) = std::string("Fixing_Date");
-				xl_results(0, 5) = std::string("Payment_Date");
-				xl_results(0, 6) = std::string("Notional");
-				xl_results(0, 7) = std::string("Rate");
-				xl_results(0, 8) = std::string("Fwd_Cashflow_PV");
-				xl_results(0, 9) = std::string("Cashflow_NPV");
-				xl_results(0, 10) = std::string("Day_Count");
-				xl_results(0, 11) = std::string("Day_Count_Fraction");
-				xl_results(0, 12) = std::string("Currency");
-				xl_results(0, 13) = std::string("Cashflow_Type");
+				xl_results[0] = {"Unadj_Start_Date", "Unadj_End_Date", "Start_Date", "End_Date", "Fixing_Date", "Payment_Date", "Notional", "Rate", "Fwd_Cashflow_PV", "Cashflow_NPV", "Day_Count", "Day_Count_Fraction", "Currency", "Cashflow_Type"};
 				//may want to put this into a seperate function that converts different cashflows into output idk feel free to comment.
 				for(size_t i = 1; i < xl_results.rows(); i++) {
 					const auto cf_index = i - 1u;
-					xl_results(i, 0) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].unadj_start_date);
-					xl_results(i, 1) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].unadj_end_date);
-					xl_results(i, 2) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].start_date);
-					xl_results(i, 3) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].end_date);
-					xl_results(i, 4) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].fixing_date);
-					xl_results(i, 5) = oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].payment_date);
-					xl_results(i, 6) = cf_struct_array[cf_index].notional;
-					xl_results(i, 7) = cf_struct_array[cf_index].rate;
-					xl_results(i, 8) = cf_struct_array[cf_index].cashflow_amount;
-					xl_results(i, 9) = cf_struct_array[cf_index].npv_cashflow_amount;
-					xl_results(i, 10) = static_cast<double>(cf_struct_array[cf_index].days);
-					xl_results(i, 11) = cf_struct_array[cf_index].day_count_fraction;
-					xl_results(i, 12) = oa::utils::GetCleanName<oa::derived_time::Currency>(cf_struct_array[cf_index].cf_curr);
-					xl_results(i, 13) = oa::utils::GetCleanName<oa::derived_time::CashflowType>(cf_struct_array[cf_index].cf_type);
+					xl_results[i] = {oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].unadj_start_date),
+						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].unadj_end_date),
+						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].start_date),
+						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].end_date),
+						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].fixing_date),
+						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].payment_date),
+						cf_struct_array[cf_index].notional,
+						cf_struct_array[cf_index].rate,
+						cf_struct_array[cf_index].cashflow_amount,
+						cf_struct_array[cf_index].npv_cashflow_amount,
+						static_cast<double>(cf_struct_array[cf_index].days),
+						cf_struct_array[cf_index].day_count_fraction,
+						oa::utils::GetCleanName<oa::derived_time::Currency>(cf_struct_array[cf_index].cf_curr),
+						oa::utils::GetCleanName<oa::derived_time::CashflowType>(cf_struct_array[cf_index].cf_type)};
 				}
 				return xl_results;
 			}
