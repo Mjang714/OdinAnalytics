@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "oa/ctti.h"
+#include "oa/fixed_string.h"
 #include "xl_variant.h"
 
 namespace oxl::xl_api
@@ -63,8 +65,9 @@ XlArray::RowView::operator=(RowData data)
 	// size mismatch
 	if (data.size() != data_->size())
 		throw std::invalid_argument{
-			"new row data size " + std::to_string(data.size()) +
-			" != expected row data size " + std::to_string(data_->size())
+			OA_SOURCE_LOCATION() + ": new row data size " +
+			std::to_string(data.size()) + " != expected row data size " +
+			std::to_string(data_->size())
 		};
 	// otherwise, move-assign
 	*data_ = std::move(data);
@@ -141,13 +144,17 @@ XlArray::CRowView::operator*() const noexcept
 	{
 		// require at least one row
 		if (data.size() < 1u)
-			throw std::invalid_argument{"at least 1 row required"};
+			throw std::invalid_argument{
+				OA_SOURCE_LOCATION() + ": at least 1 row required"
+			};
 		// otherwise, set dimensions
 		m_rows_ = data.size();
 		m_cols_ = data.begin()->size();
 		// require at least one col
 		if (m_cols_ < 1u)
-			throw std::invalid_argument{"at least 1 col required"};
+			throw std::invalid_argument{
+				OA_SOURCE_LOCATION() + ": at least 1 col required"
+			};
 		// current row index
 		// set values with dimension checking
 		std::size_t i = 0u;
@@ -155,9 +162,9 @@ XlArray::CRowView::operator*() const noexcept
 			// disallow ragged arrays
 			if (row.size() != m_cols_)
 				throw std::invalid_argument{
-					"row " + std::to_string(i) + " has size " +
-					std::to_string(row.size()) + " != expected row size " +
-					std::to_string(m_cols_)
+					OA_SOURCE_LOCATION() + ": row " + std::to_string(i) +
+					" has size " + std::to_string(row.size()) +
+					" != expected row size " + std::to_string(m_cols_)
 				};
 			// copy values + advance
 			m_data_.emplace_back(row);
@@ -191,9 +198,9 @@ XlArray::CRowView::operator*() const noexcept
 	std::vector<XlVariant> XlArray::ToVector() const
 	{
 		if ((m_rows_ != 1) && (m_cols_ != 1))
-		{
-			throw "xl_array.cpp line 34 ToVector(): Not a Valid Array must be 1xN or Nx1";
-		}
+			throw std::runtime_error{
+				OA_SOURCE_LOCATION() + ": array must be row or column only"
+			};
 
 		std::vector<XlVariant> list_of_values;
 		if (m_cols_ == 1)
