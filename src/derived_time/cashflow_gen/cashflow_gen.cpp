@@ -164,8 +164,10 @@ CashflowGen::Options::stub_date(time::Date date)
 		const time::DayCountRule day_count_rule,
 		const Options& opts)
 	{
-		std::vector<CashflowStruct> cashflows{};
+		if(start_date > mat_date)
+			throw std::invalid_argument(std::format("{}:{}:{} - Start date {} is before maturity date {}", __FILE__, __LINE__, __func__, start_date.ToString(), mat_date.ToString()));
 
+		std::vector<CashflowStruct> cashflows{};
 		std::vector<time::Date> unadjusted_start_dates{};
 		std::vector<time::Date> unadjusted_end_dates{};
 		auto time_length = reset_freq.GetValues().first;
