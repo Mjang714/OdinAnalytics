@@ -30,14 +30,15 @@
 /**
  * Return a `fixed_string<N>` representing the current call site.
  *
- * This provides the file name, function signature, and line number.
+ * This provides only the file name and line number for brevity of reporting.
+ * For example, one possible value could be `"xl_array.cpp:148"`.
  */
 #define OA_SOURCE_LOCATION() \
   oa::fixed_string{__FILE__} \
     /* ensure we have only file name without directory separators. */ \
     /* note that we need to check for both '/' and '\\' */ \
-    .substr<oa::fixed_string{__FILE__}.rfind('/', '\\') + 1u>() + ":" + \
-    /* function signature + line */ \
-    OA_PRETTY_FUNCTION_NAME + ":" OA_STRINGIFY(__LINE__)
+    .substr<oa::fixed_string{__FILE__}.rfind('/', '\\') + 1u>() + \
+    /* source file line */ \
+    ":" OA_STRINGIFY(__LINE__)
 
 #endif  // OA_CTTI_H_
