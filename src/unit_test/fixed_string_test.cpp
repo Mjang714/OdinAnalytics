@@ -174,6 +174,60 @@ struct fixed_string_sstream_equal {
   }
 };
 
+/**
+ * `fixed_string` `std::string` concatenation test operator.
+ *
+ * This creates a new `std::string` out of the two `fixed_string` objects by
+ * converting the first to a `std::string` and then using `operator+`. We then
+ * check that the resulting `std::string` is equal to the resulting
+ * `fixed_string` we would have obtained from direct concatenation.
+ */
+struct fixed_string_strcat_eq_1 {
+  /**
+   * Compare the results of `fixed_string` and `std::string` concatenation.
+   *
+   * @tparam N1 Length of first string
+   * @tparam N2 Length of second string
+   *
+   * @param s1 First fixed string
+   * @param s2 Second fixed string
+   */
+  template <std::size_t N1, std::size_t N2>
+  bool operator()(
+    const oa::fixed_string<N1>& s1,
+    const oa::fixed_string<N2>& s2) const
+  {
+    return (s1 + s2) == (std::string{s1} + s2);
+  }
+};
+
+/**
+ * `fixed_string` `std::string` concatenation test operator.
+ *
+ * This creates a new `std::string` out of the two `fixed_string` objects by
+ * converting the second to a `std::string` and then using `operator+`. We then
+ * check that the resulting `std::string` is equal to the resulting
+ * `fixed_string` we would have obtained from direct concatenation.
+ */
+struct fixed_string_strcat_eq_2 {
+  /**
+   * Compare the results of `fixed_string` and `std::string` concatenation.
+   *
+   * @tparam N1 Length of first string
+   * @tparam N2 Length of second string
+   *
+   * @param s1 First fixed string
+   * @param s2 Second fixed string
+   */
+  template <std::size_t N1, std::size_t N2>
+  bool operator()(
+    const oa::fixed_string<N1>& s1,
+    const oa::fixed_string<N2>& s2) const
+  {
+    return (s1 + s2) == (s1 + std::string{s2});
+  }
+};
+
 }  // namespace
 
 // binary_format_traits specializations for fixed_string_equal_(1|2)
@@ -239,12 +293,34 @@ constexpr auto fixed_string_test_cases = std::make_tuple(
   fixed_string_binary_test_case{fixed_string_sstream_equal{}, "jello", "jello"},
   // 9. test char[] and fixed_string operator== (runtime)
   fixed_string_binary_test_case{fixed_string_equal_1{}, "burger", "burger"},
-  // 10. test fixed_String and char[] operator== (runtime)
-  fixed_string_binary_test_case{fixed_string_equal_2{}, "airplane", "airplane"}
+  // 10. test fixed_string and char[] operator== (runtime)
+  fixed_string_binary_test_case{fixed_string_equal_2{}, "airplane", "airplane"},
+  // 11. test fixed_string substring construction
+  fixed_string_binary_test_case{
+    std::equal_to{},
+    oa::fixed_string<19u>{"the quick brown fox jumped over the lazy dog"},
+    "the quick brown fox"
+  },
+  // 12. test fixed_string substr()
+  fixed_string_binary_test_case{
+    std::equal_to{},
+    oa::fixed_string{"the quick brown fox jumped"}.substr<10u>(),
+    "brown fox jumped"
+  },
+  // 13. test fixed_string substr()
+  fixed_string_binary_test_case{
+    std::equal_to{},
+    oa::fixed_string{"the quick brown fox jumped"}.substr<0u, 19u>(),
+    "the quick brown fox"
+  },
+  // 14. test operator+, operator== for fixed_string + std::string (runtime)
+  fixed_string_binary_test_case{fixed_string_strcat_eq_1{}, "hello ", "world"},
+  // 15. test operator+, operator== for fixed_string + std::string (runtime)
+  fixed_string_binary_test_case{fixed_string_strcat_eq_2{}, "hello ", "world"}
 );
 
 // indices of tests that should be evaluated at runtime
-constexpr const std::size_t fixed_string_runtime_test_cases[] = {7, 8, 9};
+constexpr const std::size_t fixed_string_runtime_test_cases[] = {7, 8, 9, 13, 14};
 
 /**
  * `fixed_string` template test fixture.
