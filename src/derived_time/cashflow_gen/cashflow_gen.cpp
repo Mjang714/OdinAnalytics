@@ -164,8 +164,8 @@ CashflowGen::Options::stub_date(time::Date date)
 		const time::DayCountRule day_count_rule,
 		const Options& opts)
 	{
+		
 		std::vector<CashflowStruct> cashflows{};
-
 		std::vector<time::Date> unadjusted_start_dates{};
 		std::vector<time::Date> unadjusted_end_dates{};
 		auto time_length = reset_freq.GetValues().first;

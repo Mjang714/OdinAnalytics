@@ -148,7 +148,7 @@ namespace oxl {
 		auto num_of_days = static_cast<int>(std::get<double>(dictionary["Days"]));
 		auto calendar = std::get<std::string>(dictionary["Calendar"]);
 		auto date_formula = oa::derived_time::BusinessDateFormula(num_of_days, calendar);
-		return static_cast<double>(date_formula.Adjust(base_date).GetJulian() - DateAlias::kXlJulianOffSet);
+		return oxl::xl_api::ToExcelDate(date_formula.Adjust(base_date));
 	}
 
 	xl_api::XlArray OxlGenerateCashflow(const xl_api::XlDictionary& dictionary)
@@ -156,8 +156,8 @@ namespace oxl {
 		if(oxl::xl_api::ValidCashflowGenDictionary(dictionary))
 		{
 			CFGen::Options opt{};
-			auto start_date = DateAlias(static_cast<int> (std::get<double>(dictionary["Start_Date"])) + DateAlias::kXlJulianOffSet);
-			auto mat_date = DateAlias(static_cast<int> (std::get<double>(dictionary["Mat_Date"])) + DateAlias::kXlJulianOffSet);
+			auto start_date = oxl::xl_api::ToDateObj(dictionary["Start_Date"]);
+			auto mat_date = oxl::xl_api::ToDateObj(dictionary["Mat_Date"]);
 			auto notional = std::get<double>(dictionary["Notional"]);
 			auto rate = std::get<double>(dictionary["Rate"]);
 			auto day_cnt_frac = oa::enum_mappers::MapInputToDayCountEnum(std::get<std::string>(dictionary["Day_Count_Frac"]));
