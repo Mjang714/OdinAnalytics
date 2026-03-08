@@ -12,6 +12,7 @@
 #include "time/date_adjust/date_adjust_base.h"
 #include "time/day_count/day_counter_factory.h"
 #include "time/tenor.h"
+#include "../include/oa/ctti.h"
 
 namespace oa::derived_time {
 
@@ -167,9 +168,9 @@ CashflowGen::Options::stub_date(time::Date date)
 		if(start_date > mat_date)
 			throw std::invalid_argument(
 				#if OA_HAS_CPP20_FORMAT 
-					std::format("{}:{}:{} - Start date {} is before maturity date {}", __FILE__, __LINE__, __func__, start_date.ToString(), mat_date.ToString())
+					std::format("{}:{} - Start date {} is before maturity date {}", OA_SOURCE_LOCATION() , __func__, start_date.ToString(), mat_date.ToString())
 				#else
-					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{OA_SOURCE_LOCATION()} + ":" +
 					std::string{__func__} + ": " + "Start date " + start_date.ToString() + " is before maturity date " + mat_date.ToString()
 				#endif
 				);
