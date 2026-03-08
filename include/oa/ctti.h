@@ -40,5 +40,4 @@
     /* function signature + line */ \
     OA_PRETTY_FUNCTION_NAME + ":" OA_STRINGIFY(__LINE__)
 
-
 #endif  // OA_CTTI_H_
