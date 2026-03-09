@@ -8,31 +8,35 @@
 #ifndef OA_PLATFORM_H_
 #define OA_PLATFORM_H_
 
-// accurate C++ version integer, no need to use /Zc:__cplusplus with MSVC
-#if defined(_MSC_VER) && defined(_MSVC_LANG)
-#define OA_CPLUSPLUS _MSVC_LANG
-#elif defined(__cplusplus)
-#define OA_CPLUSPLUS __cplusplus
-#endif  // (!defined(_MSC_VER) || !defined(_MSVC_LANG)) && !defined(__cplusplus)
+#include "oa/common.h"
+
+// TODO: rename header to features.h as not all features are platform features
 
 // check if we are compiling under C++20 or above. always define when compiling
 // under C++ so we could use this in standard C++ expressions
 #ifdef OA_CPLUSPLUS
 #if OA_CPLUSPLUS >= 202002L
-#define OA_CPLUSPLUS_20 1
-#else
-#define OA_CPLUSPLUS_20 0
-#endif  // OA_CPLUSPLUS < 202002L
+#define OA_HAS_CXX20 1
+#endif  // OA_CPLUSPLUS >= 202002L
 #endif  // OA_CPLUSPLUS
+
+#ifndef OA_HAS_CXX20
+#define OA_HAS_CXX20 0
+#endif  // OA_HAS_CXX20
 
 // check if we have the C++20 <format> header. __has_include is standard since
 // C++17, available as compiler extension for C or earlier C++ standards
 #if defined(OA_CPLUSPLUS) && defined(__has_include)
-#if OA_CPLUSPLUS_20 && __has_include(<format>)
-#define OA_HAS_CPP20_FORMAT 1
-#else
-#define OA_HAS_CPP20_FORMAT 0
-#endif  // !OA_CPLUSPLUS || !__has_include(<format>)
+#if OA_HAS_CXX20 && __has_include(<format>)
+#define OA_HAS_CXX20_FORMAT 1
+#endif  // OA_CPLUSPLUS && __has_include(<format>)
 #endif  // !defined(OA_CPLUSPLUS) || !defined(__has_include)
+
+#ifndef OA_HAS_CXX20_FORMAT
+#define OA_HAS_CXX20_FORMAT 0
+#endif  // OA_HAS_CXX20_FORMAT
+
+// TODO: deprecate OA_HAS_CPP20_FORMAT and use OA_HAS_CXX20_FORMAT instead
+#define OA_HAS_CPP20_FORMAT OA_HAS_CXX20_FORMAT
 
 #endif  // OA_PLATFORM_H_
