@@ -183,6 +183,8 @@ if(MSVC)
 else()
     add_compile_options(
         -Wall
+        # ensure we warn if a macro is used without being first defined
+        -Wundef
         # -O0 is default optimization level anyways, Clang ignores -ggdb
         $<$<NOT:$<CONFIG:Release>>:-ggdb> $<IF:$<CONFIG:Release>,-O3,-O0>
     )
