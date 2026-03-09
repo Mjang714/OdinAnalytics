@@ -220,8 +220,13 @@ public:
   template <std::same_as<char>... Ts>
   constexpr auto find(Ts... cs) const noexcept
   {
+    // note: use separate array for char pack since MSVC seems to have an issue
+    // with destroying initializer_list values too early, e.g. in this context
+    // where for (auto c : {cs...}) was used as the inner loop
+    const char ar[] = {cs...};
+    // search
     for (auto i = 0u; i < N; i++)
-      for (auto c : {cs...})
+      for (auto c : ar)
         if (data_[i] == c)
           return i;
     return npos;
@@ -239,8 +244,14 @@ public:
   template <std::same_as<char>... Ts>
   constexpr auto rfind(Ts... cs) const noexcept
   {
+    // note: use separate array for char pack since MSVC seems to have an issue
+    // with destroying initializer_list values too early, e.g. in this context
+    // where for (auto c : {cs...}) was used as the inner loop
+    const char ar[] = {cs...};
+    // search
     for (auto i = 0u; i < N; i++)
-      for (auto c : {cs...})
+      // for (auto c : ar)
+      for (auto c : ar)
         if (data_[N - i - 1u] == c)
           return N - i - 1u;
     return npos;
