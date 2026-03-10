@@ -319,15 +319,14 @@ struct fixed_string_format_eq_3 {
   }
 };
 
-/**
- * `fixed_string `std::format("{:#}")
- */
-
 }  // namespace
 
-// binary_format_traits specializations for fixed_string_equal_(1|2)
 namespace oa {
 namespace testing {
+
+// binary_format_traits specializations for test case comparator types
+// note: not all the types are covered because some of them do transformations
+// on the input values so s1 op s2 won't represent the actual operation done
 
 template <>
 struct binary_format_traits<fixed_string_equal_1> {
@@ -336,6 +335,16 @@ struct binary_format_traits<fixed_string_equal_1> {
 
 template <>
 struct binary_format_traits<fixed_string_equal_2> {
+  static constexpr const char op_string[] = "==";
+};
+
+template <>
+struct binary_format_traits<fixed_string_sstream_equal> {
+  static constexpr const char op_string[] = "==";
+};
+
+template <>
+struct binary_format_traits<fixed_string_format_eq_1> {
   static constexpr const char op_string[] = "==";
 };
 
