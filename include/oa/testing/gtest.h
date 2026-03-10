@@ -309,6 +309,9 @@ auto make_result(bool res, const F& /*comp*/, const Ts&... values)
     auto make_failure = [prefix](const auto& v1, const auto& v2)
     {
       return ::testing::AssertionFailure() << prefix <<
+        // TODO: we actually want the *negation* of op_string. this can be done
+        // by adding another member but also we might want a way of defaulting
+        // the comparison using some function template
         v1 << " " << binary_format_traits<F>::op_string << " " << v2;
     };
     return make_failure(values...);
