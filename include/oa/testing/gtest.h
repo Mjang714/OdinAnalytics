@@ -282,6 +282,9 @@ auto& operator<<(std::ostream& out, const delimited<Ts...>& value)
  * @tparam F n-ary comparator
  * @tparam Ts Value types
  *
+ * @todo Extend to allow `res` to be a `::testing::AssertionResult` for more
+ *  customized error formatting compared to formatting true/false
+ *
  * @param res Result of `comp(values...)`
  * @param values Values comparator was invoked with
  */
