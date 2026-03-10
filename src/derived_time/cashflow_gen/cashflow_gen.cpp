@@ -214,9 +214,9 @@ CashflowGen::Options::stub_date(time::Date date)
 
 		StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
 
-
+		cashflows.reserve(unadjusted_start_dates.size() + 1); // +1 for the final principal repayment
+		auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {
-			auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
 			CashflowStruct cf{};
 			cf.unadj_start_date = unadjusted_start_dates[i];
 			cf.unadj_end_date = unadjusted_end_dates[i];
