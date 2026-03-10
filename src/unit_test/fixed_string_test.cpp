@@ -280,8 +280,8 @@ struct fixed_string_format_eq_2 {
    */
   template <std::size_t N1, std::size_t N2>
   auto operator()(
-  const oa::fixed_string<N1>& s1,
-  const oa::fixed_string<N2>& s2) const
+    const oa::fixed_string<N1>& s1,
+    const oa::fixed_string<N2>& s2) const
   {
 #if OA_HAS_CXX20_FORMAT
     return std::format("the world is your {:}", s1) == std::string{s2};
@@ -308,8 +308,8 @@ struct fixed_string_format_eq_3 {
    */
   template <std::size_t N1, std::size_t N2>
   auto operator()(
-  const oa::fixed_string<N1>& s1,
-  const oa::fixed_string<N2>& s2) const
+    const oa::fixed_string<N1>& s1,
+    const oa::fixed_string<N2>& s2) const
   {
 #if OA_HAS_CXX20_FORMAT
     return std::format("we are moving the {:#} somewhere", s1) == std::string{s2};
