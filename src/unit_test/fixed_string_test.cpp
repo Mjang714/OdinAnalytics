@@ -339,16 +339,6 @@ struct binary_format_traits<fixed_string_equal_2> {
   static constexpr const char op_string[] = "==";
 };
 
-template <>
-struct binary_format_traits<fixed_string_sstream_equal> {
-  static constexpr const char op_string[] = "==";
-};
-
-template <>
-struct binary_format_traits<fixed_string_format_eq_1> {
-  static constexpr const char op_string[] = "==";
-};
-
 }  // namespace testing
 }  // namespace oa
 
