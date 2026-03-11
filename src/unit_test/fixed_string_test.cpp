@@ -167,7 +167,7 @@ struct fixed_string_sstream_equal {
    * @param s2 Second fixed string
    */
   template <std::size_t N1, std::size_t N2>
-  bool operator()(
+  auto operator()(
     const oa::fixed_string<N1>& s1,
     const oa::fixed_string<N2>& s2) const
   {
@@ -177,7 +177,7 @@ struct fixed_string_sstream_equal {
     std::stringstream ss2;
     ss2 << s2;
     // compare using operator== for std::string
-    return std::move(ss1).str() == std::move(ss2).str();
+    return oa::testing::eq(std::move(ss1).str(), std::move(ss2).str());
   }
 };
 
@@ -200,11 +200,11 @@ struct fixed_string_strcat_eq_1 {
    * @param s2 Second fixed string
    */
   template <std::size_t N1, std::size_t N2>
-  bool operator()(
+  auto operator()(
     const oa::fixed_string<N1>& s1,
     const oa::fixed_string<N2>& s2) const
   {
-    return (s1 + s2) == (std::string{s1} + s2);
+    return oa::testing::eq(s1 + s2, std::string{s1} + s2);
   }
 };
 
@@ -227,11 +227,11 @@ struct fixed_string_strcat_eq_2 {
    * @param s2 Second fixed string
    */
   template <std::size_t N1, std::size_t N2>
-  bool operator()(
+  auto operator()(
     const oa::fixed_string<N1>& s1,
     const oa::fixed_string<N2>& s2) const
   {
-    return (s1 + s2) == (s1 + std::string{s2});
+    return oa::testing::eq(s1 + s2, s1 + std::string{s2});
   }
 };
 
@@ -256,7 +256,7 @@ struct fixed_string_format_eq_1 {
     const oa::fixed_string<N2>& s2) const
   {
 #if OA_HAS_CXX20_FORMAT
-    return std::format("{}", s1) == std::string{s2};
+    return oa::testing::eq(std::format("{}", s1), std::string{s2});
 #else
     return ::testing::AssertionFailure() << "std::format() not available";
 #endif  // !OA_HAS_CXX20_FORMAT
@@ -268,7 +268,7 @@ struct fixed_string_format_eq_1 {
  */
 struct fixed_string_format_eq_2 {
   /**
-   * Compare the `std::format()` result against `std::string`.
+   * Compare the `std::format()` result against a given string.
    *
    * The format string is `"the world is your {:}"`.
    *
@@ -284,7 +284,7 @@ struct fixed_string_format_eq_2 {
     const oa::fixed_string<N2>& s2) const
   {
 #if OA_HAS_CXX20_FORMAT
-    return std::format("the world is your {:}", s1) == std::string{s2};
+    return oa::testing::eq(std::format("the world is your {:}", s1), s2);
 #else
     return ::testing::AssertionFailure() << "std::format() not available";
 #endif  // !OA_HAS_CXX20_FORMAT
@@ -312,7 +312,8 @@ struct fixed_string_format_eq_3 {
     const oa::fixed_string<N2>& s2) const
   {
 #if OA_HAS_CXX20_FORMAT
-    return std::format("we are moving the {:#} somewhere", s1) == std::string{s2};
+    using oa::testing::eq;
+    return eq(std::format("we are moving the {:#} somewhere", s1), s2);
 #else
     return ::testing::AssertionFailure() << "std::format() not available";
 #endif  // !OA_HAS_CXX20_FORMAT
