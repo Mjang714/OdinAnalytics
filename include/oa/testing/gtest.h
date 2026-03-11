@@ -11,10 +11,12 @@
 #ifndef OA_TESTING_GTEST_H_
 #define OA_TESTING_GTEST_H_
 
+#include <concepts>
 #include <cstdlib>  // for OA_GTEST_ENSURE_BASE_DIR
 #include <functional>
 #include <iomanip>
 #include <ostream>
+#include <ranges>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
@@ -24,6 +26,7 @@
 #include <boost/core/demangle.hpp>
 #include <gtest/gtest.h>
 
+#include "oa/warnings.h"
 // TODO: refactor include path when namespacing is implemented
 #include "time/date.h"
 
@@ -269,11 +272,13 @@ auto& operator<<(std::ostream& out, const delimited<Ts...>& value)
   return out;
 }
 
+namespace detail {
+
 /**
  * Format a `::testing::AssertionResult` based on the comparator and values.
  *
- * This supports arbitrary n-ary predicates with some special formatting
- * support for binary predicates like `std::equal_to`.
+ * This implements `::testing::AssertionResult` formatting for for arbitrary
+ * n-ary predicates that do not return a `::testing::AssertionResult`.
  *
  * @note This overload does not invoke the comparator at all and relies on the
  *  `res` value which should be the result of `comp(values...)`.
@@ -282,15 +287,12 @@ auto& operator<<(std::ostream& out, const delimited<Ts...>& value)
  * @tparam F n-ary comparator
  * @tparam Ts Value types
  *
- * @todo Extend to allow `res` to be a `::testing::AssertionResult` for more
- *  customized error formatting compared to formatting true/false
- *
  * @param res Result of `comp(values...)`
  * @param values Values comparator was invoked with
  */
-template <bool is_compile_time, typename F, typename... Ts>
-requires (std::is_invocable_r_v<bool, F, Ts...>)
-auto make_result(bool res, const F& /*comp*/, const Ts&... values)
+template <bool is_compile_time, typename R, typename F, typename... Ts>
+requires (std::is_invocable_r_v<R, F, Ts...> && std::is_convertible_v<R, bool>)
+auto make_result(R res, const F& /*comp*/, const Ts&... values)
 {
   // success, so no error message formatting
   if (res)
@@ -308,20 +310,52 @@ auto make_result(bool res, const F& /*comp*/, const Ts&... values)
     // assuming that the invocable really is a binary invocable
     auto make_failure = [prefix](const auto& v1, const auto& v2)
     {
-      return ::testing::AssertionFailure() << prefix <<
-        // TODO: we actually want the *negation* of op_string. this can be done
-        // by adding another member but also we might want a way of defaulting
-        // the comparison using some function template
+      return ::testing::AssertionFailure() << "result of: " << prefix <<
         v1 << " " << binary_format_traits<F>::op_string << " " << v2;
     };
     return make_failure(values...);
   }
   // otherwise, use generic RTTI-based invocable formatting
   else
-    return ::testing::AssertionFailure() << prefix <<
+    return ::testing::AssertionFailure() << "result of: " << prefix <<
       boost::core::demangle(typeid(F).name()) << "{}(" <<
       delimited{", ", values...} << ")";
 }
+
+}  // namespace detail
+
+// suppress C4100 to prevent explosion in messages per template instance
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4100)
+/**
+ * Format a `::testing::AssertionResult` based on the comparator and values.
+ *
+ * This supports arbitrary n-ary predicates with some special formatting
+ * support for binary predicates like `std::equal_to`. If `comp(values...)`
+ * returns a `::testing::AssertionResult` the object is passed through.
+ *
+ * @note This overload does not invoke the comparator at all and relies on the
+ *  `res` value which should be the result of `comp(values...)`.
+ *
+ * @tparam is_compile_time `true` if `comp(values...)` invoked at compile time
+ * @tparam F n-ary comparator
+ * @tparam Ts Value types
+ *
+ * @param res Result of `comp(values...)`
+ * @param values Values comparator was invoked with
+ */
+template <bool is_compile_time, typename R, typename F, typename... Ts>
+requires (std::is_invocable_r_v<R, F, Ts...> && std::is_convertible_v<R, bool>)
+auto make_result(R res, const F& comp, const Ts&... values)
+{
+  // if AssertionResult itself just pass through
+  if constexpr (std::is_same_v<R, ::testing::AssertionResult>)
+    return std::move(res);
+  // otherwise check binary_format_traits<> and do generic formatting
+  else
+    return detail::make_result<is_compile_time>(std::move(res), comp, values...);
+}
+OA_MSVC_WARNING_POP()
 
 /**
  * Format a `::testing::AssertionResult` based on the comparator and values.
@@ -357,11 +391,65 @@ auto make_result(const F& comp, const Ts&... values)
  * @param comp Comparator object
  * @param values Values to invoke comparator on
  */
-template <bool res, typename F, typename... Ts>
-requires (std::is_invocable_r_v<bool, F, Ts...>)
+template <auto res, typename F, typename... Ts>
+requires (std::is_invocable_r_v<decltype(res), F, Ts...>)
 auto make_result(const F& comp, const Ts&... values)
 {
   return make_result<true>(res, comp, values...);
+}
+
+namespace detail {
+
+/**
+ * Concept for a string-like object.
+ *
+ * We simply check that the object is a contiguous range of char type.
+ *
+ * @note Unused in this header but could be useful in a formatting context.
+ *
+ * @tparam T type
+ */
+template <typename T>
+concept string_like = (
+  std::ranges::contiguous_range<T> &&
+  std::same_as<std::ranges::range_value_t<T>, char>
+);
+
+/**
+ * Concept for weak equality in one direction.
+ *
+ * This is a weaker form of `std::equality_comparable`.
+ *
+ * @tparam T First type
+ * @tparam U Second type
+ */
+template <typename T, typename U>
+concept weakly_equality_comparable = requires (T x, U y) {
+  { x == y } -> std::convertible_to<bool>;
+};
+
+}  // namespace detail
+
+/**
+ * Check that two values are equal and return a `::testing::AssertionResult`.
+ *
+ * This is useful for simple `x == y` testing with a default error message.
+ *
+ * @tparam T First type
+ * @tparam U Second type
+ *
+ * @param x First value
+ * @param y Second value
+ */
+template <typename T, typename U>
+requires (detail::weakly_equality_comparable<T, U>)
+auto eq(const T& x, const U& y)
+{
+  // perform equality check
+  if (x == y)
+    return ::testing::AssertionSuccess();
+  else
+    return ::testing::AssertionFailure() << x << " != " << y;
 }
 
 }  // namespace testing
