@@ -19,7 +19,7 @@ namespace oxl::xl_api
 
 		if ((rows != 2) && (cols != 2))
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__}, 
+			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
 				"Input was not correctly formatted please check to make sure is is 2xN or NX2"));
 		}
 
