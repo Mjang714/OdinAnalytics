@@ -28,11 +28,6 @@ if(TARGET oa_accel)
         # duplicated OXL sources that could be built as a static library
         ${ODIN_SOURCE_DIR}/oxl/excel_base_funcs.cpp
         ${ODIN_SOURCE_DIR}/oxl/time_xl.cpp
-        ${ODIN_SOURCE_DIR}/oxl/xl_api/cache_xl_obj.cpp
-        ${ODIN_SOURCE_DIR}/oxl/xl_api/xl_array.cpp
-        ${ODIN_SOURCE_DIR}/oxl/xl_api/xl_converter_funcs.cpp
-        ${ODIN_SOURCE_DIR}/oxl/xl_api/xl_dictionary.cpp
-        ${ODIN_SOURCE_DIR}/oxl/xl_api/xloper_converter.cpp
     )
     # need to include generated oa/version.h header
     target_include_directories(axl_demo PRIVATE ${PROJECT_BINARY_DIR}/include)
