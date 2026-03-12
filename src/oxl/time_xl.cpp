@@ -205,7 +205,7 @@ namespace oxl {
 		else
 		{
 			xl_api::XlArray xl_results(1,1);
-			xl_results(0,0) = std::string("Invlaid Dictionary. Required: Start_Date, Mat_Date, Notional, Rate, Day_Count_Frac, Date_Dir, Stub_Type, and Frequency!");
+			xl_results(0,0) = std::string("Invalid Dictionary. Required: Start_Date, Mat_Date, Notional, Rate, Day_Count_Frac, Date_Dir, Stub_Type, and Frequency!");
 			return xl_results;
 		}
 	}

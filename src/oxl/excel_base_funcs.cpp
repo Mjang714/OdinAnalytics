@@ -5,6 +5,7 @@
 
 #include "xl_api/xl_converter_funcs.h"
 #include "xl_api/xloper_converter.h"
+#include "oa/ctti.h"
 
 namespace oxl
 {
@@ -49,7 +50,7 @@ namespace oxl
 
 		if (!xl_api::XlCacheObj::IsHandle(key))
 		{
-			throw std::runtime_error(std::format("{}{}:{}", handle_str, " is not a valid cache handle please check input!", "excel_base_funcs.cpp line 19 OxlDisplay()"));
+			throw std::runtime_error(std::format("{}:{}:{}{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__} , handle_str, " is not a valid cache handle please check input!"));
 		}
 		auto cache_variant = oxl::xl_api::XlCacheObj::GetVariant(key);
 

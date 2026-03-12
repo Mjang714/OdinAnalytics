@@ -14,6 +14,7 @@
 #include <variant>
 
 #include "xl_converter_funcs.h"
+#include "oa/ctti.h"
 
 namespace oxl::xl_api {
 
@@ -178,7 +179,8 @@ namespace oxl::xl_api {
 	{
 		if (!IsMulti(xl_oper))
 		{
-			throw std::invalid_argument("Input was not 2D array check the input:xloper_converter.cpp line 155 LPXloperToArray()");
+			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__}, 
+				"Input was not 2D array check the input"));
 		}
 
 		int rows = xl_oper->val.array.rows;
@@ -221,7 +223,8 @@ namespace oxl::xl_api {
 	{
 		if (!IsMulti(xl_oper))
 		{
-			throw std::invalid_argument("Input was not xltypeMulti check the input: xloper_converter.cpp line 190 LPXloperToDictionary()");
+			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__}, 
+				"Input was not xltypeMulti check the input"));
 		}
 
 		XlArray xl_array = LPXloperToXlArray(xl_oper);
@@ -260,7 +263,8 @@ namespace oxl::xl_api {
 	{
 		if (xl_oper->xltype != xltypeStr)
 		{
-			throw std::invalid_argument("Not an Excel String Type line check the input: xloper_converter.cpp line 244 LPXloperToStr()");
+			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__}, 
+				"Not an Excel String Type line check the input"));
 		}
 
 		std::string str  = ToUTF8String(xl_oper->val.str + 1);
@@ -270,7 +274,8 @@ namespace oxl::xl_api {
 	{
 		if (xl_oper->xltype != xltypeNum)
 		{
-			throw std::invalid_argument("Not an Excel Double Type line check the input: xloper_converter.cpp line 254 LPXloperToDouble()");
+			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__}, 
+				"Not an Excel Double Type line check the input"));
 		}
 		return xl_oper->val.num;
 	}

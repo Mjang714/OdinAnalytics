@@ -1,5 +1,6 @@
 #include "oxl/xl_api/xl_converter_funcs.h"
 
+#include <format>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -7,6 +8,7 @@
 
 #include "xl_array.h"
 #include "xl_dictionary.h"
+#include "oa/ctti.h"
 
 namespace oxl::xl_api
 {
@@ -17,7 +19,8 @@ namespace oxl::xl_api
 
 		if ((rows != 2) && (cols != 2))
 		{
-			throw std::invalid_argument("xl_converter_funcs.cpp line 12 XlArrayToXlDictionary(): Input was not correctly formatted please check to make sure is is 2xN or NX2");
+			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__}, 
+				"Input was not correctly formatted please check to make sure is is 2xN or NX2"));
 		}
 
 		XlDictionary xl_dictionary{};

@@ -12,6 +12,7 @@
 #include <string>
 #include "time/date.h"
 #include "xloper_converter.h"
+#include "oa/ctti.h"
 
 // FIXME: register/unregister functions take fixed-size arrays and don't allow
 // for more flexible specification of the registration inputs
@@ -90,8 +91,8 @@ namespace oxl::xl_api
 		}
 		else
 		{
-			throw std::invalid_argument(std::format("{}:{}",
-				"Invalid date was given please check the date input", "xl_utils.h line 80 ToDateObj()"));
+			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__}, 
+				"Invalid date was given please check the date input"));
 		}
 		
 	}
@@ -104,8 +105,8 @@ namespace oxl::xl_api
 		//not sure if this is the best way to handle this but if the variant is a boolean we know its not a valid date and can throw an error, if its a double we can convert it to a date by adding the julian offset and converting it to a date object, if its a string we can just convert it to a date object using the string constructor
 		if(std::holds_alternative<bool>(date_var))
 		{
-			throw std::invalid_argument(std::format("{}:{}",
-				"Invalid date was given please check the date input", "xl_utils.h line 102 ToDateObj()"));
+			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, std::string{__func__}, 
+				"Invalid date was given please check the date input"));
 		}
 		
 		else if(std::holds_alternative<double>(date_var))
