@@ -174,6 +174,10 @@ if(MSVC)
         # TODO: should put this back up to /Wall when possible. do *not* remove
         # the explicitly disabled warnings for now
         /W4 /MP
+        # C4668: macro not defined and replaced with 0. this is turned on with
+        # /Wall, but since we are using /W4, we explicitly enable
+        /w34668
+        # specific /Wall warnings we are ok with disabling
         # typically don't care if unreferenced inline functions are removed
         /wd4514
         # silence warnings about padding (we don't care for this project)
@@ -189,7 +193,7 @@ if(MSVC)
         # /Wall enables warning about 32-bit floats being stored in memory,
         # which is performance loss compared to storing in register
         /wd4738
-        # /Od applied by default when using Debug configuration
+        # note: /Od applied by default when using Debug configuration
     )
     # if building as DLL, C4251 is emitted a lot. this is because exporting C++
     # classes from DLLs is fraught with ABI issues, but this is fine for more
@@ -200,6 +204,8 @@ if(MSVC)
 else()
     add_compile_options(
         -Wall
+        # ensure we warn if a macro is used without being first defined
+        -Wundef
         # -O0 is default optimization level anyways, Clang ignores -ggdb
         $<$<NOT:$<CONFIG:Release>>:-ggdb> $<IF:$<CONFIG:Release>,-O3,-O0>
     )

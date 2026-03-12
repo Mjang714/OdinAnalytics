@@ -34,7 +34,12 @@ add_executable(
 # add oxl tests if oxl_api is available
 # note: no need to check if on Windows as oxl_api is Windows-only
 if(TARGET oxl_api)
-    target_sources(oa_unit_test PRIVATE oxl/handle_prefixer_test.cpp)
+    target_sources(
+        oa_unit_test PRIVATE
+        oxl/handle_prefixer_test.cpp
+        oxl/xl_array_test.cpp
+        oxl/xl_dictionary_test.cpp
+    )
 endif()
 # add oa_accel tests if oa_accel is available
 # note: no need to check if on Windows as oa_accel is Windows-only

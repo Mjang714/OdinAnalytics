@@ -12,6 +12,8 @@
 #include "time/date_adjust/date_adjust_base.h"
 #include "time/day_count/day_counter_factory.h"
 #include "time/tenor.h"
+#include "oa/ctti.h"
+#include "oa/platform.h"
 
 namespace oa::derived_time {
 
@@ -155,24 +157,29 @@ CashflowGen::Options::stub_date(time::Date date)
 ////////////////////////////////////////////////////////////////////////////////
 // CashFlowGen                                                                //
 ////////////////////////////////////////////////////////////////////////////////
-
 	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
 		const time::Date& start_date,
 		const time::Date& mat_date,
-		const Frequency reset_freq,
+		const time::Tenor reset_freq,
 		const double notional,
 		const double rate,
 		const time::DayCountRule day_count_rule,
 		const Options& opts)
 	{
+		if(start_date > mat_date)
+			throw std::invalid_argument(
+#if OA_HAS_CPP20_FORMAT 
+				std::format("{}:{} - Start date {} is before maturity date {}", std::string{OA_SOURCE_LOCATION()} , std::string{__func__}, start_date.ToString(), mat_date.ToString())
+#else
+				std::string{OA_SOURCE_LOCATION()} + ":" +
+				std::string{__func__} + ": " + "Start date " + start_date.ToString() + " is before maturity date " + mat_date.ToString()
+#endif
+				);
 		std::vector<CashflowStruct> cashflows{};
-
 		std::vector<time::Date> unadjusted_start_dates{};
 		std::vector<time::Date> unadjusted_end_dates{};
-
-		auto tenor_pair = MapResetFreqEnumToTenor(reset_freq).GetValues();
-		auto time_length = tenor_pair.first;
-		auto tenor_enum = tenor_pair.second;
+		auto time_length = reset_freq.GetValues().first;
+		auto tenor_enum = reset_freq.GetValues().second;
 
 		if (opts.date_direction() == DateDirection::kForward) {
 			auto curr_start_date = start_date;
@@ -207,9 +214,9 @@ CashflowGen::Options::stub_date(time::Date date)
 
 		StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
 
-
+		cashflows.reserve(unadjusted_start_dates.size() + 1); // +1 for the final principal repayment
+		auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
 		for (size_t i = 0; i < unadjusted_start_dates.size(); i++) {
-			auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
 			CashflowStruct cf{};
 			cf.unadj_start_date = unadjusted_start_dates[i];
 			cf.unadj_end_date = unadjusted_end_dates[i];
@@ -245,6 +252,21 @@ CashflowGen::Options::stub_date(time::Date date)
 		cashflows.emplace_back(std::move(cf));
 		// Implementation logic to generate cashflows goes here
 		return cashflows;
+	}
+
+
+	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
+		const time::Date& start_date,
+		const time::Date& mat_date,
+		const Frequency reset_freq,
+		const double notional,
+		const double rate,
+		const time::DayCountRule day_count_rule,
+		const Options& opts)
+	{
+
+		auto tenor_freq = MapResetFreqEnumToTenor(reset_freq);
+		return CreateFixedCashflows(start_date, mat_date, tenor_freq, notional, rate, day_count_rule, opts);
 
 	}
 

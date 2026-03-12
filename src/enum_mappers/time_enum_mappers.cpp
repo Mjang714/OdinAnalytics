@@ -42,6 +42,7 @@ namespace oa::enum_mappers {
 		};
 		return dc_map;
 	}
+
 	const auto& DateAdjustMap()
 
 	{
@@ -63,6 +64,8 @@ namespace oa::enum_mappers {
 		};
 		return da_map;
 	}
+
+
 	oa::time::DayCountRule MapInputToDayCountEnum(const std::string& input_str)
 	{
 		std::string key_str = input_str;
@@ -79,13 +82,12 @@ OA_MSVC_WARNING_POP()
 			throw std::invalid_argument{
 #if OA_HAS_CPP20_FORMAT
 				std::format(
-					"{}:{}",
-					"Not a Valid day count convention please check input of: " + input_str,
-					"time_enum_mappers.cpp line 19 MapInputToDayCountEnum()"
+					"{}:{}:{}: {} is not a valid Stub Type",
+					__FILE__, __LINE__, __func__, input_str
 				)
 #else
 				// __FILE__, __LINE__, __func__ let us avoid hardcoding
-				std::string{__FILE__} + ":" + std::string{__LINE__} + ":" +
+				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
 				std::string{__func__} + ": " + input_str +
 				" is not a valid day count convention"
 #endif  // !OA_HAS_CPP20_FORMAT
@@ -99,7 +101,7 @@ OA_MSVC_WARNING_POP()
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
 		OA_MSVC_WARNING_PUSH()
-			OA_MSVC_WARNING_DISABLE(4242 4244)
+		OA_MSVC_WARNING_DISABLE(4242 4244)
 			std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
 		OA_MSVC_WARNING_POP()
 
@@ -110,13 +112,12 @@ OA_MSVC_WARNING_POP()
 				throw std::invalid_argument{
 #if OA_HAS_CPP20_FORMAT
 					std::format(
-						"{}:{}",
-						"Not a Valid day count convention please check input of: " + input_str,
-						"time_enum_mappers.cpp line 115 MapInputToDayAdjustEnum()"
+					"{}:{}:{}: {} is not a valid Stub Type",
+					__FILE__, __LINE__, __func__, input_str
 					)
 #else
 					// __FILE__, __LINE__, __func__ let us avoid hardcoding
-					std::string{__FILE__} + ":" + std::string{__LINE__} + ":" +
+					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
 						std::string{__func__} + ": " + input_str +
 						" is not a valid day count convention"
 #endif  // !OA_HAS_CPP20_FORMAT
@@ -124,5 +125,137 @@ OA_MSVC_WARNING_POP()
 			}
 
 	}
+	
+	const auto& DateDirectionMap() {
+		static const std::unordered_map<std::string, derived_time::DateDirection> dd_map{
+			{"FWD", derived_time::DateDirection::kForward},
+			{"FORWARD", derived_time::DateDirection::kForward},
+			{"BCKWD", derived_time::DateDirection::kBackward},
+			{"BACKWARDS", derived_time::DateDirection::kBackward}
+		};
+		return dd_map;
+	}
 
+	//this is begining to smell and maybe we do some kind redesign 
+	derived_time::DateDirection MapInputToDateDir(const std::string& input_str) {
+		std::string key_str = input_str;
+		// disable C4242, C4244 warnings about int being narrowed to char
+		OA_MSVC_WARNING_PUSH()
+		OA_MSVC_WARNING_DISABLE(4242 4244)
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		OA_MSVC_WARNING_POP()
+
+			if (DateDirectionMap().contains(key_str))
+				return DateDirectionMap().at(key_str);
+			else
+			{
+				throw std::invalid_argument{
+			#if OA_HAS_CPP20_FORMAT
+					std::format(
+						"{}:{}:{}: {} is not a valid Date Direction convention",
+						__FILE__, __LINE__, __func__, input_str
+					)
+					
+			#else
+					// __FILE__, __LINE__, __func__ let us avoid hardcoding
+					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+						std::string{__func__} + ": " + input_str +
+						" is not a valid Date Direction convention"
+			#endif  // !OA_HAS_CPP20_FORMAT
+				};
+			}
+	}
+
+	const auto& FreqMap(){
+		static const std::unordered_map<std::string, derived_time::Frequency> freq_map {
+			{"ONCE", derived_time::Frequency::kOnce},
+			{"O", derived_time::Frequency::kOnce},
+			{"A", derived_time::Frequency::kAnnual},
+			{"ANNUAL", derived_time::Frequency::kAnnual},
+			{"SA", derived_time::Frequency::kSemiAnnual},
+			{"SEMIANNUAL", derived_time::Frequency::kSemiAnnual},
+			{"Q", derived_time::Frequency::kQuarterly},
+			{"QUARTERLY", derived_time::Frequency::kQuarterly},
+			{"M", derived_time::Frequency::kMonthly},
+			{"MONTHLY", derived_time::Frequency::kMonthly},
+			{"W", derived_time::Frequency::kWeekly},
+			{"WEEKLY", derived_time::Frequency::kWeekly},
+			{"D", derived_time::Frequency::kDaily},
+			{"DAILY", derived_time::Frequency::kDaily}
+		};
+		return freq_map;
+	}
+
+	//this is begining to smell and maybe we do some kind redesign 
+	derived_time::Frequency MapInputToFreq(const std::string& input_str) {
+		std::string key_str = input_str;
+		// disable C4242, C4244 warnings about int being narrowed to char
+		OA_MSVC_WARNING_PUSH()
+		OA_MSVC_WARNING_DISABLE(4242 4244)
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		OA_MSVC_WARNING_POP()
+
+		if (FreqMap().contains(key_str))
+			return FreqMap().at(key_str);
+		else
+		{
+			throw std::invalid_argument{
+		#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}:{}: {} is not a valid Frequency convention",
+					__FILE__, __LINE__, __func__, input_str
+				)
+		#else
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{__func__} + ": " + input_str +
+					" is not a valid Frequency convention"
+		#endif  // !OA_HAS_CPP20_FORMAT
+			};
+		}
+	}
+	
+	const auto& CFStubMap() {
+		static const std::unordered_map<std::string, derived_time::StubType> stub_map {
+			{"NONE", derived_time::StubType::kNone},
+			{"N", derived_time::StubType::kNone},
+			{"SF",  derived_time::StubType::kShortFirst},
+			{"SHORTFIRST",  derived_time::StubType::kShortFirst},
+			{"LF",  derived_time::StubType::kLongFirst},
+			{"LONGFIRST",  derived_time::StubType::kLongFirst},
+			{"SL",  derived_time::StubType::kShortLast},
+			{"SHORTLAST",  derived_time::StubType::kShortLast},
+			{"LL",  derived_time::StubType::kLongLast},
+			{"LONGLAST",  derived_time::StubType::kLongLast},
+		};
+		return stub_map;
+	}
+
+	derived_time::StubType MapInputToStub(const std::string& input_str){
+		std::string key_str = input_str;
+		// disable C4242, C4244 warnings about int being narrowed to char
+		OA_MSVC_WARNING_PUSH()
+		OA_MSVC_WARNING_DISABLE(4242 4244)
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		OA_MSVC_WARNING_POP()
+
+		if (CFStubMap().contains(key_str))
+			return CFStubMap().at(key_str);
+		else
+		{
+			throw std::invalid_argument{
+		#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}:{}: {} is not a valid Stub Type",
+					__FILE__, __LINE__, __func__, input_str
+				)
+		#else
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{__func__} + ": " + input_str +
+					" is not a valid Stub Type"
+		#endif  // !OA_HAS_CPP20_FORMAT
+			};
+		}
+	}
 }  // namespace oa::enum_mappers
