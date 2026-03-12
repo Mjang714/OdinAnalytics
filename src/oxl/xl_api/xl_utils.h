@@ -78,19 +78,15 @@ namespace oxl::xl_api
 	/// @return odin date object
 	inline oa::time::Date ToDateObj(const xloper12* date)
 	{
-		if (date->xltype == xltypeNum)
+		switch(date->xltype)
 		{
-			return oa::time::Date(static_cast<int>( date->val.num) + oa::time::Date::kXlJulianOffSet);
-		}
-
-		else if(date->xltype == xltypeStr)
-		{
-			return oa::time::Date(oxl::xl_api::XLoperObj::LPXloperToStr(date));
-		}
-		else
-		{
-			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
-				"Invalid date was given please check the date input"));
+			case xltypeNum:
+				return oa::time::Date(static_cast<int>( date->val.num) + oa::time::Date::kXlJulianOffSet);
+			case xltypeStr:
+				return oa::time::Date(oxl::xl_api::XLoperObj::LPXloperToStr(date));
+			default:
+				throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
+					"Invalid date was given please check the date input"));
 		}
 		
 	}

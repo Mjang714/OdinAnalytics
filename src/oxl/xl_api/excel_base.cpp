@@ -27,12 +27,12 @@ namespace oxl::xl_api
 				//may want to put this into a seperate function that converts different cashflows into output idk feel free to comment.
 				for(size_t i = 1; i < xl_results.rows(); i++) {
 					const auto cf_index = i - 1u;
-					xl_results[i] = {oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].unadj_start_date),
-						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].unadj_end_date),
-						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].start_date),
-						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].end_date),
-						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].fixing_date),
-						oxl::xl_api::ToExcelDate(cf_struct_array[cf_index].payment_date),
+					xl_results[i] = {ToExcelDate(cf_struct_array[cf_index].unadj_start_date),
+						ToExcelDate(cf_struct_array[cf_index].unadj_end_date),
+						ToExcelDate(cf_struct_array[cf_index].start_date),
+						ToExcelDate(cf_struct_array[cf_index].end_date),
+						ToExcelDate(cf_struct_array[cf_index].fixing_date),
+						ToExcelDate(cf_struct_array[cf_index].payment_date),
 						cf_struct_array[cf_index].notional,
 						cf_struct_array[cf_index].rate,
 						cf_struct_array[cf_index].cashflow_amount,
