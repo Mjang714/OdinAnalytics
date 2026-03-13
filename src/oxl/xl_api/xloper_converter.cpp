@@ -179,7 +179,7 @@ namespace oxl::xl_api {
 	{
 		if (!IsMulti(xl_oper))
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
+			throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
 				"Input was not 2D array check the input"));
 		}
 
@@ -223,7 +223,7 @@ namespace oxl::xl_api {
 	{
 		if (!IsMulti(xl_oper))
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
+			throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
 				"Input was not xltypeMulti check the input"));
 		}
 
@@ -263,7 +263,7 @@ namespace oxl::xl_api {
 	{
 		if (xl_oper->xltype != xltypeStr)
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
+			throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
 				"Not an Excel String Type line check the input"));
 		}
 
@@ -274,7 +274,7 @@ namespace oxl::xl_api {
 	{
 		if (xl_oper->xltype != xltypeNum)
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
+			throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
 				"Not an Excel Double Type line check the input"));
 		}
 		return xl_oper->val.num;

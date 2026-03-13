@@ -85,7 +85,7 @@ namespace oxl::xl_api
 			case xltypeStr:
 				return oa::time::Date(oxl::xl_api::XLoperObj::LPXloperToStr(date));
 			default:
-				throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
+				throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
 					"Invalid date was given please check the date input"));
 		}
 		
@@ -99,7 +99,7 @@ namespace oxl::xl_api
 		//not sure if this is the best way to handle this but if the variant is a boolean we know its not a valid date and can throw an error, if its a double we can convert it to a date by adding the julian offset and converting it to a date object, if its a string we can just convert it to a date object using the string constructor
 		if(std::holds_alternative<bool>(date_var))
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}", std::string{OA_SOURCE_LOCATION()}, __func__, 
+			throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
 				"Invalid date was given please check the date input"));
 		}
 		

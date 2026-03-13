@@ -26,21 +26,23 @@ namespace oxl::xl_api
 				xl_results[0] = {"Unadj_Start_Date", "Unadj_End_Date", "Start_Date", "End_Date", "Fixing_Date", "Payment_Date", "Notional", "Rate", "Fwd_Cashflow_PV", "Cashflow_NPV", "Day_Count", "Day_Count_Fraction", "Currency", "Cashflow_Type"};
 				//may want to put this into a seperate function that converts different cashflows into output idk feel free to comment.
 				for(size_t i = 1; i < xl_results.rows(); i++) {
-					const auto cf_index = i - 1u;
-					xl_results[i] = {ToExcelDate(cf_struct_array[cf_index].unadj_start_date),
-						ToExcelDate(cf_struct_array[cf_index].unadj_end_date),
-						ToExcelDate(cf_struct_array[cf_index].start_date),
-						ToExcelDate(cf_struct_array[cf_index].end_date),
-						ToExcelDate(cf_struct_array[cf_index].fixing_date),
-						ToExcelDate(cf_struct_array[cf_index].payment_date),
-						cf_struct_array[cf_index].notional,
-						cf_struct_array[cf_index].rate,
-						cf_struct_array[cf_index].cashflow_amount,
-						cf_struct_array[cf_index].npv_cashflow_amount,
-						static_cast<double>(cf_struct_array[cf_index].days),
-						cf_struct_array[cf_index].day_count_fraction,
-						oa::utils::GetCleanName<oa::derived_time::Currency>(cf_struct_array[cf_index].cf_curr),
-						oa::utils::GetCleanName<oa::derived_time::CashflowType>(cf_struct_array[cf_index].cf_type)};
+					const auto& cf = cf_struct_array[i - 1u];
+					xl_results[i] = {
+						ToExcelDate(cf.unadj_start_date),
+						ToExcelDate(cf.unadj_end_date),
+						ToExcelDate(cf.start_date),
+						ToExcelDate(cf.end_date),
+						ToExcelDate(cf.fixing_date),
+						ToExcelDate(cf.payment_date),
+						cf.notional,
+						cf.rate,
+						cf.cashflow_amount,
+						cf.npv_cashflow_amount,
+						static_cast<double>(cf.days),
+						cf.day_count_fraction,
+						oa::utils::GetCleanName<oa::derived_time::Currency>(cf.cf_curr),
+						oa::utils::GetCleanName<oa::derived_time::CashflowType>(cf.cf_type)
+					};
 				}
 				return xl_results;
 			}
