@@ -148,6 +148,16 @@ namespace oa::derived_time {
 			 */
 			Options& stub_date(time::Date date);
 
+			/**
+			 * Return the calculation type for the cash flow amount.
+			 */			
+			CalcType calc_type() const;
+
+			/**
+			 * Update the calculation type for the cash flow amount.
+			 */
+			Options& calc_type(CalcType type);
+
 		private:
 			Currency currency_{Currency::kUSD};                   // currency
 			DateDirection date_dir_{DateDirection::kBackward};    // date direction
@@ -159,6 +169,7 @@ namespace oa::derived_time {
 			BusinessDateFormula pay_adj_;                         // payment date adjustment
 			BusinessDateFormula fix_adj_;                         // fixing date adjustment
 			time::Date stub_date_;                                // stub date
+			CalcType calc_type_;                 // calculation type
 		};
 
 		static std::vector<CashflowStruct> CreateFixedCashflows(

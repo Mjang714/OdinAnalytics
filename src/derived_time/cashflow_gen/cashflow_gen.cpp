@@ -154,6 +154,19 @@ CashflowGen::Options::stub_date(time::Date date)
 	return *this;
 }
 
+CalcType
+CashflowGen::Options::calc_type() const
+{
+	return calc_type_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::calc_type(CalcType type)	
+{
+	calc_type_ = type;
+	return *this;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CashFlowGen                                                                //
 ////////////////////////////////////////////////////////////////////////////////
