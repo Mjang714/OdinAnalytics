@@ -152,7 +152,7 @@ namespace
 					for (auto& cf : cash_flows) {
 						cf.days = day_count->DayCount(cf.start_date, cf.end_date);
 						cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-						cf.cashflow_amount = cf.notional * (cf.rate * cf.day_count_fraction);
+						cf.cashflow_amount = cf.notional * cf.rate * cf.day_count_fraction;
 						if (date_formula_pay.has_value())
 						{
 							cf.payment_date = date_formula_pay.value().Adjust(cf.end_date);
@@ -164,6 +164,27 @@ namespace
 					}
 					cash_flows.back().cashflow_amount = cash_flows.back().notional; //principal repayment
 				}
+
+			static void PopulateFixedCashflowsCalTypes(std::vector<oa::derived_time::CashflowStruct>& cash_flows, oa::time::Tenor frequency, oa::time::DayCountRule day_cnt_rule,
+				std::optional<oa::derived_time::BusinessDateFormula>  date_formula_pay = {},
+				std::optional<oa::derived_time::BusinessDateFormula> date_formula_fix = {})
+				{
+					auto day_count = oa::time::DayCounterFactory::GenerateDayCounter(day_cnt_rule);
+					for (auto& cf : cash_flows) {
+						cf.days = day_count->DayCount(cf.start_date, cf.end_date);
+						cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
+						cf.cashflow_amount = cf.notional * (cf.rate  / oa::derived_time::CashflowGen::MapResetFreqEnumToInt(frequency));
+						if (date_formula_pay.has_value())
+						{
+							cf.payment_date = date_formula_pay.value().Adjust(cf.end_date);
+						}
+						if (date_formula_fix.has_value())
+						{
+							cf.fixing_date = date_formula_fix.value().Adjust(cf.start_date);
+						}
+					}
+					cash_flows.back().cashflow_amount = cash_flows.back().notional; //principal repayment
+				}	
 
 			virtual void SetUp() override
 			{
@@ -199,6 +220,7 @@ namespace
 			day_cnt_rule,
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kForward)
+				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
@@ -220,6 +242,7 @@ namespace
 			day_cnt_rule,
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kBackward)
+				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base));
 	}
@@ -237,6 +260,7 @@ namespace
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kBackward)
 				.stub_type(oa::derived_time::StubType::kShortFirst)
+				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_short_first));
 	}
@@ -254,6 +278,7 @@ namespace
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kBackward)
 				.stub_type(oa::derived_time::StubType::kLongFirst)
+				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_long_first));
 	}
@@ -272,6 +297,7 @@ namespace
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kForward)
 				.stub_type(oa::derived_time::StubType::kShortLast)
+				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_short_last));
 	}
@@ -290,6 +316,7 @@ namespace
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kForward)
 				.stub_type(oa::derived_time::StubType::kLongLast)
+				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_long_last));
 	}
@@ -311,6 +338,7 @@ namespace
 				.date_direction(oa::derived_time::DateDirection::kForward)
 				.pay_adjustment({biz_pay_days, pay_calendar})
 				.fix_adjustment({biz_fix_days, fix_calendar})
+				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_fix_pay_adj));
 	}
@@ -331,6 +359,31 @@ namespace
 				.date_direction(oa::derived_time::DateDirection::kBackward)
 				.pay_adjustment({biz_pay_days, pay_calendar})
 				.fix_adjustment({biz_fix_days, fix_calendar})
+				.calc_type(oa::derived_time::CalcType::kFlat)
+		);
+		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_fix_pay_adj));
+	}
+
+	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsCalctype1)
+	{
+		PopulateFixedCashflowsCalTypes(
+			fixed_cf_fix_pay_adj, 
+			frequency,
+			day_cnt_rule,
+			oa::derived_time::BusinessDateFormula(biz_pay_days, pay_calendar),
+			oa::derived_time::BusinessDateFormula(biz_fix_days, fix_calendar));
+		auto cashflows = oa::derived_time::CashflowGen::CreateFixedCashflows(
+			start_date,
+			mat_date,
+			oa::derived_time::Frequency::kSemiAnnual,
+			notional,
+			rate,
+			day_cnt_rule,
+			oa::derived_time::CashflowGen::Options{}
+				.date_direction(oa::derived_time::DateDirection::kBackward)
+				.pay_adjustment({biz_pay_days, pay_calendar})
+				.fix_adjustment({biz_fix_days, fix_calendar})
+				.calc_type(oa::derived_time::CalcType::kBBGCalcType1)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_fix_pay_adj));
 	}
@@ -349,6 +402,7 @@ namespace
 					.stub_type(oa::derived_time::StubType::kShortFirst)
 					.pay_adjustment({biz_pay_days, pay_calendar})
 					.fix_adjustment({biz_fix_days, fix_calendar})
+					.calc_type(oa::derived_time::CalcType::kFlat)
 			)
 		);
 	}

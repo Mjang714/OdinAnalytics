@@ -173,7 +173,7 @@ CashflowGen::Options::calc_type(CalcType type)
 	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
 		const time::Date& start_date,
 		const time::Date& mat_date,
-		const time::Tenor reset_freq,
+		const time::Tenor& reset_freq,
 		const double notional,
 		const double rate,
 		const time::DayCountRule day_count_rule,
@@ -241,7 +241,6 @@ CashflowGen::Options::calc_type(CalcType type)
 			cf.days = day_count->DayCount(cf.start_date, cf.end_date);
 			cf.cf_type = opts.cashflow_type();
 			cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-			cf.cashflow_amount = notional * (rate * cf.day_count_fraction);
 			cf.cf_curr = opts.currency();
 
 			// no fixing adjustment -- use start date
@@ -253,6 +252,8 @@ CashflowGen::Options::calc_type(CalcType type)
 			// otherwise, adjust end date
 			else
 				cf.fixing_date = cf.end_date + opts.fix_adjustment();
+			
+			ComputeCopuon(cf, reset_freq, opts);
 			// using emplace_back and std::move though not sure if it is necessary here
 			cashflows.emplace_back(std::move(cf));
 		}
@@ -271,7 +272,7 @@ CashflowGen::Options::calc_type(CalcType type)
 	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
 		const time::Date& start_date,
 		const time::Date& mat_date,
-		const Frequency reset_freq,
+		const Frequency& reset_freq,
 		const double notional,
 		const double rate,
 		const time::DayCountRule day_count_rule,
@@ -281,6 +282,29 @@ CashflowGen::Options::calc_type(CalcType type)
 		auto tenor_freq = MapResetFreqEnumToTenor(reset_freq);
 		return CreateFixedCashflows(start_date, mat_date, tenor_freq, notional, rate, day_count_rule, opts);
 
+	}
+
+	void CashflowGen::ComputeCopuon(
+		CashflowStruct& cf, 
+		const time::Tenor& reset_freq, 
+		const Options& opts)
+	{
+		switch(opts.calc_type())
+		{
+			case CalcType::kFlat:
+				cf.cashflow_amount = cf.notional * cf.rate * cf.day_count_fraction;
+				break;
+			case CalcType::kBBGCalcType1:
+				[[fallthrough]];
+			case CalcType::kBBGCalcType2:
+				//this is really for when issue bond but the general coupon computations are the same so I am putting it in the same place for now. This can be refactored later if needed.
+				[[fallthrough]];
+			case CalcType::kUSTStreetConv:
+				cf.cashflow_amount = cf.notional * (cf.rate / MapResetFreqEnumToInt(reset_freq));
+				break;
+			default:
+				throw std::invalid_argument("Invalid calculation type provided");
+		}
 	}
 
 	void CashflowGen::StubDateAdjustments(
@@ -339,4 +363,26 @@ CashflowGen::Options::calc_type(CalcType type)
 		return reset_freq_enum_to_tenor.at(reset_freq);
 	}
 
+	// I am open to refactor for this in anohter branch.... clearly cause we are doing this indicates I was myopic about this (facepalm)
+	int CashflowGen::MapResetFreqEnumToInt(const oa::time::Tenor reset_freq)
+	{
+		
+		if (reset_freq == time::Tenor("1Y"))
+			return 1;
+		else if (reset_freq == time::Tenor("6M"))
+			return 2;
+		else if (reset_freq == time::Tenor("3M"))
+			return 4;
+		else if (reset_freq == time::Tenor("1M"))
+			return 12;
+		else if (reset_freq == time::Tenor("1W"))
+			return 52;
+		else if (reset_freq == time::Tenor("1D"))
+			return 365;
+		else
+			throw std::invalid_argument("Unsupported reset frequency for calculation type provided");
+		
+	}
+
 }  // namespace oa::derived_time
+		

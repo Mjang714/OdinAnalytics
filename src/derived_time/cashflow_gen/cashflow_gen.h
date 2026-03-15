@@ -175,7 +175,7 @@ namespace oa::derived_time {
 		static std::vector<CashflowStruct> CreateFixedCashflows(
 			const time::Date& start_date,
 			const time::Date& mat_date,
-			const Frequency reset_freq,
+			const Frequency& reset_freq,
 			const double notional,
 			const double rate,
 			const time::DayCountRule day_count_rule,
@@ -185,7 +185,7 @@ namespace oa::derived_time {
 		static std::vector<CashflowStruct> CreateFixedCashflows(
 			const time::Date& start_date,
 			const time::Date& mat_date,
-			const time::Tenor reset_freq,
+			const time::Tenor& reset_freq,
 			const double notional,
 			const double rate,
 			const time::DayCountRule day_count_rule,
@@ -193,7 +193,15 @@ namespace oa::derived_time {
 		);
 		
 		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
+		static int MapResetFreqEnumToInt(const oa::time::Tenor reset_freq);
 	private:
+		
+
+		static void ComputeCopuon(
+			CashflowStruct& cf, 
+			const time::Tenor& reset_freq,
+			const Options& opts
+		);
 
 		static void StubDateAdjustments(
 			const oa::time::Date& start_date,

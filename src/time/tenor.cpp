@@ -41,5 +41,11 @@ namespace oa
 		{
 			return std::pair<int, oa::time::Tenors>(m_number_, m_time_unit_);
 		}
+
+		//that fact I need this function is really sign I messed up somewhere.
+		bool Tenor::operator==(const Tenor& other) const
+		{
+			return this->m_number_ == other.m_number_ && this->m_time_unit_ == other.m_time_unit_;
+		}
 	}
 }
