@@ -30,18 +30,20 @@
 namespace oxl {
 
 	typedef oa::time::Date DateAlias;
-	typedef oxl::xl_api::XLoperObj XLoperAlias;
+	typedef xl_api::XLoperObj XLoperAlias;
 	typedef oa::static_cache::CalendarCache CalCacheAlias;
 	typedef oa::derived_time::CashflowGen CFGen;
 
 	bool OxlIsBizDay(const xloper12* date, const xloper12* centers)
 	{
-		auto date_obj = oxl::xl_api::ToDateObj(date);
+		auto date_obj = xl_api::XloperToJulianInt(date);
 
 		if (centers->xltype != xltypeStr)
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}",OA_SOURCE_LOCATION(), __func__,
-				"Invlaid Centers was given please check the centers input"));
+			throw std::invalid_argument(std::format("{}:{}:Invlaid Centers was given please check the centers input",
+				OA_SOURCE_LOCATION(), 
+				__func__
+				));
 		}
 
 		std::string centers_input = XLoperAlias::LPXloperToStr(centers);
@@ -53,12 +55,14 @@ namespace oxl {
 
 	bool OxlIsHolDay(const xloper12* date, const xloper12* centers)
 	{
-		auto date_obj = oxl::xl_api::ToDateObj(date);
+		auto date_obj = xl_api::XloperToJulianInt(date);
 
 		if (centers->xltype != xltypeStr)
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}",OA_SOURCE_LOCATION(), __func__,
-				"Invlaid Centers was given please check the centers input"));
+			throw std::invalid_argument(std::format("{}:{}:Invlaid Centers was given please check the centers input",
+				OA_SOURCE_LOCATION(), 
+				__func__
+				));
 		}
 
 		std::string centers_input = XLoperAlias::LPXloperToStr(centers);
@@ -70,8 +74,8 @@ namespace oxl {
 
 	int OxlComputeDayCount(const xloper12* start_date, const xloper12* end_date, const xloper12* busines_day_count)
 	{
-		auto start_date_Obj = oxl::xl_api::ToDateObj(start_date);
-		auto end_date_Obj = oxl::xl_api::ToDateObj(end_date);
+		auto start_date_Obj = xl_api::ToDateObj(start_date);
+		auto end_date_Obj = xl_api::ToDateObj(end_date);
 
 		std::string biz_day_count = XLoperAlias::LPXloperToStr(busines_day_count);
 
@@ -85,8 +89,8 @@ namespace oxl {
 
 	double OxlComputeYearFraction(const xloper12* start_date, const xloper12* end_date, const xloper12* busines_day_count)
 	{
-		auto start_date_Obj = oxl::xl_api::ToDateObj(start_date);
-		auto end_date_Obj = oxl::xl_api::ToDateObj(end_date);
+		auto start_date_Obj = xl_api::ToDateObj(start_date);
+		auto end_date_Obj = xl_api::ToDateObj(end_date);
 
 		std::string biz_day_count = XLoperAlias::LPXloperToStr(busines_day_count);
 
@@ -100,30 +104,30 @@ namespace oxl {
 
 	double OxlComputeDate(const xl_api::XlDictionary& dictionary)
 	{
-		DateAlias base_date = oxl::xl_api::ToDateObj(dictionary["Base_Date"]);
+		DateAlias base_date = xl_api::ToDateObj(dictionary["Base_Date"]);
 		auto tenor = std::get<std::string>(dictionary["Tenor"]);
 		auto adj_rule = std::get<std::string>(dictionary["Adjustment_Rule"]);
 		auto calendar = std::get<std::string>(dictionary["Calendar"]);
 		auto date_formula = oa::derived_time::DateFormula(tenor, adj_rule, calendar);
-		return oxl::xl_api::ToExcelDate(date_formula.Adjust(base_date));
+		return xl_api::ToExcelDate(date_formula.Adjust(base_date));
 	}
 
 	double OxlAddBusinessDays(const xl_api::XlDictionary& dictionary)
 	{
-		DateAlias base_date = oxl::xl_api::ToDateObj(dictionary["Base_Date"]);
+		DateAlias base_date = xl_api::ToDateObj(dictionary["Base_Date"]);
 		auto num_of_days = static_cast<int>(std::get<double>(dictionary["Days"]));
 		auto calendar = std::get<std::string>(dictionary["Calendar"]);
 		auto date_formula = oa::derived_time::BusinessDateFormula(num_of_days, calendar);
-		return oxl::xl_api::ToExcelDate(date_formula.Adjust(base_date));
+		return xl_api::ToExcelDate(date_formula.Adjust(base_date));
 	}
 
 	xl_api::XlArray OxlGenerateCashflow(const xl_api::XlDictionary& dictionary)
 	{
-		if(oxl::xl_api::ValidCashflowGenDictionary(dictionary))
+		if(xl_api::ValidCashflowGenDictionary(dictionary))
 		{
 			CFGen::Options opt{};
-			auto start_date = oxl::xl_api::ToDateObj(dictionary["Start_Date"]);
-			auto mat_date = oxl::xl_api::ToDateObj(dictionary["Mat_Date"]);
+			auto start_date = xl_api::ToDateObj(dictionary["Start_Date"]);
+			auto mat_date = xl_api::ToDateObj(dictionary["Mat_Date"]);
 			auto notional = std::get<double>(dictionary["Notional"]);
 			auto rate = std::get<double>(dictionary["Rate"]);
 			auto day_cnt_frac = oa::enum_mappers::MapInputToDayCountEnum(std::get<std::string>(dictionary["Day_Count_Frac"]));
@@ -165,14 +169,13 @@ namespace oxl {
 
 			auto cf_results = CFGen::CreateFixedCashflows(start_date, mat_date,freq, notional, rate, day_cnt_frac, opt);
 
-			return oxl::xl_api::ConvertCFStructToXlArray(cf_results, oa::derived_time::CashflowType::kFixed);
+			return xl_api::ConvertCFStructToXlArray(cf_results, oa::derived_time::CashflowType::kFixed);
 		}
 
 		else
-		{
-			xl_api::XlArray xl_results(1,1);
-			xl_results(0,0) = std::string("Invalid Dictionary. Required: Start_Date, Mat_Date, Notional, Rate, Day_Count_Frac, Date_Dir, Stub_Type, and Frequency!");
-			return xl_results;
+		{ 
+			return {{"Invalid Dictionary. Required: Start_Date, Mat_Date, Notional, Rate, Day_Count_Frac, Date_Dir, Stub_Type, and Frequency!"}};
+			
 		}
 	}
 

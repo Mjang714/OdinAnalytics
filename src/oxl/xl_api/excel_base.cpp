@@ -67,7 +67,7 @@ namespace oxl::xl_api
 		{
 			throw std::runtime_error(std::format("{}{}", fixing_dict_handle, " is not a valid cached dictionary handle please check input!"));
 		}
-		auto cache_variant = oxl::xl_api::XlCacheObj::GetVariant(fixing_dict_str_key);
+		auto cache_variant = XlCacheObj::GetVariant(fixing_dict_str_key);
 		auto xl_dictionary = std::get<std::shared_ptr<xl_api::XlDictionary>>(cache_variant);
 		return xl_dictionary;
 

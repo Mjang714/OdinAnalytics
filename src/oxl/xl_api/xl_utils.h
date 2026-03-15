@@ -16,6 +16,33 @@
 
 // FIXME: register/unregister functions take fixed-size arrays and don't allow
 // for more flexible specification of the registration inputs
+namespace oxl::util
+{
+	class XlVarToDateVisitor
+	{
+
+		public:
+			oa::time::Date operator()(const double& date_double) const
+			{
+				return oa::time::Date(static_cast<int>(date_double) + oa::time::Date::kXlJulianOffSet);
+			}
+
+			oa::time::Date operator()(const std::string& date_str) const
+			{
+				return oa::time::Date(date_str);
+			}
+
+			template <typename T>
+			[[noreturn]] oa::time::Date operator()(const T& /* val */) const
+			{
+				throw std::invalid_argument(std::format("{}:{}:Invalid date was given please check the date input", 
+					OA_SOURCE_LOCATION(),
+					__func__
+				));
+			}
+	};
+
+}
 
 namespace oxl::xl_api
 {
@@ -83,36 +110,45 @@ namespace oxl::xl_api
 			case xltypeNum:
 				return oa::time::Date(static_cast<int>( date->val.num) + oa::time::Date::kXlJulianOffSet);
 			case xltypeStr:
-				return oa::time::Date(oxl::xl_api::XLoperObj::LPXloperToStr(date));
+				return oa::time::Date(XLoperObj::LPXloperToStr(date));
 			default:
-				throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
-					"Invalid date was given please check the date input"));
+				throw std::invalid_argument(std::format("{}:{}:Invalid date was given please check the date input", 
+					OA_SOURCE_LOCATION(),
+					__func__
+				));
 		}
 		
 	}
+	/// @brief This function takes in and excel date and converts it to julian integer date representation
+	/// @param date 
+	/// @return 
+	inline int XloperToJulianInt(const xloper12* date) {
+		int julian_date = oa::time::Date::kXlJulianOffSet;
+		switch(date->xltype)
+		{
+			case xltypeNum:
+				julian_date += static_cast<int>(date->val.num);
+				break;
+			case xltypeStr:
+				julian_date += oa::time::Date(XLoperObj::LPXloperToStr(date)).GetJulian();
+				break;
+			default:
+				throw std::invalid_argument(std::format("{}:{}:Invalid date was given please check the date input", 
+					OA_SOURCE_LOCATION(),
+					__func__
+				));
+		}
+		return julian_date;
+	}
+
+	
 
 	/// @brief converts an excel date double representation to a oding date object
 	/// @param excel_date double representation of the date that excel can understand
 	/// @return odin date object
 	inline oa::time::Date ToDateObj(const XlVariant& date_var)
 	{
-		//not sure if this is the best way to handle this but if the variant is a boolean we know its not a valid date and can throw an error, if its a double we can convert it to a date by adding the julian offset and converting it to a date object, if its a string we can just convert it to a date object using the string constructor
-		if(std::holds_alternative<bool>(date_var))
-		{
-			throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
-				"Invalid date was given please check the date input"));
-		}
-		
-		else if(std::holds_alternative<double>(date_var))
-		{
-			return oa::time::Date(static_cast<int>(std::get<double>(date_var)) + oa::time::Date::kXlJulianOffSet);
-		}
-
-		else
-		{
-			return oa::time::Date(std::get<std::string>(date_var));
-		}
-
+		return std::visit(oxl::util::XlVarToDateVisitor{}, date_var);
 	}
 }
 #endif // !XL_UTILS_H_
