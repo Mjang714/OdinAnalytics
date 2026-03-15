@@ -368,20 +368,20 @@ CashflowGen::Options::calc_type(CalcType type)
 	int CashflowGen::MapResetFreqEnumToInt(const oa::time::Tenor reset_freq)
 	{
 		
-		if (reset_freq == time::Tenor("1Y"))
-			return 1;
-		else if (reset_freq == time::Tenor("6M"))
-			return 2;
-		else if (reset_freq == time::Tenor("3M"))
-			return 4;
-		else if (reset_freq == time::Tenor("1M"))
-			return 12;
-		else if (reset_freq == time::Tenor("1W"))
-			return 52;
-		else if (reset_freq == time::Tenor("1D"))
-			return 365;
-		else
-			throw std::invalid_argument("Unsupported reset frequency for calculation type provided");
+		switch (reset_freq.GetValues().second)
+		{
+			case oa::time::Tenors::kYears:
+				return 1 / reset_freq.GetValues().first;
+			case oa::time::Tenors::kMonths:
+				return 12 / reset_freq.GetValues().first;
+			
+			case oa::time::Tenors::kWeeks:
+				return 52 / reset_freq.GetValues().first;
+			case oa::time::Tenors::kDays:
+				return 365 / reset_freq.GetValues().first;	
+			default:
+				throw std::invalid_argument("Unsupported reset frequency for calculation type provided");
+		}
 		
 	}
 
