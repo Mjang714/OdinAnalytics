@@ -21,25 +21,25 @@ namespace oxl::util
 	class XlVarToDateVisitor
 	{
 
-		public:
-			oa::time::Date operator()(const double& date_double) const
-			{
-				return oa::time::Date(static_cast<int>(date_double) + oa::time::Date::kXlJulianOffSet);
-			}
+	public:
+		oa::time::Date operator()(const double& date_double) const
+		{
+			return oa::time::Date(static_cast<int>(date_double) + oa::time::Date::kXlJulianOffSet);
+		}
 
-			oa::time::Date operator()(const std::string& date_str) const
-			{
-				return oa::time::Date(date_str);
-			}
+		oa::time::Date operator()(const std::string& date_str) const
+		{
+			return oa::time::Date(date_str);
+		}
 
-			template <typename T>
-			[[noreturn]] oa::time::Date operator()(const T& /* val */) const
-			{
-				throw std::invalid_argument(std::format("{}:{}:Invalid date was given please check the date input", 
-					OA_SOURCE_LOCATION(),
-					__func__
-				));
-			}
+		template <typename T>
+		[[noreturn]] oa::time::Date operator()(const T& /* val */) const
+		{
+			throw std::invalid_argument(std::format("{}:{}:Invalid date was given please check the date input", 
+				OA_SOURCE_LOCATION(),
+				__func__
+			));
+		}
 	};
 
 }
@@ -148,7 +148,7 @@ namespace oxl::xl_api
 	/// @return odin date object
 	inline oa::time::Date ToDateObj(const XlVariant& date_var)
 	{
-		return std::visit(oxl::util::XlVarToDateVisitor{}, date_var);
+		return std::visit(util::XlVarToDateVisitor{}, date_var);
 	}
 }
 #endif // !XL_UTILS_H_

@@ -40,7 +40,7 @@ namespace oxl {
 
 		if (centers->xltype != xltypeStr)
 		{
-			throw std::invalid_argument(std::format("{}:{}:Invlaid Centers was given please check the centers input",
+			throw std::invalid_argument(std::format("{}:{}:Invalid Centers was given please check the centers input",
 				OA_SOURCE_LOCATION(), 
 				__func__
 				));
@@ -59,7 +59,7 @@ namespace oxl {
 
 		if (centers->xltype != xltypeStr)
 		{
-			throw std::invalid_argument(std::format("{}:{}:Invlaid Centers was given please check the centers input",
+			throw std::invalid_argument(std::format("{}:{}:Invalid Centers was given please check the centers input",
 				OA_SOURCE_LOCATION(), 
 				__func__
 				));
