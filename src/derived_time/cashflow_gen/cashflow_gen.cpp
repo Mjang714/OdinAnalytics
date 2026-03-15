@@ -363,7 +363,8 @@ CashflowGen::Options::calc_type(CalcType type)
 		return reset_freq_enum_to_tenor.at(reset_freq);
 	}
 
-	// I am open to refactor for this in anohter branch.... clearly cause we are doing this indicates I was myopic about this (facepalm)
+	// I am open to refactor for this in anohter branch.... clearly cause we are doing this indicates I was myopic about this (facepalm) 
+	// I think we should have sticked to frequency being enum.....
 	int CashflowGen::MapResetFreqEnumToInt(const oa::time::Tenor reset_freq)
 	{
 		
