@@ -284,7 +284,7 @@ CashflowGen::Options::calc_type(CalcType type)
 
 	}
 
-	void CashflowGen::ComputeCopuon(
+	void CashflowGen::ComputeCoupon(
 		CashflowStruct& cf, 
 		const time::Tenor& reset_freq, 
 		const Options& opts)
