@@ -371,10 +371,10 @@ CashflowGen::Options::calc_type(CalcType type)
 		switch (reset_freq.GetValues().second)
 		{
 			case oa::time::Tenors::kYears:
-				return 1 / reset_freq.GetValues().first;
+				//if it is in years best to return 1 can't think of any bond that pay every year a bit nonsensical
+				return 1;
 			case oa::time::Tenors::kMonths:
 				return 12 / reset_freq.GetValues().first;
-			
 			case oa::time::Tenors::kWeeks:
 				return 52 / reset_freq.GetValues().first;
 			case oa::time::Tenors::kDays:
