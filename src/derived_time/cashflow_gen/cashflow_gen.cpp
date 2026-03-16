@@ -372,7 +372,7 @@ CashflowGen::Options::calc_type(CalcType type)
 		{
 			case oa::time::Tenors::kYears:
 				//if it is in years best to return 1 can't think of any bond that pay every year a bit nonsensical
-				return 1;
+				return reset_freq.GetValues().first;
 			case oa::time::Tenors::kMonths:
 				return 12 / reset_freq.GetValues().first;
 			case oa::time::Tenors::kWeeks:
