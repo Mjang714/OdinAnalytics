@@ -197,7 +197,7 @@ namespace oa::derived_time {
 	private:
 		
 
-		static void ComputeCopuon(
+		static void ComputeCoupon(
 			CashflowStruct& cf, 
 			const time::Tenor& reset_freq,
 			const Options& opts
