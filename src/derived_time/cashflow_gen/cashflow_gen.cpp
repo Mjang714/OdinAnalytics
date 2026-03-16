@@ -253,7 +253,7 @@ CashflowGen::Options::calc_type(CalcType type)
 			else
 				cf.fixing_date = cf.end_date + opts.fix_adjustment();
 			
-			ComputeCopuon(cf, reset_freq, opts);
+			ComputeCoupon(cf, reset_freq, opts);
 			// using emplace_back and std::move though not sure if it is necessary here
 			cashflows.emplace_back(std::move(cf));
 		}
