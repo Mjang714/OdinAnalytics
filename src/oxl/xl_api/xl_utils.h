@@ -27,7 +27,7 @@ namespace oxl::util
 			return oa::time::Date(static_cast<int>(date_double) + oa::time::Date::kXlJulianOffSet);
 		}
 
-		oa::time::Date operator()(const std::string& date_str) const
+		auto operator()(const std::string& date_str) const
 		{
 			return oa::time::Date(date_str);
 		}
