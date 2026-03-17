@@ -68,6 +68,21 @@ endif()
 # chains the dependency of oa_unit_test on the static data being located in the
 # same directory as the project artifacts (for local builds)
 add_dependencies(oa_unit_test oa_copy_static_data)
+#
+# if linking against oxl_api, which indirectly links against XLCALL32.LIB and
+# therefore will require XLCALL32.DLL to be available at runtime, we must have
+# the XLCALL32.DLL stub built before oa_unit_test. otherwise, oa_unit_test will
+# not load correctly when gtest_discover_tests() is called and break the build.
+#
+# note:
+#
+# this issue was *not* caught on CI because currently we don't make any calls
+# to XLCALL32.DLL exported functions so the linker likely just stripped out the
+# unused function references as part of its optimization pass.
+#
+if(TARGET oxl_api)
+    add_dependencies(oa_unit_test xlcall32_stub)
+endif()
 
 # enable defining OA_UNITY_ID for each agglomerated TU during unity builds
 # note: disabled for now as it is unused
