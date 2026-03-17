@@ -22,7 +22,7 @@ namespace oxl::util
 	{
 
 	public:
-		oa::time::Date operator()(const double& date_double) const
+		auto operator()(const double& date_double) const
 		{
 			return oa::time::Date(static_cast<int>(date_double) + oa::time::Date::kXlJulianOffSet);
 		}
