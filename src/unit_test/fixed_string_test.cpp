@@ -7,7 +7,13 @@
 
 #include "oa/fixed_string.h"
 
+// note: can include first as header only defines macros
+#include "oa/features.h"
+
 #include <cstddef>
+#if OA_HAS_CXX20_FORMAT
+#include <format>
+#endif  // OA_HAS_CXX20_FORMAT
 #include <sstream>
 #include <tuple>
 #include <type_traits>
@@ -15,6 +21,7 @@
 
 #include <gtest/gtest.h>
 
+#include "oa/ctti.h"
 #include "oa/testing/gtest.h"
 
 namespace {
@@ -160,7 +167,7 @@ struct fixed_string_sstream_equal {
    * @param s2 Second fixed string
    */
   template <std::size_t N1, std::size_t N2>
-  bool operator()(
+  auto operator()(
     const oa::fixed_string<N1>& s1,
     const oa::fixed_string<N2>& s2) const
   {
@@ -170,7 +177,7 @@ struct fixed_string_sstream_equal {
     std::stringstream ss2;
     ss2 << s2;
     // compare using operator== for std::string
-    return std::move(ss1).str() == std::move(ss2).str();
+    return oa::testing::eq(std::move(ss1).str(), std::move(ss2).str());
   }
 };
 
@@ -193,11 +200,11 @@ struct fixed_string_strcat_eq_1 {
    * @param s2 Second fixed string
    */
   template <std::size_t N1, std::size_t N2>
-  bool operator()(
+  auto operator()(
     const oa::fixed_string<N1>& s1,
     const oa::fixed_string<N2>& s2) const
   {
-    return (s1 + s2) == (std::string{s1} + s2);
+    return oa::testing::eq(s1 + s2, std::string{s1} + s2);
   }
 };
 
@@ -220,19 +227,107 @@ struct fixed_string_strcat_eq_2 {
    * @param s2 Second fixed string
    */
   template <std::size_t N1, std::size_t N2>
-  bool operator()(
+  auto operator()(
     const oa::fixed_string<N1>& s1,
     const oa::fixed_string<N2>& s2) const
   {
-    return (s1 + s2) == (s1 + std::string{s2});
+    return oa::testing::eq(s1 + s2, s1 + std::string{s2});
+  }
+};
+
+/**
+ * `fixed_string` `std::format()` equality testing operator.
+ */
+struct fixed_string_format_eq_1 {
+  /**
+   * Compare the `std::format()` result against `std::string`.
+   *
+   * The format string is `"{}".`
+   *
+   * @tparam N1 Length of first string
+   * @tparam N2 Length of second string
+   *
+   * @param s1 First fixed string
+   * @param s2 Second fixed string
+   */
+  template <std::size_t N1, std::size_t N2>
+  auto operator()(
+    const oa::fixed_string<N1>& s1,
+    const oa::fixed_string<N2>& s2) const
+  {
+#if OA_HAS_CXX20_FORMAT
+    return oa::testing::eq(std::format("{}", s1), std::string{s2});
+#else
+    return ::testing::AssertionFailure() << "std::format() not available";
+#endif  // !OA_HAS_CXX20_FORMAT
+  }
+};
+
+/**
+ * `fixed_string` `std::format()` equality test.
+ */
+struct fixed_string_format_eq_2 {
+  /**
+   * Compare the `std::format()` result against a given string.
+   *
+   * The format string is `"the world is your {:}"`.
+   *
+   * @tparam N1 Length of first string
+   * @tparam N2 Length of second string
+   *
+   * @param s1 First fixed string
+   * @param s2 Second fixed string
+   */
+  template <std::size_t N1, std::size_t N2>
+  auto operator()(
+    const oa::fixed_string<N1>& s1,
+    const oa::fixed_string<N2>& s2) const
+  {
+#if OA_HAS_CXX20_FORMAT
+    return oa::testing::eq(std::format("the world is your {:}", s1), s2);
+#else
+    return ::testing::AssertionFailure() << "std::format() not available";
+#endif  // !OA_HAS_CXX20_FORMAT
+  }
+};
+
+/**
+ * `fixed_string` `std::format()` equality test.
+ */
+struct fixed_string_format_eq_3 {
+  /**
+   * Compare the `std::format()` result against `std::string`.
+   *
+   * The format string is `"we are moving the {:#} somewhere"`.
+   *
+   * @tparam N1 Length of first string
+   * @tparam N2 Length of second string
+   *
+   * @param s1 First fixed string
+   * @param s2 Second fixed string
+   */
+  template <std::size_t N1, std::size_t N2>
+  auto operator()(
+    const oa::fixed_string<N1>& s1,
+    const oa::fixed_string<N2>& s2) const
+  {
+#if OA_HAS_CXX20_FORMAT
+    using oa::testing::eq;
+    return eq(std::format("we are moving the {:#} somewhere", s1), s2);
+#else
+    return ::testing::AssertionFailure() << "std::format() not available";
+#endif  // !OA_HAS_CXX20_FORMAT
   }
 };
 
 }  // namespace
 
-// binary_format_traits specializations for fixed_string_equal_(1|2)
 namespace oa {
 namespace testing {
+
+// binary_format_traits specializations for test case comparator types
+// note: not all the types are covered because some of them do transformations
+// on the input values so s1 op s2 won't represent the actual operation done
 
 template <>
 struct binary_format_traits<fixed_string_equal_1> {
@@ -289,7 +384,7 @@ constexpr auto fixed_string_test_cases = std::make_tuple(
   fixed_string_binary_test_case{fixed_string_equal_1{}, "hello", "hello"},
   // 7. test fixed_string and char[] operator==
   fixed_string_binary_test_case{fixed_string_equal_2{}, "world", "world"},
-  // 8. test comparison after string conversion
+  // 8. test comparison after string conversion (runtime)
   fixed_string_binary_test_case{fixed_string_sstream_equal{}, "jello", "jello"},
   // 9. test char[] and fixed_string operator== (runtime)
   fixed_string_binary_test_case{fixed_string_equal_1{}, "burger", "burger"},
@@ -316,11 +411,35 @@ constexpr auto fixed_string_test_cases = std::make_tuple(
   // 14. test operator+, operator== for fixed_string + std::string (runtime)
   fixed_string_binary_test_case{fixed_string_strcat_eq_1{}, "hello ", "world"},
   // 15. test operator+, operator== for fixed_string + std::string (runtime)
-  fixed_string_binary_test_case{fixed_string_strcat_eq_2{}, "hello ", "world"}
+  fixed_string_binary_test_case{fixed_string_strcat_eq_2{}, "hello ", "world"},
+  // 16. test fixed_string with std::format (runtime)
+  fixed_string_binary_test_case{fixed_string_format_eq_1{}, "hello", "hello"},
+  // 17. test fixed_string with std::format (runtime)
+  fixed_string_binary_test_case{
+    fixed_string_format_eq_2{},
+    "oyster",
+    "the world is your oyster"
+  },
+  // 18. test fixed_string with std::format (runtime)
+  fixed_string_binary_test_case{
+    fixed_string_format_eq_3{},
+    "package",
+    "we are moving the \"package\" somewhere"
+  }
 );
 
 // indices of tests that should be evaluated at runtime
-constexpr const std::size_t fixed_string_runtime_test_cases[] = {7, 8, 9, 13, 14};
+constexpr const std::size_t fixed_string_runtime_test_cases[] = {
+  7, 8, 9, 13, 14, 15, 16, 17
+};
+
+// indices of tests that should be skipped
+// note: we can't have arrays of size 0 but index_sequence can have empty pack
+using fixed_string_skipped_test_cases = std::index_sequence<
+#if !OA_HAS_CXX20_FORMAT
+  15, 16, 17
+#endif  // OA_HAS_CXX20_FORMAT
+>;
 
 /**
  * `fixed_string` template test fixture.
@@ -345,7 +464,7 @@ private:
   /**
    * Indicate if the specified test case should be evaluated at compile-time.
    *
-   * @tparam I Index of test case in `fixed_string_test_cases`
+   * @tparam I Index of test case in `fixed_string_runtime_test_cases`
    */
   template <std::size_t I>
   static constexpr bool is_compile_time(std::index_sequence<I>) noexcept
@@ -354,6 +473,21 @@ private:
       if (I == fixed_string_runtime_test_cases[i])
         return false;
     return true;
+  }
+
+  /**
+   * Indicate if the specified test case should be skipped.
+   *
+   * @tparam I Index of test case in `fixed_string_skipped_test_cases`
+   * @tparam Is Indices in `fixed_string_skipped_test_cases`
+   */
+  template <std::size_t I, std::size_t... Is>
+  static constexpr bool is_skipped_test(
+    std::index_sequence<I>,
+    std::index_sequence<Is...>) noexcept
+  {
+    // note: could short-circuit but would be more verbose
+    return ((I == Is) || ...);
   }
 
 public:
@@ -373,6 +507,14 @@ public:
     return is_compile_time(T{});
   }
 
+  /**
+   * Indicate if the specified test case should be skipped.
+   */
+  static constexpr bool is_skipped_test() noexcept
+  {
+    return is_skipped_test(T{}, fixed_string_skipped_test_cases{});
+  }
+
 protected:
   /**
    * Perform test and report assertion results.
@@ -386,8 +528,11 @@ protected:
     constexpr auto& op = input().op();
     constexpr auto& s1 = input().s1();
     constexpr auto& s2 = input().s2();
-    // if compile-time test
-    if constexpr (is_compile_time())
+    // skipped test
+    if constexpr (is_skipped_test())
+      GTEST_SKIP() << OA_PRETTY_FUNCTION_NAME << ": test skipped";
+    // compile-time test
+    else if constexpr (is_compile_time())
       EXPECT_TRUE(oa::testing::make_result<op(s1, s2)>(op, s1, s2));
     // run-time test
     else
