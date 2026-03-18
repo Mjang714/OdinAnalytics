@@ -282,7 +282,7 @@ namespace oxl::xl_api {
 		{
 			throw std::invalid_argument(std::format("{}:{}: Not an Excel Double Type line check the input",
 				OA_SOURCE_LOCATION(),
-				__func__, 
+				__func__ 
 			));
 		}
 		return xl_oper->val.num;
