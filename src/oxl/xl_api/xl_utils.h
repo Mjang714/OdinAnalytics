@@ -112,7 +112,7 @@ namespace oxl::xl_api
 			case xltypeStr:
 				return oa::time::Date(XLoperObj::LPXloperToStr(date));
 			default:
-				throw std::invalid_argument(std::format("{}:{}:Invalid date was given please check the date input", 
+				throw std::invalid_argument(std::format("{}:{}: Invalid date was given please check the date input", 
 					OA_SOURCE_LOCATION(),
 					__func__
 				));
@@ -133,7 +133,7 @@ namespace oxl::xl_api
 				julian_date += oa::time::Date(XLoperObj::LPXloperToStr(date)).GetJulian();
 				break;
 			default:
-				throw std::invalid_argument(std::format("{}:{}:Invalid date was given please check the date input", 
+				throw std::invalid_argument(std::format("{}:{}: Invalid date was given please check the date input", 
 					OA_SOURCE_LOCATION(),
 					__func__
 				));

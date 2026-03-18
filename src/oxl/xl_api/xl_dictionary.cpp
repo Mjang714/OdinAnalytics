@@ -132,7 +132,7 @@ namespace oxl::xl_api
 	{
 		// size check
 		if (n_keys != n_values)
-			throw std::invalid_argument(std::format("{}:{}: number of keys {} != number of values {}", OA_SOURCE_LOCATION(), __func__, 
+			throw std::invalid_argument(std::format("{}:{}: Number of keys {} != number of values {}", OA_SOURCE_LOCATION(), __func__, 
 				n_keys, n_values));
 	}
 
@@ -145,7 +145,7 @@ namespace oxl::xl_api
 		if (std::isspace(key.front()) || std::isspace(key.back()))
 			throw std::invalid_argument{
 				std::format(
-					"{}:{}:"	
+					"{}:{}: "	
 					"key \"{}\" invalid: "
 					"keys cannot contain leading or trailing spaces", 
 					OA_SOURCE_LOCATION(), __func__, key

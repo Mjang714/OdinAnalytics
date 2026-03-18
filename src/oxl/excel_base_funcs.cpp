@@ -50,7 +50,7 @@ namespace oxl
 
 		if (!xl_api::XlCacheObj::IsHandle(key))
 		{
-			throw std::runtime_error(std::format("{}:{}:{}{}", OA_SOURCE_LOCATION(), __func__, handle_str, " is not a valid cache handle please check input!"));
+			throw std::runtime_error(std::format("{}:{}: {} is not a valid cache handle please check input!", OA_SOURCE_LOCATION(), __func__, handle_str));
 		}
 		auto cache_variant = oxl::xl_api::XlCacheObj::GetVariant(key);
 

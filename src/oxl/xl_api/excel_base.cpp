@@ -65,7 +65,7 @@ namespace oxl::xl_api
 		auto fixing_dict_str_key = oxl::xl_api::XlCacheObj::GetKeyFromHandle(fixing_dict_handle);
 		if (!xl_api::XlCacheObj::IsDictionary(fixing_dict_str_key))
 		{
-			throw std::runtime_error(std::format("{}{}", fixing_dict_handle, " is not a valid cached dictionary handle please check input!"));
+			throw std::runtime_error(std::format("{} is not a valid cached dictionary handle please check input!", fixing_dict_handle));
 		}
 		auto cache_variant = XlCacheObj::GetVariant(fixing_dict_str_key);
 		auto xl_dictionary = std::get<std::shared_ptr<xl_api::XlDictionary>>(cache_variant);
@@ -84,7 +84,7 @@ namespace oxl::xl_api
 		auto date_rule_dict = RetrieveXLDict(dict, date_rule_key);
 		if (!ValidBusinessDateDictionary(*date_rule_dict))
 		{
-			throw std::runtime_error(std::format("{}{}{}", "The dictionary stored in ", date_rule_key, " is not a valid business date dictionary please check input!"));
+			throw std::runtime_error(std::format("The dictionary stored in {} is not a valid business date dictionary please check input!", date_rule_key));
 		}
 		auto num_of_days = static_cast<int>(std::get<double>((*date_rule_dict)["Days"]));
 		auto calendar = std::get<std::string>((*date_rule_dict)["Calendar"]);

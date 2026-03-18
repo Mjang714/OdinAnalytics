@@ -19,8 +19,8 @@ namespace oxl::xl_api
 
 		if ((rows != 2) && (cols != 2))
 		{
-			throw std::invalid_argument(std::format("{}:{}:{}", OA_SOURCE_LOCATION(), __func__, 
-				"Input was not correctly formatted please check to make sure is is 2xN or NX2"));
+			throw std::invalid_argument(std::format("{}:{}: "
+				"Input was not correctly formatted please check to make sure is is 2xN or NX2", OA_SOURCE_LOCATION(), __func__));
 		}
 
 		XlDictionary xl_dictionary{};
