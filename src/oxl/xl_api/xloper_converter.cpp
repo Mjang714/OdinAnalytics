@@ -269,8 +269,8 @@ namespace oxl::xl_api {
 		{
 			throw std::invalid_argument(std::format("{}:{}: Not an Excel String Type line check the input",
 				OA_SOURCE_LOCATION(),
-			__func__
-		));
+				__func__
+			));
 		}
 
 		std::string str  = ToUTF8String(xl_oper->val.str + 1);

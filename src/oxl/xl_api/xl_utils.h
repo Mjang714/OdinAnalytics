@@ -143,7 +143,7 @@ namespace oxl::xl_api
 
 	
 
-	/// @brief converts an excel date double representation to a oding date object
+	/// @brief converts an excel date double/string representation to a odin date object
 	/// @param excel_date double representation of the date that excel can understand
 	/// @return odin date object
 	inline oa::time::Date ToDateObj(const XlVariant& date_var)
