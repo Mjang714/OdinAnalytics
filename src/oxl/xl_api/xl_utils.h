@@ -35,7 +35,7 @@ namespace oxl::util
 		template <typename T>
 		[[noreturn]] oa::time::Date operator()(const T& /* val */) const
 		{
-			throw std::invalid_argument(std::format("{}:{}:Invalid date was given please check the date input", 
+			throw std::invalid_argument(std::format("{}:{}: Invalid date was given please check the date input", 
 				OA_SOURCE_LOCATION(),
 				__func__
 			));
