@@ -22,7 +22,20 @@ namespace oa::derived_time {
 ////////////////////////////////////////////////////////////////////////////////
 
 // see Options() declaration for why an explicit definition is required
-CashflowGen::Options::Options() noexcept {}
+CashflowGen::Options::Options() noexcept {
+	// set defaults for optional parameters
+	currency_ = Currency::kUSD;
+	date_dir_ = DateDirection::kBackward;
+	cashflow_type_ = CashflowType::kFixed;
+	reset_dir_ = ResetDirection::kAdvance;
+	stub_type_ = StubType::kNone;
+	start_adj_ = BusinessDateFormula{};
+	end_adj_ = BusinessDateFormula{};
+	pay_adj_ = BusinessDateFormula{};
+	fix_adj_ = BusinessDateFormula{};
+	stub_date_ = time::Date{};
+	calc_type_ = CalcType::kFlat;
+}
 
 Currency
 CashflowGen::Options::currency() const noexcept
@@ -365,22 +378,22 @@ CashflowGen::Options::calc_type(CalcType type)
 
 	// I am open to refactor for this in anohter branch.... clearly cause we are doing this indicates I was myopic about this (facepalm) 
 	// I think we should have sticked to frequency being enum.....
-	int CashflowGen::MapResetFreqEnumToInt(const oa::time::Tenor reset_freq)
+	int CashflowGen::MapResetFreqEnumToInt(const oa::time::Tenor reset_freq, bool is_leap_year)
 	{
 		
 		switch (reset_freq.GetValues().second)
 		{
-			case oa::time::Tenors::kYears:
-				//if it is in years best to return 1 can't think of any bond that pay every year a bit nonsensical
-				return reset_freq.GetValues().first;
-			case oa::time::Tenors::kMonths:
-				return 12 / reset_freq.GetValues().first;
-			case oa::time::Tenors::kWeeks:
-				return 52 / reset_freq.GetValues().first;
-			case oa::time::Tenors::kDays:
-				return 365 / reset_freq.GetValues().first;	
-			default:
-				throw std::invalid_argument("Unsupported reset frequency for calculation type provided");
+		case oa::time::Tenors::kYears:
+			//if it is in years best to return 1 can't think of any bond that pay every year a bit nonsensical
+			return reset_freq.GetValues().first;
+		case oa::time::Tenors::kMonths:
+			return 12 / reset_freq.GetValues().first;
+		case oa::time::Tenors::kWeeks:
+			return 52 / reset_freq.GetValues().first;
+		case oa::time::Tenors::kDays:
+			return (is_leap_year ? 366 : 365) / reset_freq.GetValues().first;	
+		default:
+			throw std::invalid_argument("Unsupported reset frequency for calculation type provided");
 		}
 		
 	}

@@ -193,7 +193,7 @@ namespace oa::derived_time {
 		);
 		
 		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
-		static int MapResetFreqEnumToInt(const oa::time::Tenor reset_freq);
+		static int MapResetFreqEnumToInt(const oa::time::Tenor reset_freq, bool is_leap_year = false);
 	private:
 		
 
