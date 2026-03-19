@@ -107,15 +107,15 @@ namespace oxl::xl_api
 	{
 		switch(date->xltype)
 		{
-			case xltypeNum:
-				return oa::time::Date(static_cast<int>( date->val.num) + oa::time::Date::kXlJulianOffSet);
-			case xltypeStr:
-				return oa::time::Date(XLoperObj::LPXloperToStr(date));
-			default:
-				throw std::invalid_argument(std::format("{}:{}: Invalid date was given please check the date input", 
-					OA_SOURCE_LOCATION(),
-					__func__
-				));
+		case xltypeNum:
+			return oa::time::Date(static_cast<int>( date->val.num) + oa::time::Date::kXlJulianOffSet);
+		case xltypeStr:
+			return oa::time::Date(XLoperObj::LPXloperToStr(date));
+		default:
+			throw std::invalid_argument(std::format("{}:{}: Invalid date was given please check the date input", 
+				OA_SOURCE_LOCATION(),
+				__func__
+			));
 		}
 		
 	}
@@ -126,17 +126,17 @@ namespace oxl::xl_api
 		int julian_date = oa::time::Date::kXlJulianOffSet;
 		switch(date->xltype)
 		{
-			case xltypeNum:
-				julian_date += static_cast<int>(date->val.num);
-				break;
-			case xltypeStr:
-				julian_date += oa::time::Date(XLoperObj::LPXloperToStr(date)).GetJulian();
-				break;
-			default:
-				throw std::invalid_argument(std::format("{}:{}: Invalid date was given please check the date input", 
-					OA_SOURCE_LOCATION(),
-					__func__
-				));
+		case xltypeNum:
+			julian_date += static_cast<int>(date->val.num);
+			break;
+		case xltypeStr:
+			julian_date += oa::time::Date(XLoperObj::LPXloperToStr(date)).GetJulian();
+			break;
+		default:
+			throw std::invalid_argument(std::format("{}:{}: Invalid date was given please check the date input", 
+				OA_SOURCE_LOCATION(),
+				__func__
+			));
 		}
 		return julian_date;
 	}
