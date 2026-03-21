@@ -44,7 +44,7 @@ namespace
 			double notional;
 			double rate;
 			oa::time::DayCountRule day_cnt_rule;
-			oa::derived_time::BusinessDateFormula date_formula_fix, date_formula_pay;
+			dt::BusinessDateFormula date_formula_fix, date_formula_pay;
 			std::string pay_calendar;
 			std::string fix_calendar;
 			int biz_pay_days;
@@ -52,7 +52,7 @@ namespace
 			oa::time::AdjRule adjustment_rule_pay;
 			oa::time::AdjRule adjustment_rule_fix;
 
-			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base{
+			std::vector<dt::CashflowStruct> fixed_cf_base{
 				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
