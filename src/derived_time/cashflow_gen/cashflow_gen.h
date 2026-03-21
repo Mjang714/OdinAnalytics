@@ -191,10 +191,18 @@ namespace oa::derived_time {
 			const time::DayCountRule day_count_rule,
 			const Options& opts = {}
 		);
+
+		static double ComputeUSTStreetConvCoupon(
+			const CashflowStruct& cf,
+			const time::Tenor& reset_freq,
+			const Options& opts
+		);
 		
-		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
-		static int MapResetFreqEnumToInt(const oa::time::Tenor reset_freq, bool is_leap_year = false);
+		static oa::time::Tenor MapResetFreqEnumToTenor(
+			const oa::derived_time::Frequency reset_freq
+		);
 	private:
+		static int  DayCountDenominator(oa::time::DayCountRule day_count_rule, bool is_leap_year = false);
 		
 
 		static void ComputeCoupon(

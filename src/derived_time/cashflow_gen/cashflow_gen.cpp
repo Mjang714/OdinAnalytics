@@ -297,29 +297,6 @@ CashflowGen::Options::calc_type(CalcType type)
 
 	}
 
-	void CashflowGen::ComputeCoupon(
-		CashflowStruct& cf, 
-		const time::Tenor& reset_freq, 
-		const Options& opts)
-	{
-		switch(opts.calc_type())
-		{
-			case CalcType::kFlat:
-				cf.cashflow_amount = cf.notional * cf.rate * cf.day_count_fraction;
-				break;
-			case CalcType::kBBGCalcType1:
-				[[fallthrough]];
-			case CalcType::kBBGCalcType2:
-				//this is really for when issue bond but the general coupon computations are the same so I am putting it in the same place for now. This can be refactored later if needed.
-				[[fallthrough]];
-			case CalcType::kUSTStreetConv:
-				cf.cashflow_amount = cf.notional * (cf.rate / MapResetFreqEnumToInt(reset_freq));
-				break;
-			default:
-				throw std::invalid_argument("Invalid calculation type provided");
-		}
-	}
-
 	void CashflowGen::StubDateAdjustments(
 		const oa::time::Date& start_date,
 		const oa::time::Date& mat_date,
@@ -361,7 +338,7 @@ CashflowGen::Options::calc_type(CalcType type)
 			break;
 		}
 	}
-	
+
 	time::Tenor CashflowGen::MapResetFreqEnumToTenor(const Frequency reset_freq)
 	{
 		const static std::unordered_map<Frequency, time::Tenor> reset_freq_enum_to_tenor{
@@ -376,26 +353,78 @@ CashflowGen::Options::calc_type(CalcType type)
 		return reset_freq_enum_to_tenor.at(reset_freq);
 	}
 
-	// I am open to refactor for this in anohter branch.... clearly cause we are doing this indicates I was myopic about this (facepalm) 
-	// I think we should have sticked to frequency being enum.....
-	int CashflowGen::MapResetFreqEnumToInt(const oa::time::Tenor reset_freq, bool is_leap_year)
+	void CashflowGen::ComputeCoupon(
+		CashflowStruct& cf, 
+		const time::Tenor& reset_freq, 
+		const Options& opts)
 	{
-		
-		switch (reset_freq.GetValues().second)
+		switch(opts.calc_type())
+		{
+			case CalcType::kFlat:
+				cf.cashflow_amount = cf.notional * cf.rate * cf.day_count_fraction;
+				break;
+			case CalcType::kBBGCalcType1:
+				[[fallthrough]];
+			case CalcType::kBBGCalcType2:
+				//this is really for when issue bond but the general coupon computations are the same so I am putting it in the same place for now. This can be refactored later if needed.
+				[[fallthrough]];
+			case CalcType::kUSTStreetConv:
+				cf.cashflow_amount = ComputeUSTStreetConvCoupon(cf, reset_freq, opts);
+				break;
+			default:
+				throw std::invalid_argument("Invalid calculation type provided");
+		}
+	}
+
+	double CashflowGen::ComputeUSTStreetConvCoupon(
+		const CashflowStruct& cf,
+		const time::Tenor& reset_freq,
+		const Options& opts)
+	{
+		switch(reset_freq.GetValues().second)
 		{
 		case oa::time::Tenors::kYears:
-			//if it is in years best to return 1 can't think of any bond that pay every year a bit nonsensical
-			return reset_freq.GetValues().first;
+			return cf.notional * cf.rate * reset_freq.GetValues().first;
 		case oa::time::Tenors::kMonths:
-			return 12 / reset_freq.GetValues().first;
+			//the idea here is to compute the monthly and multiply b the numer of months for cases like 18M coupons
+			return cf.notional * cf.rate * (1.0 / 12.0) * reset_freq.GetValues().first;
 		case oa::time::Tenors::kWeeks:
-			return 52 / reset_freq.GetValues().first;
-		case oa::time::Tenors::kDays:
-			return (is_leap_year ? 366 : 365) / reset_freq.GetValues().first;	
-		default:
-			throw std::invalid_argument("Unsupported reset frequency for calculation type provided");
-		}
+			//the idea here is to compute the weekly and multiply b the numer of weeks for cases like 10W coupons
+			return cf.notional * cf.rate * (1.0 / 52.0) * reset_freq.GetValues().first;
 		
+		case oa::time::Tenors::kDays:
+			if(reset_freq.GetValues().first < 366)
+			{
+				return cf.notional * cf.rate * (1.0 / 365.0);
+			}
+			else
+			{
+				//the idea here is to compute the daily and multiply b the numer of days for cases like 400D coupons
+				return cf.notional * cf.rate * (1.0 / 365.0) * reset_freq.GetValues().first;
+			}
+		default:
+			throw std::invalid_argument("Invalid calculation type for UST street convention");
+		}
+	}
+
+	int DayCountDenominator(oa::time::DayCountRule day_count_rule, bool is_leap_year)
+	{
+		switch(day_count_rule)
+		{
+		case oa::time::DayCountRule::kACT_ACT:
+			if (is_leap_year)
+				return 366;
+			else
+				[[fallthrough]];
+		case oa::time::DayCountRule::kACT_365_FIXED:
+			return 365;
+		case oa::time::DayCountRule::kACT_360:
+			[[fallthrough]];
+		case oa::time::DayCountRule::k30_360_BOND_BASIS:
+			return 360;
+		default:
+			return 0;
+		}
 	}
 
 }  // namespace oa::derived_time

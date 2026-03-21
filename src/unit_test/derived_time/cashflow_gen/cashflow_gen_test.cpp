@@ -173,7 +173,7 @@ namespace
 					for (auto& cf : cash_flows) {
 						cf.days = day_count->DayCount(cf.start_date, cf.end_date);
 						cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-						cf.cashflow_amount = cf.notional * (cf.rate  / oa::derived_time::CashflowGen::MapResetFreqEnumToInt(frequency));
+						cf.cashflow_amount = cf.notional * (cf.rate * (1.0/12.0) * frequency.GetValues().first);
 						if (date_formula_pay.has_value())
 						{
 							cf.payment_date = date_formula_pay.value().Adjust(cf.end_date);
