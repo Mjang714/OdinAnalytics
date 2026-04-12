@@ -54,7 +54,7 @@ bool XlCacheObj::IsDictionary(const std::string& handle) {
 	/*get the cached obj and see if it is dictionary not checking the cache
 	handle str incase I ever change that naming scheme*/
 	else {
-		std::string key = oxl::xl_api::XlCacheObj::GetKeyFromHandle(handle);
+		std::string key = XlCacheObj::GetKeyFromHandle(handle);
 		auto cached_obj = GetVariant(key);
 		return std::holds_alternative<std::shared_ptr<XlDictionary>>(cached_obj);
 	}
