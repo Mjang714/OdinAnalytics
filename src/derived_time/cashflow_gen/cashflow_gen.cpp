@@ -266,7 +266,7 @@ CashflowGen::Options::calc_type(CalcType type)
 			else
 				cf.fixing_date = cf.end_date + opts.fix_adjustment();
 			
-			ComputeCoupon(cf, reset_freq, opts);
+			ComputeCoupon(cf, reset_freq, opts, day_count_rule);
 			// using emplace_back and std::move though not sure if it is necessary here
 			cashflows.emplace_back(std::move(cf));
 		}
@@ -356,7 +356,9 @@ CashflowGen::Options::calc_type(CalcType type)
 	void CashflowGen::ComputeCoupon(
 		CashflowStruct& cf, 
 		const time::Tenor& reset_freq, 
-		const Options& opts)
+		const Options& opts,
+		const time::DayCountRule day_count_rule
+	)
 	{
 		switch(opts.calc_type())
 		{
@@ -369,17 +371,20 @@ CashflowGen::Options::calc_type(CalcType type)
 				//this is really for when issue bond but the general coupon computations are the same so I am putting it in the same place for now. This can be refactored later if needed.
 				[[fallthrough]];
 			case CalcType::kUSTStreetConv:
-				cf.cashflow_amount = ComputeUSTStreetConvCoupon(cf, reset_freq, opts);
+				cf.cashflow_amount = ComputeUSTStreetConvCoupon(cf, reset_freq, day_count_rule);
 				break;
 			default:
 				throw std::invalid_argument("Invalid calculation type provided");
 		}
 	}
 
+	
+
 	double CashflowGen::ComputeUSTStreetConvCoupon(
 		const CashflowStruct& cf,
 		const time::Tenor& reset_freq,
-		const Options& opts)
+		const time::DayCountRule day_count_rule
+	)
 	{
 		switch(reset_freq.GetValues().second)
 		{
@@ -391,23 +396,14 @@ CashflowGen::Options::calc_type(CalcType type)
 		case oa::time::Tenors::kWeeks:
 			//the idea here is to compute the weekly and multiply b the numer of weeks for cases like 10W coupons
 			return cf.notional * cf.rate * (1.0 / 52.0) * reset_freq.GetValues().first;
-		
 		case oa::time::Tenors::kDays:
-			if(reset_freq.GetValues().first < 366)
-			{
-				return cf.notional * cf.rate * (1.0 / 365.0);
-			}
-			else
-			{
-				//the idea here is to compute the daily and multiply b the numer of days for cases like 400D coupons
-				return cf.notional * cf.rate * (1.0 / 365.0) * reset_freq.GetValues().first;
-			}
+			return cf.notional * cf.rate * (1.0 /  CashflowGen::DayCountDenominator(day_count_rule, cf.fixing_date.IsLeap())) * reset_freq.GetValues().first;
 		default:
 			throw std::invalid_argument("Invalid calculation type for UST street convention");
 		}
 	}
 
-	int DayCountDenominator(oa::time::DayCountRule day_count_rule, bool is_leap_year)
+	int CashflowGen::DayCountDenominator(const oa::time::DayCountRule day_count_rule, const bool is_leap_year)
 	{
 		switch(day_count_rule)
 		{
@@ -423,9 +419,11 @@ CashflowGen::Options::calc_type(CalcType type)
 		case oa::time::DayCountRule::k30_360_BOND_BASIS:
 			return 360;
 		default:
-			return 0;
+			return 365;
 		}
 	}
+
+	
 
 }  // namespace oa::derived_time
 		

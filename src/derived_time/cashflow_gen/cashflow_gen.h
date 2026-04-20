@@ -191,24 +191,27 @@ namespace oa::derived_time {
 			const time::DayCountRule day_count_rule,
 			const Options& opts = {}
 		);
-
-		static double ComputeUSTStreetConvCoupon(
-			const CashflowStruct& cf,
-			const time::Tenor& reset_freq,
-			const Options& opts
-		);
 		
 		static oa::time::Tenor MapResetFreqEnumToTenor(
 			const oa::derived_time::Frequency reset_freq
 		);
 	private:
-		static int  DayCountDenominator(oa::time::DayCountRule day_count_rule, bool is_leap_year = false);
+		static int  DayCountDenominator(
+			const oa::time::DayCountRule day_count_rule, 
+			const bool is_leap_year = false
+		);
 		
+		static double ComputeUSTStreetConvCoupon(
+			const CashflowStruct& cf,
+			const time::Tenor& reset_freq,
+			const time::DayCountRule day_count_rule
+		);
 
 		static void ComputeCoupon(
-			CashflowStruct& cf, 
+			CashflowStruct& cf,
 			const time::Tenor& reset_freq,
-			const Options& opts
+			const Options& opts,
+			const time::DayCountRule day_count_rule
 		);
 
 		static void StubDateAdjustments(
