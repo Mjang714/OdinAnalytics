@@ -74,7 +74,7 @@ public:
 	/// returns a pair that is the integer and the unit of time a char
 	/// </summary>
 	/// <returns>a pair where the first length and the second argument is lenght as a Enum</returns>
-	std::pair<int, oa::time::Tenors> GetValues() const;
+	std::pair<int, Tenors> GetValues() const;
 
 	/**
 	 * Return the number of units represented by the tenor.

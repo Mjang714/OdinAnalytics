@@ -58,8 +58,8 @@ Tenor::Tenor(const std::string& input_string)
 		throw "Invalid tenor type please check your input of " + input_string;
 }
 
-Tenor::Tenor(int count, oa::time::Tenors unit) noexcept
-	: m_number_(count), m_time_unit_(unit)
+Tenor::Tenor(int count, Tenors unit) noexcept
+  : m_number_{count}, m_time_unit_{unit}
 {}
 
 Tenor Tenor::FlipSign() const
@@ -68,9 +68,9 @@ Tenor Tenor::FlipSign() const
 	return {-count(), unit()};
 }
 
-std::pair<int, oa::time::Tenors>Tenor::GetValues() const
+std::pair<int, Tenors>Tenor::GetValues() const
 {
-	return std::pair<int, oa::time::Tenors>(m_number_, m_time_unit_);
+	return {m_number_, m_time_unit_};
 }
 
 int
