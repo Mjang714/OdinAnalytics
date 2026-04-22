@@ -12,6 +12,7 @@
 #include <format>
 
 #include "xl_variant.h"
+#include "oa/ctti.h"
 
 namespace oxl::xl_api
 {
@@ -131,12 +132,8 @@ namespace oxl::xl_api
 	{
 		// size check
 		if (n_keys != n_values)
-			throw std::invalid_argument{
-				std::format(
-					"{}:{}:{}: number of keys {} != number of values {}",
-					__FILE__, __LINE__, __func__, n_keys, n_values
-				)
-			};
+			throw std::invalid_argument(std::format("{}:{}: Number of keys {} != number of values {}", OA_SOURCE_LOCATION(), __func__, 
+				n_keys, n_values));
 	}
 
 	void XlDictionary::check_key(const std::string& key)
@@ -148,8 +145,10 @@ namespace oxl::xl_api
 		if (std::isspace(key.front()) || std::isspace(key.back()))
 			throw std::invalid_argument{
 				std::format(
+					"{}:{}: "	
 					"key \"{}\" invalid: "
-					"keys cannot contain leading or trailing spaces", key
+					"keys cannot contain leading or trailing spaces", 
+					OA_SOURCE_LOCATION(), __func__, key
 				)
 			};
 	}
