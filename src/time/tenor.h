@@ -62,14 +62,14 @@ public:
 	 */
 	Tenor(int count, Tenors unit) noexcept;
 
-	// TODO: deprecate in factor of unary negation
+	// TODO: deprecate in favor of unary negation
 	/// <summary>
 	/// flips the sign of the tenor
 	/// </summary>
 	/// <returns>New Tenor object withteh sign flipped</returns>
 	Tenor FlipSign() const;
 
-	// TODO: deprecate in factor of just using count() and unit()
+	// TODO: deprecate in favor of just using count() and unit()
 	/// <summary>
 	/// returns a pair that is the integer and the unit of time a char
 	/// </summary>
@@ -111,7 +111,7 @@ public:
 	 * of count to fit within 3 bytes, then we could use this implementation:
 	 *
 	 * @code{.cc}
-	 * (std::size_t{count() } << 8) | (0xFF & static_cast<int>(unit()))
+	 * (std::size_t{count()} << 8) | (0xFF & static_cast<int>(unit()))
 	 * @endcode
 	 *
 	 * This takes advantage of the fact that the values of the `Tenors` enum
