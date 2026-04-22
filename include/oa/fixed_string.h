@@ -263,7 +263,6 @@ public:
     const char ar[] = {cs...};
     // search
     for (auto i = 0u; i < N; i++)
-      // for (auto c : ar)
       for (auto c : ar)
         if (data_[N - i - 1u] == c)
           return N - i - 1u;
