@@ -80,13 +80,6 @@ namespace oa::time
 		/// <returns>int</returns>
 		int GetJulian() const;
 
-		
-		/// <summary>
-		///  Functions that returns the julian date integer of the the date with excel julian adjusted
-		/// </summary>
-		/// <returns>int</returns>
-		int ToExcelJulian() const;
-
 		/// <summary>
 		///  return an integer that represents what day of the week it is (0 for Monday - 6 for Sunday)
 		/// </summary>
