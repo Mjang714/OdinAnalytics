@@ -21,6 +21,8 @@ if(XLLSDK_FOUND)
         # note: not installable just yet
         $<INSTALL_INTERFACE:include>
     )
+    # excel_base.cpp uses helpers/utils.h
+    target_link_libraries(oxl_api PRIVATE oa_helpers)
     # xl_utils.h uses Excel12f() and needs XLCALL.H and FRAMEWRK.H so we can't
     # make the linkage of the XLL SDK libraries private
     target_link_libraries(oxl_api PUBLIC XLLSDK::Framework XLLSDK::SDK)

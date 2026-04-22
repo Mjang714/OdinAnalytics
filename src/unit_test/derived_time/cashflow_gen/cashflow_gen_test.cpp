@@ -44,7 +44,7 @@ namespace
 			double notional;
 			double rate;
 			oa::time::DayCountRule day_cnt_rule;
-			oa::derived_time::BusinessDateFormula date_formula_fix, date_formula_pay;
+			dt::BusinessDateFormula date_formula_fix, date_formula_pay;
 			std::string pay_calendar;
 			std::string fix_calendar;
 			int biz_pay_days;
@@ -52,7 +52,7 @@ namespace
 			oa::time::AdjRule adjustment_rule_pay;
 			oa::time::AdjRule adjustment_rule_fix;
 
-			std::vector<oa::derived_time::CashflowStruct> fixed_cf_base{
+			std::vector<dt::CashflowStruct> fixed_cf_base{
 				{"2025-1-3","2025-7-3","2025-1-3","2025-7-3","2025-1-3","2025-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2025-7-3","2026-1-3","2025-7-3","2026-1-3","2025-7-3","2026-1-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
 				{"2026-1-3","2026-7-3","2026-1-3","2026-7-3","2026-1-3","2026-7-3", 1000000.0, .05, 0.0, 0, 0, 0.0, dt::Currency::kUSD, dt::CashflowType::kFixed},
@@ -335,4 +335,21 @@ namespace
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_fix_pay_adj));
 	}
 
+	TEST_F(CashflowGenBaseTest, TestExceptionThrow) {
+		EXPECT_ANY_THROW(
+			oa::derived_time::CashflowGen::CreateFixedCashflows(
+				start_date,
+				oa::time::Date(2020, 1, 3),
+				oa::derived_time::Frequency::kSemiAnnual,
+				notional,
+				rate,
+				day_cnt_rule,
+				oa::derived_time::CashflowGen::Options{}
+					.date_direction(oa::derived_time::DateDirection::kForward)
+					.stub_type(oa::derived_time::StubType::kShortFirst)
+					.pay_adjustment({biz_pay_days, pay_calendar})
+					.fix_adjustment({biz_fix_days, fix_calendar})
+			)
+		);
+	}
 }  // namespace

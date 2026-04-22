@@ -8,8 +8,24 @@
 #ifndef OA_FIXED_STRING_H_
 #define OA_FIXED_STRING_H_
 
+// note: can include first as the header only defines macros
+#include "oa/features.h"
+
+// note: OA_HAS_CXX20_FORMAT headers only needed for std::formatter impl
+#if OA_HAS_CXX20_FORMAT
+#include <algorithm>
+#endif  // OA_HAS_CXX20_FORMAT
+#include <concepts>
 #include <cstddef>
+#if OA_HAS_CXX20_FORMAT
+#include <format>
+#endif  // OA_HAS_CXX20_FORMAT
+#include <limits>
 #include <ostream>
+#if OA_HAS_CXX20_FORMAT
+#include <sstream>
+#endif  // OA_HAS_CXX20_FORMAT
+#include <string>
 #include <type_traits>
 
 namespace oa {
@@ -135,10 +151,19 @@ template <std::size_t N>
 class fixed_string {
 public:
   /**
+   * Constant representing the maximum `fixed_string` length.
+   */
+  static constexpr auto npos = (std::numeric_limits<std::size_t>::max)();
+
+  /**
    * Ctor.
    *
    * Construct from a variadic list of null-terminated string literals and/or
    * other `fixed_string` instances of different sizes.
+   *
+   * If the size of the `fixed_string` is explicitly provided instead of
+   * obtained through CTAD it can be specified to be smaller than the total
+   * number of the input characters provided by the inputs.
    *
    * @tparam Ts Pack of null-terminated string literals or `fixed_string`
    */
@@ -147,15 +172,17 @@ public:
   constexpr fixed_string(const Ts&... args) noexcept
   {
     // hard error if sizes don't match
-    static_assert(N == (detail::fixed_size_v<Ts> + ...), "input size mismatch");
+    static_assert(N <= (detail::fixed_size_v<Ts> + ...), "too few inputs");
     // get pointer to data
     auto it = data_;
     // copy values for each arg using fold expression
     (
-      [&it, &args]
+      [this, &it, &args]
       {
-        for (decltype(N) i = 0u; i < detail::fixed_size_v<Ts>; i++)
-          *it++ = args[i];
+        decltype(N) i = 0u;
+        // note: need to stop if N is already reached
+        while ((it < data_ + N) && i < detail::fixed_size_v<Ts>)
+          *it++ = args[i++];
       }(), ...
     );
     // write final null terminator
@@ -192,6 +219,83 @@ public:
   constexpr auto& operator[](std::size_t i) const noexcept
   {
     return data_[i];
+  }
+
+  /**
+   * Return the position of the first occurrence of the character.
+   *
+   * If not found then `npos` will be returned.
+   *
+   * @tparam Ts `char`
+   *
+   * @param cs Characters to find
+   */
+  template <std::same_as<char>... Ts>
+  constexpr auto find(Ts... cs) const noexcept
+  {
+    // note: use separate array for char pack since MSVC seems to have an issue
+    // with destroying initializer_list values too early, e.g. in this context
+    // where for (auto c : {cs...}) was used as the inner loop
+    const char ar[] = {cs...};
+    // search
+    for (auto i = 0u; i < N; i++)
+      for (auto c : ar)
+        if (data_[i] == c)
+          return i;
+    return npos;
+  }
+
+  /**
+   * Return the position of the last occurrence of the character.
+   *
+   * If not found then `npos` will be returned.
+   *
+   * @tparam Ts `char`
+   *
+   * @param cs Characters to find
+   */
+  template <std::same_as<char>... Ts>
+  constexpr auto rfind(Ts... cs) const noexcept
+  {
+    // note: use separate array for char pack since MSVC seems to have an issue
+    // with destroying initializer_list values too early, e.g. in this context
+    // where for (auto c : {cs...}) was used as the inner loop
+    const char ar[] = {cs...};
+    // search
+    for (auto i = 0u; i < N; i++)
+      // for (auto c : ar)
+      for (auto c : ar)
+        if (data_[N - i - 1u] == c)
+          return N - i - 1u;
+    return npos;
+  }
+
+  /**
+   * Return a `fixed_string` corresponding to a substring.
+   *
+   * @tparam I Index of first element
+   * @tparam N_ Length of substring
+   */
+  template <std::size_t I, std::size_t N_ = N - I>
+  constexpr auto substr() const noexcept
+  {
+    // copy character range
+    char str[N_ + 1u];
+    for (decltype(N) i = 0u; i < N_; i++)
+      str[i] = data_[I + i];
+    // convert to fixed_string
+    // note: need to specify N_ otherwise injected class name is used
+    return fixed_string<N_>{str};
+  }
+
+  /**
+   * Enable implicit conversion to a const-qualified null-terminated string.
+   *
+   * This is useful for interop with C functions or other conversions.
+   */
+  constexpr operator const char*() const noexcept
+  {
+    return data_;
   }
 
 private:
@@ -249,6 +353,34 @@ constexpr
 auto operator+(const char (&s1)[N1], const fixed_string<N2>& s2) noexcept
 {
   return fixed_string{s1, s2};
+}
+
+/**
+ * Return a `std::string` from a `fixed_string` and a `std::string`.
+ *
+ * @tparam N Length of fixed string
+ *
+ * @param s1 First string
+ * @param s1 Second string
+ */
+template <std::size_t N>
+constexpr auto operator+(const fixed_string<N>& s1, const std::string& s2)
+{
+  return s1.data() + s2;
+}
+
+/**
+ * Return a `std::string` from a `std::string` and a `fixed_string`.
+ *
+ * @tparam N Length of fixed string
+ *
+ * @param s1 FIrst string
+ * @param s1 Second string
+ */
+template <std::size_t N>
+constexpr auto operator+(const std::string& s1, const fixed_string<N>& s2)
+{
+  return s1 + s2.data();
 }
 
 namespace detail {
@@ -332,6 +464,36 @@ bool operator==(const char (&s1)[N1], const fixed_string<N2>& s2) noexcept
 }
 
 /**
+ * Compare a `fixed_string` and a `std::string` for equality.
+ *
+ * @tparam N Length of fixed string
+ *
+ * @param s1 First string
+ * @param s2 Second string
+ */
+template <std::size_t N>
+constexpr
+bool operator==(const fixed_string<N>& s1, const std::string& s2)
+{
+  return s1.data() == s2;
+}
+
+/**
+ * Compare a `fixed_string` and a `std::string` for equality.
+ *
+ * @tparam N Length of fixed string
+ *
+ * @param s1 First string
+ * @param s2 Second string
+ */
+template <std::size_t N>
+constexpr
+bool operator==(const std::string& s1, const fixed_string<N>& s2)
+{
+  return s2 == s1;
+}
+
+/**
  * Write the contents of a `fixed_string` to an output stream.
  *
  * @tparam N Length of fixed string
@@ -346,5 +508,70 @@ auto& operator<<(std::ostream& out, const fixed_string<N>& str)
 }
 
 }  // namespace oa
+
+#if OA_HAS_CXX20_FORMAT
+namespace std {
+
+/**
+ * `std::formatter` specialization for the `fixed_string<N>`.
+ *
+ * The `fixed_string<N>` can be quoted if `#` is passed in the format spec.
+ * Otherwise, only missing or empty format specs are allowed, e.g. formatting
+ * with `"{}"` or `"{:}"` in a format string respectively.
+ *
+ * @tparam N Length of fixed string
+ */
+template <size_t N>
+struct formatter<oa::fixed_string<N>, char> {
+  /**
+   * Parse the incoming format specification to update formatter state.
+   *
+   * @param ctx Format specification parse context
+   */
+  constexpr auto parse(basic_format_parse_context<char>& ctx)
+  {
+    // format spec iterator
+    auto it = ctx.begin();
+    // empty format spec
+    if (it == ctx.end())
+      return it;
+    // if #, then indicate we will format using quotes
+    if (*it == '#') {
+      quote_ = true;
+      it++;
+    }
+    // error if format spec is not consumed
+    if (it != ctx.end() && *it != '}')
+      throw std::format_error{"invalid fixed_string format spec character"};
+    // ok, consumed what are able to parse
+    return it;
+  }
+
+  /**
+   * Format the `fixed_string<N>` into the formatting context.
+   *
+   * @tparam F `std::format_context<O, char>`
+   *
+   * @param str Fixed string to write
+   * @param ctx Formatting context
+   */
+  template <typename T>
+  auto format(const oa::fixed_string<N>& str, T& ctx) const
+  {
+    std::stringstream ss;
+    if (quote_)
+      ss << '"' << str << '"';
+    else
+      ss << str;
+    // copy moved string into out and return out iterator
+    return std::ranges::copy(std::move(ss).str(), ctx.out()).out;
+  }
+
+private:
+  bool quote_{};
+};
+
+}  // namespace std
+#endif  // OA_HAS_CXX20_FORMAT
 
 #endif  // OA_FIXED_STRING_H_
