@@ -34,3 +34,4 @@ install(
 )
 # install PDB when building for Debug config
 oa_pdb_install(oa_dao CONFIGURATIONS Debug COMPONENT Development)
+oa_embed_version_info(oa_dao DESCRIPTION "OA DAO Library")

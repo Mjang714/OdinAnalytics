@@ -106,6 +106,8 @@ if(Python3_FOUND AND XLLSDK_FOUND)
     # install PDB when building for Debug config
     # note: oxl always built shared so linker PDB file can always be used
     oa_pdb_install(oxl CONFIGURATIONS Debug COMPONENT Development)
+    # TODO: maybe remove as the metadata doesn't show up for XLL files
+    oa_embed_version_info(oxl DESCRIPTION "OA OXL Excel Add-In")
 else()
     message(STATUS "Skipping oxl (requires Python + XLL SDK)")
 endif()

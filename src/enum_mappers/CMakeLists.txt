@@ -31,3 +31,4 @@ install(
 )
 # install PDB when building for Debug config
 oa_pdb_install(oa_enum_mappers CONFIGURATIONS Debug COMPONENT Development)
+oa_embed_version_info(oa_enum_mappers DESCRIPTION "OA Enum Mappers Library")

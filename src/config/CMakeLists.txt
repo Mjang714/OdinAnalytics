@@ -31,3 +31,4 @@ install(
 # install PDB when building shared for Debug config
 # note: oa_config always built shared so linker PDB file can always be used
 oa_pdb_install(oa_config CONFIGURATIONS Debug COMPONENT Development)
+oa_embed_version_info(oa_config DESCRIPTION "OA Configuration Library")
