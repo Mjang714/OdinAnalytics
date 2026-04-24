@@ -166,6 +166,10 @@ namespace oxl {
 				}
 			}
 
+			else if(dictionary.Contains("Calc_Type"))
+			{
+				opt.calc_type(oa::enum_mappers::MapInputToCalcType(std::get<std::string>(dictionary["Calc_Type"])));
+			}
 
 			auto cf_results = CFGen::CreateFixedCashflows(start_date, mat_date,freq, notional, rate, day_cnt_frac, opt);
 

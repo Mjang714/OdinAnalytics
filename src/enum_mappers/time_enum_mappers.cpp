@@ -258,4 +258,42 @@ OA_MSVC_WARNING_POP()
 			};
 		}
 	}
-}  // namespace oa::enum_mappers
+
+	const auto& CalcTypeMap() {
+		static const std::unordered_map<std::string, derived_time::CalcType> calc_type_map{
+			{"FLAT", derived_time::CalcType::kFlat},
+			{"BBG1", derived_time::CalcType::kBBGCalcType1},
+			{"BBG2", derived_time::CalcType::kBBGCalcType2},
+			{"USTSTREETCONV", derived_time::CalcType::kUSTStreetConv}
+		};
+		return calc_type_map;
+	}
+
+	derived_time::CalcType MapInputToCalcType(const std::string& input_str) {
+		std::string key_str = input_str;
+		// disable C4242, C4244 warnings about int being narrowed to char
+		OA_MSVC_WARNING_PUSH()
+		OA_MSVC_WARNING_DISABLE(4242 4244)
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		OA_MSVC_WARNING_POP()
+
+		if (CalcTypeMap().contains(key_str))
+			return CalcTypeMap().at(key_str);
+		else
+		{
+			throw std::invalid_argument{
+		#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}:{}: {} is not a valid Calc Type",
+					__FILE__, __LINE__, __func__, input_str
+				)
+		#else
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{__func__} + ": " + input_str +
+					" is not a valid Calc Type"
+		#endif  // !OA_HAS_CPP20_FORMAT
+			};
+		}
+	}
+}
