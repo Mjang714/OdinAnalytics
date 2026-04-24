@@ -76,9 +76,6 @@ function(oa_embed_version_info target)
     #   OA_RC_FILE_TYPE
     #   OA_RC_FILE_DESCRIPTION
     #
-    # TODO: we can't use any generator expressions, e.g. for "InternalName" and
-    # "OriginalFileName". for that to work, we would need a .res custom rule
-    # invoking RC and a .rc custom rule that runs configure_file() via CMake
     configure_file(
         "${PROJECT_SOURCE_DIR}/cmake/version.rc.in" ${target}_version.rc
         @ONLY NEWLINE_STYLE LF
@@ -90,4 +87,14 @@ function(oa_embed_version_info target)
         "${CMAKE_CURRENT_BINARY_DIR}/${target}_version.rc"
     )
     target_include_directories(${target} PRIVATE "${PROJECT_BINARY_DIR}/include")
+    # compile with OA_RC_FILE_NAME defined for per-config file name
+    # TODO: we can use generator expressions in compile definitions so maybe we
+    # don't need to have any custom RC invocation rules. we may also not even
+    # need a configure_file() step and could define more macros. however, the
+    # downside is that OA_RC_FILE_NAME is also defined for C/C++ compilation,
+    # which strictly speaking, is not something we want to happen
+    target_compile_definitions(
+        ${target} PRIVATE
+        OA_RC_FILE_NAME="$<TARGET_FILE_NAME:${target}>"  # quotes preserved
+    )
 endfunction()

@@ -9,6 +9,11 @@
 //  OA_RC_FILE_TYPE             One of VFT_APP, VFT_DLL, VFT_STATIC_LIB
 //  OA_RC_FILE_DESCRIPTION      String literal with descriptive text
 //
+// If possible, the build system should define the value for these macros at RC
+// invocation time to enable per-config values to be specified:
+//
+//  OA_RC_FILE_NAME             String literal file name, e.g. "oa_config.dll"
+//
 // See the following link for RC file reference documentation:
 // https://learn.microsoft.com/en-us/windows/win32/menurc/versioninfo-resource
 //
@@ -58,6 +63,9 @@ BEGIN
             // note: docs say "InternalName" is required but omitting is ok
             VALUE "LegalCopyright", "MIT License"
             // note: docs say "OriginalFileName" is required but omitting is ok
+#ifdef OA_RC_FILE_NAME
+            VALUE "OriginalFileName", OA_RC_FILE_NAME
+#endif  // OA_RC_FILE_NAME
             // note: ProductName is displayed in properties
             VALUE "ProductName", "OA Software Suite"
             VALUE "ProductVersion", OA_VERSION
