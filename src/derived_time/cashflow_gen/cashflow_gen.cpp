@@ -34,7 +34,12 @@ CashflowGen::Options::Options() noexcept {
 	pay_adj_ = BusinessDateFormula{};
 	fix_adj_ = BusinessDateFormula{};
 	stub_date_ = time::Date{};
-	calc_type_ = CalcType::kFlat;
+	calc_type_ = CalcType::kFlat;           // calculation type
+	currency_ = Currency::kUSD;                   // currency
+	date_dir_= DateDirection::kBackward;    // date direction
+	cashflow_type_ = CashflowType::kFixed;    // cashflow type
+	reset_dir_ = ResetDirection::kAdvance;  // reset direction
+	stub_type_ = StubType::kNone;
 }
 
 Currency
@@ -285,7 +290,7 @@ CashflowGen::Options::calc_type(CalcType type)
 	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
 		const time::Date& start_date,
 		const time::Date& mat_date,
-		const Frequency& reset_freq,
+		const Frequency reset_freq,
 		const double notional,
 		const double rate,
 		const time::DayCountRule day_count_rule,
@@ -388,15 +393,15 @@ CashflowGen::Options::calc_type(CalcType type)
 	{
 		switch(reset_freq.GetValues().second)
 		{
-		case oa::time::Tenors::kYears:
+		case time::Tenors::kYears:
 			return cf.notional * cf.rate * reset_freq.GetValues().first;
-		case oa::time::Tenors::kMonths:
+		case time::Tenors::kMonths:
 			//the idea here is to compute the monthly and multiply b the numer of months for cases like 18M coupons
 			return cf.notional * cf.rate * (1.0 / 12.0) * reset_freq.GetValues().first;
-		case oa::time::Tenors::kWeeks:
+		case time::Tenors::kWeeks:
 			//the idea here is to compute the weekly and multiply b the numer of weeks for cases like 10W coupons
 			return cf.notional * cf.rate * (1.0 / 52.0) * reset_freq.GetValues().first;
-		case oa::time::Tenors::kDays:
+		case time::Tenors::kDays:
 			return cf.notional * cf.rate * (1.0 /  CashflowGen::DayCountDenominator(day_count_rule, cf.fixing_date.IsLeap())) * reset_freq.GetValues().first;
 		default:
 			throw std::invalid_argument("Invalid calculation type for UST street convention");
@@ -407,16 +412,16 @@ CashflowGen::Options::calc_type(CalcType type)
 	{
 		switch(day_count_rule)
 		{
-		case oa::time::DayCountRule::kACT_ACT:
+		case time::DayCountRule::kACT_ACT:
 			if (is_leap_year)
 				return 366;
 			else
-				[[fallthrough]];
-		case oa::time::DayCountRule::kACT_365_FIXED:
-			return 365;
-		case oa::time::DayCountRule::kACT_360:
 			[[fallthrough]];
-		case oa::time::DayCountRule::k30_360_BOND_BASIS:
+		case time::DayCountRule::kACT_365_FIXED:
+			return 365;
+		case time::DayCountRule::kACT_360:
+			[[fallthrough]];
+		case time::DayCountRule::k30_360_BOND_BASIS:
 			return 360;
 		default:
 			return 365;
