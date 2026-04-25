@@ -193,7 +193,7 @@ namespace oa::derived_time {
 		);
 		
 		static oa::time::Tenor MapResetFreqEnumToTenor(
-			const oa::derived_time::Frequency reset_freq
+			const Frequency& reset_freq
 		);
 	private:
 		static int  DayCountDenominator(
