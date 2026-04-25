@@ -160,11 +160,11 @@ namespace oa::derived_time {
 
 		private:
 			
+			time::Date stub_date_;                                // stub date
 			BusinessDateFormula start_adj_;                       // start date adjustment
 			BusinessDateFormula end_adj_;                         // end date adjustment
 			BusinessDateFormula pay_adj_;                         // payment date adjustment
 			BusinessDateFormula fix_adj_;                         // fixing date adjustment
-			time::Date stub_date_;                                // stub date
 			CalcType calc_type_{CalcType::kFlat};                 // calculation type
 			Currency currency_{Currency::kUSD};                   // currency
 			DateDirection date_dir_{DateDirection::kBackward};    // date direction
@@ -194,11 +194,11 @@ namespace oa::derived_time {
 		);
 		
 		static oa::time::Tenor MapResetFreqEnumToTenor(
-			const Frequency& reset_freq
+			const oa::derived_time::Frequency reset_freq
 		);
 	private:
 		static int  DayCountDenominator(
-			const time::DayCountRule day_count_rule, 
+			const oa::time::DayCountRule day_count_rule, 
 			const bool is_leap_year = false
 		);
 		
