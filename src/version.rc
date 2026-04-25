@@ -1,6 +1,6 @@
-// @OA_TARGET@_version.rc
+// version.rc
 //
-// RC resource script for @OA_TARGET@ file version info.
+// Common RC resource script for OA binary file version info.
 //
 // This resource file provides the version information needed for an OA binary.
 // Standard versioning information is sourced from the oa/version.h header but
@@ -30,9 +30,13 @@
 
 // file type. this should be defined by the build system to one of VFT_APP for
 // executables, VFT_DLL for DLLs, VFT_STATIC_LIB for static libraries
-#define OA_RC_FILE_TYPE @OA_RC_FILE_TYPE@
+#ifndef OA_RC_FILE_TYPE
+#define OA_RC_FILE_TYPE VFT_UNKNOWN
+#endif  // OA_RC_FILE_TYPE
 // file description. this should be a string literal defined by build system
-#define OA_RC_FILE_DESCRIPTION "@OA_RC_FILE_DESCRIPTION@"
+#ifndef OA_RC_FILE_DESCRIPTION
+#define OA_RC_FILE_DESCRIPTION "OA binary artifact"
+#endif  // OA_RC_FILE_DESCRIPTION
 
 // resource version info
 // note: must use VS_VERSION_INFO as the resource identifier
