@@ -63,7 +63,7 @@ function(oa_embed_version_info target)
     get_property(is_multi GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     set(res_outdir_genex "${CMAKE_CURRENT_BINARY_DIR}")
     if(is_multi)
-        string(APPEND res_outdir_gene "/$<CONFIG>")
+        string(APPEND res_outdir_genex "/$<CONFIG>")
     endif()
     # target-specific resource file name
     set(res_outname "${target}_version.res")
