@@ -197,7 +197,7 @@ namespace oa::derived_time {
 		);
 	private:
 		static int  DayCountDenominator(
-			const oa::time::DayCountRule day_count_rule, 
+			const time::DayCountRule day_count_rule, 
 			const bool is_leap_year = false
 		);
 		
