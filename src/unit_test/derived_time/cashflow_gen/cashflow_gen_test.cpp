@@ -165,7 +165,7 @@ namespace
 					cash_flows.back().cashflow_amount = cash_flows.back().notional; //principal repayment
 				}
 
-			static void PopulateFixedCashflowsCalTypes(std::vector<oa::derived_time::CashflowStruct>& cash_flows, oa::time::Tenor frequency, oa::time::DayCountRule day_cnt_rule,
+			static void PopulateFixedCashflowsCalType1(std::vector<oa::derived_time::CashflowStruct>& cash_flows, oa::time::Tenor frequency, oa::time::DayCountRule day_cnt_rule,
 				std::optional<oa::derived_time::BusinessDateFormula>  date_formula_pay = {},
 				std::optional<oa::derived_time::BusinessDateFormula> date_formula_fix = {})
 				{
@@ -366,7 +366,7 @@ namespace
 
 	TEST_F(CashflowGenBaseTest, CreateFixedCashflowsCalctype1)
 	{
-		PopulateFixedCashflowsCalTypes(
+		PopulateFixedCashflowsCalType1(
 			fixed_cf_fix_pay_adj, 
 			frequency,
 			day_cnt_rule,
