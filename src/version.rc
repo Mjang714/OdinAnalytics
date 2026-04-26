@@ -40,6 +40,7 @@
 
 // resource version info
 // note: must use VS_VERSION_INFO as the resource identifier
+// note: see verrsrc.h for definitions of the VS_* and VOS_* macros
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION     OA_MAJOR_VERSION,OA_MINOR_VERSION,OA_PATCH_VERSION,0
 PRODUCTVERSION  OA_MAJOR_VERSION,OA_MINOR_VERSION,OA_PATCH_VERSION,0
