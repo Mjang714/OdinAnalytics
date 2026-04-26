@@ -44,13 +44,21 @@ if(WIN32)
     # use snake-case style for executables
     set_target_properties(oa_dumpver PROPERTIES OUTPUT_NAME "oa-dumpver")
     oa_embed_version_info(oa_dumpver DESCRIPTION "OA Version Dumper")
-    # simple -h, --help tests
+    # -h, --help tests
     add_test(NAME oa_dumpver_h COMMAND oa_dumpver -h)
     add_test(NAME oa_dumpver_help COMMAND oa_dumpver --help)
     set_tests_properties(
         oa_dumpver_h
         oa_dumpver_help PROPERTIES
         PASS_REGULAR_EXPRESSION "Usage: oa-dumpver"
+    )
+    # -v, --version tests
+    add_test(NAME oa_dumpver_v COMMAND oa_dumpver -v)
+    add_test(NAME oa_dumpver_version COMMAND oa_dumpver --version)
+    set_tests_properties(
+        oa_dumpver_v
+        oa_dumpver_version PROPERTIES
+        PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
     )
 else()
     message(STATUS "Skipping oa_dumpver (Windows-only)")
