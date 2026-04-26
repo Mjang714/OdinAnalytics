@@ -98,7 +98,7 @@ function(oa_embed_version_info target)
         # hardcoded dependencies as RC doesn't do dependency scanning
         DEPENDS "${PROJECT_BINARY_DIR}/include/oa/version.h"
                 "${PROJECT_SOURCE_DIR}/src/version.rc"
-        COMMENT "RC compile version.rc into ${res_outname}"
+        COMMENT "RC compile version.rc -> ${res_outname}"
         # note: don't use VERBATIM since RC has some weird behavior when it
         # comes to escaping arguments. see the above comment
     )
