@@ -166,7 +166,7 @@ namespace oxl {
 				}
 			}
 
-			else if(dictionary.Contains("Calc_Type"))
+			if(dictionary.Contains("Calc_Type"))
 			{
 				opt.calc_type(oa::enum_mappers::MapInputToCalcType(std::get<std::string>(dictionary["Calc_Type"])));
 			}

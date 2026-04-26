@@ -159,7 +159,7 @@ namespace oa::derived_time {
 			Options& calc_type(CalcType type);
 
 		private:
-			CalcType calc_type_{CalcType:kFlat};                  // calculation type
+			CalcType calc_type_{CalcType::kFlat};                  // calculation type
 			Currency currency_{Currency::kUSD};                   // currency
 			DateDirection date_dir_{DateDirection::kBackward};    // date direction
 			CashflowType cashflow_type_{CashflowType::kFixed};    // cashflow type
