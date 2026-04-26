@@ -224,8 +224,10 @@ CashflowGen::Options::calc_type(CalcType type)
 			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
-
-		StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
+		if(opts.stub_type() != StubType::kNone) 
+		{
+			StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
+		}
 
 		cashflows.reserve(unadjusted_start_dates.size() + 1); // +1 for the final principal repayment
 		auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
@@ -358,6 +360,7 @@ CashflowGen::Options::calc_type(CalcType type)
 				//this is really for when issue bond but the general coupon computations are the same so I am putting it in the same place for now. This can be refactored later if needed.
 				[[fallthrough]];
 			case CalcType::kUSTStreetConv:
+				//still need to think about what to do with stubs even though most research I have done on UST street convention seems to indicate that stubs are not used in this convention. For now, I am just going to assume that the reset frequency is the same for the stub and the regular coupons but this can be refactored later if needed.
 				cf.cashflow_amount = ComputeUSTStreetConvCoupon(cf, reset_freq, day_count_rule);
 				break;
 			default:
