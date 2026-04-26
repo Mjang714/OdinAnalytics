@@ -159,18 +159,17 @@ namespace oa::derived_time {
 			Options& calc_type(CalcType type);
 
 		private:
-			
-			time::Date stub_date_;                              // stub date
-			BusinessDateFormula start_adj_;                     // start date adjustment
-			BusinessDateFormula end_adj_;                       // end date adjustment
-			BusinessDateFormula pay_adj_;                       // payment date adjustment
-			BusinessDateFormula fix_adj_;                       // fixing date adjustment
-			CalcType calc_type_;                 				// calculation type
-			Currency currency_;                   				// currency
-			DateDirection date_dir_;    						// date direction
-			CashflowType cashflow_type_;    					// cashflow type
-			ResetDirection reset_dir_;  						// reset direction
-			StubType stub_type_;                 				// stub type
+			CalcType calc_type_{CalcType:kFlat};                  // calculation type
+			Currency currency_{Currency::kUSD};                   // currency
+			DateDirection date_dir_{DateDirection::kBackward};    // date direction
+			CashflowType cashflow_type_{CashflowType::kFixed};    // cashflow type
+			ResetDirection reset_dir_{ResetDirection::kAdvance};  // reset direction
+			StubType stub_type_{StubType::kNone};                 // stub type
+			time::Date stub_date_;                                // stub date
+			BusinessDateFormula start_adj_;                       // start date adjustment
+			BusinessDateFormula end_adj_;                         // end date adjustment
+			BusinessDateFormula pay_adj_;                         // payment date adjustment
+			BusinessDateFormula fix_adj_;                         // fixing date adjustment
 		};
 
 		static std::vector<CashflowStruct> CreateFixedCashflows(
