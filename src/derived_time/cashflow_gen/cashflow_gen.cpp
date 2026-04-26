@@ -400,7 +400,6 @@ CashflowGen::Options::calc_type(CalcType type)
 		case time::DayCountRule::kACT_ACT:
 			if (is_leap_year)
 				return 366;
-			else
 			[[fallthrough]];
 		case time::DayCountRule::kACT_365_FIXED:
 			return 365;

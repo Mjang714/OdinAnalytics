@@ -193,11 +193,11 @@ namespace oa::derived_time {
 		);
 		
 		static oa::time::Tenor MapResetFreqEnumToTenor(
-			const oa::derived_time::Frequency reset_freq
+			const Frequency reset_freq
 		);
 	private:
 		static int  DayCountDenominator(
-			const oa::time::DayCountRule day_count_rule, 
+			const time::DayCountRule day_count_rule, 
 			const bool is_leap_year = false
 		);
 		
@@ -215,10 +215,10 @@ namespace oa::derived_time {
 		);
 
 		static void StubDateAdjustments(
-			const oa::time::Date& start_date,
-			const oa::time::Date& mat_date,
-			std::vector<oa::time::Date>& unadjusted_start_dates,
-			std::vector<oa::time::Date>& unadjusted_end_dates,
+			const time::Date& start_date,
+			const time::Date& mat_date,
+			std::vector<time::Date>& unadjusted_start_dates,
+			std::vector<time::Date>& unadjusted_end_dates,
 			const Options& opts
 		);
 

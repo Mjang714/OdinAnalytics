@@ -72,7 +72,7 @@ namespace oa::enum_mappers {
 // disable C4242, C4244 warnings about int being narrowed to char
 OA_MSVC_WARNING_PUSH()
 OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
 OA_MSVC_WARNING_POP()
 
 		if (TimeEnumMap().contains(key_str))
@@ -102,7 +102,7 @@ OA_MSVC_WARNING_POP()
 		// disable C4242, C4244 warnings about int being narrowed to char
 		OA_MSVC_WARNING_PUSH()
 		OA_MSVC_WARNING_DISABLE(4242 4244)
-			std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+			std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
 		OA_MSVC_WARNING_POP()
 
 			if (DateAdjustMap().contains(key_str))
@@ -142,7 +142,7 @@ OA_MSVC_WARNING_POP()
 		// disable C4242, C4244 warnings about int being narrowed to char
 		OA_MSVC_WARNING_PUSH()
 		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
 		OA_MSVC_WARNING_POP()
 
 			if (DateDirectionMap().contains(key_str))
@@ -192,7 +192,7 @@ OA_MSVC_WARNING_POP()
 		// disable C4242, C4244 warnings about int being narrowed to char
 		OA_MSVC_WARNING_PUSH()
 		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
 		OA_MSVC_WARNING_POP()
 
 		if (FreqMap().contains(key_str))
@@ -236,7 +236,7 @@ OA_MSVC_WARNING_POP()
 		// disable C4242, C4244 warnings about int being narrowed to char
 		OA_MSVC_WARNING_PUSH()
 		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
 		OA_MSVC_WARNING_POP()
 
 		if (CFStubMap().contains(key_str))
@@ -274,7 +274,8 @@ OA_MSVC_WARNING_POP()
 		// disable C4242, C4244 warnings about int being narrowed to char
 		OA_MSVC_WARNING_PUSH()
 		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), 
+												[](unsigned char c) { return std::toupper(c); });
 		OA_MSVC_WARNING_POP()
 
 		if (CalcTypeMap().contains(key_str))
