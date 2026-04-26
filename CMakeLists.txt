@@ -272,11 +272,14 @@ add_custom_target(
 
 # oa_core: core header-only library
 # FIXME: currently oa/rtti.h still requires Boost
-# TODO: go through project targets to see which implicitly depend on this
+# TODO: go through project targets to see which implicitly depend on this. note
+# that linkage could be PRIVATE or PUBLIC depending on header exposure
 add_library(oa_core INTERFACE)
 target_include_directories(
     oa_core INTERFACE
     $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
+    # note: build interface includes generated headers
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 # install rule for oa_core (provides just an IMPORTED target)
