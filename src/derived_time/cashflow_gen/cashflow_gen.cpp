@@ -22,25 +22,7 @@ namespace oa::derived_time {
 ////////////////////////////////////////////////////////////////////////////////
 
 // see Options() declaration for why an explicit definition is required
-CashflowGen::Options::Options() noexcept {
-	// set defaults for optional parameters
-	currency_ = Currency::kUSD;
-	date_dir_ = DateDirection::kBackward;
-	cashflow_type_ = CashflowType::kFixed;
-	reset_dir_ = ResetDirection::kAdvance;
-	stub_type_ = StubType::kNone;
-	start_adj_ = BusinessDateFormula{};
-	end_adj_ = BusinessDateFormula{};
-	pay_adj_ = BusinessDateFormula{};
-	fix_adj_ = BusinessDateFormula{};
-	stub_date_ = time::Date{};
-	calc_type_ = CalcType::kFlat;           // calculation type
-	currency_ = Currency::kUSD;                   // currency
-	date_dir_= DateDirection::kBackward;    // date direction
-	cashflow_type_ = CashflowType::kFixed;    // cashflow type
-	reset_dir_ = ResetDirection::kAdvance;  // reset direction
-	stub_type_ = StubType::kNone;
-}
+CashflowGen::Options::Options() noexcept {}
 
 Currency
 CashflowGen::Options::currency() const noexcept
