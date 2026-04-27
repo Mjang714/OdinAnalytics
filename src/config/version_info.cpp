@@ -324,7 +324,7 @@ std::optional<Elf64_Shdr> elf_section_header(
     read(&Elf64_Shdr::sh_info);
     read(&Elf64_Shdr::sh_addralign);
     read(&Elf64_Shdr::sh_entsize);
-    // if matching name + return the section header
+    // if matching name return the section header
     // note: &name_data[res.sh_name] points to a null-terminated string
     if (name == &name_data[res.sh_name])
       return res;
