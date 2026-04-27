@@ -17,11 +17,13 @@ include_guard(GLOBAL)
 # On Windows this embeds the resource info compiled from version.rc into a .res
 # resource file for the target and appropriately defines any macros needed for
 # the resource compiler invocation. The version.rc file is also appropriately
-# included as a target source and as a LINK.EXE input file. Otherwise, with the
-# implicit assumption that the object file format is ELF, the version_elf.cpp
-# file is included in the target sources with appropriate compile definitions.
-# version_elf.cpp embeds version information in extra ELF object sections that
-# are prefixed with "oa." to distinguish them from other sections.
+# included as a target source and as a LINK.EXE input file.
+#
+# For Unix-like systems, with the implicit assumption that the object file
+# format is ELF, the version_elf.cpp file is separately compiled and linked for
+# the specified target with appropriate compile definitions. version_elf.cpp
+# embeds version information in extra ELF object sections that are prefixed
+# with "oa." to distinguish them from other sections.
 #
 # For details on the VERSIONINFO specification on Windows and the ELF sections
 # used on *nix systems, see version.rc and version_elf.cpp respectively.
