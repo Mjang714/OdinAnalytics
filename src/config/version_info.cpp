@@ -81,14 +81,6 @@ std::string_view version_string_info_1252(
 }
 #else
 /**
- * Check if an ELF file header represents a 32 bit ELF file.
- */
-bool is_32(const Elf64_Ehdr& hdr) noexcept
-{
-  return hdr.e_ident[EI_CLASS] == ELFCLASS32;
-}
-
-/**
  * Check if an ELF file header represents a 64 bit ELF file.
  */
 bool is_64(const Elf64_Ehdr& hdr) noexcept
@@ -208,6 +200,7 @@ auto elf_header(std::ifstream& fs)
       " != EV_CURRENT (" + std::to_string(EV_CURRENT)
     };
   // read program entry point, program header offset, section header offset
+  read(&Elf64_Ehdr::e_entry);
   read(&Elf64_Ehdr::e_phoff);
   read(&Elf64_Ehdr::e_shoff);
   // read flags + header size (should be 0x40)
@@ -276,12 +269,8 @@ auto elf_section_name_header(std::ifstream& fs, const Elf64_Ehdr& hdr)
       std::to_string(shdr.sh_type) + " not SHT_STRTAB (" +
       std::to_string(SHT_STRTAB) + ")"
     };
-  // note: sh_flags should indicate there are strings
+  // note: sh_flags should indicate there are strings but flags are zero
   read(&Elf64_Shdr::sh_flags);
-  if (!(shdr.sh_flags & SHF_STRINGS))
-    throw std::runtime_error{
-      "section name header table entry flags missing expected SHF_STRINGS"
-    };
   read(&Elf64_Shdr::sh_addr);
   read(&Elf64_Shdr::sh_offset);
   read(&Elf64_Shdr::sh_size);
@@ -318,32 +307,27 @@ std::optional<Elf64_Shdr> elf_section_header(
   fs.seekg(hdr.e_shoff);
   // iterate through section headers
   for (auto i = 0u; i < hdr.e_shnum; i++) {
-    // read section name data offset
-    Elf64_Word name_offset;
-    fs.read(reinterpret_cast<char*>(&name_offset), sizeof name_offset);
-    // get string view of specified null-terminated section name
-    std::string_view cur_name{&name_data[name_offset]};
-    // if matching name read + return the section header
-    if (name == cur_name) {
-      Elf64_Shdr res{};
-      auto read = [&fs, &res]<typename T>(T Elf64_Shdr::* mem)
-      {
-        fs.read(reinterpret_cast<char*>(&(res.*mem)), sizeof(T));
-      };
-      read(&Elf64_Shdr::sh_name);
-      read(&Elf64_Shdr::sh_type);
-      read(&Elf64_Shdr::sh_flags);
-      read(&Elf64_Shdr::sh_addr);
-      read(&Elf64_Shdr::sh_offset);
-      read(&Elf64_Shdr::sh_size);
-      read(&Elf64_Shdr::sh_link);
-      read(&Elf64_Shdr::sh_info);
-      read(&Elf64_Shdr::sh_addralign);
-      read(&Elf64_Shdr::sh_entsize);
+    // section header + read helper
+    Elf64_Shdr res{};
+    auto read = [&fs, &res]<typename T>(T Elf64_Shdr::* mem)
+    {
+      fs.read(reinterpret_cast<char*>(&(res.*mem)), sizeof(T));
+    };
+    // read section fields
+    read(&Elf64_Shdr::sh_name);
+    read(&Elf64_Shdr::sh_type);
+    read(&Elf64_Shdr::sh_flags);
+    read(&Elf64_Shdr::sh_addr);
+    read(&Elf64_Shdr::sh_offset);
+    read(&Elf64_Shdr::sh_size);
+    read(&Elf64_Shdr::sh_link);
+    read(&Elf64_Shdr::sh_info);
+    read(&Elf64_Shdr::sh_addralign);
+    read(&Elf64_Shdr::sh_entsize);
+    // if matching name + return the section header
+    // note: &name_data[res.sh_name] points to a null-terminated string
+    if (name == &name_data[res.sh_name])
       return res;
-    }
-    // advance to next section header
-    fs.seekg(hdr.e_shentsize, std::ios_base::cur);
   }
   // no matching header
   return {};
