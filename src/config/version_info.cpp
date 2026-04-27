@@ -372,6 +372,13 @@ public:
 
   // read bytes from a valid ELF section header
   std::string section(const Elf64_Shdr& hdr);
+
+  // tag type + global to disambiguate operations that strip trailing nulls
+  struct trim_nulls_tag {};
+  static constexpr trim_nulls_tag trim_nulls{};
+
+  // read bytes from a valid ELF section header + trim trailing nulls
+  std::string section(const Elf64_Shdr& hde, trim_nulls_tag);
 #endif  // !defined(_WIN32)
 };
 
@@ -439,16 +446,17 @@ version_info::impl_type::impl_type(const std::filesystem::path& path)
     throw std::runtime_error{"ELF object missing oa.version_num header"};
   // update string values
   if (com_hdr)
-    company_ = section(*com_hdr);
+    company_ = section(*com_hdr, trim_nulls);
   if (desc_hdr)
-    description_ = section(*desc_hdr);
+    description_ = section(*desc_hdr, trim_nulls);
   if (fname_hdr)
-    filename_ = section(*fname_hdr);
+    filename_ = section(*fname_hdr, trim_nulls);
   if (prod_hdr)
-    product_ = section(*prod_hdr);
+    product_ = section(*prod_hdr, trim_nulls);
   if (ver_hdr)
-    version_ = section(*ver_hdr);
+    version_ = section(*ver_hdr, trim_nulls);
   // reinterpret bytes from oa.version_num section
+  // note: we *don't* want to trim nulls as we want the raw bytes
   auto num_str = section(*num_hdr);
   // must have correct size
   if (num_str.size() != sizeof version_num_)
@@ -488,6 +496,19 @@ version_info::impl_type::section(const Elf64_Shdr& hdr)
   std::string str(hdr.sh_size, '\0');
   in_.read(str.data(), hdr.sh_size);
   return str;
+}
+
+std::string
+version_info::impl_type::section(const Elf64_Shdr& hdr, trim_nulls_tag)
+{
+  // read raw bytes
+  auto str = section(hdr);
+  // find first null + truncate
+  // note: this assumes that the section data is valid, i.e. non-empty
+  auto it = str.begin();
+  while (it != str.end() && *it)
+    it++;
+  return {str.begin(), it};
 }
 #endif  // _WIN32
 
