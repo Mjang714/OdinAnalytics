@@ -17,10 +17,14 @@ include_guard(GLOBAL)
 # On Windows this embeds the resource info compiled from version.rc into a .res
 # resource file for the target and appropriately defines any macros needed for
 # the resource compiler invocation. The version.rc file is also appropriately
-# included as a target source and as a LINK.EXE input file.
+# included as a target source and as a LINK.EXE input file. Otherwise, with the
+# implicit assumption that the object file format is ELF, the version_elf.cpp
+# file is included in the target sources with appropriate compile definitions.
+# version_elf.cpp embeds version information in extra ELF object sections that
+# are prefixed with "oa." to distinguish them from other sections.
 #
-# Currently this function is a no-op on Linux. We may consider an alternate
-# embedding scheme involving adding sections to an ELF object.
+# For details on the VERSIONINFO specification on Windows and the ELF sections
+# used on *nix systems, see version.rc and version_elf.cpp respectively.
 #
 # Arguments:
 #   target              Library or executable target
@@ -36,8 +40,29 @@ function(oa_embed_version_info target)
     if(NOT ARG_DESCRIPTION)
         message(FATAL_ERROR "DESCRIPTION argument is required")
     endif()
-    # if not on Windows do nothing
+    # if not on Windows use version_elf.cpp
     if(NOT WIN32)
+        target_sources(
+            ${target} PRIVATE
+            ${PROJECT_SOURCE_DIR}/src/version_elf.cpp
+        )
+        # ensure that regardless of the target's own includes that
+        # version_elf.cpp can include oa/version.h and oa/common.h
+        set_property(
+            SOURCE ${PROJECT_SOURCE_DIR}/src/version_elf.cpp APPEND PROPERTY
+            INCLUDE_DIRECTORIES
+                "${PROJECT_BINARY_DIR}/include"
+                "${PROJECT_SOURCE_DIR}/include"
+        )
+        # also need to compile with OA_RC_FILE_DESCRIPTION and OA_RC_FILE_NAME
+        # for correct file name + description embedding
+        set_property(
+            SOURCE ${PROJECT_SOURCE_DIR}/src/version_elf.cpp APPEND PROPERTY
+            COMPILE_DEFINITIONS
+                "OA_RC_FILE_DESCRIPTION=\"${ARG_DESCRIPTION}\""
+                "OA_RC_FILE_NAME=\"$<TARGET_FILE_NAME:${target}>\""
+        )
+        # done
         return()
     endif()
     # get target type
