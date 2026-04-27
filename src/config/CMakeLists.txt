@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 # oa_config: library config helpers
 # note: this is always shared so we can use dladdr() and GetModuleFileNameA()
-add_library(oa_config SHARED paths.cpp)
+add_library(oa_config SHARED paths.cpp version_info.cpp)
 target_include_directories(oa_config PUBLIC ${ODIN_INCLUDE_DIR})
 # need Boost headers for boost::core::demangle
 # TODO: may split rtti.h macros into a separate ctti.h
@@ -14,9 +14,9 @@ set_target_properties(
     DEFINE_SYMBOL OA_BUILD_CONFIG_DLL
     DEBUG_POSTFIX d
 )
-# on Windows need kernel32 while POSIX systems need libdl
+# on Windows need kernel32 + version while POSIX systems need libdl
 if(WIN32)
-    target_link_libraries(oa_config PRIVATE kernel32)
+    target_link_libraries(oa_config PRIVATE kernel32 version)
 else()
     target_link_libraries(oa_config PRIVATE dl)
 endif()
@@ -35,31 +35,26 @@ oa_embed_version_info(oa_config DESCRIPTION "OA Configuration Library")
 
 # oa_dumpver: prints version info embedded in OA binaries
 # note: although provided for testing purposes this could be useful in general
-if(WIN32)
-    add_executable(oa_dumpver dumpver.cpp)
-    # need to be able to include oa/version.h
-    target_include_directories(oa_dumpver PRIVATE ${PROJECT_BINARY_DIR}/include)
-    # need to link against Win32 version.lib
-    target_link_libraries(oa_dumpver PRIVATE version)
-    # use snake-case style for executables
-    set_target_properties(oa_dumpver PROPERTIES OUTPUT_NAME "oa-dumpver")
-    oa_embed_version_info(oa_dumpver DESCRIPTION "OA Version Dumper")
-    # -h, --help tests
-    add_test(NAME oa_dumpver_h COMMAND oa_dumpver -h)
-    add_test(NAME oa_dumpver_help COMMAND oa_dumpver --help)
-    set_tests_properties(
-        oa_dumpver_h
-        oa_dumpver_help PROPERTIES
-        PASS_REGULAR_EXPRESSION "Usage: oa-dumpver"
-    )
-    # -v, --version tests
-    add_test(NAME oa_dumpver_v COMMAND oa_dumpver -v)
-    add_test(NAME oa_dumpver_version COMMAND oa_dumpver --version)
-    set_tests_properties(
-        oa_dumpver_v
-        oa_dumpver_version PROPERTIES
-        PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
-    )
-else()
-    message(STATUS "Skipping oa_dumpver (Windows-only)")
-endif()
+add_executable(oa_dumpver dumpver.cpp)
+# need to be able to include oa/version.h
+target_include_directories(oa_dumpver PRIVATE ${PROJECT_BINARY_DIR}/include)
+target_link_libraries(oa_dumpver PRIVATE oa_config)
+# use snake-case style for executables
+set_target_properties(oa_dumpver PROPERTIES OUTPUT_NAME "oa-dumpver")
+oa_embed_version_info(oa_dumpver DESCRIPTION "OA Version Dumper")
+# -h, --help tests
+add_test(NAME oa_dumpver_h COMMAND oa_dumpver -h)
+add_test(NAME oa_dumpver_help COMMAND oa_dumpver --help)
+set_tests_properties(
+    oa_dumpver_h
+    oa_dumpver_help PROPERTIES
+    PASS_REGULAR_EXPRESSION "Usage: oa-dumpver"
+)
+# -v, --version tests
+add_test(NAME oa_dumpver_v COMMAND oa_dumpver -v)
+add_test(NAME oa_dumpver_version COMMAND oa_dumpver --version)
+set_tests_properties(
+    oa_dumpver_v
+    oa_dumpver_version PROPERTIES
+    PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
+)
