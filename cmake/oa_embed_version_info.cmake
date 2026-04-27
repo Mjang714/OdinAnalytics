@@ -40,28 +40,27 @@ function(oa_embed_version_info target)
     if(NOT ARG_DESCRIPTION)
         message(FATAL_ERROR "DESCRIPTION argument is required")
     endif()
-    # if not on Windows use version_elf.cpp
+    # if not on Windows use version_elf.cpp to create a separate object library
     if(NOT WIN32)
-        target_sources(
-            ${target} PRIVATE
+        add_library(
+            ${target}_elf_version OBJECT
             ${PROJECT_SOURCE_DIR}/src/version_elf.cpp
         )
         # ensure that regardless of the target's own includes that
         # version_elf.cpp can include oa/version.h and oa/common.h
-        set_property(
-            SOURCE ${PROJECT_SOURCE_DIR}/src/version_elf.cpp APPEND PROPERTY
-            INCLUDE_DIRECTORIES
-                "${PROJECT_BINARY_DIR}/include"
-                "${PROJECT_SOURCE_DIR}/include"
+        target_include_directories(
+            ${target}_elf_version PRIVATE
+            ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR}/include
         )
         # also need to compile with OA_RC_FILE_DESCRIPTION and OA_RC_FILE_NAME
         # for correct file name + description embedding
-        set_property(
-            SOURCE ${PROJECT_SOURCE_DIR}/src/version_elf.cpp APPEND PROPERTY
-            COMPILE_DEFINITIONS
-                "OA_RC_FILE_DESCRIPTION=\"${ARG_DESCRIPTION}\""
-                "OA_RC_FILE_NAME=\"$<TARGET_FILE_NAME:${target}>\""
+        target_compile_definitions(
+            ${target}_elf_version PRIVATE
+            OA_RC_FILE_DESCRIPTION="${ARG_DESCRIPTION}"
+            OA_RC_FILE_NAME="$<TARGET_FILE_NAME:${target}>"
         )
+        # ensure target picks up the object as part of the link
+        target_sources(${target} PRIVATE $<TARGET_OBJECTS:${target}_elf_version>)
         # done
         return()
     endif()
