@@ -149,8 +149,9 @@ public:
     // if zero returned then this block is missing
     if (!VerQueryValueA(data_, block, reinterpret_cast<void**>(&ptr), &len))
       return {};
-    // note: ptr points to a StringTable value which is null-terminated
-    return ptr;
+    // note: ptr points to a StringTable value which is null-terminated. we use
+    // explicit length anyways for security purposes
+    return {ptr, len - 1u};
   }
 
   /**
@@ -169,8 +170,9 @@ public:
     // if zero returned then this block is missing
     if (!VerQueryValueA(data_, block, reinterpret_cast<void**>(&ptr), &len))
       return {};
-    // note: ptr points to a StringTable value which is null-terminated
-    return ptr;
+    // note: ptr points to a StringTable value which is null-terminated. we use
+    // explicit length anyways for security purposes
+    return {ptr, len - 1u};
   }
 
   /**
@@ -190,8 +192,9 @@ public:
     // if zero returned then this block is missing
     if (!VerQueryValueA(data_, block, reinterpret_cast<void**>(&ptr), &len))
       return {};
-    // note: ptr points to a StringTable value which is null-terminated
-    return ptr;
+    // note: ptr points to a StringTable value which is null-terminated. we use
+    // explicit length anyways for security purposes
+    return {ptr, len - 1u};
   }
 
   /**
@@ -212,8 +215,9 @@ public:
     // if zero returned then this block is missing
     if (!VerQueryValueA(data_, block, reinterpret_cast<void**>(&ptr), &len))
       return {};
-    // note: ptr points to a StringTable value which is null-terminated
-    return ptr;
+    // note: ptr points to a StringTable value which is null-terminated. we use
+    // explicit length anyways for security purposes
+    return {ptr, len - 1u};
   }
 
   /**
