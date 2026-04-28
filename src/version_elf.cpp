@@ -46,10 +46,8 @@
 
 #include <cstdint>
 
-// for OA_STRINGIFY()
-#include "oa/common.h"
-// for OA_* version macros
-#include "oa/version.h"
+#include "oa/common.h"   // for OA_STRINGIFY()
+#include "oa/version.h"  // for OA_* version macros
 
 // file description. this should be a string literal defined by build system
 #ifndef OA_RC_FILE_DESCRIPTION
