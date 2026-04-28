@@ -34,7 +34,9 @@ include_guard(GLOBAL)
 #   DESCRIPTION text    Brief file description. On Windows, the text will be
 #                       displayed as the File Description field both when
 #                       viewing the file properties and when hovering the mouse
-#                       over the file in Explorer to view the info popup.
+#                       over the file in Explorer to view the info popup. The
+#                       text will also be available via the OA_DESCRIPTION
+#                       property that will be added to the target.
 #
 function(oa_embed_version_info target)
     cmake_parse_arguments(ARG "" "DESCRIPTION" "" ${ARGN})
@@ -42,6 +44,11 @@ function(oa_embed_version_info target)
     if(NOT ARG_DESCRIPTION)
         message(FATAL_ERROR "DESCRIPTION argument is required")
     endif()
+    # set OA_DESCRIPTION using description text
+    set_target_properties(
+        ${target} PROPERTIES
+        OA_DESCRIPTION "${ARG_DESCRIPTION}"
+    )
     # if not on Windows use version_elf.cpp to create a separate object library
     if(NOT WIN32)
         add_library(
