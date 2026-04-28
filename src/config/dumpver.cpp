@@ -92,6 +92,12 @@ bool parse_args(cli_options& opts, int argc, char** argv)
       return false;
     }
   }
+  // if not printing help or version, path is required, so error if missing
+  if (!opts.help && !opts.version && opts.path.empty()) {
+    std::cerr << "Error: Missing required value for FILE argument" << std::endl;
+    return false;
+  }
+  // ok, done
   return true;
 }
 
@@ -116,7 +122,7 @@ int main(int argc, char** argv)
   // load version info from file
   oa::config::version_info info;
   try {
-    info = std::filesystem::path{argv[1]};
+    info = opts.path;
   }
   catch (const std::exception& exc) {
     std::cerr << "Exception: " << exc.what() << std::endl;
