@@ -32,6 +32,7 @@ install(
 # note: oa_config always built shared so linker PDB file can always be used
 oa_pdb_install(oa_config CONFIGURATIONS Debug COMPONENT Development)
 oa_embed_version_info(oa_config DESCRIPTION "OA Configuration Library")
+oa_check_version_info(oa_config)
 
 # oa_dumpver: prints version info embedded in OA binaries
 # note: although provided for testing purposes this could be useful in general
@@ -42,6 +43,7 @@ target_link_libraries(oa_dumpver PRIVATE oa_config)
 # use snake-case style for executables
 set_target_properties(oa_dumpver PROPERTIES OUTPUT_NAME "oa-dumpver")
 oa_embed_version_info(oa_dumpver DESCRIPTION "OA Version Dumper")
+oa_check_version_info(oa_dumpver)
 # -h, --help tests
 add_test(NAME oa_dumpver_h COMMAND oa_dumpver -h)
 add_test(NAME oa_dumpver_help COMMAND oa_dumpver --help)
@@ -59,66 +61,3 @@ set_tests_properties(
     PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
 )
 
-# function to construct a PASS_REGULAR_EXPRESSION for a oa_dumpver test
-# TODO: should break this out for other targets later
-function(oa_dumpver_test_regex target outvar)
-    cmake_parse_arguments(ARG "" "DESCRIPTION" "" ${ARGN})
-    # use ODIN_(MAJOR|MINOR|PATCH)_VERSION values to construct 64-bit hex value
-    math(
-        EXPR hex_version
-        "(${ODIN_MAJOR_VERSION} << 0x30) + (${ODIN_MINOR_VERSION} << 0x20)"
-        OUTPUT_FORMAT HEXADECIMAL
-    )
-    math(
-        EXPR hex_version
-        "${hex_version} + (${ODIN_PATCH_VERSION} << 0x10)"
-        OUTPUT_FORMAT HEXADECIMAL
-    )
-    # pad hex value with leading zeros so total length is 18 characters. the
-    # extra two characters come from the leading "0x" prepended
-    string(LENGTH "${hex_version}" hex_version_len)
-    math(EXPR version_padding "18 - ${hex_version_len}")
-    # need to pad with zeroes
-    if(version_padding GREATER 0)
-        string(REPEAT "0" ${version_padding} version_zeroes)
-        string(REPLACE "0x" "0x${version_zeroes}" hex_version "${hex_version}")
-    endif()
-    string(
-        CONCAT test_regex
-        "product:[ ]+OA Software Suite\n"
-        "company:[ ]+OA Developers\n"
-        "description:[ ]+${ARG_DESCRIPTION}\n"
-        "version number:[ ]+${hex_version}\n"
-        "version string:[ ]+${ODIN_VERSION}\n"
-        "original name:[ ]+$<TARGET_FILE_NAME:${target}>\n"
-    )
-    # write to outvar
-    set(${outvar} "${test_regex}" PARENT_SCOPE)
-endfunction()
-
-# version dump test for oa_config
-add_test(
-    NAME oa_config_dumpver_test
-    COMMAND oa_dumpver $<TARGET_FILE:oa_config>
-)
-oa_dumpver_test_regex(
-    oa_config oa_config_dumpver_regex
-    DESCRIPTION "OA Configuration Library"
-)
-set_tests_properties(
-    oa_config_dumpver_test PROPERTIES
-    PASS_REGULAR_EXPRESSION "${oa_config_dumpver_regex}"
-)
-# version dump test for oa_dumpver itself
-add_test(
-    NAME oa_dumpver_dumpver_test
-    COMMAND oa_dumpver $<TARGET_FILE:oa_dumpver>
-)
-oa_dumpver_test_regex(
-    oa_dumpver oa_dumpver_dumpver_regex
-    DESCRIPTION "OA Version Dumper"
-)
-set_tests_properties(
-    oa_dumpver_dumpver_test PROPERTIES
-    PASS_REGULAR_EXPRESSION "${oa_dumpver_dumpver_regex}"
-)

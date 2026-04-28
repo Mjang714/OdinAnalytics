@@ -37,3 +37,4 @@ install(
 # install PDB when building for Debug config
 oa_pdb_install(oa_static_data_cache CONFIGURATIONS Debug COMPONENT Development)
 oa_embed_version_info(oa_static_data_cache DESCRIPTION "OA Static Data Library")
+oa_check_version_info(oa_static_data_cache)
