@@ -44,6 +44,9 @@ target_link_libraries(oa_dumpver PRIVATE oa_config)
 set_target_properties(oa_dumpver PROPERTIES OUTPUT_NAME "oa-dumpver")
 oa_embed_version_info(oa_dumpver DESCRIPTION "OA Version Dumper")
 oa_check_version_info(oa_dumpver)
+# install rule for oa_dumpver + ensure relocatable on install by setting RPATH
+install(TARGETS oa_dumpver COMPONENT Runtime)
+set_target_properties(oa_dumpver PROPERTIES INSTALL_RPATH "$ORIGIN/../lib")
 # -h, --help tests
 add_test(NAME oa_dumpver_h COMMAND oa_dumpver -h)
 add_test(NAME oa_dumpver_help COMMAND oa_dumpver --help)
@@ -60,4 +63,9 @@ set_tests_properties(
     oa_dumpver_version PROPERTIES
     PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
 )
-
+# test error reported if run with no arguments
+add_test(NAME oa_dumpver COMMAND oa_dumpver)
+set_tests_properties(
+    oa_dumpver PROPERTIES
+    PASS_REGULAR_EXPRESSION "Missing required value for FILE argument"
+)
