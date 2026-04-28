@@ -31,6 +31,7 @@ const auto program_usage = "Usage: " + progname + " [-h] [-v] FILE\n"
   "  * description\n"
   "  * version number\n"
   "  * version string\n"
+  "  * original name\n"
   "\n"
   "On Windows input files should be OA PE32[+] binaries while on Linux or\n"
   "related platforms input files should be ELF shared objects or executables.\n"
@@ -128,6 +129,7 @@ int main(int argc, char** argv)
     "description:     " << info.description() << "\n" <<
     "version number:  0x" << info.version_hex() << "\n" <<
     "version string:  " << info.version() << "\n" <<
+    "original name:   " << info.filename() << "\n" <<
     std::flush;
   return EXIT_SUCCESS;
 }

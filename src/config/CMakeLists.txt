@@ -90,6 +90,7 @@ function(oa_dumpver_test_regex target outvar)
         "description:[ ]+${ARG_DESCRIPTION}\n"
         "version number:[ ]+${hex_version}\n"
         "version string:[ ]+${ODIN_VERSION}\n"
+        "original name:[ ]+$<TARGET_FILE_NAME:${target}>\n"
     )
     # write to outvar
     set(${outvar} "${test_regex}" PARENT_SCOPE)
