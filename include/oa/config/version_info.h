@@ -114,6 +114,17 @@ public:
   std::string_view description() const noexcept;
 
   /**
+   * Return a view of the binary file's original file name.
+   *
+   * This is the name of the file bestowed at build time. On Windows, this is
+   * the `StringFileInfo\040904E4\OriginalFileName` resource, while on Unix-
+   * likes, it corresponds to the `oa.filename` ELF object section.
+   *
+   * If not present an empty view is returned.
+   */
+  std::string_view filename() const noexcept;
+
+  /**
    * Return a view of the product name string if present.
    *
    * This represents the overall product suite that the binary is part of. For

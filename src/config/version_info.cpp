@@ -564,6 +564,16 @@ version_info::description() const noexcept
 }
 
 std::string_view
+version_info::filename() const noexcept
+{
+#if defined(_WIN32)
+  return version_string_info_1252(impl_->data_, "OriginalFileName");
+#else
+  return impl_->filename_;
+#endif  // !defined(_WIN32)
+}
+
+std::string_view
 version_info::product() const noexcept
 {
 #if defined(_WIN32)
