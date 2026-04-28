@@ -141,3 +141,58 @@ function(oa_embed_version_info target)
     target_sources(${target} PRIVATE "${res_outdir_genex}/${res_outname}")
     target_link_libraries(${target} PRIVATE "${res_outdir_genex}/${res_outname}")
 endfunction()
+
+##
+# Add a test to validate the embedded version information with oa-dumpver.
+#
+# This function uses add_test() to add a test that calls oa-dumpver on the
+# specified target's output file and then checks that all the retrieved version
+# information matches what has been configured during the build.
+#
+# The target's OA_DESCRIPTION property is read to get the description text.
+#
+# Arguments:
+#   target      Library or executable target with embedded version info
+#
+function(oa_check_version_info target)
+    # get OA_DESCRIPTION property from target for description text
+    get_target_property(description ${target} OA_DESCRIPTION)
+    # use ODIN_(MAJOR|MINOR|PATCH)_VERSION values to construct 64-bit hex value
+    math(
+        EXPR hex_version
+        "(${ODIN_MAJOR_VERSION} << 0x30) + (${ODIN_MINOR_VERSION} << 0x20)"
+        OUTPUT_FORMAT HEXADECIMAL
+    )
+    math(
+        EXPR hex_version
+        "${hex_version} + (${ODIN_PATCH_VERSION} << 0x10)"
+        OUTPUT_FORMAT HEXADECIMAL
+    )
+    # pad hex value with leading zeros so total length is 18 characters. the
+    # extra two characters come from the leading "0x" prepended
+    string(LENGTH "${hex_version}" hex_version_len)
+    math(EXPR version_padding "18 - ${hex_version_len}")
+    # need to pad with zeroes
+    if(version_padding GREATER 0)
+        string(REPEAT "0" ${version_padding} version_zeroes)
+        string(REPLACE "0x" "0x${version_zeroes}" hex_version "${hex_version}")
+    endif()
+    string(
+        CONCAT test_regex
+        "product:[ ]+OA Software Suite\n"
+        "company:[ ]+OA Developers\n"
+        "description:[ ]+${description}\n"
+        "version number:[ ]+${hex_version}\n"
+        "version string:[ ]+${ODIN_VERSION}\n"
+        "original name:[ ]+$<TARGET_FILE_NAME:${target}>\n"
+    )
+    # add oa_dumpver test for target + set pass regex to test_regex
+    add_test(
+        NAME ${target}_version_check
+        COMMAND oa_dumpver $<TARGET_FILE:${target}>
+    )
+    set_tests_properties(
+        ${target}_version_check PROPERTIES
+        PASS_REGULAR_EXPRESSION "${test_regex}"
+    )
+endfunction()
