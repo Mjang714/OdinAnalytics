@@ -69,11 +69,9 @@ namespace oa::enum_mappers {
 	oa::time::DayCountRule MapInputToDayCountEnum(const std::string& input_str)
 	{
 		std::string key_str = input_str;
-// disable C4242, C4244 warnings about int being narrowed to char
-OA_MSVC_WARNING_PUSH()
-OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
-OA_MSVC_WARNING_POP()
+
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return toupper(c); });
+
 
 		if (TimeEnumMap().contains(key_str))
 			return TimeEnumMap().at(key_str);
@@ -100,10 +98,7 @@ OA_MSVC_WARNING_POP()
 	{
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-			std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
-		OA_MSVC_WARNING_POP()
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return toupper(c); });
 
 			if (DateAdjustMap().contains(key_str))
 				return DateAdjustMap().at(key_str);
@@ -140,10 +135,7 @@ OA_MSVC_WARNING_POP()
 	derived_time::DateDirection MapInputToDateDir(const std::string& input_str) {
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
-		OA_MSVC_WARNING_POP()
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return toupper(c); });
 
 			if (DateDirectionMap().contains(key_str))
 				return DateDirectionMap().at(key_str);
@@ -190,10 +182,7 @@ OA_MSVC_WARNING_POP()
 	derived_time::Frequency MapInputToFreq(const std::string& input_str) {
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
-		OA_MSVC_WARNING_POP()
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return toupper(c); });
 
 		if (FreqMap().contains(key_str))
 			return FreqMap().at(key_str);
@@ -234,10 +223,7 @@ OA_MSVC_WARNING_POP()
 	derived_time::StubType MapInputToStub(const std::string& input_str){
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return std::toupper(c); });
-		OA_MSVC_WARNING_POP()
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return toupper(c); });
 
 		if (CFStubMap().contains(key_str))
 			return CFStubMap().at(key_str);
@@ -272,11 +258,7 @@ OA_MSVC_WARNING_POP()
 	derived_time::CalcType MapInputToCalcType(const std::string& input_str) {
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), 
-												[](unsigned char c) { return std::toupper(c); });
-		OA_MSVC_WARNING_POP()
+		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), [](unsigned char c) { return toupper(c); });
 
 		if (CalcTypeMap().contains(key_str))
 			return CalcTypeMap().at(key_str);

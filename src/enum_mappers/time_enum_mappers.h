@@ -11,6 +11,11 @@
 namespace oa::enum_mappers {
 
 
+constexpr char toupper(char c) noexcept
+{
+  return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
+}   
+
 
 /// <summary>
 /// returns an DayCountRule enum from a given string
