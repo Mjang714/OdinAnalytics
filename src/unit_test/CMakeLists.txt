@@ -78,25 +78,37 @@ target_link_libraries(
 if(TARGET oxl_api)
     target_link_libraries(oa_unit_test PRIVATE oxl_api)
 endif()
+# link against XLL SDK for xlcall32_stub tests as they include XLCALL.H
+# note: Excel12[v]() symbol references typically would have been provided by
+# oxl_api since it links against XLLSDK::Framework which compiles XLCALL.CPP
+if(TARGET xlcall32_stub)
+    target_link_libraries(oa_unit_test PRIVATE XLLSDK::SDK12)
+endif()
 # link against oa_accel and XLL SDK as necessary
 if(TARGET oa_accel)
     target_link_libraries(oa_unit_test PRIVATE oa_accel XLLSDK::SDK)
-    # ensure that target is built after xlcall32_stub to ensure XLCALL32 DLL
-    # exists before gtest_discover_tests() invokes oa_unit_test
-    add_dependencies(oa_unit_test xlcall32_stub)
-    # add_custom_command(
-    #     TARGET oa_unit_test POST_BUILD
-    #     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${Excel_XLCALL32_DLL}"
-    #             "$<TARGET_FILE_DIR:oa_unit_test>"
-    #     COMMENT "Copying XLCALL32.DLL to $<TARGET_FILE_DIR:oa_unit_test>"
-    #     VERBATIM
-    # )
 endif()
 # ensure before oa_unit_test is built that static data is correctly copied.
 # although we could have hung this as a post-build command, this more correctly
 # chains the dependency of oa_unit_test on the static data being located in the
 # same directory as the project artifacts (for local builds)
 add_dependencies(oa_unit_test oa_copy_static_data)
+# ensure that xlcall32_stub is built before oa_unit_test. if linking against
+# oxl_api, which indirectly links against XLCALL32.LIB, or oa_accel, which
+# directly links against XLCALL32.LIB, XLCALL32.DLL needs to be available at
+# runtime. therefore, we must have the XLCALL32.DLL stub built before
+# oa_unit_test. otherwise, oa_unit_test will not load correctly when
+# gtest_discover_tests() is called and break the build.
+#
+# note:
+#
+# this issue was *not* caught on CI because currently we don't make any calls
+# to XLCALL32.DLL exported functions so the linker likely just stripped out the
+# unused function references as part of its optimization pass.
+#
+if(TARGET xlcall32_stub)
+    add_dependencies(oa_unit_test xlcall32_stub)
+endif()
 
 # enable defining OA_UNITY_ID for each agglomerated TU during unity builds
 # note: disabled for now as it is unused

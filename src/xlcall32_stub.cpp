@@ -1,6 +1,6 @@
 /**
  * @file xlcall32_stub.cpp
- * @author Derek Huabg
+ * @author Derek Huang
  * @brief C++ XLCALL32.DLL stub implementtation
  * @copyright MIT License
  *
