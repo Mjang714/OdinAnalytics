@@ -10,12 +10,6 @@
 
 namespace oa::enum_mappers {
 
-//I think we should place this in some auxillary file rather than in enum_mappers 
-
-constexpr char ToUpper(char c) noexcept
-{
-  return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
-}   
 
 
 /// <summary>
