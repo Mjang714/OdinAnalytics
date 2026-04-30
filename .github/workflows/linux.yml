@@ -108,8 +108,7 @@ jobs:
       # run CPack to create a self-extracting + standard tarball
       - name: Package
         id: cpack-package
-        # only run on non-unity scheduled jobs as a nightly build
-        # FIXME: add back github.event_name == 'schedule' check
+        # run for all non-unity jobs
         if: ${{ matrix.unity == 'off' }}
         run: |
           cpack -B build/packages -G "STGZ;TGZ" --config build/CPackConfig.cmake
