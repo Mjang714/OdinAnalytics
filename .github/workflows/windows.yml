@@ -211,3 +211,27 @@ jobs:
             --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
             --config Release `
             --component Development
+      # run CPack to get the ZIP archive
+      - name: Package
+        id: cpack-package
+        # only run on non-unity scheduled jobs as a nightly build
+        # FIXME: add back github.event_name == 'schedule' check
+        if: ${{ matrix.unity == 'off' }}
+        run: |
+          $build_dir = "build_windows_$(OaPlatformTranslate "${{ matrix.arch }}")"
+          # note: for multi-config generators best to specify config with -C
+          cpack -B $build_dir/packages -G ZIP -C Release `
+            --config $build_dir/CPackConfig.cmake
+          # record .zip path in outupt for upload step
+          echo "cpack-zip=$(Get-ChildItem -Name $build_dir/*.zip)" >> "$GITHUB_OUTPUT"
+      # upload packages to the workflow page
+      - name: Upload ZIP
+        # like the packaging step only run non-unity scheduled jobs
+        # FIXME: add back github.event_name == 'schedule' check
+        if: ${{ matrix.unity == 'off' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-${{ matrix.os }}-zip
+          path: ${{ steps.cpack-package.outputs.cpack-zip }}
+          # already archived so don't archive
+          archive: false
