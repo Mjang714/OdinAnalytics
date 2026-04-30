@@ -225,7 +225,7 @@ jobs:
             --config $build_dir\CPackConfig.cmake
           # record .zip path in output for upload step
           # note: need to explicitly include packaging directory again
-          $cpack_zip = "$build_dir\packages"
+          $cpack_zip = "$build_dir\packages\"
           $cpack_zip += "$(Get-ChildItem -Name $build_dir\packages\*.zip)"
           echo "cpack-zip=$cpack_zip" >> "$GITHUB_OUTPUT"
       # upload packages to the workflow page
