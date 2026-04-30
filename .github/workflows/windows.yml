@@ -218,6 +218,8 @@ jobs:
         # FIXME: add back github.event_name == 'schedule' check
         if: ${{ matrix.unity == 'off' }}
         run: |
+          # include PowerShell helpers
+          . .\tools\common.ps1
           $build_dir = "build_windows_$(OaPlatformTranslate "${{ matrix.arch }}")"
           # note: for multi-config generators best to specify config with -C
           cpack -B $build_dir/packages -G ZIP -C Release `
