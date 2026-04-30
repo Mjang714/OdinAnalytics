@@ -222,10 +222,11 @@ jobs:
           . .\tools\common.ps1
           $build_dir = "build_windows_$(OaPlatformTranslate "${{ matrix.arch }}")"
           # note: for multi-config generators best to specify config with -C
-          cpack -B $build_dir/packages -G ZIP -C Release `
-            --config $build_dir/CPackConfig.cmake
-          # record .zip path in outupt for upload step
-          echo "cpack-zip=$(Get-ChildItem -Name $build_dir/*.zip)" >> "$GITHUB_OUTPUT"
+          cpack -B $build_dir\packages -G ZIP -C Release `
+            --config $build_dir\CPackConfig.cmake
+          # record .zip path in output for upload step
+          echo "cpack-zip=$(Get-ChildItem -Name $build_dir\packages\*.zip)" >> `
+            "$GITHUB_OUTPUT"
       # upload packages to the workflow page
       - name: Upload ZIP
         # like the packaging step only run non-unity scheduled jobs
