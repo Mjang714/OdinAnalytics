@@ -71,7 +71,7 @@ namespace oa::enum_mappers {
 	{
 		std::string key_str = input_str;
 
-		std::ranges::for_each(key_str, [](unsigned char c) { return oa::to_upper(c); });
+		std::ranges::for_each(key_str, [](auto& c) { return oa::to_upper(c); });
 
 
 		if (TimeEnumMap().contains(key_str))
@@ -99,7 +99,7 @@ namespace oa::enum_mappers {
 	{
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		std::ranges::for_each(key_str, [](unsigned char c) { return oa::to_upper(c); });
+		std::ranges::for_each(key_str, [](auto& c) { return oa::to_upper(c); });
 			if (DateAdjustMap().contains(key_str))
 				return DateAdjustMap().at(key_str);
 			else
@@ -135,7 +135,7 @@ namespace oa::enum_mappers {
 	derived_time::DateDirection MapInputToDateDir(const std::string& input_str) {
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		std::ranges::for_each(key_str, [](unsigned char c) { return oa::to_upper(c); });
+		std::ranges::for_each(key_str, [](auto& c) { return oa::to_upper(c); });
 
 			if (DateDirectionMap().contains(key_str))
 				return DateDirectionMap().at(key_str);
@@ -182,7 +182,7 @@ namespace oa::enum_mappers {
 	derived_time::Frequency MapInputToFreq(const std::string& input_str) {
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		std::ranges::for_each(key_str, [](unsigned char c) { return oa::to_upper(c); });
+		std::ranges::for_each(key_str, [](auto& c) { return oa::to_upper(c); });
 
 		if (FreqMap().contains(key_str))
 			return FreqMap().at(key_str);
@@ -223,7 +223,7 @@ namespace oa::enum_mappers {
 	derived_time::StubType MapInputToStub(const std::string& input_str){
 		std::string key_str = input_str;
 		// disable C4242, C4244 warnings about int being narrowed to char
-		std::ranges::for_each(key_str, [](unsigned char c) { return oa::to_upper(c); });
+		std::ranges::for_each(key_str, [](auto& c) { return oa::to_upper(c); });
 
 		if (CFStubMap().contains(key_str))
 			return CFStubMap().at(key_str);
@@ -257,7 +257,7 @@ namespace oa::enum_mappers {
 
 	derived_time::CalcType MapInputToCalcType(const std::string& input_str) {
 		std::string key_str = input_str;
-		std::ranges::for_each(key_str, [](unsigned char c) { return oa::to_upper(c); });
+		std::ranges::for_each(key_str, [](auto& c) { return oa::to_upper(c); });
 		if (CalcTypeMap().contains(key_str))
 			return CalcTypeMap().at(key_str);
 		else
