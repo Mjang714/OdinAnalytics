@@ -116,10 +116,9 @@ jobs:
           echo "cpack-sh=$(ls build/packages/*.sh)" >> "$GITHUB_OUTPUT"
           echo "cpack-tgz=$(ls build/packages/*.tar.gz)" >> "$GITHUB_OUTPUT"
       # upload packages to the workflow page
+      # note: only done when run on schedule for non-unity jobs
       - name: Upload STGZ
-        # like the packaging step only run non-unity scheduled jobs
-        # FIXME: add back github.event_name == 'schedule' check
-        if: ${{ matrix.unity == 'off' }}
+        if: ${{ github.event_name == 'schedule' && matrix.unity == 'off' }}
         uses: actions/upload-artifact@v7
         with:
           name: nightly-${{ matrix.os }}-sh
@@ -127,8 +126,7 @@ jobs:
           # don't archive the single file
           archive: false
       - name: Upload TGZ
-        # FIXME: add back github.event_name == 'schedule' check
-        if: ${{ matrix.unity == 'off' }}
+        if: ${{ github.event_name == 'schedule' && matrix.unity == 'off' }}
         uses: actions/upload-artifact@v7
         with:
           name: nightly-${{ matrix.os }}-tgz
