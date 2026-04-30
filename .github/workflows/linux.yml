@@ -93,7 +93,9 @@ jobs:
         run: |
           chmod +x build.sh
           ./build.sh -c Release -Ca \
-            -DCMAKE_UNITY_BUILD=$(echo ${{ matrix.unity }} | tr a-z A-Z)
+            -DCMAKE_UNITY_BUILD=$(echo ${{ matrix.unity }} | tr a-z A-Z) \
+            -DODIN_GITHUB_ACTIONS_RUNNER=${{ matrix.os }} \
+            -DODIN_GITHUB_ACTIONS_ARCH=$(echo ${{ runner.arch }} | tr A-Z a-z)
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: ctest --test-dir build -j$(nproc) --output-on-failure
@@ -108,13 +110,8 @@ jobs:
         # only run on non-unity scheduled jobs as a nightly build
         # FIXME: add back github.event_name == 'schedule' check
         if: ${{ matrix.unity == 'off' }}
-        # ensure matrix runner name + runner arch are in file name
         run: |
-          cpack \
-            -DCPACK_SYSTEM_NAME=${{ matrix.os }}-$(echo ${{ runner.arch }} | tr A-Z a-z) \
-            -B build/packages \
-            -G "STGZ;TGZ" \
-            --config build/CPackConfig.cmake
+          cpack -B build/packages -G "STGZ;TGZ" --config build/CPackConfig.cmake
       # upload packages to the workflow page
       - name: Upload Artifacts
         # like the packaging step only run non-unity scheduled jobs
