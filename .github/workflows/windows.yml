@@ -179,7 +179,7 @@ jobs:
             "`"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}`"" `
             "`"-DXLLSDK_ROOT=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK`"" `
             "`"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD`"" `
-            "`"-DODIN_GITHUB_ACTIONS_RUNNER`=${{ matrix.os }}"" `
+            "`"-DODIN_GITHUB_ACTIONS_RUNNER=${{ matrix.os }}`"" `
             "`"-DODIN_GITHUB_ACTIONS_ARCH=$(OaPlatformTranslate "${{ matrix.arch }}")`""
       # note: we don't have a nice wrapper script for this yet
       - name: Test
