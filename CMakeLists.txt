@@ -289,3 +289,13 @@ install(
 # install rule for the calendar data. we consider this part of the Runtime
 # component because it is required for some libraries to function at runtime
 install(DIRECTORY static_data/calendars DESTINATION share/OA COMPONENT Runtime)
+
+# set variables for CPack
+# TODO: don't need to set CPACK_PACKAGE_NAME when project is renamed to OA
+set(CPACK_PACKAGE_NAME "OA")
+set(CPACK_PACKAGE_VENDOR "OA Developers")
+set(CPACK_PACKAGE_VERSION "${ODIN_VERSION}")
+set(CPACK_RESOURCE_FILE_LICENSE LICENSE)
+set(CPACK_RESOURCE_FILE_README README.md)
+# generate CPackConfig.cmake in build directory
+include(CPack)
