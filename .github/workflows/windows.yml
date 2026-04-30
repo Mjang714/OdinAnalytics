@@ -225,9 +225,9 @@ jobs:
             --config $build_dir\CPackConfig.cmake
           # record .zip path in output for upload step
           # note: need to explicitly include packaging directory again
-          $step_output = "cpack-zip=$build_dir\packages"
-          $step_output += "$(Get-ChildItem -Name $build_dir\packages\*.zip)"
-          echo "cpack-zip=$step_output" >> "$GITHUB_OUTPUT"
+          $cpack_zip = "$build_dir\packages"
+          $cpack_zip += "$(Get-ChildItem -Name $build_dir\packages\*.zip)"
+          echo "cpack-zip=$cpack_zip" >> "$GITHUB_OUTPUT"
       # upload packages to the workflow page
       - name: Upload ZIP
         # like the packaging step only run non-unity scheduled jobs
