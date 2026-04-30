@@ -98,7 +98,7 @@ namespace oa::enum_mappers {
 	oa::time::AdjRule MapInputToDayAdjustEnum(const std::string& input_str)
 	{
 		std::string key_str = input_str;
-		// disable C4242, C4244 warnings about int being narrowed to char
+		
 		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
 			if (DateAdjustMap().contains(key_str))
 				return DateAdjustMap().at(key_str);
@@ -134,28 +134,28 @@ namespace oa::enum_mappers {
 	//this is begining to smell and maybe we do some kind redesign 
 	derived_time::DateDirection MapInputToDateDir(const std::string& input_str) {
 		std::string key_str = input_str;
-		// disable C4242, C4244 warnings about int being narrowed to char
+		
 		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
 
-			if (DateDirectionMap().contains(key_str))
-				return DateDirectionMap().at(key_str);
-			else
-			{
-				throw std::invalid_argument{
+		if (DateDirectionMap().contains(key_str))
+			return DateDirectionMap().at(key_str);
+		else
+		{
+			throw std::invalid_argument{
 #if OA_HAS_CPP20_FORMAT
-					std::format(
-						"{}:{}:{}: {} is not a valid Date Direction convention",
-						__FILE__, __LINE__, __func__, input_str
-					)
-					
+				std::format(
+					"{}:{}:{}: {} is not a valid Date Direction convention",
+					__FILE__, __LINE__, __func__, input_str
+				)
+				
 #else
-					// __FILE__, __LINE__, __func__ let us avoid hardcoding
-					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
-						std::string{__func__} + ": " + input_str +
-						" is not a valid Date Direction convention"
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{__func__} + ": " + input_str +
+					" is not a valid Date Direction convention"
 #endif  // !OA_HAS_CPP20_FORMAT
-				};
-			}
+			};
+		}
 	}
 
 	const auto& FreqMap(){
@@ -181,7 +181,7 @@ namespace oa::enum_mappers {
 	//this is begining to smell and maybe we do some kind redesign 
 	derived_time::Frequency MapInputToFreq(const std::string& input_str) {
 		std::string key_str = input_str;
-		// disable C4242, C4244 warnings about int being narrowed to char
+		
 		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
 
 		if (FreqMap().contains(key_str))
@@ -222,7 +222,7 @@ namespace oa::enum_mappers {
 
 	derived_time::StubType MapInputToStub(const std::string& input_str){
 		std::string key_str = input_str;
-		// disable C4242, C4244 warnings about int being narrowed to char
+		
 		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
 
 		if (CFStubMap().contains(key_str))
