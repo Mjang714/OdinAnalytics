@@ -227,7 +227,7 @@ jobs:
           # note: need to explicitly include packaging directory again
           $cpack_zip = "$build_dir\packages\"
           $cpack_zip += "$(Get-ChildItem -Name $build_dir\packages\*.zip)"
-          echo "cpack-zip=$cpack_zip" >> "$GITHUB_OUTPUT"
+          echo "cpack-zip=$cpack_zip" >> "$env:GITHUB_OUTPUT"
       # upload packages to the workflow page
       - name: Upload ZIP
         # like the packaging step only run non-unity scheduled jobs
