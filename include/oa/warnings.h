@@ -8,6 +8,9 @@
 #ifndef OA_WARNINGS_H_
 #define OA_WARNINGS_H_
 
+// for OA_CONCAT(), OA_STRINGIFY()
+#include "oa/common.h"
+
 #ifdef _MSC_VER
 /**
  * Push MSVC warning state.
@@ -41,10 +44,12 @@
 /**
  * Disable specified GNU warning.
  *
- * @param wname Warning name, e.g. maybe-unitialized
+ * This uses multiple `OA_STRINGIFY()` calls to correctly quote arguments.
+ *
+ * @param wname Warning name, e.g. maybe-unitialized, without quotes
  */
 #define OA_GNU_WARNING_DISABLE(wname) \
-  _Pragma("GCC diagnostic warning \"-W" #wname "\"")
+  _Pragma(OA_STRINGIFY(GCC diagnostic warning OA_STRINGIFY(OA_CONCAT(-W, wname))))
 
 /**
  * Pop GNU warning state.

@@ -32,6 +32,9 @@ derived_time::Frequency MapInputToFreq(const std::string& input_str);
 OA_ENUM_MAPPERS_API
 derived_time::StubType MapInputToStub(const std::string& input_str);
 
+OA_ENUM_MAPPERS_API
+derived_time::CalcType MapInputToCalcType(const std::string& input_str);
+
 }  // namespace oa::enum_mappers
 
 #endif // !OA_ENUM_MAPPERS_TIME_ENUM_MAPPERS_H_
