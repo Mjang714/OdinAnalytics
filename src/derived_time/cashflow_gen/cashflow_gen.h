@@ -148,17 +148,28 @@ namespace oa::derived_time {
 			 */
 			Options& stub_date(time::Date date);
 
+			/**
+			 * Return the calculation type for the cash flow amount.
+			 */			
+			CalcType calc_type() const;
+
+			/**
+			 * Update the calculation type for the cash flow amount.
+			 */
+			Options& calc_type(CalcType type);
+
 		private:
+			CalcType calc_type_{CalcType::kFlat};                  // calculation type
 			Currency currency_{Currency::kUSD};                   // currency
 			DateDirection date_dir_{DateDirection::kBackward};    // date direction
 			CashflowType cashflow_type_{CashflowType::kFixed};    // cashflow type
 			ResetDirection reset_dir_{ResetDirection::kAdvance};  // reset direction
 			StubType stub_type_{StubType::kNone};                 // stub type
+			time::Date stub_date_;                                // stub date
 			BusinessDateFormula start_adj_;                       // start date adjustment
 			BusinessDateFormula end_adj_;                         // end date adjustment
 			BusinessDateFormula pay_adj_;                         // payment date adjustment
 			BusinessDateFormula fix_adj_;                         // fixing date adjustment
-			time::Date stub_date_;                                // stub date
 		};
 
 		static std::vector<CashflowStruct> CreateFixedCashflows(
@@ -174,21 +185,40 @@ namespace oa::derived_time {
 		static std::vector<CashflowStruct> CreateFixedCashflows(
 			const time::Date& start_date,
 			const time::Date& mat_date,
-			const time::Tenor reset_freq,
+			const time::Tenor& reset_freq,
 			const double notional,
 			const double rate,
 			const time::DayCountRule day_count_rule,
 			const Options& opts = {}
 		);
 		
-		static oa::time::Tenor MapResetFreqEnumToTenor(const oa::derived_time::Frequency reset_freq);
+		static oa::time::Tenor MapResetFreqEnumToTenor(
+			const Frequency reset_freq
+		);
 	private:
+		static int  DayCountDenominator(
+			const time::DayCountRule day_count_rule, 
+			const bool is_leap_year = false
+		);
+		
+		static double ComputeUSTStreetConvCoupon(
+			const CashflowStruct& cf,
+			const time::Tenor& reset_freq,
+			const time::DayCountRule day_count_rule
+		);
+
+		static void ComputeCoupon(
+			CashflowStruct& cf,
+			const time::Tenor& reset_freq,
+			const Options& opts,
+			const time::DayCountRule day_count_rule
+		);
 
 		static void StubDateAdjustments(
-			const oa::time::Date& start_date,
-			const oa::time::Date& mat_date,
-			std::vector<oa::time::Date>& unadjusted_start_dates,
-			std::vector<oa::time::Date>& unadjusted_end_dates,
+			const time::Date& start_date,
+			const time::Date& mat_date,
+			std::vector<time::Date>& unadjusted_start_dates,
+			std::vector<time::Date>& unadjusted_end_dates,
 			const Options& opts
 		);
 

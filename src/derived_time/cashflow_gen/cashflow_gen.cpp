@@ -154,13 +154,26 @@ CashflowGen::Options::stub_date(time::Date date)
 	return *this;
 }
 
+CalcType
+CashflowGen::Options::calc_type() const
+{
+	return calc_type_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::calc_type(CalcType type)	
+{
+	calc_type_ = type;
+	return *this;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CashFlowGen                                                                //
 ////////////////////////////////////////////////////////////////////////////////
 	std::vector<CashflowStruct> CashflowGen::CreateFixedCashflows(
 		const time::Date& start_date,
 		const time::Date& mat_date,
-		const time::Tenor reset_freq,
+		const time::Tenor& reset_freq,
 		const double notional,
 		const double rate,
 		const time::DayCountRule day_count_rule,
@@ -211,8 +224,10 @@ CashflowGen::Options::stub_date(time::Date date)
 			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
-
-		StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
+		if(opts.stub_type() != StubType::kNone) 
+		{
+			StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
+		}
 
 		cashflows.reserve(unadjusted_start_dates.size() + 1); // +1 for the final principal repayment
 		auto day_count = time::DayCounterFactory::GenerateDayCounter(day_count_rule);
@@ -228,7 +243,6 @@ CashflowGen::Options::stub_date(time::Date date)
 			cf.days = day_count->DayCount(cf.start_date, cf.end_date);
 			cf.cf_type = opts.cashflow_type();
 			cf.day_count_fraction = day_count->YearFraction(cf.start_date, cf.end_date);
-			cf.cashflow_amount = notional * (rate * cf.day_count_fraction);
 			cf.cf_curr = opts.currency();
 
 			// no fixing adjustment -- use start date
@@ -240,6 +254,8 @@ CashflowGen::Options::stub_date(time::Date date)
 			// otherwise, adjust end date
 			else
 				cf.fixing_date = cf.end_date + opts.fix_adjustment();
+			
+			ComputeCoupon(cf, reset_freq, opts, day_count_rule);
 			// using emplace_back and std::move though not sure if it is necessary here
 			cashflows.emplace_back(std::move(cf));
 		}
@@ -311,7 +327,7 @@ CashflowGen::Options::stub_date(time::Date date)
 			break;
 		}
 	}
-	
+
 	time::Tenor CashflowGen::MapResetFreqEnumToTenor(const Frequency reset_freq)
 	{
 		const static std::unordered_map<Frequency, time::Tenor> reset_freq_enum_to_tenor{
@@ -326,4 +342,77 @@ CashflowGen::Options::stub_date(time::Date date)
 		return reset_freq_enum_to_tenor.at(reset_freq);
 	}
 
+	void CashflowGen::ComputeCoupon(
+		CashflowStruct& cf, 
+		const time::Tenor& reset_freq, 
+		const Options& opts,
+		const time::DayCountRule day_count_rule
+	)
+	{
+		switch(opts.calc_type())
+		{
+			case CalcType::kFlat:
+				cf.cashflow_amount = cf.notional * cf.rate * cf.day_count_fraction;
+				break;
+			case CalcType::kBBGCalcType1:
+				[[fallthrough]];
+			case CalcType::kBBGCalcType2:
+				//this is really for when issue bond but the general coupon computations are the same so I am putting it in the same place for now. This can be refactored later if needed.
+				[[fallthrough]];
+			case CalcType::kUSTStreetConv:
+				//still need to think about what to do with stubs even though most research I have done on UST street convention seems to indicate that stubs are not used in this convention. For now, I am just going to assume that the reset frequency is the same for the stub and the regular coupons but this can be refactored later if needed.
+				cf.cashflow_amount = ComputeUSTStreetConvCoupon(cf, reset_freq, day_count_rule);
+				break;
+			default:
+				throw std::invalid_argument("Invalid calculation type provided");
+		}
+	}
+
+	
+
+	double CashflowGen::ComputeUSTStreetConvCoupon(
+		const CashflowStruct& cf,
+		const time::Tenor& reset_freq,
+		const time::DayCountRule day_count_rule
+	)
+	{
+		switch(reset_freq.GetValues().second)
+		{
+		case time::Tenors::kYears:
+			return cf.notional * cf.rate * reset_freq.GetValues().first;
+		case time::Tenors::kMonths:
+			//the idea here is to compute the monthly and multiply b the numer of months for cases like 18M coupons
+			return cf.notional * cf.rate * (1.0 / 12.0) * reset_freq.GetValues().first;
+		case time::Tenors::kWeeks:
+			//the idea here is to compute the weekly and multiply b the numer of weeks for cases like 10W coupons
+			return cf.notional * cf.rate * (1.0 / 52.0) * reset_freq.GetValues().first;
+		case time::Tenors::kDays:
+			return cf.notional * cf.rate * (1.0 /  CashflowGen::DayCountDenominator(day_count_rule, cf.fixing_date.IsLeap())) * reset_freq.GetValues().first;
+		default:
+			throw std::invalid_argument("Invalid calculation type for UST street convention");
+		}
+	}
+
+	int CashflowGen::DayCountDenominator(const oa::time::DayCountRule day_count_rule, const bool is_leap_year)
+	{
+		switch(day_count_rule)
+		{
+		case time::DayCountRule::kACT_ACT:
+			if (is_leap_year)
+				return 366;
+			[[fallthrough]];
+		case time::DayCountRule::kACT_365_FIXED:
+			return 365;
+		case time::DayCountRule::kACT_360:
+			[[fallthrough]];
+		case time::DayCountRule::k30_360_BOND_BASIS:
+			return 360;
+		default:
+			return 365;
+		}
+	}
+
+	
+
 }  // namespace oa::derived_time
+		
