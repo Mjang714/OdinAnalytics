@@ -125,12 +125,6 @@ Tenor::hash() const noexcept
 			result ^= (0xFF & num);
 			num >>= 8;
 		}
-
-		//that fact I need this function is really sign I messed up somewhere. Maybe we ca instead implement a hash function  using the string of the tenor?
-		bool Tenor::operator==(const Tenor& other) const
-		{
-			return this->m_number_ == other.m_number_ && this->m_time_unit_ == other.m_time_unit_;
-		}
 	}
 	// tenor unit fits in one byte so only hash low byte
 	result *= prime;
