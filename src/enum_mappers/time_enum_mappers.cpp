@@ -126,6 +126,7 @@ namespace oa::enum_mappers {
 			{"FWD", derived_time::DateDirection::kForward},
 			{"FORWARD", derived_time::DateDirection::kForward},
 			{"BCKWD", derived_time::DateDirection::kBackward},
+			{"BACKWARD", derived_time::DateDirection::kBackward},
 			{"BACKWARDS", derived_time::DateDirection::kBackward}
 		};
 		return dd_map;
