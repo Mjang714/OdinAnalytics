@@ -14,7 +14,7 @@ add_executable(
     derived_time/cashflow_gen/cashflow_gen_test.cpp
     derived_time/date_formula/business_date_formula_test.cpp
     derived_time/date_formula/date_formula_test.cpp
-    enum_mappers/enum_mappers_test.cpp
+    enum_mappers/time_enum_mappers_test.cpp
     fixed_string_test.cpp
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp

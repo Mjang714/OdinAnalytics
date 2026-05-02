@@ -138,4 +138,5 @@ namespace
     {
         EXPECT_THROW(oa::enum_mappers::MapInputToCalcType("INVALID"), std::invalid_argument);
     }
+    
 }
