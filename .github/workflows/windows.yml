@@ -178,7 +178,9 @@ jobs:
           .\build -a $(OaPlatformTranslate "${{ matrix.arch }}") -c Release -Ca `
             "`"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}`"" `
             "`"-DXLLSDK_ROOT=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK`"" `
-            "`"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD`""
+            "`"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD`"" `
+            "`"-DODIN_GITHUB_ACTIONS_RUNNER=${{ matrix.os }}`"" `
+            "`"-DODIN_GITHUB_ACTIONS_ARCH=$(OaPlatformTranslate "${{ matrix.arch }}")`""
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: |
@@ -209,3 +211,30 @@ jobs:
             --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
             --config Release `
             --component Development
+      # run CPack to get the ZIP archive
+      - name: Package
+        id: cpack-package
+        # run for all non-unity jobs
+        if: ${{ matrix.unity == 'off' }}
+        run: |
+          # include PowerShell helpers
+          . .\tools\common.ps1
+          $build_dir = "build_windows_$(OaPlatformTranslate "${{ matrix.arch }}")"
+          # note: for multi-config generators best to specify config with -C
+          cpack -B $build_dir\packages -G ZIP -C Release `
+            --config $build_dir\CPackConfig.cmake
+          # record .zip path in output for upload step
+          # note: need to explicitly include packaging directory again
+          $cpack_zip = "$build_dir\packages\"
+          $cpack_zip += "$(Get-ChildItem -Name $build_dir\packages\*.zip)"
+          echo "cpack-zip=$cpack_zip" >> "$env:GITHUB_OUTPUT"
+      # upload packages to the workflow page
+      # note: only done when run on schedule for non-unity jobs
+      - name: Upload ZIP
+        if: ${{ github.event_name == 'schedule' && matrix.unity == 'off' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-${{ matrix.os }}-zip
+          path: ${{ steps.cpack-package.outputs.cpack-zip }}
+          # already archived so don't archive
+          archive: false

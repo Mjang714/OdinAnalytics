@@ -351,3 +351,38 @@ install(
     FILE ${ODIN_TARGETS_FILE}
     COMPONENT Development
 )
+
+# set variables for CPack
+# note: although CPACK_PACKAGE_NAME defaults to PROJECT_NAME we want to
+# explicitly reuse its value in CPACK_PACKAGE_VENDOR
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VENDOR "${CPACK_PACKAGE_NAME} Developers")
+set(CPACK_PACKAGE_VERSION "${ODIN_VERSION}")
+# if running on GitHub Actions ODIN_GITHUB_ACTIONS_RUNNER and
+# ODIN_GITHUB_ACTIONS_ARCH need to be set. these will be used to set
+# CPACK_SYSTEM_NAME to influence CPACK_PACKAGE_FILE_NAME
+if(DEFINED ENV{GITHUB_ACTIONS})
+    if(NOT ODIN_GITHUB_ACTIONS_RUNNER)
+        message(
+            FATAL_ERROR
+            "ODIN_GITHUB_ACTIONS_RUNNER should be defined to the GitHub Actions "
+"runner image name, e.g. the value of jobs.<job_id>.runs-on"
+        )
+    endif()
+    if(NOT ODIN_GITHUB_ACTIONS_ARCH)
+        message(
+            FATAL_ERROR
+            "ODIN_GITHUB_ACTIONS_ARCH should be defined to the GitHub Actions "
+"runner architecture, e.g. runner.arch, or the build architecture itself, e.g. "
+"Win32, x64, etc."
+        )
+    endif()
+    set(
+        CPACK_SYSTEM_NAME
+        "${ODIN_GITHUB_ACTIONS_RUNNER}-${ODIN_GITHUB_ACTIONS_ARCH}"
+    )
+endif()
+set(CPACK_RESOURCE_FILE_LICENSE LICENSE)
+set(CPACK_RESOURCE_FILE_README README.md)
+# generate CPackConfig.cmake in build directory
+include(CPack)
