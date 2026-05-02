@@ -12,7 +12,8 @@ if(XLLSDK_FOUND)
             xl_api/xl_dictionary.cpp
             xl_api/xloper_converter.cpp
     )
-    add_library(OdinAnalytics::oxl_api ALIAS oxl_api)
+    # note: alias for consistency with exported namespaced targets
+    add_library(${PROJECT_NAME}::oxl_api ALIAS oxl_api)
     target_include_directories(
         oxl_api PUBLIC
         $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>

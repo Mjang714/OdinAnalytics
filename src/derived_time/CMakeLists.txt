@@ -8,7 +8,6 @@ add_library(
     date_formula/business_date_formula.cpp
     date_formula/date_formula.cpp
 )
-add_library(OdinAnalytics::oa_derived_time ALIAS oa_derived_time)
 target_include_directories(
     oa_derived_time PUBLIC
     $<BUILD_INTERFACE:${ODIN_INSTALL_DIR}>
