@@ -1,4 +1,4 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "helpers/utils.h"
 
 #include "enum_mappers/time_enum_mappers.h"
