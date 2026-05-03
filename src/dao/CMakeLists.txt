@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 # oa_dao: dao library
 # TODO: need better description comment here
 add_library(oa_dao calendar_dao.cpp)
-add_library(OdinAnalytics::oa_dao ALIAS oa_dao)
 target_include_directories(
     oa_dao PUBLIC
     $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>

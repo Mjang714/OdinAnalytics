@@ -10,6 +10,9 @@
 
 #include <typeinfo>
 
+// FIXME: don't use Boost for this task (forced usage requirement). we want to
+// avoid a find_dependency() call in the CMake config file; just use
+// abi::__cxa_demangle directly for this task for GCC/Clang
 #include <boost/core/demangle.hpp>
 
 // TODO: refactor existing code to only include ctti.h as necessary. rtti.h
