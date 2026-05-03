@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.23)
 # see README.md for build + test instructions
 
 project(
-    OdinAnalytics
+    OA
     VERSION 0.1.0
     DESCRIPTION "Nordic quantitative library sandbox"
     LANGUAGES C CXX
@@ -270,7 +270,23 @@ add_custom_target(
     VERBATIM
 )
 
+# oa_core: core header-only library
+# FIXME: currently oa/rtti.h still requires Boost
+# TODO: go through project targets to see which implicitly depend on this. note
+# that linkage could be PRIVATE or PUBLIC depending on header exposure
+add_library(oa_core INTERFACE)
+target_include_directories(
+    oa_core INTERFACE
+    $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
+    # note: build interface includes generated headers
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+# install rule for oa_core (provides just an IMPORTED target)
+install(TARGETS oa_core EXPORT odin_exports)
+
 add_subdirectory(src)
+add_subdirectory(test)
 
 # install rule for include/oa headers (excluding internal testing headers)
 # note: this is currently incomplete and only provides core + config headers
@@ -290,10 +306,57 @@ install(
 # component because it is required for some libraries to function at runtime
 install(DIRECTORY static_data/calendars DESTINATION share/OA COMPONENT Runtime)
 
+# CMake package configuration
+
+include(CMakePackageConfigHelpers)
+
+# CMake script install subdir
+set(ODIN_CMAKE_INSTALL_DIR lib/cmake/${PROJECT_NAME})
+# name of exported targets file
+set(ODIN_TARGETS_FILE ${PROJECT_NAME}Targets.cmake)
+# generate package config file
+set(ODIN_CONFIG_FILE cmake/${PROJECT_NAME}Config.cmake)
+# variables consumed:
+#
+#   PROJECT_NAME
+#   ODIN_TARGETS_FILE
+#
+configure_package_config_file(
+    ${ODIN_CONFIG_FILE}.in ${ODIN_CONFIG_FILE}
+    INSTALL_DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+)
+message(STATUS "Generated ${ODIN_CONFIG_FILE}")
+# generate package version file
+set(ODIN_CONFIG_VERSION_FILE cmake/${PROJECT_NAME}ConfigVersion.cmake)
+write_basic_package_version_file(
+    ${ODIN_CONFIG_VERSION_FILE}
+    VERSION ${ODIN_VERSION}
+    # TODO: no real compatibility guarantees so just use SameMajorVersion
+    COMPATIBILITY SameMajorVersion
+)
+message(STATUS "Generated ${ODIN_CONFIG_VERSION_FILE}")
+# install rule for config files
+install(
+    FILES
+        ${PROJECT_BINARY_DIR}/${ODIN_CONFIG_FILE}
+        ${PROJECT_BINARY_DIR}/${ODIN_CONFIG_VERSION_FILE}
+    DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+    COMPONENT Development
+)
+# install rule for exported targets
+install(
+    EXPORT odin_exports
+    DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+    NAMESPACE ${PROJECT_NAME}::
+    FILE ${ODIN_TARGETS_FILE}
+    COMPONENT Development
+)
+
 # set variables for CPack
-# TODO: don't need to set CPACK_PACKAGE_NAME when project is renamed to OA
-set(CPACK_PACKAGE_NAME "OA")
-set(CPACK_PACKAGE_VENDOR "OA Developers")
+# note: although CPACK_PACKAGE_NAME defaults to PROJECT_NAME we want to
+# explicitly reuse its value in CPACK_PACKAGE_VENDOR
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VENDOR "${CPACK_PACKAGE_NAME} Developers")
 set(CPACK_PACKAGE_VERSION "${ODIN_VERSION}")
 # if running on GitHub Actions ODIN_GITHUB_ACTIONS_RUNNER and
 # ODIN_GITHUB_ACTIONS_ARCH need to be set. these will be used to set
