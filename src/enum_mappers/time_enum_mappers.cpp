@@ -4,6 +4,7 @@
 #include <fstream>
 #include <unordered_map>
 
+#include "helpers/utils.h"
 #include "oa/platform.h"
 #include "oa/warnings.h"
 #include "oa/string.h"

@@ -20,6 +20,8 @@ set_target_properties(
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_enum_mappers INTERFACE OA_ENUM_MAPPERS_DLL)
 endif()
+# link against dependencies
+target_link_libraries(oa_enum_mappers PRIVATE oa_helpers)
 # install rule for oa_enum_mappers
 install(
     TARGETS oa_enum_mappers
