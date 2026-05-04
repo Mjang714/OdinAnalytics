@@ -157,8 +157,12 @@ namespace
     enum_name_mapper_invalid_argument<oa::time::AdjRule>{},
     std::pair{oa::derived_time::DateDirection::kForward, "FORWARD"},
     std::pair{oa::derived_time::DateDirection::kForward, "forward"},
+    std::pair{oa::derived_time::DateDirection::kForward, "FWD"},
+    std::pair{oa::derived_time::DateDirection::kForward, "fwd"},
     std::pair{oa::derived_time::DateDirection::kBackward, "BACKWARD"},
     std::pair{oa::derived_time::DateDirection::kBackward, "backward"},
+    std::pair{oa::derived_time::DateDirection::kBackward, "BCKWD"},
+    std::pair{oa::derived_time::DateDirection::kBackward, "bckwd"},
     std::pair{oa::derived_time::DateDirection::kBackward, "BACKWARDS"},
     std::pair{oa::derived_time::DateDirection::kBackward, "backwards"},
     // ...

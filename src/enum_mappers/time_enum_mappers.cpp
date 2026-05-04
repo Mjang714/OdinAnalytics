@@ -288,4 +288,9 @@ namespace oa::enum_mappers {
 			};
 		}
 	}
+
+	template<typename EnumType>
+	inline void PrintTo(const EnumType enum_value, std::ostream* os) {
+		*os << oa::utils::GetCleanName<EnumType>(enum_value);
+	}
 }
