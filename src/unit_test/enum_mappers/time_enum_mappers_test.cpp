@@ -93,7 +93,7 @@ namespace
     std::pair{oa::time::DayCountRule::kACT_360, "ACT_360"},
     std::pair{oa::time::DayCountRule::kACT_360, "act_360"},
     std::pair{oa::time::DayCountRule::kACT_360, "ACT360"},
-    std::pair{oa::time::DayCountRule::kACT_360, "acb360"},
+    std::pair{oa::time::DayCountRule::kACT_360, "act360"},
     std::pair{oa::time::DayCountRule::k30_360_BOND_BASIS, "30:360"},
     std::pair{oa::time::DayCountRule::k30_360_BOND_BASIS, "30/360"},
     std::pair{oa::time::DayCountRule::k30_360_BOND_BASIS, "30_360"},

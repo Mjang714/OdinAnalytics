@@ -295,29 +295,29 @@ namespace oa::enum_mappers {
 		return os << oa::utils::GetCleanName<time::DayCountRule>(val);
 	}
 
-	std::ostream& operator<<(std::ostream& os, time::AdjRule val)
-	{
-		return os << oa::utils::GetCleanName<time::AdjRule>(val);
-	}
+	// void operator<<(std::ostream& os, time::AdjRule val)
+	// {
+	// 	os << oa::utils::GetCleanName<time::AdjRule>(val);
+	// }
 
-	std::ostream& operator<<(std::ostream& os, derived_time::DateDirection val)
-	{
-		return os << oa::utils::GetCleanName<derived_time::DateDirection>(val);
-	}
+	// void operator<<(std::ostream& os, derived_time::DateDirection val)
+	// {
+	// 	os << oa::utils::GetCleanName<derived_time::DateDirection>(val);
+	// }
 
-	std::ostream& operator<<(std::ostream& os, derived_time::Frequency val)
-	{
-		return os << oa::utils::GetCleanName<derived_time::Frequency>(val);
-	}
+	// void operator<<(std::ostream& os, derived_time::Frequency val)
+	// {
+	// 	os << oa::utils::GetCleanName<derived_time::Frequency>(val);
+	// }
 
-	std::ostream& operator<<(std::ostream& os, derived_time::StubType val)
-	{
-		return os << oa::utils::GetCleanName<derived_time::StubType>(val);
-	}
+	// void operator<<(std::ostream& os, derived_time::StubType val)
+	// {
+	// 	os << oa::utils::GetCleanName<derived_time::StubType>(val);
+	// }
 
-	std::ostream& operator<<(std::ostream& os, derived_time::CalcType val)
-	{
-		return os << oa::utils::GetCleanName<derived_time::CalcType>(val);
-	}
+	// void operator<<(std::ostream& os, derived_time::CalcType val)
+	// {
+	// 	os << oa::utils::GetCleanName<derived_time::CalcType>(val);
+	// }
 
 }
