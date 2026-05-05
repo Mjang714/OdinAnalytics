@@ -84,8 +84,7 @@ namespace
     struct enum_name_mapper_test<enum_name_mapper_invalid_argument<T>>
     : enum_name_mapper_test<T> {};
 
-    // all the test cases where we map string -> enum
-    // note: actual list is much longer but this is trimmed for the comment
+    // all the test cases where we map string -> enum for all the different enums in our library. we also include some invalid cases to test that the mappers throw the expected exceptions for invalid input
     constexpr auto enum_mapping_test_inputs = std::make_tuple(
     std::pair{oa::time::DayCountRule::kACT_360, "ACT/360"},
     std::pair{oa::time::DayCountRule::kACT_360, "act/360"},
@@ -94,7 +93,7 @@ namespace
     std::pair{oa::time::DayCountRule::kACT_360, "ACT_360"},
     std::pair{oa::time::DayCountRule::kACT_360, "act_360"},
     std::pair{oa::time::DayCountRule::kACT_360, "ACT360"},
-    std::pair{oa::time::DayCountRule::kACT_360, "act360"},
+    std::pair{oa::time::DayCountRule::kACT_360, "acb360"},
     std::pair{oa::time::DayCountRule::k30_360_BOND_BASIS, "30:360"},
     std::pair{oa::time::DayCountRule::k30_360_BOND_BASIS, "30/360"},
     std::pair{oa::time::DayCountRule::k30_360_BOND_BASIS, "30_360"},

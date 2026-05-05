@@ -35,6 +35,24 @@ derived_time::StubType MapInputToStub(const std::string& input_str);
 OA_ENUM_MAPPERS_API
 derived_time::CalcType MapInputToCalcType(const std::string& input_str);
 
+OA_DERIVED_TIME_API
+std::ostream& operator<<(std::ostream& os, time::DayCountRule val);
+
+OA_DERIVED_TIME_API
+std::ostream& operator<<(std::ostream& os, time::AdjRule val);
+
+OA_DERIVED_TIME_API
+std::ostream& operator<<(std::ostream& os, derived_time::DateDirection val);
+
+OA_DERIVED_TIME_API
+std::ostream& operator<<(std::ostream& os, derived_time::Frequency val);
+
+OA_DERIVED_TIME_API
+std::ostream& operator<<(std::ostream& os, derived_time::StubType val);
+
+OA_DERIVED_TIME_API
+std::ostream& operator<<(std::ostream& os, derived_time::CalcType val);
+
 }  // namespace oa::enum_mappers
 
 #endif // !OA_ENUM_MAPPERS_TIME_ENUM_MAPPERS_H_
