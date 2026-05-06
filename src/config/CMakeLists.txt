@@ -74,3 +74,20 @@ set_tests_properties(
     oa_dumpver PROPERTIES
     PASS_REGULAR_EXPRESSION "Missing required value for FILE argument"
 )
+# check that oa-dumpver doesn't crash on incorrect file types by feeding its
+# own C++ source file as the input and checking the exception message
+add_test(
+    NAME oa_dumpver_cpp_input
+    COMMAND oa_dumpver "${CMAKE_CURRENT_SOURCE_DIR}/dumpver.cpp"
+)
+if(WIN32)
+    set_tests_properties(
+        oa_dumpver_cpp_input PROPERTIES
+        PASS_REGULAR_EXPRESSION "image file did not contain a resource section"
+    )
+else()
+    set_tests_properties(
+        oa_dumpver_cpp_input PROPERTIES
+        PASS_REGULAR_EXPRESSION "input stream doesn't point to an ELF file"
+    )
+endif()
