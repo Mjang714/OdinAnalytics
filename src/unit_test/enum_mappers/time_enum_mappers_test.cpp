@@ -260,7 +260,7 @@ namespace
     // partial specialization to turn index_sequence<Is...> -> index_sequence<Is>...
     template <std::size_t... Is>
     struct enum_name_mapper_types_impl<std::index_sequence<Is...>> {
-    using type = ::testing::Types<std::index_sequence<Is>...>;
+        using type = ::testing::Types<std::index_sequence<Is>...>;
     };
 
     // typed test types template
@@ -270,8 +270,8 @@ namespace
 
     // instantiate test types
     TYPED_TEST_SUITE(
-    EnumMappersTest,
-    enum_name_mapper_types<std::tuple_size_v<decltype(enum_mapping_test_inputs)>>
+        EnumMappersTest,
+        enum_name_mapper_types<std::tuple_size_v<decltype(enum_mapping_test_inputs)>>
     );
 
     // instantiate single test

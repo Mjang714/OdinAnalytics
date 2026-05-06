@@ -40,23 +40,18 @@ derived_time::CalcType MapInputToCalcType(const std::string& input_str);
 
 
 namespace oa::derived_time {
-    OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, time::DayCountRule val);
 
     OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, time::AdjRule val);
+    std::ostream& operator<<(std::ostream& os, DateDirection val);
 
     OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, derived_time::DateDirection val);
+    std::ostream& operator<<(std::ostream& os, Frequency val);
 
     OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, derived_time::Frequency val);
+    std::ostream& operator<<(std::ostream& os, StubType val);
 
     OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, derived_time::StubType val);
-
-    OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, derived_time::CalcType val);
+    std::ostream& operator<<(std::ostream& os, CalcType val);
 }
 
 //not sure if this makes sense to keep there was thinking of moving it time_enum.h bu then we would ened to add a cpp file 

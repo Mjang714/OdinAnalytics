@@ -294,27 +294,27 @@ namespace oa::enum_mappers {
 }
 
 namespace oa::derived_time {
-	std::ostream& operator<<(std::ostream& os, derived_time::DateDirection val)
+	std::ostream& operator<<(std::ostream& os, DateDirection val)
 	{
-		os << oa::utils::GetCleanName<derived_time::DateDirection>(val);
+		os << oa::utils::GetCleanName<DateDirection>(val);
 		return os;
 	}
 
-	std::ostream& operator<<(std::ostream& os, derived_time::Frequency val)
+	std::ostream& operator<<(std::ostream& os, Frequency val)
 	{
-		os << oa::utils::GetCleanName<derived_time::Frequency>(val);
+		os << oa::utils::GetCleanName<Frequency>(val);
 		return os;
 	}
 
-	std::ostream& operator<<(std::ostream& os, derived_time::StubType val)
+	std::ostream& operator<<(std::ostream& os, StubType val)
 	{
-		os << oa::utils::GetCleanName<derived_time::StubType>(val);
+		os << oa::utils::GetCleanName<StubType>(val);
 		return os;
 	}
 
-	std::ostream& operator<<(std::ostream& os, derived_time::CalcType val)
+	std::ostream& operator<<(std::ostream& os, CalcType val)
 	{
-		os << oa::utils::GetCleanName<derived_time::CalcType>(val);
+		os << oa::utils::GetCleanName<CalcType>(val);
 		return os;
 	}
 
@@ -322,13 +322,13 @@ namespace oa::derived_time {
 
 namespace oa::time {
 	
-	std::ostream& operator <<(std::ostream& os, DayCountRule val)
+	std::ostream& operator<<(std::ostream& os, DayCountRule val)
 	{
 		os << oa::utils::GetCleanName<DayCountRule>(val);
 		return os;
 	}
 
-	std::ostream& operator <<(std::ostream& os, AdjRule val)
+	std::ostream& operator<<(std::ostream& os, AdjRule val)
 	{
 		os << oa::utils::GetCleanName<AdjRule>(val);
 		return os;
