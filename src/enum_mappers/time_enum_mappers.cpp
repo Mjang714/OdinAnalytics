@@ -8,6 +8,7 @@
 #include "oa/platform.h"
 #include "oa/warnings.h"
 #include "oa/string.h"
+#include "helpers/utils.h"
 
 #if OA_HAS_CPP20_FORMAT
 #include <format>
@@ -290,34 +291,46 @@ namespace oa::enum_mappers {
 		}
 	}
 
-	std::ostream& operator<<(std::ostream& os, time::DayCountRule val)
+}
+
+namespace oa::derived_time {
+	std::ostream& operator<<(std::ostream& os, derived_time::DateDirection val)
 	{
-		return os << oa::utils::GetCleanName<time::DayCountRule>(val);
+		os << oa::utils::GetCleanName<derived_time::DateDirection>(val);
+		return os;
 	}
 
-	// void operator<<(std::ostream& os, time::AdjRule val)
-	// {
-	// 	os << oa::utils::GetCleanName<time::AdjRule>(val);
-	// }
+	std::ostream& operator<<(std::ostream& os, derived_time::Frequency val)
+	{
+		os << oa::utils::GetCleanName<derived_time::Frequency>(val);
+		return os;
+	}
 
-	// void operator<<(std::ostream& os, derived_time::DateDirection val)
-	// {
-	// 	os << oa::utils::GetCleanName<derived_time::DateDirection>(val);
-	// }
+	std::ostream& operator<<(std::ostream& os, derived_time::StubType val)
+	{
+		os << oa::utils::GetCleanName<derived_time::StubType>(val);
+		return os;
+	}
 
-	// void operator<<(std::ostream& os, derived_time::Frequency val)
-	// {
-	// 	os << oa::utils::GetCleanName<derived_time::Frequency>(val);
-	// }
+	std::ostream& operator<<(std::ostream& os, derived_time::CalcType val)
+	{
+		os << oa::utils::GetCleanName<derived_time::CalcType>(val);
+		return os;
+	}
 
-	// void operator<<(std::ostream& os, derived_time::StubType val)
-	// {
-	// 	os << oa::utils::GetCleanName<derived_time::StubType>(val);
-	// }
+}
 
-	// void operator<<(std::ostream& os, derived_time::CalcType val)
-	// {
-	// 	os << oa::utils::GetCleanName<derived_time::CalcType>(val);
-	// }
+namespace oa::time {
+	
+	std::ostream& operator <<(std::ostream& os, DayCountRule val)
+	{
+		os << oa::utils::GetCleanName<DayCountRule>(val);
+		return os;
+	}
 
+	std::ostream& operator <<(std::ostream& os, AdjRule val)
+	{
+		os << oa::utils::GetCleanName<AdjRule>(val);
+		return os;
+	}
 }

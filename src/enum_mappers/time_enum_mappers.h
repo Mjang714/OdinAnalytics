@@ -1,4 +1,5 @@
 #include <string>
+#include <ostream>
 
 #include "time/time_enums.h"
 #include "derived_time/derived_time_enums.h"
@@ -35,24 +36,37 @@ derived_time::StubType MapInputToStub(const std::string& input_str);
 OA_ENUM_MAPPERS_API
 derived_time::CalcType MapInputToCalcType(const std::string& input_str);
 
-OA_DERIVED_TIME_API
-std::ostream& operator<<(std::ostream& os, time::DayCountRule val);
-
-// OA_DERIVED_TIME_API
-// void operator<<(std::ostream& os, time::AdjRule val);
-
-// OA_DERIVED_TIME_API
-// void operator<<(std::ostream& os, derived_time::DateDirection val);
-
-// OA_DERIVED_TIME_API
-// void operator<<(std::ostream& os, derived_time::Frequency val);
-
-// OA_DERIVED_TIME_API
-// void operator<<(std::ostream& os, derived_time::StubType val);
-
-// OA_DERIVED_TIME_API
-// void operator<<(std::ostream& os, derived_time::CalcType val);
-
 }  // namespace oa::enum_mappers
 
+
+namespace oa::derived_time {
+    OA_ENUM_MAPPERS_API
+    std::ostream& operator<<(std::ostream& os, time::DayCountRule val);
+
+    OA_ENUM_MAPPERS_API
+    std::ostream& operator<<(std::ostream& os, time::AdjRule val);
+
+    OA_ENUM_MAPPERS_API
+    std::ostream& operator<<(std::ostream& os, derived_time::DateDirection val);
+
+    OA_ENUM_MAPPERS_API
+    std::ostream& operator<<(std::ostream& os, derived_time::Frequency val);
+
+    OA_ENUM_MAPPERS_API
+    std::ostream& operator<<(std::ostream& os, derived_time::StubType val);
+
+    OA_ENUM_MAPPERS_API
+    std::ostream& operator<<(std::ostream& os, derived_time::CalcType val);
+}
+
+//not sure if this makes sense to keep there was thinking of moving it time_enum.h bu then we would ened to add a cpp file 
+namespace oa::time {
+
+OA_ENUM_MAPPERS_API
+std::ostream& operator <<(std::ostream& os, DayCountRule val);
+
+OA_ENUM_MAPPERS_API
+std::ostream& operator <<(std::ostream& os, AdjRule val);
+
+}  // namespace oa::time
 #endif // !OA_ENUM_MAPPERS_TIME_ENUM_MAPPERS_H_
