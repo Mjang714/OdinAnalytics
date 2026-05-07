@@ -222,7 +222,7 @@ namespace
         std::pair{oa::derived_time::CalcType::kUSTStreetConv, "uststreetconv"},
         // ...
         enum_name_mapper_invalid_argument<oa::derived_time::CalcType>{}
-        );
+    );
 
     // partial specialization for the mapping tests that does the real work
     // note: index_sequence used for compile-time index value in a type
