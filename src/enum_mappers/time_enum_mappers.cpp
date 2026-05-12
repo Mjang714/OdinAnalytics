@@ -6,6 +6,7 @@
 
 #include "oa/platform.h"
 #include "oa/warnings.h"
+#include "oa/string.h"
 
 #if OA_HAS_CPP20_FORMAT
 #include <format>
@@ -69,11 +70,9 @@ namespace oa::enum_mappers {
 	oa::time::DayCountRule MapInputToDayCountEnum(const std::string& input_str)
 	{
 		std::string key_str = input_str;
-// disable C4242, C4244 warnings about int being narrowed to char
-OA_MSVC_WARNING_PUSH()
-OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
-OA_MSVC_WARNING_POP()
+
+		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
+
 
 		if (TimeEnumMap().contains(key_str))
 			return TimeEnumMap().at(key_str);
@@ -99,12 +98,8 @@ OA_MSVC_WARNING_POP()
 	oa::time::AdjRule MapInputToDayAdjustEnum(const std::string& input_str)
 	{
 		std::string key_str = input_str;
-		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-			std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
-		OA_MSVC_WARNING_POP()
-
+		
+		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
 			if (DateAdjustMap().contains(key_str))
 				return DateAdjustMap().at(key_str);
 			else
@@ -139,31 +134,28 @@ OA_MSVC_WARNING_POP()
 	//this is begining to smell and maybe we do some kind redesign 
 	derived_time::DateDirection MapInputToDateDir(const std::string& input_str) {
 		std::string key_str = input_str;
-		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
-		OA_MSVC_WARNING_POP()
+		
+		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
 
-			if (DateDirectionMap().contains(key_str))
-				return DateDirectionMap().at(key_str);
-			else
-			{
-				throw std::invalid_argument{
-			#if OA_HAS_CPP20_FORMAT
-					std::format(
-						"{}:{}:{}: {} is not a valid Date Direction convention",
-						__FILE__, __LINE__, __func__, input_str
-					)
-					
-			#else
-					// __FILE__, __LINE__, __func__ let us avoid hardcoding
-					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
-						std::string{__func__} + ": " + input_str +
-						" is not a valid Date Direction convention"
-			#endif  // !OA_HAS_CPP20_FORMAT
-				};
-			}
+		if (DateDirectionMap().contains(key_str))
+			return DateDirectionMap().at(key_str);
+		else
+		{
+			throw std::invalid_argument{
+#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}:{}: {} is not a valid Date Direction convention",
+					__FILE__, __LINE__, __func__, input_str
+				)
+				
+#else
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{__func__} + ": " + input_str +
+					" is not a valid Date Direction convention"
+#endif  // !OA_HAS_CPP20_FORMAT
+			};
+		}
 	}
 
 	const auto& FreqMap(){
@@ -189,28 +181,25 @@ OA_MSVC_WARNING_POP()
 	//this is begining to smell and maybe we do some kind redesign 
 	derived_time::Frequency MapInputToFreq(const std::string& input_str) {
 		std::string key_str = input_str;
-		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
-		OA_MSVC_WARNING_POP()
+		
+		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
 
 		if (FreqMap().contains(key_str))
 			return FreqMap().at(key_str);
 		else
 		{
 			throw std::invalid_argument{
-		#if OA_HAS_CPP20_FORMAT
+#if OA_HAS_CPP20_FORMAT
 				std::format(
 					"{}:{}:{}: {} is not a valid Frequency convention",
 					__FILE__, __LINE__, __func__, input_str
 				)
-		#else
+#else
 				// __FILE__, __LINE__, __func__ let us avoid hardcoding
 				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
 					std::string{__func__} + ": " + input_str +
 					" is not a valid Frequency convention"
-		#endif  // !OA_HAS_CPP20_FORMAT
+#endif  // !OA_HAS_CPP20_FORMAT
 			};
 		}
 	}
@@ -233,29 +222,59 @@ OA_MSVC_WARNING_POP()
 
 	derived_time::StubType MapInputToStub(const std::string& input_str){
 		std::string key_str = input_str;
-		// disable C4242, C4244 warnings about int being narrowed to char
-		OA_MSVC_WARNING_PUSH()
-		OA_MSVC_WARNING_DISABLE(4242 4244)
-		std::ranges::transform(input_str.begin(), input_str.end(), key_str.begin(), ::toupper);
-		OA_MSVC_WARNING_POP()
+		
+		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
 
 		if (CFStubMap().contains(key_str))
 			return CFStubMap().at(key_str);
 		else
 		{
 			throw std::invalid_argument{
-		#if OA_HAS_CPP20_FORMAT
+#if OA_HAS_CPP20_FORMAT
 				std::format(
 					"{}:{}:{}: {} is not a valid Stub Type",
 					__FILE__, __LINE__, __func__, input_str
 				)
-		#else
+#else
 				// __FILE__, __LINE__, __func__ let us avoid hardcoding
 				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
 					std::string{__func__} + ": " + input_str +
 					" is not a valid Stub Type"
-		#endif  // !OA_HAS_CPP20_FORMAT
+#endif  // !OA_HAS_CPP20_FORMAT
 			};
 		}
 	}
-}  // namespace oa::enum_mappers
+
+	const auto& CalcTypeMap() {
+		static const std::unordered_map<std::string, derived_time::CalcType> calc_type_map{
+			{"FLAT", derived_time::CalcType::kFlat},
+			{"BBG1", derived_time::CalcType::kBBGCalcType1},
+			{"BBG2", derived_time::CalcType::kBBGCalcType2},
+			{"USTSTREETCONV", derived_time::CalcType::kUSTStreetConv}
+		};
+		return calc_type_map;
+	}
+
+	derived_time::CalcType MapInputToCalcType(const std::string& input_str) {
+		std::string key_str = input_str;
+		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
+		if (CalcTypeMap().contains(key_str))
+			return CalcTypeMap().at(key_str);
+		else
+		{
+			throw std::invalid_argument{
+#if OA_HAS_CPP20_FORMAT
+				std::format(
+					"{}:{}:{}: {} is not a valid Calc Type",
+					__FILE__, __LINE__, __func__, input_str
+				)
+#else
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{__func__} + ": " + input_str +
+					" is not a valid Calc Type"
+#endif  // !OA_HAS_CPP20_FORMAT
+			};
+		}
+	}
+}

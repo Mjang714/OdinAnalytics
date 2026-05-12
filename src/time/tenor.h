@@ -27,6 +27,9 @@ namespace oa::time
 			/// <returns>a pair where the first length and the second argument is lenght as a Enum</returns>
 			const std::pair<int, oa::time::Tenors> GetValues() const;
 
+
+			bool operator==(const Tenor& other) const;
+			
 		private:
 			int m_number_ = 0;
 			oa::time::Tenors m_time_unit_{};

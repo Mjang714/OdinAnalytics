@@ -18,6 +18,7 @@ add_executable(
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp
     static_data_cache/static_data_cache_test.cpp
+    string_test.cpp
     tenor_test.cpp
     time/date_adjust/adjustment_factory_test.cpp
     time/date_adjust/date_adjust_following_test.cpp

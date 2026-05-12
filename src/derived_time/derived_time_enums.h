@@ -54,6 +54,15 @@ namespace oa::derived_time
 		kWeekly = 52,
 		kDaily = 365
 	};
+
+	enum class CalcType
+	{
+		kFlat,
+		kCompounding,
+		kBBGCalcType1,
+		kUSTStreetConv,
+		kBBGCalcType2
+	};
 }
 
 
