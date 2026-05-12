@@ -153,7 +153,7 @@ OA_XLL_EXPORT(int) accel_about()
   alert(
     "XLL path: " + std::string{addin::path()} + "\n"
     "XLL build date: " __DATE__ " " __TIME__ "\n"
-    "Accel version: " ODIN_VERSION
+    "Accel version: " OA_VERSION
   );
   return 1;
 }
