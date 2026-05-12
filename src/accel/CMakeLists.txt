@@ -28,7 +28,12 @@ if(XLLSDK_FOUND)
     # use d postfix for debug builds like other libraries
     set_target_properties(oa_accel PROPERTIES DEBUG_POSTFIX d)
     # install rule for Accel library (using static defaults)
-    install(TARGETS oa_accel EXPORT odin_exports ARCHIVE COMPONENT Development)
+    # note: also need to install XLCALL2012 which is a private dependency
+    install(
+        TARGETS oa_accel XLCALL2012
+        EXPORT odin_exports
+        ARCHIVE COMPONENT Development
+    )
     # install PDB for Debug config for downstream
     oa_pdb_install(oa_accel CONFIGURATIONS Debug COMPONENT Development)
 else()
