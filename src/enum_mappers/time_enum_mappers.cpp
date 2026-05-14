@@ -1,14 +1,13 @@
 #include "time_enum_mappers.h"
 
 #include <algorithm>
-#include <fstream>
+#include <ostream>
 #include <unordered_map>
 
 #include "helpers/utils.h"
 #include "oa/platform.h"
 #include "oa/warnings.h"
 #include "oa/string.h"
-#include "helpers/utils.h"
 
 #if OA_HAS_CPP20_FORMAT
 #include <format>
@@ -291,46 +290,42 @@ namespace oa::enum_mappers {
 		}
 	}
 
-}
+}  // namespace oa::enum_mappers
 
 namespace oa::derived_time {
+
 	std::ostream& operator<<(std::ostream& os, DateDirection val)
 	{
-		os << oa::utils::GetCleanName<DateDirection>(val);
-		return os;
+		return os << utils::GetCleanName(val);
 	}
 
 	std::ostream& operator<<(std::ostream& os, Frequency val)
 	{
-		os << oa::utils::GetCleanName<Frequency>(val);
-		return os;
+		return os << utils::GetCleanName(val);
 	}
 
 	std::ostream& operator<<(std::ostream& os, StubType val)
 	{
-		os << oa::utils::GetCleanName<StubType>(val);
-		return os;
+		return os << utils::GetCleanName(val);
 	}
 
 	std::ostream& operator<<(std::ostream& os, CalcType val)
 	{
-		os << oa::utils::GetCleanName<CalcType>(val);
-		return os;
+		return os << utils::GetCleanName(val);
 	}
 
-}
+}  // namespace oa::derived_time
 
 namespace oa::time {
 	
 	std::ostream& operator<<(std::ostream& os, DayCountRule val)
 	{
-		os << oa::utils::GetCleanName<DayCountRule>(val);
-		return os;
+		return os << oa::utils::GetCleanName(val);
 	}
 
 	std::ostream& operator<<(std::ostream& os, AdjRule val)
 	{
-		os << oa::utils::GetCleanName<AdjRule>(val);
-		return os;
+		return os << oa::utils::GetCleanName(val);
 	}
-}
+
+}  // namespace oa::time
