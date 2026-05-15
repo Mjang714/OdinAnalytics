@@ -1,9 +1,10 @@
 #include "time_enum_mappers.h"
 
 #include <algorithm>
-#include <fstream>
+#include <ostream>
 #include <unordered_map>
 
+#include "helpers/utils.h"
 #include "oa/platform.h"
 #include "oa/warnings.h"
 #include "oa/string.h"
@@ -36,6 +37,16 @@ namespace oa::enum_mappers {
 			{"30E:360EURO", time::DayCountRule::k30_360_E_EUROBOND},
 			{"30E_360EURO", time::DayCountRule::k30_360_E_EUROBOND},
 			{"30E360EURO", time::DayCountRule::k30_360_E_EUROBOND},
+			{"ACT/365", time::DayCountRule::kACT_365_FIXED},
+			{"ACT:365", time::DayCountRule::kACT_365_FIXED},
+			{"ACT_365", time::DayCountRule::kACT_365_FIXED},
+			{"ACT365", time::DayCountRule::kACT_365_FIXED},
+			{"act/365", time::DayCountRule::kACT_365_FIXED},
+			{"act:365", time::DayCountRule::kACT_365_FIXED},
+			{"act_365", time::DayCountRule::kACT_365_FIXED},
+			{"act365", time::DayCountRule::kACT_365_FIXED},
+			{"ACT:ACT", time::DayCountRule::kACT_ACT},
+			{"ACT_ACT", time::DayCountRule::kACT_ACT},
 			{"ACT/ACT", time::DayCountRule::kACT_ACT},
 			{"ACT:ACT", time::DayCountRule::kACT_ACT},
 			{"ACT_ACT", time::DayCountRule::kACT_ACT},
@@ -126,6 +137,7 @@ namespace oa::enum_mappers {
 			{"FWD", derived_time::DateDirection::kForward},
 			{"FORWARD", derived_time::DateDirection::kForward},
 			{"BCKWD", derived_time::DateDirection::kBackward},
+			{"BACKWARD", derived_time::DateDirection::kBackward},
 			{"BACKWARDS", derived_time::DateDirection::kBackward}
 		};
 		return dd_map;
@@ -277,4 +289,43 @@ namespace oa::enum_mappers {
 			};
 		}
 	}
-}
+
+}  // namespace oa::enum_mappers
+
+namespace oa::derived_time {
+
+	std::ostream& operator<<(std::ostream& os, DateDirection val)
+	{
+		return os << utils::GetCleanName(val);
+	}
+
+	std::ostream& operator<<(std::ostream& os, Frequency val)
+	{
+		return os << utils::GetCleanName(val);
+	}
+
+	std::ostream& operator<<(std::ostream& os, StubType val)
+	{
+		return os << utils::GetCleanName(val);
+	}
+
+	std::ostream& operator<<(std::ostream& os, CalcType val)
+	{
+		return os << utils::GetCleanName(val);
+	}
+
+}  // namespace oa::derived_time
+
+namespace oa::time {
+	
+	std::ostream& operator<<(std::ostream& os, DayCountRule val)
+	{
+		return os << oa::utils::GetCleanName(val);
+	}
+
+	std::ostream& operator<<(std::ostream& os, AdjRule val)
+	{
+		return os << oa::utils::GetCleanName(val);
+	}
+
+}  // namespace oa::time
