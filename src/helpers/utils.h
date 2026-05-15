@@ -81,23 +81,24 @@ namespace oa::utils
 	/// <typeparam name="enum_type"></typeparam>
 	/// <param name="enum_value"></param>
 	/// <returns>the string name of the enum</returns>
-	template <typename enum_type> requires std::is_enum_v<enum_type>
-	inline std::string GetEnumName(enum_type enum_value)
+	template <typename enum_type>
+	requires (std::is_enum_v<enum_type>)
+	auto GetEnumName(enum_type enum_value)
 	{
-		return static_cast<std::string> (magic_enum::enum_name(enum_value));
+		return std::string{magic_enum::enum_name(enum_value)};
 	}
 
 	/// <summary>
-	/// this function will eturn the enum name with the first char removed
+	/// this function will return the enum name with the first char removed
 	/// </summary>
 	/// <typeparam name="enum_type"></typeparam>
 	/// <param name="enum_value"></param>
 	/// <returns>a string of the enum with the first character removed</returns>
-	template <typename enum_type> requires std::is_enum_v<enum_type>
-	inline std::string GetCleanName(enum_type enum_value)
+	template <typename enum_type>
+	requires (std::is_enum_v<enum_type>)
+	auto GetCleanName(enum_type enum_value)
 	{
-
-		return GetEnumName(enum_value).erase(0, 1);
+		return std::string{magic_enum::enum_name(enum_value).substr(1u)};
 	}
 
 }
