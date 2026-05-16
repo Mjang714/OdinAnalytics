@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 # oa_enum_mappers
 # TODO: need better descriptive comment
 add_library(oa_enum_mappers time_enum_mappers.cpp)
-add_library(OdinAnalytics::oa_enum_mappers ALIAS oa_enum_mappers)
 target_include_directories(
     oa_enum_mappers PUBLIC
     $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
@@ -21,6 +20,8 @@ set_target_properties(
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_enum_mappers INTERFACE OA_ENUM_MAPPERS_DLL)
 endif()
+# link against dependencies
+target_link_libraries(oa_enum_mappers PRIVATE oa_helpers)
 # install rule for oa_enum_mappers
 install(
     TARGETS oa_enum_mappers
