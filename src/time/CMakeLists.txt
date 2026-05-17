@@ -47,3 +47,5 @@ install(
 )
 # install PDB when building for Debug config
 oa_pdb_install(oa_time CONFIGURATIONS Debug COMPONENT Development)
+oa_embed_version_info(oa_time DESCRIPTION "OA Time Library")
+oa_check_version_info(oa_time)

@@ -75,6 +75,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 include(CTest)
 
+include(oa_embed_version_info)
 include(oa_pdb_install)
 include(oa_repair_gtest_version)
 include(oa_unity_enable_unique_id)
