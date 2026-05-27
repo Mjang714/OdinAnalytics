@@ -126,10 +126,10 @@ namespace oa::time {
 					__FILE__, __LINE__, __func__, input_str
 				)
 #else
-					// __FILE__, __LINE__, __func__ let us avoid hardcoding
-					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
-						std::string{__func__} + ": " + input_str +
-						" is not a valid day count convention"
+				// __FILE__, __LINE__, __func__ let us avoid hardcoding
+				std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
+					std::string{__func__} + ": " + input_str +
+					" is not a valid day count convention"
 #endif  // !OA_HAS_CPP20_FORMAT
 				};
 			}
