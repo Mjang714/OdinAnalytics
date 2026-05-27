@@ -121,10 +121,10 @@ namespace oa::time {
 		{
 			throw std::invalid_argument{
 #if OA_HAS_CPP20_FORMAT
-					std::format(
+				std::format(
 					"{}:{}:{}: {} is not a valid Stub Type",
 					__FILE__, __LINE__, __func__, input_str
-					)
+				)
 #else
 					// __FILE__, __LINE__, __func__ let us avoid hardcoding
 					std::string{__FILE__} + ":" + std::to_string(__LINE__) + ":" +
