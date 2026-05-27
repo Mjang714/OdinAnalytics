@@ -25,7 +25,8 @@ do
     # verify that hook is installed and executable
     if ! [ -x .git/hooks/$hook ]
     then
-        echo "error: failed to install git $hook hook"
+        echo "error: failed to install Git $hook hook"
         exit 1
     fi
+    echo "installed Git $hook hook"
 done
