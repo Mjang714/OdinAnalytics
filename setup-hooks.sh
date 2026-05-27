@@ -9,6 +9,11 @@
 # This simply copies all the hook scripts in this directory to .git/hooks and
 # marks the copies as executable with chmod +x.
 #
+# If using Git for Windows, if Git is on your PATH, then sh/bash should also be
+# on your path, so you can install the Git hooks using the following:
+#
+#   sh setup-hooks.sh
+#
 
 # must run where .git directory is
 if ! [ -d .git ]
