@@ -131,8 +131,8 @@ namespace oa::time {
 					std::string{__func__} + ": " + input_str +
 					" is not a valid day count convention"
 #endif  // !OA_HAS_CPP20_FORMAT
-				};
-			}
+			};
+		}
 
 	}
 
