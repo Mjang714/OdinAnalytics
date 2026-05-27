@@ -115,11 +115,11 @@ namespace oa::time {
 		std::string key_str = input_str;
 		
 		std::ranges::for_each(key_str, [](auto& c) {  c = oa::to_upper(c); });
-			if (DateAdjustMap().contains(key_str))
-				return DateAdjustMap().at(key_str);
-			else
-			{
-				throw std::invalid_argument{
+		if (DateAdjustMap().contains(key_str))
+			return DateAdjustMap().at(key_str);
+		else
+		{
+			throw std::invalid_argument{
 #if OA_HAS_CPP20_FORMAT
 					std::format(
 					"{}:{}:{}: {} is not a valid Stub Type",
