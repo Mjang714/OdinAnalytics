@@ -1,0 +1,68 @@
+#!/usr/bin/sh
+#
+# File: pre-commit
+# Author: Derek Huang
+# Copyright: MIT License
+#
+# Git pre-commit hook script.
+#
+# This enforces some standard checks, e.g. for trailing whitespace in files,
+# but also ensures that any added files have names that only contain
+# alphanumeric characters, underscores, dashes, and dots.
+#
+
+# ensure all output goes to stderr
+exec 1>&2
+
+# standard check that Git history is nonempty
+if git rev-parse --verify HEAD > /dev/null
+then
+    revision=HEAD
+# for initial commit use tree hash of /dev/null
+else
+    revision=$(git hash-object -t tree /dev/null)
+fi
+
+# get the list of added files in $revision in the cached tree with raw file
+# names, i.e. using -z and --diff-filter=A. the file names are terminated with
+# \0, which we replace with \n, and we URL-encode spaces
+added_files=$( \
+    git diff --cached --name-only -z --diff-filter=A $revision | \
+    LC_ALL=C sed -E 's/ /%20/g' | \
+    LC_ALL=C tr '\0' '\n' \
+)
+
+# ensure added file names are composed of only:
+#
+# - alphanumeric characters, e.g. 'a', 'Z', '8'
+# - underscores, i.e. '_'
+# - hyphens, i.e. '-'
+# - dots, i.e. '.'
+# - path separators, i.e. '/', but not '\', as Git uses '/' for paths
+#
+# we don't really have a need to enable some printable ASCII characters like
+# '?', '[', etc. to be part of the file name; this is typically an error. note
+# that spaces also aren't allowed; we first de-encode %20 back to ' '.
+#
+# count number of offending files and print their names
+bad_paths=0
+for enc_path in $added_files
+do
+    # de-encode %20 back to ' '
+    file_path=$(echo -n "$enc_path" | sed -E 's/%20/ /g')
+    # if any non-desired characters remain after deletion with tr -d, we print
+    # an error message and then increment the number of bad paths
+    if [ $(echo -n "$file_path" | tr -d 'a-zA-Z0-9_./-' | wc -c) -ne 0 ]
+    then
+        echo "error: unwanted characters in path \"$file_path\""
+        bad_paths=$(expr $bad_paths + 1)
+    fi
+done
+# nonzero exit if bad_paths is not zero
+if [ $bad_paths -ne 0 ]
+then
+  exit 1
+fi
+
+# perform standard check to ensure no trailing whitespace in changes
+exec git diff-index --check --cached $revision
