@@ -16,12 +16,6 @@ namespace oa::time {
     OA_TIME_API
     oa::time::AdjRule MapInputToDayAdjustEnum(const std::string& input_str);
 
-    OA_TIME_API
-    std::ostream& operator<<(std::ostream& os, DayCountRule val);
-
-    OA_TIME_API
-    std::ostream& operator<<(std::ostream& os, AdjRule val);
-
 }  // namespace time
 
 
