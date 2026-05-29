@@ -4,7 +4,6 @@
 #ifndef ODINANALYTICS_TIME_TIMEENUMS_H
 #define ODINANALYTICS_TIME_TIMEENUMS_H
 
-
 namespace oa::time
 {
 	enum class Weekdays
