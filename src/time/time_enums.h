@@ -1,6 +1,4 @@
 #include "oa/dllexport.h"
-
-
 #include<iostream>
 
 #ifndef ODINANALYTICS_TIME_TIMEENUMS_H
