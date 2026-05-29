@@ -16,7 +16,6 @@ namespace oa::time {
     OA_TIME_API
     oa::time::AdjRule MapInputToDayAdjustEnum(const std::string& input_str);
 
-}  // namespace time
-
+}  // namespace oa::time
 
 #endif  // ODINANALYTICS_TIME_TIME_ENUM_MAPPERS_H_  
