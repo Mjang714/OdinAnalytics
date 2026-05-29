@@ -60,7 +60,6 @@ namespace oa::time {
 	}
 
 	const auto& DateAdjustMap()
-
 	{
 		static const std::unordered_map<std::string, time::AdjRule> da_map{
 			{"MF", time::AdjRule::kModifiedFollowing},
