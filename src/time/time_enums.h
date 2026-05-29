@@ -61,8 +61,6 @@ namespace oa::time
 
 	};
 	
-
-	
     OA_TIME_API
     std::ostream& operator<<(std::ostream& os, DayCountRule val);
 
