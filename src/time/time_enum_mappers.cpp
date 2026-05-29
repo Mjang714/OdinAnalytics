@@ -15,9 +15,7 @@
 #include <format>
 #endif  // !OA_HAS_CPP20_FORMAT
 
-
 namespace oa::time {
-
 
 	/**
 	 * Return the string to `DayCountRule` enum map.
