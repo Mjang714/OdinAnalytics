@@ -13,39 +13,39 @@
 
 namespace oa {
 
-    namespace enum_mappers {
+namespace enum_mappers {
 
-    OA_ENUM_MAPPERS_API
-    derived_time::DateDirection MapInputToDateDir(const std::string& input_str);
+OA_ENUM_MAPPERS_API
+derived_time::DateDirection MapInputToDateDir(const std::string& input_str);
 
-    OA_ENUM_MAPPERS_API
-    derived_time::Frequency MapInputToFreq(const std::string& input_str);
+OA_ENUM_MAPPERS_API
+derived_time::Frequency MapInputToFreq(const std::string& input_str);
 
-    OA_ENUM_MAPPERS_API
-    derived_time::StubType MapInputToStub(const std::string& input_str);
+OA_ENUM_MAPPERS_API
+derived_time::StubType MapInputToStub(const std::string& input_str);
 
-    OA_ENUM_MAPPERS_API
-    derived_time::CalcType MapInputToCalcType(const std::string& input_str);
+OA_ENUM_MAPPERS_API
+derived_time::CalcType MapInputToCalcType(const std::string& input_str);
 
-    }  // namespace enum_mappers
+}  // namespace enum_mappers
 
-    // TODO: consider declaring operator<< near related enums instead
+// TODO: consider declaring operator<< near related enums instead
 
-    namespace derived_time {
+namespace derived_time {
 
-    OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, DateDirection val);
+OA_ENUM_MAPPERS_API
+std::ostream& operator<<(std::ostream& os, DateDirection val);
 
-    OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, Frequency val);
+OA_ENUM_MAPPERS_API
+std::ostream& operator<<(std::ostream& os, Frequency val);
 
-    OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, StubType val);
+OA_ENUM_MAPPERS_API
+std::ostream& operator<<(std::ostream& os, StubType val);
 
-    OA_ENUM_MAPPERS_API
-    std::ostream& operator<<(std::ostream& os, CalcType val);
+OA_ENUM_MAPPERS_API
+std::ostream& operator<<(std::ostream& os, CalcType val);
 
-    }  // namespace derived_time
+}  // namespace derived_time
 
 
 }  // namespace oa

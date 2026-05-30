@@ -14,8 +14,6 @@
 #endif  // !OA_HAS_CPP20_FORMAT
 
 namespace oa::enum_mappers {
-
-
 	
 	const auto& DateDirectionMap() {
 		static const std::unordered_map<std::string, derived_time::DateDirection> dd_map{
