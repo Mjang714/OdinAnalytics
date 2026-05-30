@@ -22,6 +22,7 @@
 #include "time/date.h"
 #include "time/day_count/day_counter_factory.h"
 #include "time/time_enums.h"
+#include "time/time_enum_mappers.h"
 #include "xl_api/excel_base.h"
 #include "xl_api/xl_dictionary.h"
 #include "xl_api/xloper_converter.h"
@@ -79,7 +80,7 @@ namespace oxl {
 
 		std::string biz_day_count = XLoperAlias::LPXloperToStr(busines_day_count);
 
-		auto biz_day_count_enum = oa::enum_mappers::MapInputToDayCountEnum(biz_day_count);
+		auto biz_day_count_enum = oa::time::MapInputToDayCountEnum(biz_day_count);
 
 		auto day_count_rule = oa::time::DayCounterFactory::GenerateDayCounter(biz_day_count_enum);
 
@@ -94,7 +95,7 @@ namespace oxl {
 
 		std::string biz_day_count = XLoperAlias::LPXloperToStr(busines_day_count);
 
-		auto biz_day_count_enum = oa::enum_mappers::MapInputToDayCountEnum(biz_day_count);
+		auto biz_day_count_enum = oa::time::MapInputToDayCountEnum(biz_day_count);
 
 		auto day_count_rule = oa::time::DayCounterFactory::GenerateDayCounter(biz_day_count_enum);
 
@@ -130,7 +131,7 @@ namespace oxl {
 			auto mat_date = xl_api::ToDateObj(dictionary["Mat_Date"]);
 			auto notional = std::get<double>(dictionary["Notional"]);
 			auto rate = std::get<double>(dictionary["Rate"]);
-			auto day_cnt_frac = oa::enum_mappers::MapInputToDayCountEnum(std::get<std::string>(dictionary["Day_Count_Frac"]));
+			auto day_cnt_frac = oa::time::MapInputToDayCountEnum(std::get<std::string>(dictionary["Day_Count_Frac"]));
 			auto freq_tenor_str = std::get<std::string>(dictionary["Frequency"]);
 			auto freq = (oa::utils::CheckTenorStr(freq_tenor_str)) ? oa::time::Tenor(freq_tenor_str) : CFGen::MapResetFreqEnumToTenor(oa::enum_mappers::MapInputToFreq(freq_tenor_str));
 			opt.date_direction(oa::enum_mappers::MapInputToDateDir(std::get<std::string>(dictionary["Date_Dir"])));
