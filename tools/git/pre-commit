@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/usr/bin/bash
 #
 # File: pre-commit
 # Author: Derek Huang
@@ -27,7 +27,7 @@ fi
 # names, i.e. using -z and --diff-filter=A. the file names are terminated with
 # \0, which we replace with \n, and we URL-encode spaces
 added_files=$( \
-    git diff --cached --name-only -z --diff-filter=A $revision | \
+    git diff-index --cached --name-only -z --diff-filter=A $revision | \
     LC_ALL=C sed -E 's/ /%20/g' | \
     LC_ALL=C tr '\0' '\n' \
 )
@@ -61,7 +61,52 @@ done
 # nonzero exit if bad_paths is not zero
 if [ $bad_paths -ne 0 ]
 then
-  exit 1
+    exit 1
+fi
+
+# get the list of all modified files in $revision in the cached tree. we again
+# start with raw file names and use URL encoding of spaces to be pessimistic
+modified_files=$( \
+    git diff-index --cached --name-only -z --diff-filter=M $revision | \
+    LC_ALL=C sed -E 's/ /%20/g' | \
+    LC_ALL=C tr '\0' '\n' \
+)
+
+# ensure added and modified files have trailing newlines
+bad_paths=0
+for enc_path in $added_files $modified_files
+do
+    # de-encode %20 back to ' '
+    file_path=$(echo -n "$enc_path" | sed -E 's/%20/ /g')
+    # advance if staged file is a binary file, i.e. git diff-index --numstat
+    # has two leading '-' in its output after removing tabs
+    if [ "$(git diff-index --cached --numstat $revision -- "$file_path" | \
+            tr -d '\t' | head -c 2)" == "--" ]
+    then
+        continue
+    fi
+    # obtain object hash of staged file
+    file_hash=$(git ls-files -s "$file_path" | awk '{ print $2 }')
+    # advance if file is empty
+    if [ $(git cat-file -s $file_hash) -eq 0 ]
+    then
+        continue
+    fi
+    # otherwise, check if staged file diff patch has trailing newline
+    # note: it is important to use git diff --cached as it is possible to have
+    # some staged changes and some additional local changes. using tail -c 1
+    # and tail -c 2 to check the working tree would not be accurate
+    if [ "$(git diff-index -p --cached $revision -- "$file_path" | tail -1)" \
+            == '\ No newline at end of file' ]
+    then
+        echo "error: no newline at end of file $file_path"
+        bad_paths=$(expr $bad_paths + 1)
+    fi
+done
+# exit with error if any bad paths
+if [ $bad_paths -ne 0 ]
+then
+    exit 1
 fi
 
 # perform standard check to ensure no trailing whitespace in changes
