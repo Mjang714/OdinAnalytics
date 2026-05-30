@@ -1,8 +1,9 @@
-#include "oa/dllexport.h"
-#include<iostream>
-
 #ifndef ODINANALYTICS_TIME_TIMEENUMS_H
 #define ODINANALYTICS_TIME_TIMEENUMS_H
+
+#include "oa/dllexport.h"
+
+#include <iostream>
 
 namespace oa::time
 {
