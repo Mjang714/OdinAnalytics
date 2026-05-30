@@ -8,8 +8,6 @@
 #include <iostream>
 
 namespace oa::time {
-
-
     OA_TIME_API
     oa::time::DayCountRule MapInputToDayCountEnum(const std::string& input_str);
 
