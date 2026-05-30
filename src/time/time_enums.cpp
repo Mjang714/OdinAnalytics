@@ -1,7 +1,8 @@
 #include "time_enums.h"
 
 #include "helpers/utils.h"
-namespace oa::time 
+
+namespace oa::time
 {
     std::ostream& operator<<(std::ostream& os, DayCountRule val)
 	{
