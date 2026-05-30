@@ -15,17 +15,6 @@ namespace oa {
 
 namespace enum_mappers {
 
-/// <summary>
-/// returns an DayCountRule enum from a given string
-/// </summary>
-/// <param name="input_str"></param>
-/// <returns></returns>
-OA_ENUM_MAPPERS_API
-time::DayCountRule MapInputToDayCountEnum(const std::string& input_str);
-
-OA_ENUM_MAPPERS_API
-time::AdjRule MapInputToDayAdjustEnum(const std::string& input_str);
-
 OA_ENUM_MAPPERS_API
 derived_time::DateDirection MapInputToDateDir(const std::string& input_str);
 
@@ -58,15 +47,6 @@ std::ostream& operator<<(std::ostream& os, CalcType val);
 
 }  // namespace derived_time
 
-namespace time {
-
-OA_ENUM_MAPPERS_API
-std::ostream& operator<<(std::ostream& os, DayCountRule val);
-
-OA_ENUM_MAPPERS_API
-std::ostream& operator<<(std::ostream& os, AdjRule val);
-
-}  // namespace time
 
 }  // namespace oa
 

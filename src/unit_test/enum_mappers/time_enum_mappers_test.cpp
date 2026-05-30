@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "helpers/utils.h"
 
+#include "time/time_enum_mappers.h"
 #include "enum_mappers/time_enum_mappers.h"
 
 namespace {
@@ -16,7 +17,7 @@ template <>
 struct enum_name_mapper_test<oa::time::DayCountRule> {
     auto operator()(const std::string& name) const
     {
-        return oa::enum_mappers::MapInputToDayCountEnum(name);
+        return oa::time::MapInputToDayCountEnum(name);
     }
 };
 
@@ -24,7 +25,7 @@ template <>
 struct enum_name_mapper_test<oa::time::AdjRule> {
     auto operator()(const std::string& name) const
     {
-        return oa::enum_mappers::MapInputToDayAdjustEnum(name);
+        return oa::time::MapInputToDayAdjustEnum(name);
     }
 };
 
