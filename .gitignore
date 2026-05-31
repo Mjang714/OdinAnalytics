@@ -10,3 +10,5 @@
 /out
 # ignore NuGet packages directory
 /packages
+# ignore Vim swap files
+*.swp
