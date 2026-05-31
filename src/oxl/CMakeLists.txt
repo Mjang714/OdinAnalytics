@@ -96,7 +96,6 @@ if(Python3_FOUND AND XLLSDK_FOUND)
             XLLSDK::SDK
             oa_dao
             oa_derived_time
-            oa_enum_mappers
             oa_helpers
             oa_static_data_cache
             oa_time

@@ -60,7 +60,6 @@ target_link_libraries(
         oa_config
         oa_dao
         oa_derived_time
-        oa_enum_mappers
         oa_helpers
         oa_static_data_cache
         oa_time
