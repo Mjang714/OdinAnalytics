@@ -15,7 +15,6 @@
 #include "derived_time/date_formula/business_date_formula.h"
 #include "derived_time/date_formula/date_formula.h"
 #include "derived_time/derived_time_enums.h"
-#include "derived_time/derived_time_enums.cpp"
 #include "helpers/utils.h"
 #include "static_data_cache/calendar_cache.h"
 #include "time/calendar.h"
