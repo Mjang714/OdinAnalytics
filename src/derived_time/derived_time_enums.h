@@ -79,7 +79,7 @@ namespace oa::derived_time
 
 	OA_DERIVED_TIME_API
 	derived_time::CalcType MapInputToCalcType(const std::string& input_str);
-	
+
 	OA_DERIVED_TIME_API
 	derived_time::DateDirection MapInputToDateDir(const std::string& input_str);
 
@@ -105,6 +105,4 @@ namespace oa::derived_time
 	std::ostream& operator<<(std::ostream& os, CalcType val);
 }
 
-
 #endif // !OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
-
