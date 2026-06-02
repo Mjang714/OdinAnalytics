@@ -1,35 +1,35 @@
-#include<string>
-#include<stdlib.h>
-#include<vector>
+#ifndef OA_HELPERS_STR_UTILS_STR_UTILS_H_
+#define OA_HELPERS_STR_UTILS_STR_UTILS_H_
+
+#include <string>
+#include <vector>
 
 #include "oa/dllexport.h"
 
-#ifndef ODINANALYTICS_HELPERS_STR_UTILS_STR_UTILS_H_
-#define ODINANALYTICS_HELPERS_STR_UTILS_STR_UTILS_H_
+// TODO: too many namespaces that don't match directory structure
+// TODO: consider subsuming into oa/string.h later
+namespace oa::utils::str_utils {
 
-namespace oa::utils::str_utils
-{
-	/// <summary>
-	/// this function takes in  a str and checks to see if every char is digit
-	/// right now it only works for positive digits but will add support for either
-	/// </summary>
-	/// <param name="str_to_parse"></param>
-	/// <returns></returns>
-	OA_HELPERS_API
-	bool IsDigit(const std::string& str_to_parse) noexcept;
+/**
+ * Indicate if the string is only composed of ASCII digits.
+ *
+ * @param str Input string
+ */
+OA_HELPERS_API
+bool IsDigit(const std::string& str) noexcept;
 
-	/// <summary>
-	/// takes a str of digits (i.e "091234" and returns vector of integers such as {0,9,1,2,3,4})
-	/// </summary>
-	/// <param name="str_to_parse"></param>
-	/// <returns></returns>
-	OA_HELPERS_API
-	std::vector<int> StrToDigits(const std::string& str_to_parse) noexcept;
+/**
+ * Returns a vector of integers corresponding to the digits in the string.
+ *
+ * If any character is not an ASCII digit an exception is thrown.
+ *
+ * @todo Change output type to `unsigned` or `unsigned short`.
+ *
+ * @param str Input string
+ */
+OA_HELPERS_API
+std::vector<int> StrToDigits(const std::string& str);
 
-}
+}  // namespace oa::utils::str_utils
 
-
-#endif // ODINANALYTICS_HELPERS_STR_UTILS_STR_UTILS_H_
-
-
-
+#endif  // OA_HELPERS_STR_UTILS_STR_UTILS_H_
