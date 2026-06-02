@@ -30,7 +30,7 @@ template <typename T>
 class StringTemplateTest : public StringTest {};
 
 /**
- * Test fixture template for `to_upper` tests.
+ * Test fixture for `to_upper` tests.
  */
 class ToUpperTest : public StringTest {
 protected:
@@ -66,7 +66,7 @@ TEST_F(ToUpperTest, NonPrintableStringTest)
 }
 
 /**
- * Test fixture template for `to_lower` tests.
+ * Test fixture for `to_lower` tests.
  */
 class ToLowerTest : public StringTest {
 protected:
@@ -97,6 +97,41 @@ TEST_F(ToLowerTest, NonPrintableStringTest)
   std::string a{"\xde\x21UIhj98\r\t\tA8U\n\x9a"};
   std::string b{"\xde\x21uihj98\r\t\ta8u\n\x9a"};
   std::ranges::for_each(a, ToLower);
+  EXPECT_EQ(a, b);
+}
+
+/**
+ * Test fixture for `is_digit` tests.
+ */
+class IsDigitTest : public StringTest {
+protected:
+  /**
+   * Convert the given character to `1` if it is a digit else `0` in-place.
+   *
+   * @param c Input character
+   */
+  static void IsDigit(char& c) noexcept { c = (oa::is_digit(c)) ? '1' : '0'; }
+};
+
+/**
+ * Test that `is_digit()` works as expected with a printable ASCII string.
+ */
+TEST_F(IsDigitTest, PrintableStringTest)
+{
+  std::string a{"uhyH7Y9898YUu0U4K8OU9012"};
+  std::string b{"000010111100010101001111"};
+  std::ranges::for_each(a, IsDigit);
+  EXPECT_EQ(a, b);
+}
+
+/**
+ * Test that `is_digit()` works as expected with non-printable characters.
+ */
+TEST_F(IsDigitTest, NonPrintableStringTest)
+{
+  std::string a{"sdf8y29y38\n45\t9u1\x1e\x3e\n\n09"};
+  std::string b{"00010110110110101000011"};
+  std::ranges::for_each(a, IsDigit);
   EXPECT_EQ(a, b);
 }
 
@@ -156,6 +191,34 @@ protected:
   }
 };
 
+/**
+ * `is_digit()` compile-time test case input.
+ *
+ * @tparam a Input character
+ * @tparam b Expected result
+ */
+template <char a, bool b>
+struct is_digit_test_case {};
+
+/**
+ * Partial specialization for `is_digit_test_case<a, b>`.
+ *
+ * @tparam a Input character
+ * @tparam b Expected result
+ */
+template <char a, bool b>
+class StringTemplateTest<is_digit_test_case<a, b>> : public IsDigitTest {
+protected:
+  /**
+   * Invoke `is_digit(a)` at compile time and report the result.
+   */
+  void operator()() const
+  {
+    constexpr bool c = oa::is_digit(a);
+    EXPECT_EQ(b, c);
+  }
+};
+
 // instantiate StringTemplateTest
 TYPED_TEST_SUITE(
   StringTemplateTest,
@@ -172,7 +235,14 @@ TYPED_TEST_SUITE(
       to_lower_test_case<'?', '?'>,
       to_lower_test_case<'c', 'c'>,
       to_lower_test_case<'\x1e', '\x1e'>,
-      to_lower_test_case<'\t', '\t'>
+      to_lower_test_case<'\t', '\t'>,
+      // is_digit() test cases
+      is_digit_test_case<'a', false>,
+      is_digit_test_case<'4', true>,
+      is_digit_test_case<'\n', false>,
+      is_digit_test_case<'\x9a', false>,
+      is_digit_test_case<'7', true>,
+      is_digit_test_case<'a' + '6' - 'a', true>
     >
   )
 );
