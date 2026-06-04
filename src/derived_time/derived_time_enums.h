@@ -1,10 +1,10 @@
 #ifndef OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
 #define OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
 
-#include "oa/dllexport.h"
-
-#include <iostream>
+#include <iosfwd>
 #include <string>
+
+#include "oa/dllexport.h"
 
 namespace oa::derived_time
 {
