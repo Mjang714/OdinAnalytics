@@ -3,6 +3,7 @@
 
 #include "time/time_enum_mappers.h"
 #include "derived_time/derived_time_enums.h"
+#include "derived_time/derived_time_enum_mappers.h"
 
 namespace {
 

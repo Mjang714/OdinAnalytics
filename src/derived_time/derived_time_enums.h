@@ -69,30 +69,6 @@ namespace oa::derived_time
 	};
 
 	OA_DERIVED_TIME_API
-	derived_time::DateDirection MapInputToDateDir(const std::string& input_str);
-
-	OA_DERIVED_TIME_API
-	derived_time::Frequency MapInputToFreq(const std::string& input_str);
-
-	OA_DERIVED_TIME_API
-	derived_time::StubType MapInputToStub(const std::string& input_str);
-
-	OA_DERIVED_TIME_API
-	derived_time::CalcType MapInputToCalcType(const std::string& input_str);
-
-	OA_DERIVED_TIME_API
-	derived_time::DateDirection MapInputToDateDir(const std::string& input_str);
-
-	OA_DERIVED_TIME_API
-	derived_time::Frequency MapInputToFreq(const std::string& input_str);
-
-	OA_DERIVED_TIME_API
-	derived_time::StubType MapInputToStub(const std::string& input_str);
-
-	OA_DERIVED_TIME_API
-	derived_time::CalcType MapInputToCalcType(const std::string& input_str);
-
-	OA_DERIVED_TIME_API
 	std::ostream& operator<<(std::ostream& os, DateDirection val);
 
 	OA_DERIVED_TIME_API

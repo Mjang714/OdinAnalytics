@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "derived_time/derived_time_enum_mappers.h"
 #include "derived_time/cashflow_gen/cashflow_gen.h"
 #include "derived_time/cashflow_gen/cashflow_struct.h"
 #include "derived_time/date_formula/business_date_formula.h"

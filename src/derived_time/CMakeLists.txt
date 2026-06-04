@@ -8,6 +8,7 @@ add_library(
     date_formula/business_date_formula.cpp
     date_formula/date_formula.cpp
     derived_time_enums.cpp
+    derived_time_enum_mappers.cpp
 )
 target_include_directories(
     oa_derived_time PUBLIC
