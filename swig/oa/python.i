@@ -51,12 +51,22 @@ const auto& module_() noexcept
 const auto& Path() noexcept
 {
   // lambda used for proper error handling
-  static py_object cls = []() -> PyObject*
+  static auto cls = []
   {
-    auto mod = module_();
-    return (!mod) nullptr : return PyObject_GetAttrString(mod, "Path");
+    auto& mod = module_();
+    return py_object{(!mod) ? nullptr : PyObject_GetAttrString(mod, "Path")};
   }();
   return cls;
+}
+
+/**
+ * Check if a Python object is a `pathlib.Path` instance.
+ *
+ * @param obj Python object
+ */
+bool IsPath(PyObject* obj) noexcept
+{
+  return !!PyObject_IsInstance(obj, Path());
 }
 
 }  // namespace
@@ -91,6 +101,36 @@ const auto& Path() noexcept
 %enddef  // OA_USE_EXCEPTION_HANDLER
 
 /**
+ * Typemap to convert a `pathlib.Path` or `str` into a `std::filesystem::path`.
+ */
+%typemap(in) std::filesystem::path {
+  // Python string object
+  oa::py_object str;
+  // if pathlib.Path subclass manage its string representation
+  if (oa::pathlib::IsPath($input))
+    str = oa::py_object{PyObject_Str($input)};
+  // if a Python string itself increment the reference
+  else if(PyUnicode_Check($input))
+    str = {oa::py_object::inc, $input};
+  // otherwise, set a Python exception
+  else
+    PyErr_SetString(
+      PyExc_TypeError,
+      OA_PRETTY_FUNCTION_NAME ": input must be str or pathlib.Path"
+    );
+  // handle error
+  if (!str)
+    SWIG_fail;
+  // get pointer + size of UTF-8 string
+  Py_ssize_t size;
+  auto utf8 = PyUnicode_AsUTF8AndSize(str, &size);
+  if (!utf8)
+    SWIG_fail;
+  // otherwise, create path
+  $1 = std::filesystem::path{utf8, utf8 + size};
+}
+
+/**
  * Typemap to convert a `std::filesystem::path` into a `pathlib.Path`.
  */
 %typemap(out) std::filesystem::path {
@@ -107,7 +147,7 @@ const auto& Path() noexcept
   $result = PyObject_CallOneArg(path_class, str);
 #else
   // without PyObject_CallOneArg() we have to use Py_BuildValue()
-  oa::py_object tup{Py_BuildValue("(O)", )}
+  oa::py_object tup{Py_BuildValue("(O)", str.get())};
   if (!tup)
     SWIG_fail;
   $result = PyObject_CallObject(path_class, tup);
