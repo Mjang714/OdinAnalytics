@@ -6,7 +6,7 @@
 
 namespace oa::derived_time
 {
-    OA_DERIVED_TIME_API
+	OA_DERIVED_TIME_API
 	derived_time::DateDirection MapInputToDateDir(const std::string& input_str);
 
 	OA_DERIVED_TIME_API
