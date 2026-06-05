@@ -185,7 +185,7 @@ public:
   /**
    * Return the `PyObject*` pointer.
    */
-  constexpr auto obj() const noexcept
+  constexpr auto get() const noexcept
   {
     return obj_;
   }
