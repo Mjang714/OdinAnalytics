@@ -119,14 +119,6 @@ else()
     message(STATUS "GoogleMock version: None")
 endif()
 
-# find Python 3. this is required for code generation (bindings too later on)
-find_package(Python3 3.10 COMPONENTS Interpreter)
-if(Python3_FOUND)
-    message(STATUS "Python version: ${Python3_VERSION}")
-else()
-    message(STATUS "Python version: None")
-endif()
-
 # look for Excel 2013 XLL SDK
 # note: we don't actually need the GENERIC sample XLL but it is a nice example
 if(WIN32)
@@ -145,9 +137,9 @@ endif()
 
 # look for Python 3 interpreter + development headers/libraries
 # note: 32-bit Python is almost never used now
-find_package(Python 3.10 COMPONENTS Interpreter Development)
-if(Python_FOUND)
-    message(STATUS "Python version: ${Python_VERSION}")
+find_package(Python3 3.10 COMPONENTS Interpreter)
+if(Python3_FOUND)
+    message(STATUS "Python version: ${Python3_VERSION}")
 else()
     message(STATUS "Python version: None")
 endif()
