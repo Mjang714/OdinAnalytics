@@ -10,12 +10,12 @@
 #include "oa/string.h"
 
 #if OA_HAS_CPP20_FORMAT
-#include <format>   
+#include <format>
 #endif  // !OA_HAS_CPP20_FORMAT
 
 namespace oa::derived_time
 {
-     const auto& DateDirectionMap() {
+	const auto& DateDirectionMap() {
 		static const std::unordered_map<std::string, derived_time::DateDirection> dd_map{
 			{"FWD", derived_time::DateDirection::kForward},
 			{"FORWARD", derived_time::DateDirection::kForward},
