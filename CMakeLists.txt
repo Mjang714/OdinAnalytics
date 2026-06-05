@@ -149,6 +149,8 @@ find_package(SWIG 4.0 COMPONENTS python)
 if(SWIG_FOUND)
     include(UseSWIG)
     message(STATUS "SWIG version: ${SWIG_VERSION}")
+    # ensure SWIG generates implicit dependencies for correct minimal rebuild
+    set(SWIG_USE_SWIG_DEPENDENCIES ON)
 else()
     message(STATUS "SWIG version: None")
 endif()
