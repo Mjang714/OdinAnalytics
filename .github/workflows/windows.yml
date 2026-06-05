@@ -26,8 +26,9 @@ on:
   workflow_dispatch:
 
 env:
-  # install root for dependencies
+  # install root for dependencies + Odin test install root
   ODIN_VENDOR_ROOT: C:\odin_vendor
+  ODIN_INSTALL_ROOT: C:\odin
   # Boost version + semicolon-separated list of libraries for Boost CMake build
   BOOST_VERSION: 1.89.0
   BOOST_CMAKE_LIBS: algorithm
@@ -35,23 +36,27 @@ env:
   MAGIC_ENUM_VERSION: 0.9.7
   # GoogleTest version
   GTEST_VERSION: 1.14.0
+  # Excel 2013 XLL SDK MSI name + download link
+  XLLSDK_MSI_LINK: "https://download.microsoft.com/download/d/a/c/\
+    dac9c321-279c-4625-b381-bcb044eef7b2/excelxllsdk.msi"
 
 jobs:
   # only one job which is the build job
   build:
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} unity=${{ matrix.unity }}
+    name: ${{ matrix.os }} arch=${{ matrix.arch }} unity=${{ matrix.unity }}
     # strategy matrix
     strategy:
       matrix:
         # note: windows-latest is a moving target
         os: [windows-2022, windows-2025]
         # CMake build arch, i.e. what is passed to CMake's -A option
-        # TODO: haven't tested x64 all that much. also need to determine if we
-        # want to allow Win32 as another choice for build.bat
-        arch: [Win32]
+        # TODO: maybe consider allowing build.bat to accept "Win32" as a choice
+        arch: [Win32, x64]
         # whether or not to use unity build
         unity: [off, on]
+      # keep running the rest of the matrix jobs even if one fails
+      fail-fast: false
     # job steps
     steps:
       - name: Checkout
@@ -62,6 +67,17 @@ jobs:
       # and __cpuidex directly in a C/C++ program but this is more complication
       - name: CPU Info
         run: systeminfo
+      # Python setup
+      # note: exact version doesn't really matter honestly
+      - name: Python Setup
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+      # check Python + install dependencies (oxlgen.py needs PyYAML)
+      - name: Install Python dependencies
+        run: |
+          python --version
+          pip install pyyaml>=6.0
       # installs + builds required Boost libraries with CMake. see
       # https://www.boost.org/doc/user-guide/getting-started.html#_individual_modules
       # note: originally we used curl to pull an entire Boost release but the
@@ -80,6 +96,10 @@ jobs:
             echo "Initializing Boost module $module"
             git submodule update --depth 1 -q --init libs\$module
             python tools\boostdep\depinst\depinst.py -X test -g "--depth 1" $module
+            # if depinst.py failed abort the stage
+            If ($LastExitCode -ne 0) {
+              throw "depinst.py failed to initialize libs/$module correctly"
+            }
           }
           # build just the required components we need. the entire Boost suite
           # of libraries is huge so we don't want to build everything. in most
@@ -118,24 +138,103 @@ jobs:
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
-      # note: not sure if step-level env can use top-level env variables
+      # use msiexec to perform XLL SDK installation through the MSI
+      - name: Install Excel 2013 XLL SDK
+        run: |
+          cd ${{ runner.temp }}
+          # download MSI to temp dir (verbose output)
+          Invoke-WebRequest ${{ env.XLLSDK_MSI_LINK }} `
+            -Verbose `
+            -OutFile excelxllsdk.msi
+          # use msiexec to install without user interaction and no UI. no
+          # restart is needed and we log to a log file in case of errors. see
+          # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/msiexec
+          # for more details on using msiexec for MSI install
+          # note: we start a separate process here and return a process object
+          # so we can wait for the process to correctly exit. inspired from
+          # https://stackoverflow.com/a/72291019/14227825
+          $msi_proc = Start-Process msiexec `
+            /i,excelxllsdk.msi,`
+            /quiet,`
+            /qn,`
+            /norestart,`
+            /log,excelxllsdk.log,`
+            XLLSDKINSTALLDIR=${{ env.ODIN_VENDOR_ROOT }} `
+            -NoNewWindow -PassThru
+          $msi_proc.WaitForExit()
+          # print log file contents + verify installation location layout
+          Get-Content excelxllsdk.log
+          Get-ChildItem -Recurse ${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK
       - name: Build
         run: |
           # ToUpper() can be used on PowerShell strings for upper-casing
           $ODIN_UNITY_BUILD = "${{ matrix.unity }}".ToUpper()
-          # handle conversion of Win32 -> x86 for build script
-          $BUILD_ARCH = If ("${{ matrix.arch }}" -eq "Win32") { "x86" } `
-            Else { "${{ matrix.arch }}" }
+          # include PowerShell helpers
+          . .\tools\common.ps1
           # run build command
           # note: need explicit use of .\ here unlike with CMD
           # note: need double quotes to be preserved for CMD script
-          .\build -a $BUILD_ARCH -c Release -Ca `
-            '"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}"' `
-            '"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD"'
+          # note: ` is the escape character in PowerShell
+          .\build -a $(OaPlatformTranslate "${{ matrix.arch }}") -c Release -Ca `
+            "`"-DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }}`"" `
+            "`"-DXLLSDK_ROOT=${{ env.ODIN_VENDOR_ROOT }}\Excel2013XLLSDK`"" `
+            "`"-DCMAKE_UNITY_BUILD=$ODIN_UNITY_BUILD`"" `
+            "`"-DODIN_GITHUB_ACTIONS_RUNNER=${{ matrix.os }}`"" `
+            "`"-DODIN_GITHUB_ACTIONS_ARCH=$(OaPlatformTranslate "${{ matrix.arch }}")`""
       # note: we don't have a nice wrapper script for this yet
       - name: Test
         run: |
+          # include PowerShell helpers
+          . .\tools\common.ps1
           # note: need double quotes for PowerShell
-          ctest --test-dir build_windows_x86 -C Release `
-            "-j$env:NUMBER_OF_PROCESSORS" --output-on-failure
-      # TODO: add install stage when this is available
+          ctest --test-dir `
+            build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
+            -C Release "-j$env:NUMBER_OF_PROCESSORS" --output-on-failure
+      # install Runtime and Development components separately
+      # note: only good as a smoke test
+      - name: Install Runtime
+        run: |
+          # load helper script for OaPlatformTranslate
+          . .\tools\common.ps1
+          # convert Win32 -> x86 for build directory + install
+          cmake --install `
+            build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
+            --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
+            --config Release `
+            --component Runtime
+      - name: Install Development
+        run: |
+          # same as above but install Development component
+          . .\tools\common.ps1
+          cmake --install `
+            build_windows_$(OaPlatformTranslate "${{ matrix.arch }}") `
+            --prefix "${{ env.ODIN_INSTALL_ROOT }}" `
+            --config Release `
+            --component Development
+      # run CPack to get the ZIP archive
+      - name: Package
+        id: cpack-package
+        # run for all non-unity jobs
+        if: ${{ matrix.unity == 'off' }}
+        run: |
+          # include PowerShell helpers
+          . .\tools\common.ps1
+          $build_dir = "build_windows_$(OaPlatformTranslate "${{ matrix.arch }}")"
+          # note: for multi-config generators best to specify config with -C
+          cpack -B $build_dir\packages -G ZIP -C Release `
+            --config $build_dir\CPackConfig.cmake
+          # record .zip path in output for upload step
+          # note: need to explicitly include packaging directory again
+          $cpack_zip = "$build_dir\packages\"
+          $cpack_zip += "$(Get-ChildItem -Name $build_dir\packages\*.zip)"
+          echo "cpack-zip=$cpack_zip" >> "$env:GITHUB_OUTPUT"
+      # upload packages to the workflow page
+      # note: only done when run on schedule for non-unity jobs
+      - name: Upload ZIP
+        if: ${{ github.event_name == 'schedule' && matrix.unity == 'off' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-${{ matrix.os }}-zip
+          path: ${{ steps.cpack-package.outputs.cpack-zip }}
+          # already archived so don't archive
+          archive: false

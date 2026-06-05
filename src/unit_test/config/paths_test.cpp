@@ -19,9 +19,9 @@
 #endif  // !defined(_WIN32)
 
 // again, only need errno when not on Windows
-#ifdef _GNU_SOURCE
+#ifndef _WIN32
 #include <cerrno>
-#endif  // _GNU_SOURCE
+#endif  // _WIN32
 #include <filesystem>
 #include <system_error>
 

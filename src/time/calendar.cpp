@@ -129,6 +129,30 @@ OA_MSVC_WARNING_POP()
 
 			return oa::time::Date(julian_base_date);
 		}
+
+		oa::time::Date Calendar::AddBusinessDays(int number_of_days, const Date& base_date) const
+		{
+			auto curr_jul_date = base_date.GetJulian(), days = std::abs(number_of_days);
+			while (days != 0)
+			{
+				if (number_of_days < 0)
+				{
+					curr_jul_date--;
+				}
+
+				else
+				{
+					curr_jul_date++;
+				}
+
+				if (IsBusinessDay(curr_jul_date))
+				{
+					days--;
+				}
+			}
+			return oa::time::Date(curr_jul_date);
+		}
+
 	}
 }
 

@@ -6,6 +6,8 @@ add_library(
     calendar.cpp
     date.cpp
     tenor.cpp
+    time_enums.cpp
+    time_enum_mappers.cpp
     date_adjust/adjustment_factory.cpp
     date_adjust/date_adjust_following.cpp
     date_adjust/date_adjust_modified_following.cpp
@@ -25,11 +27,27 @@ target_include_directories(
     # note: not installable just yet
     $<INSTALL_INTERFACE:include>
 )
-# ensures that the specified macro is defined when building shared
-set_target_properties(oa_time PROPERTIES DEFINE_SYMBOL OA_BUILD_TIME_DLL)
+# set export macro for shared build + use d suffix for debug builds
+set_target_properties(
+    oa_time PROPERTIES
+    DEFINE_SYMBOL OA_BUILD_TIME_DLL
+    DEBUG_POSTFIX d
+)
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_time INTERFACE OA_TIME_DLL)
 endif()
 # link against dependencies
 target_link_libraries(oa_time PUBLIC oa_helpers PRIVATE Boost::headers)
+# install rule for oa_time
+install(
+    TARGETS oa_time
+    EXPORT odin_exports
+    ARCHIVE COMPONENT Development
+    LIBRARY COMPONENT Runtime
+    RUNTIME COMPONENT Runtime
+)
+# install PDB when building for Debug config
+oa_pdb_install(oa_time CONFIGURATIONS Debug COMPONENT Development)
+oa_embed_version_info(oa_time DESCRIPTION "OA Time Library")
+oa_check_version_info(oa_time)

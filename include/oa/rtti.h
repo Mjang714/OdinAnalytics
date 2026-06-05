@@ -10,21 +10,14 @@
 
 #include <typeinfo>
 
+// FIXME: don't use Boost for this task (forced usage requirement). we want to
+// avoid a find_dependency() call in the CMake config file; just use
+// abi::__cxa_demangle directly for this task for GCC/Clang
 #include <boost/core/demangle.hpp>
 
-// unqualified name of the current function
-#define OA_FUNCTION_NAME __func__
-
-// qualified signature of current function, i.e. including class name, params.
-// __PRETTY_FUNCTION__ is used for GCC-like compilers, __FUNCSIG__ for MSVC
-#if defined(_MSC_VER)
-#define OA_PRETTY_FUNCTION_NAME __FUNCSIG__
-#elif defined(__GNUC__)
-#define OA_PRETTY_FUNCTION_NAME __PRETTY_FUNCTION__
-// for other compilers, just fall back to OA_FUNCTION_NAME
-#else
-#define OA_PRETTY_FUNCTION_NAME OA_FUNCTION_NAME
-#endif  // !defined(_MSC_VER) && !defined(__GNUC__)
+// TODO: refactor existing code to only include ctti.h as necessary. rtti.h
+// should only deal with run-time type information helpers
+#include "oa/ctti.h"
 
 // 1 if run-time type information functionality is enabled, 0 otherwise. one
 // can compile without RTTI with MSVC by using /GR-, -fno-rtti for GCC/Clang.

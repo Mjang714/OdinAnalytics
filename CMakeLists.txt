@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.23)
 
 # see README.md for build + test instructions
 
 project(
-    OdinAnalytics
+    OA
     VERSION 0.1.0
     DESCRIPTION "Nordic quantitative library sandbox"
     LANGUAGES C CXX
@@ -62,11 +62,22 @@ else()
     message(STATUS "Build unity: No")
 endif()
 
+# Visual Studio generator specific info
+string(FIND "${CMAKE_GENERATOR}" "Visual Studio" _is_vs_generator)
+if(_is_vs_generator EQUAL 0)
+    message(STATUS "Visual Studio platform: ${CMAKE_VS_PLATFORM_NAME}")
+    message(STATUS "Visual Studio toolset: ${CMAKE_VS_PLATFORM_TOOLSET}")
+endif()
+unset(_is_vs_generator)
+
 # update CMake module path to allow inclusion of custom CMake code
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 include(CTest)
 
+include(oa_embed_version_info)
+include(oa_pdb_install)
+include(oa_repair_gtest_version)
 include(oa_unity_enable_unique_id)
 
 # find Boost [headers]
@@ -89,17 +100,45 @@ message(STATUS "Magic Enum version: ${magic_enum_VERSION}")
 # find GoogleTest
 find_package(GTest 1.8)
 if(GTest_FOUND)
+    # set GTest_VERSION approximately if GTest found using FindGTest.cmake
+    # note: if GTest_VERSION already set nothing is done
+    oa_repair_gtest_version()
     message(STATUS "GoogleTest version: ${GTest_VERSION}")
 else()
     message(STATUS "GoogleTest version: None")
 endif()
 
+# find GoogleMock by detecting GTest::gmock target. GoogleTest and GoogleMock
+# may be packaged separately on some Linux distros so GTest::gmock[_main] may
+# not be defined if GoogleMock is not found in the find_package call
+if(TARGET GTest::gmock)
+    set(GMock_FOUND TRUE)
+    message(STATUS "GoogleMock version: ${GTest_VERSION}")
+else()
+    set(GMock_FOUND FALSE)
+    message(STATUS "GoogleMock version: None")
+endif()
+
+# find Python 3. this is required for code generation (bindings too later on)
+find_package(Python3 3.10 COMPONENTS Interpreter)
+if(Python3_FOUND)
+    message(STATUS "Python version: ${Python3_VERSION}")
+else()
+    message(STATUS "Python version: None")
+endif()
+
 # look for Excel 2013 XLL SDK
+# note: we don't actually need the GENERIC sample XLL but it is a nice example
 if(WIN32)
-    find_package(XLLSDK 15.0 COMPONENTS frmwrk32)
+    find_package(XLLSDK 15.0 COMPONENTS Framework Generic)
 endif()
 if(XLLSDK_FOUND)
     message(STATUS "XLL SDK version: ${XLLSDK_VERSION}")
+    if(XLLSDK_64BIT)
+        message(STATUS "XLL SDK 64-bit: Yes")
+    else()
+        message(STATUS "XLL SDK 64-bit: No")
+    endif()
 else()
     message(STATUS "XLL SDK version: None")
 endif()
@@ -133,6 +172,10 @@ if(MSVC)
         # TODO: should put this back up to /Wall when possible. do *not* remove
         # the explicitly disabled warnings for now
         /W4 /MP
+        # C4668: macro not defined and replaced with 0. this is turned on with
+        # /Wall, but since we are using /W4, we explicitly enable
+        /w34668
+        # specific /Wall warnings we are ok with disabling
         # typically don't care if unreferenced inline functions are removed
         /wd4514
         # silence warnings about padding (we don't care for this project)
@@ -148,7 +191,7 @@ if(MSVC)
         # /Wall enables warning about 32-bit floats being stored in memory,
         # which is performance loss compared to storing in register
         /wd4738
-        # /Od applied by default when using Debug configuration
+        # note: /Od applied by default when using Debug configuration
     )
     # if building as DLL, C4251 is emitted a lot. this is because exporting C++
     # classes from DLLs is fraught with ABI issues, but this is fine for more
@@ -159,6 +202,8 @@ if(MSVC)
 else()
     add_compile_options(
         -Wall
+        # ensure we warn if a macro is used without being first defined
+        -Wundef
         # -O0 is default optimization level anyways, Clang ignores -ggdb
         $<$<NOT:$<CONFIG:Release>>:-ggdb> $<IF:$<CONFIG:Release>,-O3,-O0>
     )
@@ -223,4 +268,142 @@ set(ODIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # TODO: stop using this as part of target include paths later on
 set(ODIN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+# project build directory relative to CMAKE_CURRENT_SOURCE_DIR
+cmake_path(RELATIVE_PATH PROJECT_BINARY_DIR OUTPUT_VARIABLE ODIN_REL_BUILD_DIR)
+# project build directory generator expression (for multi-config subdir)
+set(
+    ODIN_BUILD_DIR_GENEX
+    "${PROJECT_BINARY_DIR}$<${ODIN_MULTI_CONFIG}:/$<CONFIG>>"
+)
+# project relative build directory generator expression
+set(
+    ODIN_REL_BUILD_DIR_GENEX
+    "${ODIN_REL_BUILD_DIR}$<${ODIN_MULTI_CONFIG}:/$<CONFIG>>"
+)
+# custom target to copy static data to build output directory
+# note: multi-config generators will have the per-config subdirectory
+add_custom_target(
+    oa_copy_static_data
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            static_data/calendars ${ODIN_BUILD_DIR_GENEX}/calendars
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Copying static data to ${ODIN_BUILD_DIR_GENEX}"
+    VERBATIM
+)
+
+# oa_core: core header-only library
+# FIXME: currently oa/rtti.h still requires Boost
+# TODO: go through project targets to see which implicitly depend on this. note
+# that linkage could be PRIVATE or PUBLIC depending on header exposure
+add_library(oa_core INTERFACE)
+target_include_directories(
+    oa_core INTERFACE
+    $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
+    # note: build interface includes generated headers
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+# install rule for oa_core (provides just an IMPORTED target)
+install(TARGETS oa_core EXPORT odin_exports)
+
 add_subdirectory(src)
+add_subdirectory(test)
+
+# install rule for include/oa headers (excluding internal testing headers)
+# note: this is currently incomplete and only provides core + config headers
+install(
+    DIRECTORY ${ODIN_INCLUDE_DIR}/oa
+    TYPE INCLUDE
+    COMPONENT Development
+    FILES_MATCHING PATTERN "*.h" PATTERN "testing*" EXCLUDE
+)
+# install rule for generated version.h header
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/${ODIN_VERSION_H}
+    DESTINATION include/oa
+    COMPONENT Development
+)
+# install rule for the calendar data. we consider this part of the Runtime
+# component because it is required for some libraries to function at runtime
+install(DIRECTORY static_data/calendars DESTINATION share/OA COMPONENT Runtime)
+
+# CMake package configuration
+
+include(CMakePackageConfigHelpers)
+
+# CMake script install subdir
+set(ODIN_CMAKE_INSTALL_DIR lib/cmake/${PROJECT_NAME})
+# name of exported targets file
+set(ODIN_TARGETS_FILE ${PROJECT_NAME}Targets.cmake)
+# generate package config file
+set(ODIN_CONFIG_FILE cmake/${PROJECT_NAME}Config.cmake)
+# variables consumed:
+#
+#   PROJECT_NAME
+#   ODIN_TARGETS_FILE
+#
+configure_package_config_file(
+    ${ODIN_CONFIG_FILE}.in ${ODIN_CONFIG_FILE}
+    INSTALL_DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+)
+message(STATUS "Generated ${ODIN_CONFIG_FILE}")
+# generate package version file
+set(ODIN_CONFIG_VERSION_FILE cmake/${PROJECT_NAME}ConfigVersion.cmake)
+write_basic_package_version_file(
+    ${ODIN_CONFIG_VERSION_FILE}
+    VERSION ${ODIN_VERSION}
+    # TODO: no real compatibility guarantees so just use SameMajorVersion
+    COMPATIBILITY SameMajorVersion
+)
+message(STATUS "Generated ${ODIN_CONFIG_VERSION_FILE}")
+# install rule for config files
+install(
+    FILES
+        ${PROJECT_BINARY_DIR}/${ODIN_CONFIG_FILE}
+        ${PROJECT_BINARY_DIR}/${ODIN_CONFIG_VERSION_FILE}
+    DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+    COMPONENT Development
+)
+# install rule for exported targets
+install(
+    EXPORT odin_exports
+    DESTINATION ${ODIN_CMAKE_INSTALL_DIR}
+    NAMESPACE ${PROJECT_NAME}::
+    FILE ${ODIN_TARGETS_FILE}
+    COMPONENT Development
+)
+
+# set variables for CPack
+# note: although CPACK_PACKAGE_NAME defaults to PROJECT_NAME we want to
+# explicitly reuse its value in CPACK_PACKAGE_VENDOR
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VENDOR "${CPACK_PACKAGE_NAME} Developers")
+set(CPACK_PACKAGE_VERSION "${ODIN_VERSION}")
+# if running on GitHub Actions ODIN_GITHUB_ACTIONS_RUNNER and
+# ODIN_GITHUB_ACTIONS_ARCH need to be set. these will be used to set
+# CPACK_SYSTEM_NAME to influence CPACK_PACKAGE_FILE_NAME
+if(DEFINED ENV{GITHUB_ACTIONS})
+    if(NOT ODIN_GITHUB_ACTIONS_RUNNER)
+        message(
+            FATAL_ERROR
+            "ODIN_GITHUB_ACTIONS_RUNNER should be defined to the GitHub Actions "
+"runner image name, e.g. the value of jobs.<job_id>.runs-on"
+        )
+    endif()
+    if(NOT ODIN_GITHUB_ACTIONS_ARCH)
+        message(
+            FATAL_ERROR
+            "ODIN_GITHUB_ACTIONS_ARCH should be defined to the GitHub Actions "
+"runner architecture, e.g. runner.arch, or the build architecture itself, e.g. "
+"Win32, x64, etc."
+        )
+    endif()
+    set(
+        CPACK_SYSTEM_NAME
+        "${ODIN_GITHUB_ACTIONS_RUNNER}-${ODIN_GITHUB_ACTIONS_ARCH}"
+    )
+endif()
+set(CPACK_RESOURCE_FILE_LICENSE LICENSE)
+set(CPACK_RESOURCE_FILE_README README.md)
+# generate CPackConfig.cmake in build directory
+include(CPack)

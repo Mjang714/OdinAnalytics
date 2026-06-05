@@ -1,10 +1,9 @@
 OutputFile : auto_gen_time.cpp
-RegFile : auto_gen_time_reg_fns.h
+RegFile : oxl/auto_gen_time_reg_fns.h
 RegPreFix : time
 Category: oxl_time
 HeaderFiles:
--
-  FileName : time_xl.h
+  - oxl/time_xl.h
 Functions :
   -
    ExcelName : oxlIsBusinessDay
@@ -78,6 +77,7 @@ Functions :
    ExcelName : oxlComputeDate
    OxlName : OxlComputeDate
    Type : Dictionary
+   GenerateArgDict : True
    Args:
     -
      Name : Base_Date
@@ -97,3 +97,39 @@ Functions :
      Type : String
    Return : Double
    Help : Computes a new date from date, tenor, calendar, date modifier
+  -
+   ExcelName : oxlAddBusinessDays
+   OxlName : OxlAddBusinessDays
+   Type : Dictionary
+   GenerateArgDict : True
+   Args:
+    -
+     Name : Base_Date
+     Help : base date to compute the new business date from
+     Type : LPXLOPER|Date
+    -
+     Name : Days
+     Help : number of business days to adjust
+     Type : Double
+    -
+     Name : Calendar
+     Help : Business Calendar such as NYB(NY Fed), LNB(London Bank), NDQ (Nasdaq), and etc
+     Type : String
+   Return : Double
+   Help : Computes a new business date from date, num of business days, calendar
+  -
+   ExcelName : oxlGenerateCashFlows
+   OxlName : OxlGenerateCashflow
+   Type : Dictionary
+   GenerateArgDict : False
+   Args:
+    -
+     Name : CF_Params
+     Help : What the keys are (start_date, end_date, date_direction)
+     Type : Array
+    -
+     Name : CF_Values
+     Help : Values (such as backwards for date_direction)
+     Type : Array
+   Return : LPXLOPER|XlArray
+   Help : Computes a new business date from date, num of business days, calendar

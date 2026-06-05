@@ -1,5 +1,9 @@
-#ifndef OPENANALYTICS_TIME_TIMEENUMS_H
-#define OPENANALYTICS_TIME_TIMEENUMS_H
+#ifndef ODINANALYTICS_TIME_TIMEENUMS_H
+#define ODINANALYTICS_TIME_TIMEENUMS_H
+
+#include "oa/dllexport.h"
+
+#include <iostream>
 
 namespace oa::time
 {
@@ -58,7 +62,12 @@ namespace oa::time
 
 	};
 	
+    OA_TIME_API
+    std::ostream& operator<<(std::ostream& os, DayCountRule val);
+
+    OA_TIME_API
+    std::ostream& operator<<(std::ostream& os, AdjRule val);
 }
 
-#endif // OPENANALYTICS_TIME_TIMEENUMS_H
+#endif // ODINANALYTICS_TIME_TIMEENUMS_H
 

@@ -13,14 +13,14 @@ Nordic front-office quantitative library sandbox.
 This project is inspired by the authors' work experience as front-office strats
 at various banks.
 
-## Building
+## Build + Install
 
 | Platform | CI Status |
 | -------- | --------- |
 | Linux | [![ci-linux](https://github.com/Mjang714/OdinAnalytics/actions/workflows/linux.yml/badge.svg)](https://github.com/Mjang714/OdinAnalytics/actions/workflows/linux.yml) |
 | Windows | [![ci-windows](https://github.com/Mjang714/OdinAnalytics/actions/workflows/windows.yml/badge.svg)](https://github.com/Mjang714/OdinAnalytics/actions/workflows/windows.yml) |
 
-Odin is built with [CMake] >= 3.21 and requires the following:
+Odin is built with [CMake] >= 3.23 and requires the following:
 
 * A C++ compiler supporting C++20
 * [Boost] >= 1.71
@@ -53,6 +53,9 @@ If your dependencies are not installed in system locations the standard CMake
 [package_root]: https://cmake.org/cmake/help/latest/variable/PackageName_ROOT.html
 [find_package]: https://cmake.org/cmake/help/latest/command/find_package.html
 [CMAKE_INSTALL_PREFIX]: https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html
+
+See the corresponding section for details on
+[per-component installation](#per-component-installation).
 
 ### \*nix
 
@@ -87,25 +90,34 @@ If C++ unit tests were built they can be run in parallel using [CTest] with
 ctest --test-dir build -j$(nproc)
 ```
 
+To install Odin into a given install root, e.g. `/opt/OdinAnalytics`, use
+
+```bash
+cmake --install build --prefix /opt/OdinAnalytics
+```
+
+See the corresponding section for details on
+[per-component installation](#per-component-installation).
+
 [CTest]: https://cmake.org/cmake/help/latest/manual/ctest.1.html
 
 ### Windows
 
 To build Odin on Windows a wrapper `build.bat` script is provided.
 
-For example, to build the x86 Release config with Odin shared libraries, use
+For example, to build the x64 Release config with Odin shared libraries, use
 
 ```shell
 build -c Release
 ```
 
-To build x64 Release shared libraries instead x86 shared libraries, use
+To build x86 Release shared libraries instead x64 shared libraries, use
 
 ```shell
-build -c Release -a x64
+build -c Release -a x86
 ```
 
-To build x86 Release static libraries instead of shared libraries, use
+To build x64 Release static libraries instead of shared libraries, use
 
 ```shell
 build -c Release -Ca "-DBUILD_SHARED_LIBS=OFF"
@@ -121,8 +133,63 @@ The double quotes are necessary as without them CMD will get confused by the
 `=` and think a variable assignment is being done. For more build options run
 `build --help` for a brief usage summary.
 
-If C++ unit tests were built they can be run in parallel using CTest with
+If C++ unit tests were built, e.g. for x64 Release libraries, they can be run in
+parallel using CTest with
 
 ```shell
-ctest --test-dir build -j%NUMBER_OF_PROCESSORS%
+ctest --test-dir build_windows_x64 -C Release -j%NUMBER_OF_PROCESSORS%
+```
+
+To install the Odin x64 Release build to a given install root, e.g.
+`C:\OdinAnalytics`, use
+
+```shell
+cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release
+```
+
+See the corresponding section for details on
+[per-component installation](#per-component-installation).
+
+## Per-Component Installation
+
+<!-- note: [!NOTE] only possible with GitHub Flavored Markdown -->
+
+> [!NOTE]
+>
+> The Development component is incomplete and only provides a few C++ headers
+> for downstream consumption. Future work will involve migrating as many
+> headers into a proper namespaced include structure for downstream consumption
+> and finalizing CMake [`find_package`][find_package] support.
+
+[find_package]: https://cmake.org/cmake/help/latest/command/find_package.html
+
+Odin supports per-component installation via [`cmake --install`][cmake_install]
+to enable more fine-grained control over what needs to be installed. Currently
+the list of available install components is the following:
+
+Name | Description
+---- | -----------
+Runtime | Required runtime libraries and static data
+Development | Optional add-on C++ development headers + CMake config files
+
+[cmake_install]: https://cmake.org/cmake/help/latest/manual/cmake.1.html#install-a-project
+
+The Runtime component is always required as it includes all Odin libraries,
+static data required by the library, and on Windows, the `oxl` Excel add-in.
+For example, after building 64-bit Release artifacts in `build_windows_x64`,
+one can install just the Runtime component into `C:\OdinAnalytics` with:
+
+```shell
+cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --component Runtime
+```
+
+The Development component (currently incomplete) is an optional add-on that
+includes C++ headers for downstream developer consumption and any other C++
+development components, e.g. a CMake `find_package` package config file,
+developer tools, etc. For example, after building 64-bit Release artifacts in
+`build_windows_x64`, one can install the Development component into
+`C:\OdinAnalytics` with:
+
+```shell
+cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --component Development
 ```

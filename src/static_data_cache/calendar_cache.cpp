@@ -33,7 +33,7 @@ namespace oa::static_cache
 			for (const auto& calendar_file_name : list_of_caledars)
 			{
 				raw_calendar_data.push_back(
-					DaoObj::GetInstance().GetCalendartData(calendar_file_name));
+					DaoObj::GetInstance().GetCalendarData(calendar_file_name));
 			}
 
 

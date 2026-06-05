@@ -1,5 +1,20 @@
 #include "xloper_converter.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <XLCALL.H>
+
+#include <stdlib.h>
+
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <variant>
+
+#include "xl_converter_funcs.h"
+#include "oa/ctti.h"
 
 namespace oxl::xl_api {
 
@@ -13,12 +28,13 @@ namespace oxl::xl_api {
 		m_data_ = std::string(input);
 	}
 
-	XLoperObj::XLoperObj(const LPXLOPER12 input)
+	// FIXME: do not use! no well-defined ownership semantics
+	XLoperObj::XLoperObj(LPXLOPER12 input)
 	{
 		m_data_ = input;
 	}
 
-	bool XLoperObj::IsEmpty(const LPXLOPER12 input)
+	bool XLoperObj::IsEmpty(const xloper12* input)
 	{
 		if (input->xltype == xltypeMissing || input->xltype == xltypeNil)
 		{
@@ -29,7 +45,7 @@ namespace oxl::xl_api {
 		return false;
 	}
 
-	bool XLoperObj::IsMulti(const LPXLOPER12 input)
+	bool XLoperObj::IsMulti(const xloper12* input)
 	{
 		if (input->xltype == xltypeMulti)
 		{
@@ -39,7 +55,7 @@ namespace oxl::xl_api {
 		return false;
 	}
 
-	bool XLoperObj::IsStr(const LPXLOPER12 input)
+	bool XLoperObj::IsStr(const xloper12* input)
 	{
 		return input->xltype == xltypeStr ? true : false;
 	}
@@ -75,7 +91,7 @@ namespace oxl::xl_api {
 		{
 			return false;
 		}
-		
+
 	}
 
 	void XLoperObj::ConvertToLPXloper(double value, LPXLOPER12 xl_oper_res)
@@ -93,28 +109,28 @@ namespace oxl::xl_api {
 
 	void XLoperObj::ConvertToLPXloper(bool value, LPXLOPER12 xl_oper_res)
 	{
-		
+
 		xl_oper_res->xltype = xltypeBool;
 		xl_oper_res->val.xbool = value;
-	
+
 	}
 
 	void XLoperObj::ConvertToLPXloper(const std::string& value, LPXLOPER12 xl_oper_res)
-	{	
+	{
 
 		// Convert to wide string
 		std::wstring wide_str = ToWString(value);
 
-		//declare the xloper12 type as str and DLL free bit that will be freed later on 
+		//declare the xloper12 type as str and DLL free bit that will be freed later on
 		xl_oper_res->xltype = xltypeStr | xlbitDLLFree;
-		//allocate the memory size of the wide char array +2 bytes wide character string are not the same size as 
+		//allocate the memory size of the wide char array +2 bytes wide character string are not the same size as
 		// normal strings
 		xl_oper_res->val.str = static_cast<XCHAR*> (calloc(wide_str.length() + 2, sizeof(XCHAR)));
 
 		//the first wide character is the size of the wide char array
 		xl_oper_res->val.str[0] = static_cast<XCHAR> (wide_str.length());
 
-		
+
 		for (size_t i = 0; i < wide_str.length(); i++)
 		{
 			// orignal line was check to see if this one works
@@ -149,7 +165,7 @@ namespace oxl::xl_api {
 					ConvertToLPXloper(std::get<double>(value(i, j)), &xl_oper_res->val.array.lparray[i * cols + j]);
 				}
 
-				//return a string in the defualt case 
+				//return a string in the defualt case
 				else
 				{
 					ConvertToLPXloper(std::get<std::string>(value(i, j)), &xl_oper_res->val.array.lparray[i * cols + j]);
@@ -159,14 +175,16 @@ namespace oxl::xl_api {
 	}
 
 
-	XlArray XLoperObj::LPXloperToXlArray(const LPXLOPER12& xl_oper)
+	XlArray XLoperObj::LPXloperToXlArray(const xloper12* xl_oper)
 	{
 		if (!IsMulti(xl_oper))
 		{
-			std::cout << "Not a xlTypeMulti please check input \n";
-			throw std::invalid_argument("Input was not 2D array check the input:xloper_converter.cpp line 155 LPXloperToArray()");
+			throw std::invalid_argument(std::format("{}:{}: Input was not 2D array check the input",
+				OA_SOURCE_LOCATION(), 
+				__func__
+			));
 		}
-		
+
 		int rows = xl_oper->val.array.rows;
 		int cols = xl_oper->val.array.columns;
 
@@ -176,7 +194,7 @@ namespace oxl::xl_api {
 		{
 			for (size_t j = 0; j < cols; j++)
 			{
-				
+
 				if (xl_oper->val.array.lparray[(i * cols) + j].xltype == xltypeNum)
 				{
 					xl_array_data(i, j) = xl_oper->val.array.lparray[(i * cols) + j].val.num;
@@ -193,7 +211,7 @@ namespace oxl::xl_api {
 						xl_array_data(i, j) = LPXloperToStr(&xl_oper->val.array.lparray[(i * cols) + j]);
 					}
 					//if it is empty then use empty string
-					else 
+					else
 					{
 						xl_array_data(i, j) = "";
 					}
@@ -203,19 +221,22 @@ namespace oxl::xl_api {
 		return xl_array_data;
 	}
 
-	XlDictionary XLoperObj::LPXloperToDictionary(const LPXLOPER12& xl_oper)
+	XlDictionary XLoperObj::LPXloperToDictionary(const xloper12* xl_oper)
 	{
 		if (!IsMulti(xl_oper))
 		{
-			throw std::invalid_argument("Input was not xltypeMulti check the input: xloper_converter.cpp line 190 LPXloperToDictionary()");
+			throw std::invalid_argument(std::format("{}:{}: Input was not xltypeMulti check the input",
+				OA_SOURCE_LOCATION(),
+				__func__
+			));
 		}
-		
+
 		XlArray xl_array = LPXloperToXlArray(xl_oper);
 
 		return XlArrayToXlDictionary(xl_array);
 	}
 
-	XlDictionary XLoperObj::LPXloperToDictionary(const LPXLOPER12& xl_oper_keys, const LPXLOPER12& xl_oper_values)
+	XlDictionary XLoperObj::LPXloperToDictionary(const xloper12* xl_oper_keys, const xloper12* xl_oper_values)
 	{
 		XlArray xl_array_key = LPXloperToXlArray(xl_oper_keys);
 		XlArray xl_array_values = LPXloperToXlArray(xl_oper_values);
@@ -242,39 +263,48 @@ namespace oxl::xl_api {
 		return utf8_str;
 	}
 
-	std::string XLoperObj::LPXloperToStr(const LPXLOPER12& xl_oper)
+	std::string XLoperObj::LPXloperToStr(const xloper12* xl_oper)
 	{
 		if (xl_oper->xltype != xltypeStr)
 		{
-			throw std::invalid_argument("Not an Excel String Type line check the input: xloper_converter.cpp line 244 LPXloperToStr()");
+			throw std::invalid_argument(std::format("{}:{}: Not an Excel String Type line check the input",
+				OA_SOURCE_LOCATION(),
+				__func__
+			));
 		}
 
 		std::string str  = ToUTF8String(xl_oper->val.str + 1);
 		return str.substr(0, static_cast<int> (xl_oper->val.str[0]));
 	}
-	double XLoperObj::LPXloperToDouble(const LPXLOPER12& xl_oper)
+	double XLoperObj::LPXloperToDouble(const xloper12* xl_oper)
 	{
 		if (xl_oper->xltype != xltypeNum)
 		{
-			throw std::invalid_argument("Not an Excel Double Type line check the input: xloper_converter.cpp line 254 LPXloperToDouble()");
+			throw std::invalid_argument(std::format("{}:{}: Not an Excel Double Type line check the input",
+				OA_SOURCE_LOCATION(),
+				__func__ 
+			));
 		}
 		return xl_oper->val.num;
 	}
+
 	std::string XLoperObj::CellName(void)
 	{
 		xloper12 cell_loc;
 		xloper12 sheet_name;
-		xloper12 sheet_id;
 
 		Excel12(xlfCaller, &cell_loc, 0);
-		Excel12(xlSheetNm, &sheet_name,1, &cell_loc);
-		Excel12(xlSheetId, &sheet_id, 1,sheet_name);
+		Excel12(xlSheetNm, &sheet_name, 1, &cell_loc);
 
+		// note: if this throws Excel memory is leaked (xlFree not called)
 		std::string sheet_name_str = LPXloperToStr(&sheet_name);
+		// free string memory allocated by Excel
+		Excel12(xlFree, nullptr, 1, &sheet_name);
 
 		int row = cell_loc.val.sref.ref.rwFirst;
 		int col = cell_loc.val.sref.ref.colFirst;
 
 		return std::format("{}_${}${}", sheet_name_str, row, col);
 	}
-}
+
+}  // namespace oxl::xl_api

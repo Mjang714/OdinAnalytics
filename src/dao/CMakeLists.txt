@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 # oa_dao: dao library
 # TODO: need better description comment here
 add_library(oa_dao calendar_dao.cpp)
-add_library(OdinAnalytics::oa_dao ALIAS oa_dao)
 target_include_directories(
     oa_dao PUBLIC
     $<BUILD_INTERFACE:${ODIN_INCLUDE_DIR}>
@@ -11,13 +10,28 @@ target_include_directories(
     # note: not installable just yet
     $<INSTALL_INTERFACE:include>
 )
-# ensures that the specified macro is defined when building shared. note that
-# if we instead use target_compile_definitions, DEFINE_SYMBOL will be
-# <target>_EXPORTS by default which is unnecessary to define
-set_target_properties(oa_dao PROPERTIES DEFINE_SYMBOL OA_BUILD_DAO_DLL)
+# set export macro for shared build + use d library suffix for debug builds
+set_target_properties(
+    oa_dao PROPERTIES
+    DEFINE_SYMBOL OA_BUILD_DAO_DLL
+    DEBUG_POSTFIX d
+)
 # set fine-grained visibility macro
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_dao INTERFACE OA_DAO_DLL)
 endif()
 # even if not building dynamic, keeps CMake aware of dependencies
-target_link_libraries(oa_dao PUBLIC oa_helpers oa_time)
+# TODO: since Boost::headers is for oa/rtti.h maybe we want an INTERFACE target
+target_link_libraries(oa_dao PUBLIC Boost::headers oa_config oa_helpers oa_time)
+# install rule for oa_dao
+install(
+    TARGETS oa_dao
+    EXPORT odin_exports
+    ARCHIVE COMPONENT Development
+    LIBRARY COMPONENT Runtime
+    RUNTIME COMPONENT Runtime
+)
+# install PDB when building for Debug config
+oa_pdb_install(oa_dao CONFIGURATIONS Debug COMPONENT Development)
+oa_embed_version_info(oa_dao DESCRIPTION "OA DAO Library")
+oa_check_version_info(oa_dao)

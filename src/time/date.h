@@ -6,7 +6,6 @@
 #include <string>
 #include <tuple>
 
-#include "helpers/utils.h"
 #include "oa/dllexport.h"
 #include "tenor.h"
 #include "time_enums.h"
@@ -141,12 +140,25 @@ namespace oa::time
 		int m_months() const { return m_months_; };
 		int m_days() const { return m_days_; };
 
+		// return the Julian date integer
+		int julian() const noexcept;
+
+		// indicate if date is valid (invalid if julian date number is zero)
+		// if date was default-constructed this will return false
+		operator bool() const noexcept;
+
+		// return self if valid otherwise given date
+		Date value_or(Date other) const noexcept;
+
 		//operator overloads leveraging c++ 20 sapceship operator
 		// Since we are basing comparisons on julian dates we will most likely be using strong ordering
 		bool operator==(const Date& right_value) const;
 		std::strong_ordering operator<=>(const Date& right_value) const;
 
 	private:
+		// TODO: consider making m_julian_int_ the only member. this would make the
+		// class more space-efficient as the Julian date integer contains all the
+		// relevant information we need to calculate months/days/years.
 		int m_days_ = 0, m_months_= 0, m_years_ = 0, m_julian_int_ = 0;
 
 		const static int kChronoYearOffset = 1900;
@@ -192,6 +204,36 @@ namespace oa::time
 		void PopulateYMDFromTuple(const std::tuple<int, int, int>& results);
 
 	};
+
+	/**
+	 * Add the given number of days to the date.
+	 *
+	 * @param date Date to adjust
+	 * @param days Number of days to add/subtract
+	 */
+	OA_TIME_API
+	Date operator+(const Date& date, int days) /*noexcept*/;
+
+	/**
+	 * Add the given number of days to the date.
+	 *
+	 * @param days Number of days to add/subtract
+	 * @param date Date to adjust
+	 */
+	OA_TIME_API
+	Date operator+(int days, const Date& date) /*noexcept*/;
+
+	/**
+	 * Subtract the given number of days from the date.
+	 *
+	 * @note This operator is not symmetric like `operator+` as you cannot
+	 *  subtract a date from an integer number of days.
+	 *
+	 * @param date Date to adjust
+	 * @param days Number of days to add/subtract
+	 */
+	OA_TIME_API
+	Date operator-(const Date& date, int days) /*noexcept*/;
 
 }  // namespace oa::time
 
