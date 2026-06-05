@@ -101,6 +101,30 @@ bool IsPath(PyObject* obj) noexcept
 %enddef  // OA_USE_EXCEPTION_HANDLER
 
 /**
+ * Typemap to convert a `std::uint64_t` into a Python long.
+ */
+%typemap(out) std::uint64_t {
+  $result = PyLong_FromUnsignedLongLong($1);
+}
+
+/**
+ * Typemap to convert a `std::string` into a Python string.
+ */
+%typemap(out) std::string {
+  $result = PyUnicode_FromStringAndSize($1.data(), $1.size());
+}
+
+/**
+ * Typemap to convert a `std::string_view` into a Python string.
+ *
+ * There is no related string view type in Python 3, but since Python strings
+ * are immutable, the semantics are not too different.
+ */
+%typemap(out) std::string_view {
+  $result = PyUnicode_FromStringAndSize($1.data(), $1.size());
+}
+
+/**
  * Typemap to convert a `pathlib.Path` or `str` into a `std::filesystem::path`.
  */
 %typemap(in) std::filesystem::path {
