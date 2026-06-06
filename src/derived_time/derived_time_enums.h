@@ -1,6 +1,10 @@
-
 #ifndef OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
 #define OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
+
+#include <iosfwd>
+#include <string>
+
+#include "oa/dllexport.h"
 
 namespace oa::derived_time
 {
@@ -63,8 +67,18 @@ namespace oa::derived_time
 		kUSTStreetConv,
 		kBBGCalcType2
 	};
+
+	OA_DERIVED_TIME_API
+	std::ostream& operator<<(std::ostream& os, DateDirection val);
+
+	OA_DERIVED_TIME_API
+	std::ostream& operator<<(std::ostream& os, Frequency val);
+
+	OA_DERIVED_TIME_API
+	std::ostream& operator<<(std::ostream& os, StubType val);
+
+	OA_DERIVED_TIME_API
+	std::ostream& operator<<(std::ostream& os, CalcType val);
 }
 
-
 #endif // !OA__DERIVED_TIME_DERIVED_TIME_ENUMS_H_
-

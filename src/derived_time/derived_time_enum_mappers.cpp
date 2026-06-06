@@ -1,4 +1,4 @@
-#include "time_enum_mappers.h"
+#include "derived_time_enum_mappers.h"
 
 #include <algorithm>
 #include <ostream>
@@ -13,8 +13,8 @@
 #include <format>
 #endif  // !OA_HAS_CPP20_FORMAT
 
-namespace oa::enum_mappers {
-	
+namespace oa::derived_time
+{
 	const auto& DateDirectionMap() {
 		static const std::unordered_map<std::string, derived_time::DateDirection> dd_map{
 			{"FWD", derived_time::DateDirection::kForward},
@@ -172,31 +172,4 @@ namespace oa::enum_mappers {
 			};
 		}
 	}
-
-}  // namespace oa::enum_mappers
-
-namespace oa::derived_time {
-
-	std::ostream& operator<<(std::ostream& os, DateDirection val)
-	{
-		return os << utils::GetCleanName(val);
-	}
-
-	std::ostream& operator<<(std::ostream& os, Frequency val)
-	{
-		return os << utils::GetCleanName(val);
-	}
-
-	std::ostream& operator<<(std::ostream& os, StubType val)
-	{
-		return os << utils::GetCleanName(val);
-	}
-
-	std::ostream& operator<<(std::ostream& os, CalcType val)
-	{
-		return os << utils::GetCleanName(val);
-	}
-
-}  // namespace oa::derived_time
-
-
+}
