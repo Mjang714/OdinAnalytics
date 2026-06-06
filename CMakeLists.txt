@@ -78,6 +78,7 @@ include(CTest)
 include(oa_embed_version_info)
 include(oa_pdb_install)
 include(oa_repair_gtest_version)
+include(oa_swig_module)
 include(oa_unity_enable_unique_id)
 
 # find Boost [headers]
@@ -145,17 +146,11 @@ else()
 endif()
 
 # look for SWIG
-# TODO: stop using UseSWIG for better control over SWIG behavior + *correct*
-# dependency tracking. we can use add_custom_command() instead. the reason for
-# this is because when SWIG encounters a syntax error, it has already deleted
-# the depfile, and somehow the UseSWIG integration loses the dependencies and
-# doesn't remember to re-run SWIG appropriately
+# note: we don't use UseSWIG since swig_add_library() fails to correctly re-run
+# incremental builds with Makefile generators. see oa_swig_module.cmake
 find_package(SWIG 4.0 COMPONENTS python)
 if(SWIG_FOUND)
-    include(UseSWIG)
     message(STATUS "SWIG version: ${SWIG_VERSION}")
-    # ensure SWIG generates implicit dependencies for correct minimal rebuild
-    set(SWIG_USE_SWIG_DEPENDENCIES ON)
 else()
     message(STATUS "SWIG version: None")
 endif()
@@ -206,6 +201,11 @@ else()
         # -O0 is default optimization level anyways, Clang ignores -ggdb
         $<$<NOT:$<CONFIG:Release>>:-ggdb> $<IF:$<CONFIG:Release>,-O3,-O0>
     )
+endif()
+
+# SWIG-specific default compile options
+if(SWIG_FOUND)
+    oa_swig_compile_options(-Wall)
 endif()
 
 # major, minor, patch version components

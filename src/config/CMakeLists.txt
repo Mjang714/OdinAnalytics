@@ -93,32 +93,17 @@ else()
 endif()
 
 # oa_config_swig: SWIG module with oa_config.py module wrapper
+# note: MSVC emits C4668 that can't be suppressed with /wd4668
 if(SWIG_FOUND)
-    set_source_files_properties(module.i PROPERTIES CPLUSPLUS ON)
-    swig_add_library(
-        oa_config_swig
-        TYPE MODULE
-        LANGUAGE python
-        # ensure oa_config.py goes in top-level [per-config] build directory
-        OUTPUT_DIR "${ODIN_BUILD_DIR_GENEX}"
-        # generated .cxx wrapper should just go in current binary directory
-        OUTFILE_DIR "${CMAKE_CURRENT_BINARY_DIR}"
-        SOURCES module.i
-    )
+    oa_swig_module(oa_config_swig LANGUAGE python MODULE module.i CXX DOXYGEN)
     set_target_properties(
         oa_config_swig PROPERTIES
         # ensure SWIG can locate the .i helpers + %include from C/C++ headers
+        # TODO: can use an INTERFACE target instead
         SWIG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/sil"
-        SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
-        # wrap for Python 3 + use Doxygen comments for docstring
-        SWIG_COMPILE_OPTIONS "-Wall;-py3;-doxygen"
         # always use MSVC dynamic release C runtime library
         MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"
     )
-    # suppress MSVC warnings
-    if(MSVC)
-        target_compile_options(oa_config_swig PRIVATE /wd4668)
-    endif()
     target_link_libraries(oa_config_swig PRIVATE Python3::Module oa_config)
 else()
     message(STATUS "Skipping oa_config_swig (requires SWIG + Python 3)")
