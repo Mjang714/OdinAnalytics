@@ -305,6 +305,7 @@ target_include_directories(
 # install rule for oa_core (provides just an IMPORTED target)
 install(TARGETS oa_core EXPORT odin_exports)
 
+add_subdirectory(sil)
 add_subdirectory(src)
 add_subdirectory(test)
 

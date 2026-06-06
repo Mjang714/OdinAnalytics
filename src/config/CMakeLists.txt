@@ -96,15 +96,15 @@ endif()
 # note: MSVC emits C4668 that can't be suppressed with /wd4668
 if(SWIG_FOUND)
     oa_swig_module(oa_config_swig LANGUAGE python MODULE module.i CXX DOXYGEN)
+    # always use MSVC dynamic release C runtime library
     set_target_properties(
         oa_config_swig PROPERTIES
-        # ensure SWIG can locate the .i helpers + %include from C/C++ headers
-        # TODO: can use an INTERFACE target instead
-        SWIG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/sil"
-        # always use MSVC dynamic release C runtime library
         MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"
     )
-    target_link_libraries(oa_config_swig PRIVATE Python3::Module oa_config)
+    target_link_libraries(
+        oa_config_swig PRIVATE
+        Python3::Module oa_config oa_sil
+    )
 else()
     message(STATUS "Skipping oa_config_swig (requires SWIG + Python 3)")
 endif()
