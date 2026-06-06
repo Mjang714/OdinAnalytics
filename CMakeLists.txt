@@ -138,9 +138,35 @@ endif()
 
 # look for Python 3 interpreter + development headers/libraries
 # note: 32-bit Python is almost never used now
+# note: to force FindPython3 to only look in venv set Python3_FIND_VIRTUALENV
+# to ONLY. by default, FindPython3 will still look outside a venv for Python
 find_package(Python3 3.10 COMPONENTS Interpreter Development)
+# FindPython3 does an architecture check when Interpreter and Development are
+# both specified. however, since oxlgen.py is agnostic to whether the Python
+# used is 32- or 64-bit, this is overly restrictive; we can build a 32-bit
+# Excel add-in with a 64-bit Python. so this time we only look for interpreter
+if(NOT Python3_FOUND)
+    find_package(Python3 3.10 COMPONENTS Interpreter)
+endif()
+# report
 if(Python3_FOUND)
+    # compute Python architecture. sys.maxsize is the max value of the signed
+    # Py_ssize_t so we need to count an extra bit and take log of maxsize + 1
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -c
+                "import math; import sys; print(1 + int(math.log2(sys.maxsize + 1)))"
+        OUTPUT_VARIABLE ODIN_PYTHON_ARCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND_ERROR_IS_FATAL ANY
+    )
+    # print messages
     message(STATUS "Python version: ${Python3_VERSION}")
+    message(STATUS "Python architecture: ${ODIN_PYTHON_ARCH}")
+    if(Python3_Development_FOUND)
+        message(STATUS "Python libraries: Yes")
+    else()
+        message(STATUS "Python libraries: No")
+    endif()
 else()
     message(STATUS "Python version: None")
 endif()
