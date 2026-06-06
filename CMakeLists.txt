@@ -145,6 +145,11 @@ else()
 endif()
 
 # look for SWIG
+# TODO: stop using UseSWIG for better control over SWIG behavior + *correct*
+# dependency tracking. we can use add_custom_command() instead. the reason for
+# this is because when SWIG encounters a syntax error, it has already deleted
+# the depfile, and somehow the UseSWIG integration loses the dependencies and
+# doesn't remember to re-run SWIG appropriately
 find_package(SWIG 4.0 COMPONENTS python)
 if(SWIG_FOUND)
     include(UseSWIG)
