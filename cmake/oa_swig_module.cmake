@@ -158,13 +158,44 @@ function(oa_swig_module target)
             list(APPEND swig_local_opts -py3)
         endif()
     endif()
-    # MODULE target with the target sources
-    add_library(${target} MODULE ${ARG_SOURCES})
     # uppercase language + filename + stem + absolute path of the SWIG module
     string(TOUPPER "${ARG_LANGUAGE}" lang_upper)
     cmake_path(GET ARG_MODULE FILENAME module_file)
     cmake_path(GET ARG_MODULE STEM module_stem)
     cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
+    # scan SWIG module path to get the "real" module name. this is because for
+    # most languages, SWIG doesn't let you separately adjust the binary name
+    file(
+        STRINGS "${module_path}" module_name
+        REGEX "[ \t]*%module(\\([^)]+\\))?[ \t]+[a-zA-Z_0-9]+"
+    )
+    # replace everything before module name
+    string(
+        REGEX REPLACE "[ \t]*%module(\\([^)]+\\))?[ \t]+([a-zA-Z_0-9]+)" "\\2"
+        module_name "${module_name}"
+    )
+    # if empty, failed
+    if(NOT module_name)
+        message(
+            FATAL_ERROR
+            "%module directive missing or malformed in ${ARG_MODULE}"
+        )
+    endif()
+    # MODULE target with the target sources
+    add_library(${target} MODULE ${ARG_SOURCES})
+    # Python-specific changes
+    if(ARG_LANGUAGE STREQUAL "python")
+        # SWIG hardcodes the low-level module name to be ${module_name}
+        set_target_properties(
+            ${target} PROPERTIES
+            PREFIX ""
+            OUTPUT_NAME "_${module_name}"
+        )
+        # Python extensions use .pyd suffix on Windows
+        if(WIN32)
+            set_target_properties(${target} PROPERTIES SUFFIX ".pyd")
+        endif()
+    endif()
     # helper SWIG compile definitions + include directories genex
     set(swig_defs "$<TARGET_PROPERTY:${target},SWIG_COMPILE_DEFINITIONS>")
     set(swig_dirs "$<TARGET_PROPERTY:${target},SWIG_INCLUDE_DIRECTORIES>")
@@ -192,6 +223,7 @@ function(oa_swig_module target)
                 # SWIG compile options on target
                 $<TARGET_PROPERTY:${target},SWIG_COMPILE_OPTIONS>
                 -MMD -MF ${CMAKE_CURRENT_BINARY_DIR}/${ARG_MODULE}.d
+                -outdir ${ARG_OUTPUT_DIR}
                 -o ${swig_output}
                 ${module_path}
         COMMENT "SWIG ${swig_ext} compile ${module_file}"

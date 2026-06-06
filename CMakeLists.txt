@@ -79,6 +79,7 @@ include(oa_embed_version_info)
 include(oa_pdb_install)
 include(oa_repair_gtest_version)
 include(oa_swig_module)
+include(oa_unittest_discover_tests)
 include(oa_unity_enable_unique_id)
 
 # find Boost [headers]

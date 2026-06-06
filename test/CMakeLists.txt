@@ -145,3 +145,13 @@ set_tests_properties(
     OA.ExtUsageRunTest PROPERTIES
     FIXTURES_REQUIRED OA.ExtUsageBuildTest
 )
+
+# oa_config_swig Python tests
+if(TARGET oa_config_swig)
+    oa_unittest_discover_tests(oa_config_swig_tests TESTS oa_config_test.py)
+    set_target_properties(
+        oa_config_swig_tests PROPERTIES
+        PYTHON_PATH "${ODIN_BUILD_DIR_GENEX}"
+    )
+    add_dependencies(oa_config_swig_tests oa_config_swig)
+endif()
