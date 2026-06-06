@@ -194,7 +194,7 @@ function(oa_swig_module target)
                 -MMD -MF ${CMAKE_CURRENT_BINARY_DIR}/${ARG_MODULE}.d
                 -o ${swig_output}
                 ${module_path}
-        COMMENT "SWIG C++ compile for ${module_file}"
+        COMMENT "SWIG ${swig_ext} compile ${module_file}"
         DEPFILE ${CMAKE_CURRENT_BINARY_DIR}/${ARG_MODULE}.d
         VERBATIM
         COMMAND_EXPAND_LISTS
