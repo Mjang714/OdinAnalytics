@@ -138,14 +138,9 @@ endif()
 
 # look for Python 3 interpreter + development headers/libraries
 # note: 32-bit Python is almost never used now
-find_package(Python3 3.10 COMPONENTS Interpreter OPTIONAL_COMPONENTS Development)
+find_package(Python3 3.10 COMPONENTS Interpreter Development)
 if(Python3_FOUND)
     message(STATUS "Python version: ${Python3_VERSION}")
-    if(Python3_Development_FOUND)
-        message(STATUS "Python libraries: ${Python3_LIBRARIES}")
-    else()
-        message(STATUS "Python libraries: No")
-    endif()
 else()
     message(STATUS "Python version: None")
 endif()
@@ -173,7 +168,7 @@ if(MSVC)
         /W4 /MP
         # C4668: macro not defined and replaced with 0. this is turned on with
         # /Wall, but since we are using /W4, we explicitly enable
-        /w34668
+        /wd4668
         # specific /Wall warnings we are ok with disabling
         # typically don't care if unreferenced inline functions are removed
         /wd4514
