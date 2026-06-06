@@ -7,6 +7,8 @@ add_library(
     cashflow_gen/cashflow_gen.cpp
     date_formula/business_date_formula.cpp
     date_formula/date_formula.cpp
+    derived_time_enum_mappers.cpp
+    derived_time_enums.cpp
 )
 target_include_directories(
     oa_derived_time PUBLIC
@@ -27,7 +29,7 @@ if(BUILD_SHARED_LIBS)
 endif()
 target_link_libraries(
     oa_derived_time
-        PRIVATE oa_enum_mappers oa_helpers oa_static_data_cache
+        PRIVATE oa_helpers oa_static_data_cache
         PUBLIC oa_time
 )
 # install rule for oa_derived_time
