@@ -138,9 +138,14 @@ endif()
 
 # look for Python 3 interpreter + development headers/libraries
 # note: 32-bit Python is almost never used now
-find_package(Python3 3.10 COMPONENTS Interpreter Development)
+find_package(Python3 3.10 COMPONENTS Interpreter OPTIONAL_COMPONENTS Development)
 if(Python3_FOUND)
     message(STATUS "Python version: ${Python3_VERSION}")
+    if(Python3_Development_FOUND)
+        message(STATUS "Python libraries: ${Python3_LIBRARIES}")
+    else()
+        message(STATUS "Python libraries: No")
+    endif()
 else()
     message(STATUS "Python version: None")
 endif()
