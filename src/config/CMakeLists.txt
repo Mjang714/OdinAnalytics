@@ -93,7 +93,6 @@ else()
 endif()
 
 # oa_config_swig: SWIG module with oa_config.py module wrapper
-# note: MSVC emits C4668 that can't be suppressed with /wd4668
 if(SWIG_FOUND AND Python3_FOUND)
     oa_swig_module(oa_config_swig LANGUAGE python MODULE module.i CXX DOXYGEN)
     # always use MSVC dynamic release C runtime library
