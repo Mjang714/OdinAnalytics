@@ -94,7 +94,7 @@ endif()
 
 # oa_config_swig: SWIG module with oa_config.py module wrapper
 # note: MSVC emits C4668 that can't be suppressed with /wd4668
-if(SWIG_FOUND AND Python3_Development_FOUND)
+if(SWIG_FOUND AND Python3_FOUND)
     oa_swig_module(oa_config_swig LANGUAGE python MODULE module.i CXX DOXYGEN)
     # always use MSVC dynamic release C runtime library
     set_target_properties(
@@ -106,5 +106,5 @@ if(SWIG_FOUND AND Python3_Development_FOUND)
         Python3::Module oa_config oa_sil
     )
 else()
-    message(STATUS "Skipping oa_config_swig (requires SWIG + Python 3 libraries)")
+    message(STATUS "Skipping oa_config_swig (requires SWIG + Python 3)")
 endif()
