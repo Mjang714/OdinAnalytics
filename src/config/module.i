@@ -8,6 +8,7 @@
 %module oa_config
 
 %{
+#include "oa/config/paths.h"
 #include "oa/config/version_info.h"
 %}
 
@@ -30,5 +31,5 @@ namespace oa::config {
 
 }  // namespace oa::config
 
-// wrap oa::config::version_info -> VersionInfo
+%include "oa/config/paths.h"
 %include "oa/config/version_info.h"
