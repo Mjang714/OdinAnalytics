@@ -35,6 +35,8 @@ namespace oa::config {
 
 %ignore version_info::version_info();
 %ignore version_info::version_info(version_info&&);
+// note: ignored by default but we explicitly ignore to silence the warning
+%ignore version_info::operator=(version_info&&);
 
 }  // namespace oa::config
 
