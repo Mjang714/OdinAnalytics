@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 ##
 # oa_swig_module.cmake
 #
-# SWIGmodule building helpers that correctly track SWIG dependencies.
+# SWIG module building helpers that correctly track SWIG dependencies.
 #
 # This module is motivated as a lighter replacement to CMake's UseSWIG module
 # which with Make as the build backend for some reason seems to lose tracking
