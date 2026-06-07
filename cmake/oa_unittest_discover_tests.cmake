@@ -19,7 +19,35 @@ function(oa_require_nonempty var)
 endfunction()
 
 ##
-# Add a Python unittest test target.
+# Implementation function for registering unittest tests with CTest.
+#
+# This is run when the CMake module is invoked in script mode and will invoke
+# the given test script with the --list-tests option and write a .cmake file
+# in OUTPUT_DIR, typically CMAKE_CURRENT_BINARY_DIR, that has old-style
+# add_test() invocations that run the actual test case with the -t option.
+#
+# The following variables must be defined:
+#
+#   Python3_EXECUTABLE      Path to the Python 3 interpreter used
+#   OUTPUT_DIR              Output directory for the .cmake test file
+#   OUTPUT_FILE             Filename of the .cmake test file to write
+#
+#   TEST_FILE               Relative path to the .py unittest script, expected
+#                           to be relative to CURRENT_SOURCE_DIR
+#
+#   BINARY_DIR              Top-level binary directory, typically
+#                           PROJECT_BINARY_DIR with a per-config subdirectory
+#                           in the case of a multi-config generator
+#
+#   CURRENT_SOURCE_DIR      Current source directory being processed, typically
+#                           the last CMAKE_CURRENT_SOURCE_DIR
+#
+# The folowing variables are optional:
+#
+#   PYTHON_PATH             Semicolon-separated list of directories to prepend
+#                           to PYTHONPATH when running the tests
+#
+#   WORKING_DIRECTORY       Working directory the test will run in
 #
 # This target will be built after any dependent targets and will initially be
 # run with -l, --list-tests to get the list of test cases. Then,
@@ -85,11 +113,37 @@ function(oa_unittest_discover_tests_impl)
 endfunction()
 
 ##
-# Add a Python unittest test target that runs the tests
+# Add a Python unittest test target for registering the tests with CTest.
 #
+# This target allows registration of Python scripts that run unittest test
+# cases, can list their <class>.<function> test cases if given the --list-tests
+# command-line option, and can run a single test if given the -t <test> option,
+# with CTest. For example, any unittest script that uses the
+# oa_testutils.test_main() satisfies this interface.
 #
-# This target will be built after any dependent targets and will initially be
-# run with -l, --list-tests to get the list of test cases. Then,
+# Each test target can be configured using set_property(TARGET ...) or
+# set_target_properties() to modify the runtime PYTHONPATH, etc. Below is the
+# list of properties that can be set to influence the test environment:
+#
+#   PYTHON_PATH             Semicolon-separated list of firectories to prepend
+#                           to PYTHONPATH for imports. By default, the top-level
+#                           binary directory, with per-config subdirectory, and
+#                           the current working directory, will already be
+#                           prepended. Generator expressions can be specified.
+#
+#   WORKING_DIRECTORY       Working directory the test will run in. By default,
+#                           the working directory is CMAKE_CURRENT_SOURCE_DIR.
+#                           Generator exprssions can be specified.
+#
+# Each <class>.<function> unittest test will be registered as a CTest test of
+# the exact same name, e.g. "<class>.<function>".
+#
+# Arguments:
+#   target          Test target name
+#   TESTS file      Python file with unittest tests. Must be able to accept a
+#                   --list-tests command-line option and print out a list of
+#                   its <class>.<function> test names, one per line.
+#
 function(oa_unittest_discover_tests target)
     # parse arguments
     cmake_parse_arguments(ARG "" "TESTS" "" ${ARGN})
