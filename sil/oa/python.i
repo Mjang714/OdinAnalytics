@@ -120,16 +120,15 @@ std::filesystem::path ToPath(PyObject* obj)
   catch (const std::exception& exc) {
     // note: technically not noexcept
     std::stringstream ss;
-    ss << OA_PRETTY_FUNCTION_NAME << ": " << exc.what();
+    ss << "$fulldecl: " << exc.what();
     // note: temporary materialization rules mean str() is valid until the end
     // of the full-expression, i.e. destroyed only after PyErr_SetString() call
     PyErr_SetString(PyExc_RuntimeError, ss.str().c_str());
     SWIG_fail;
   }
   catch (...) {
-    // note: truly exception-free call due to use of fixed_string
-    oa::fixed_string msg{OA_PRETTY_FUNCTION_NAME, ": unknown C++ exception"};
-    PyErr_SetString(PyExc_RuntimeError, msg.data());
+    // note: truly exception-free call
+    PyErr_SetString(PyExc_RuntimeError, "$fulldecl: unknown C++ exception");
     SWIG_fail;
   }
 }
