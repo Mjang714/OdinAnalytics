@@ -88,8 +88,6 @@ function(oa_unittest_discover_tests_impl)
     string(REPLACE "\n" ";" test_list "${test_list}")
     # build up list of tests
     # note: must use old add_test() format
-    # note: can't use set_property(TEST ...) since test is not immediately
-    # known to CTest even though we are having CTest process the file
     foreach(test ${test_list})
         string(
             APPEND test_content
