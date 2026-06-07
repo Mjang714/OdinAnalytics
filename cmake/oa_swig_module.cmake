@@ -184,10 +184,14 @@ function(oa_swig_module target)
     cmake_path(GET ARG_MODULE FILENAME module_file)
     cmake_path(GET ARG_MODULE STEM module_stem)
     cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
-    # output file path
+    # output + dependency file paths
     set(
         swig_output
         "${ARG_OUTFILE_DIR}/${module_stem}${lang_upper}_wrap${swig_ext}"
+    )
+    set(
+        swig_depfile
+        "${CMAKE_CURRENT_BINARY_DIR}/${module_stem}${lang_upper}_wrap.d"
     )
     # custom command for the SWIG output file
     add_custom_command(
@@ -206,12 +210,12 @@ function(oa_swig_module target)
                 ${swig_local_opts}
                 # SWIG compile options on target
                 $<TARGET_PROPERTY:${target},SWIG_COMPILE_OPTIONS>
-                -MMD -MF ${CMAKE_CURRENT_BINARY_DIR}/${ARG_MODULE}.d
+                -MMD -MF ${swig_depfile}
                 -outdir ${ARG_OUTPUT_DIR}
                 -o ${swig_output}
                 ${module_path}
         COMMENT "SWIG ${swig_ext} compile ${module_file}"
-        DEPFILE ${CMAKE_CURRENT_BINARY_DIR}/${ARG_MODULE}.d
+        DEPFILE ${swig_depfile}
         VERBATIM
         COMMAND_EXPAND_LISTS
     )
