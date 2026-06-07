@@ -100,7 +100,6 @@ function(oa_unittest_discover_tests_impl)
 "    \"${CMAKE_COMMAND}\" -E chdir \"${WORKING_DIRECTORY}\"\n"
 # run in modified environment
 "    \"${CMAKE_COMMAND}\" -E env\n"
-# "        \"CTEST_LABELS=Python\"\n"
 "        \"PYTHONPATH=${PYTHON_PATH}\"\n"
 "        \"--\"\n"
 "        \"${Python3_EXECUTABLE}\" \"${test_path}\" -t ${test}\n"
