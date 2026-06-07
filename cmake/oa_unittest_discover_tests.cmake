@@ -49,8 +49,6 @@ endfunction()
 #
 #   WORKING_DIRECTORY       Working directory the test will run in
 #
-# This target will be built after any dependent targets and will initially be
-# run with -l, --list-tests to get the list of test cases. Then,
 function(oa_unittest_discover_tests_impl)
     # check required variables
     oa_require_nonempty(Python3_EXECUTABLE)
@@ -102,10 +100,24 @@ function(oa_unittest_discover_tests_impl)
 "    \"${CMAKE_COMMAND}\" -E chdir \"${WORKING_DIRECTORY}\"\n"
 # run in modified environment
 "    \"${CMAKE_COMMAND}\" -E env\n"
+# "        \"CTEST_LABELS=Python\"\n"
 "        \"PYTHONPATH=${PYTHON_PATH}\"\n"
 "        \"--\"\n"
 "        \"${Python3_EXECUTABLE}\" \"${test_path}\" -t ${test}\n"
 ")\n"
+# although not documented, CTest does support set_tests_properties(). see the
+# discourse.cmake.org thread about differences in set_property() vs.
+# set_tests_properties() for discovered GTest tests. note also that in CMake's
+# Source/CTest/cmCTestTestHandler.cxx the only supported commands are:
+#
+#   add_test()
+#   discover_tests()
+#   subdirs()
+#   add_subdirectory()
+#   set_tests_properties()
+#   set_directory_properties()
+#
+"set_tests_properties(${test} PROPERTIES LABELS Python)\n"
         )
     endforeach()
     # write into file
@@ -136,7 +148,8 @@ endfunction()
 #                           Generator exprssions can be specified.
 #
 # Each <class>.<function> unittest test will be registered as a CTest test of
-# the exact same name, e.g. "<class>.<function>".
+# the exact same name, e.g. "<class>.<function>", and automatically have the
+# "Python" label associated with the test, allowing CTest filtering by label.
 #
 # Arguments:
 #   target          Test target name
