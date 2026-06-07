@@ -5,7 +5,13 @@
  * @copyright MIT License
  */
 
-%module oa_config
+%define MODULE_DOCSTRING
+"SWIG module for the OA configuration library.
+
+This module provides wrappers for oa_config library functions and types."
+%enddef  // MODULE_DOCSTRING
+
+%module(docstring=MODULE_DOCSTRING) oa_config
 
 // ensure release Python libraries are linked against
 %begin %{
