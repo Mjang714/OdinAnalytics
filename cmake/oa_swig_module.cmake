@@ -157,34 +157,18 @@ function(oa_swig_module target)
         if(SWIG_VERSION VERSION_LESS 4.2)
             list(APPEND swig_local_opts -py3)
         endif()
-    endif()
-    # uppercase language + filename + stem + absolute path of the SWIG module
-    string(TOUPPER "${ARG_LANGUAGE}" lang_upper)
-    cmake_path(GET ARG_MODULE FILENAME module_file)
-    cmake_path(GET ARG_MODULE STEM module_stem)
-    cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
-    # scan SWIG module path to get the "real" module name. this is because for
-    # most languages, SWIG doesn't let you separately adjust the binary name
-    set(module_regex "[ \t]*%module([ \t]*\\([^)]+\\))?[ \t]+([a-zA-Z_0-9]+)")
-    file(STRINGS "${module_path}" module_name REGEX "${module_regex}")
-    # replace everything before module name
-    string(REGEX REPLACE "${module_regex}" "\\2" module_name "${module_name}")
-    # if empty, failed
-    if(NOT module_name)
-        message(
-            FATAL_ERROR
-            "%module directive missing or malformed in ${ARG_MODULE}"
-        )
+        # ensure that the MODULE target name is passed to SWIG as it may not be
+        # the same as _ + the value of %module in the .i file
+        list(APPEND swig_local_opts -interface "_${target}")
     endif()
     # MODULE target with the target sources
     add_library(${target} MODULE ${ARG_SOURCES})
     # Python-specific changes
     if(ARG_LANGUAGE STREQUAL "python")
-        # SWIG hardcodes the low-level module name to be ${module_name}
+        # follow SWIG convention by ensuring binary stem is always _${target}
         set_target_properties(
             ${target} PROPERTIES
-            PREFIX ""
-            OUTPUT_NAME "_${module_name}"
+            PREFIX "" OUTPUT_NAME "_${target}"
         )
         # Python extensions use .pyd suffix on Windows
         if(WIN32)
@@ -195,6 +179,11 @@ function(oa_swig_module target)
     set(swig_defs "$<TARGET_PROPERTY:${target},SWIG_COMPILE_DEFINITIONS>")
     set(swig_dirs "$<TARGET_PROPERTY:${target},SWIG_INCLUDE_DIRECTORIES>")
     set(tgt_includes "$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>")
+    # uppercase language + filename + stem + absolute path of the SWIG module
+    string(TOUPPER "${ARG_LANGUAGE}" lang_upper)
+    cmake_path(GET ARG_MODULE FILENAME module_file)
+    cmake_path(GET ARG_MODULE STEM module_stem)
+    cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
     # output file path
     set(
         swig_output
