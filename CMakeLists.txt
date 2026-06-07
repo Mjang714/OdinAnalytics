@@ -100,7 +100,9 @@ find_package(magic_enum 0.8.1 REQUIRED)
 message(STATUS "Magic Enum version: ${magic_enum_VERSION}")
 
 # find GoogleTest
-find_package(GTest 1.8)
+# note: bumped from the ancient 1.8 as <1.11.0 uses std::result_of in
+# gmock-actions.h which was removed in C++20
+find_package(GTest 1.11.0)
 if(GTest_FOUND)
     # set GTest_VERSION approximately if GTest found using FindGTest.cmake
     # note: if GTest_VERSION already set nothing is done
