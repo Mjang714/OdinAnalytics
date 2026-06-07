@@ -165,15 +165,10 @@ function(oa_swig_module target)
     cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
     # scan SWIG module path to get the "real" module name. this is because for
     # most languages, SWIG doesn't let you separately adjust the binary name
-    file(
-        STRINGS "${module_path}" module_name
-        REGEX "[ \t]*%module(\\([^)]+\\))?[ \t]+[a-zA-Z_0-9]+"
-    )
+    set(module_regex "[ \t]*%module([ \t]*\\([^)]+\\))?[ \t]+([a-zA-Z_0-9]+)")
+    file(STRINGS "${module_path}" module_name REGEX "${module_regex}")
     # replace everything before module name
-    string(
-        REGEX REPLACE "[ \t]*%module(\\([^)]+\\))?[ \t]+([a-zA-Z_0-9]+)" "\\2"
-        module_name "${module_name}"
-    )
+    string(REGEX REPLACE "${module_regex}" "\\2" module_name "${module_name}")
     # if empty, failed
     if(NOT module_name)
         message(
