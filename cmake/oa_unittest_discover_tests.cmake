@@ -32,9 +32,10 @@ function(oa_unittest_discover_tests_impl)
     oa_require_nonempty(BINARY_DIR)
     oa_require_nonempty(CURRENT_SOURCE_DIR)
     oa_require_nonempty(WORKING_DIRECTORY)
-    # prepend PATH, PYTHON_PATH to environment values
-    list(APPEND RUNTIME_PATH $ENV{PATH})
-    list(APPEND PYTHON_PATH $ENV{PYTHONPATH})
+    # prepend PATH, PYTHON_PATH to environment values and defaults
+    # note: RUNTIME_PATH currently used
+    list(APPEND RUNTIME_PATH "${BINARY_DIR}" $ENV{PATH})
+    list(APPEND PYTHON_PATH "." "${BINARY_DIR}" $ENV{PYTHONPATH})
     # if not on Windows replace semicolon with colons for PATH, PYTHONPATH
     if(NOT WIN32)
         list(JOIN RUNTIME_PATH ":" RUNTIME_PATH)
