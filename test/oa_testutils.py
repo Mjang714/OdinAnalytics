@@ -79,10 +79,12 @@ def parse_args(
 ) -> Namespace:
     """Command-line argument parsing routine for unittest scripts.
 
-    This consumes command-line arguments interpreted by the script.
+    This consumes command-line arguments interpreted by the script using
+    ``ArgumentParser.parse_args()``. It provides the following options:
 
-    This wraps the ``unittest.main()`` function and calls ``sys.exit()`` with
-    the appropriate exit code as necessary. It parses known arguments
+       -l, --list-tests
+       -v, --verbose
+       -t, --test-case
 
     Parameters
     ----------
