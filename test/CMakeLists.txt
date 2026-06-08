@@ -146,8 +146,19 @@ set_tests_properties(
     FIXTURES_REQUIRED OA.ExtUsageBuildTest
 )
 
-# oa_config_py Python tests
+# oa_config_py tests
 if(TARGET oa_config_py)
     oa_unittest_discover_tests(oa_config_py_tests TESTS oa_config_test.py)
     add_dependencies(oa_config_py_tests oa_config_py)
+endif()
+
+# oa_config_r tests
+# note: only this one basic test script (not much we can test anyways)
+if(TARGET oa_config_r)
+    add_test(
+        NAME oa_config_r_test
+        COMMAND R::Rscript "${CMAKE_CURRENT_SOURCE_DIR}/oa_config_test.R"
+        WORKING_DIRECTORY "${ODIN_BUILD_DIR_GENEX}"
+    )
+    set_tests_properties(oa_config_r_test PROPERTIES LABELS R)
 endif()
