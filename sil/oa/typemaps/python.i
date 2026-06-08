@@ -1,19 +1,21 @@
 /**
- * @file python.i
+ * @file typemaps/python.i
  * @author Derek Huang
- * @brief C++ SWIG Python helpers
+ * @brief C++ SWIG Python typemaps
  * @copyright MIT License
  */
 
+#ifndef __cplusplus
+#error "typemaps/python.i: SWIG must be run in C++ mode"
+#endif  // __cplusplus
+
 #ifndef SWIGPYTHON
-#error "python.i: can only be used in SWIG Python mode"
+#error "typemaps/python.i: can only be used in SWIG Python mode"
 #endif  // SWIGPYTHON
 
 %{
 #include <cstdint>
 #include <filesystem>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -21,6 +23,32 @@
 #include "oa/fixed_string.h"
 #include "oa/python.h"
 %}
+
+%include "oa/common.i"  // for OA_OBJECT_TYPECHECK()
+
+/**
+ * Typemap to convert a `std::uint64_t` into a Python long.
+ */
+%typemap(out) std::uint64_t {
+  $result = PyLong_FromUnsignedLongLong($1);
+}
+
+/**
+ * Typemap to convert a `std::string` into a Python string.
+ */
+%typemap(out) std::string {
+  $result = PyUnicode_FromStringAndSize($1.data(), $1.size());
+}
+
+/**
+ * Typemap to convert a `std::string_view` into a Python string.
+ *
+ * There is no related string view type in Python 3, but since Python strings
+ * are immutable, the semantics are not too different.
+ */
+%typemap(out) std::string_view {
+  $result = PyUnicode_FromStringAndSize($1.data(), $1.size());
+}
 
 // helper code for the std::filesystem::path typemap conversion
 %{
@@ -108,64 +136,6 @@ std::filesystem::path ToPath(PyObject* obj)
 }  // namespace pathlib
 }  // namespace oa
 %}
-
-/**
- * Macro for a C++ exception handler that sets a `RuntimeError` appropriately.
- */
-%define OA_HANDLE_EXCEPTIONS
-%exception {
-  try {
-    $action
-  }
-  catch (const std::exception& exc) {
-    // note: technically not noexcept
-    std::stringstream ss;
-    ss << "$fulldecl: " << exc.what();
-    // note: temporary materialization rules mean str() is valid until the end
-    // of the full-expression, i.e. destroyed only after PyErr_SetString() call
-    PyErr_SetString(PyExc_RuntimeError, ss.str().c_str());
-    SWIG_fail;
-  }
-  catch (...) {
-    // note: truly exception-free call
-    PyErr_SetString(PyExc_RuntimeError, "$fulldecl: unknown C++ exception");
-    SWIG_fail;
-  }
-}
-%enddef  // OA_HANDLE_EXCEPTIONS
-
-/**
- * Macro for a SWIG typecheck with `SWIG_TYPECHECK_SWIGOBJECT` precedence.
- *
- * @param type C++ type for typemap
- */
-%define OA_OBJECT_TYPECHECK(type)
-%typemap(typecheck, precedence=SWIG_TYPECHECK_SWIGOBJECT) type
-%enddef  // OA_OBJECT_TYPECHECK(type)
-
-/**
- * Typemap to convert a `std::uint64_t` into a Python long.
- */
-%typemap(out) std::uint64_t {
-  $result = PyLong_FromUnsignedLongLong($1);
-}
-
-/**
- * Typemap to convert a `std::string` into a Python string.
- */
-%typemap(out) std::string {
-  $result = PyUnicode_FromStringAndSize($1.data(), $1.size());
-}
-
-/**
- * Typemap to convert a `std::string_view` into a Python string.
- *
- * There is no related string view type in Python 3, but since Python strings
- * are immutable, the semantics are not too different.
- */
-%typemap(out) std::string_view {
-  $result = PyUnicode_FromStringAndSize($1.data(), $1.size());
-}
 
 /**
  * Typemap to convert a `pathlib.Path` or `str` into a `std::filesystem::path`.
