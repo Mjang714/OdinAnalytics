@@ -24,6 +24,27 @@
 // TODO: need some thought on how to handle C++ exceptions given R's use of
 // longjmp in Rf_error() which doesn't do the needed stack unwinding
 
+// ensure that compilation doesn't break with R >=4.6.0 as SET_S4_OBJECT() is
+// now hidden by default in the Rinternals.h header. ENABLE_LEGACY_NONAPI_FUNS
+// can be defined to make these visible (at least temporarily). the solution
+// is to use a newer SWIG version >= 4.5 after the commit into mainline:
+//
+// https://github.com/swig/swig/commit/0601b9ca9401aed5bcf1b018be922b15a8cee92a
+//
+// see also the corresponding PR: https://github.com/swig/swig/pull/3411
+//
+#if SWIG_VERSION < 0x040500
+%begin %{
+// for R_VERSION, R_Version()
+#include <Rversion.h>
+// if R version >= 4.6.0 enable legacy functions for SET_S4_OBJECT() visibility
+#if R_VERSION >= R_Version(4, 6, 0)
+// see Rinternals.h
+#define ENABLE_LEGACY_NONAPI_FUNS
+#endif  // R_VERSION >= R_Version(4, 6, 0)
+%}
+#endif  // SWIG_VERSION < 0x040500
+
 // SEXP support code
 %{
 #include <filesystem>
