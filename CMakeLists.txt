@@ -174,10 +174,30 @@ else()
     message(STATUS "Python version: None")
 endif()
 
+# find the R executables + development artifacts
+find_package(R 4.1 COMPONENTS Interpreter OPTIONAL_COMPONENTS Development)
+if(R_FOUND)
+    message(STATUS "R version: ${R_VERSION}")
+    # architecture
+    if(R_64BIT)
+        message(STATUS "R architecture: 64")
+    else()
+        message(STATUS "R architecture: 32")
+    endif()
+    # library
+    if(TARGET R::R)
+        message(STATUS "R libraries: Yes")
+    else()
+        message(STATUS "R libraries: No")
+    endif()
+else()
+    message(STATUS "R version: None")
+endif()
+
 # look for SWIG
 # note: we don't use UseSWIG since swig_add_library() fails to correctly re-run
 # incremental builds with Makefile generators. see oa_swig_module.cmake
-find_package(SWIG 4.0 COMPONENTS python)
+find_package(SWIG 4.0 OPTIONAL_COMPONENTS python r)
 if(SWIG_FOUND)
     message(STATUS "SWIG version: ${SWIG_VERSION}")
 else()

@@ -146,8 +146,8 @@ set_tests_properties(
     FIXTURES_REQUIRED OA.ExtUsageBuildTest
 )
 
-# oa_config_swig Python tests
-if(TARGET oa_config_swig)
-    oa_unittest_discover_tests(oa_config_swig_tests TESTS oa_config_test.py)
-    add_dependencies(oa_config_swig_tests oa_config_swig)
+# oa_config_py Python tests
+if(TARGET oa_config_py)
+    oa_unittest_discover_tests(oa_config_py_tests TESTS oa_config_test.py)
+    add_dependencies(oa_config_py_tests oa_config_py)
 endif()

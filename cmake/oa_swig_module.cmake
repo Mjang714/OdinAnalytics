@@ -120,7 +120,7 @@ function(oa_swig_module target)
         message(FATAL_ERROR "SWIG_EXECUTABLE required for invoking SWIG")
     endif()
     # supported languages
-    set(valid_langs python)
+    set(valid_langs python r)
     # LANGUAGE is required + must be one of the supported languages
     if(NOT ARG_LANGUAGE)
         message(FATAL_ERROR "LANGUAGE argument required")
@@ -147,6 +147,11 @@ function(oa_swig_module target)
     else()
         set(swig_ext ".c")
     endif()
+    # generator expression for the target base name including the prefix
+    set(
+        target_file_stem
+        "$<TARGET_FILE_PREFIX:${target}>$<TARGET_FILE_BASE_NAME:${target}>"
+    )
     # language-specific options
     if(ARG_LANGUAGE STREQUAL "python")
         # parse C++ Doxygen comments for docstrings
@@ -161,12 +166,21 @@ function(oa_swig_module target)
         # the same as _ + the value of %module in the .i file. we use target
         # generator expression for this in case subsequent changes to the
         # target's PREFIX and OUTPUT_NAME are made
-        list(
-            APPEND swig_local_opts
-            -interface
-            "$<TARGET_FILE_PREFIX:${target}>$<TARGET_FILE_BASE_NAME:${target}>"
-        )
+        list(APPEND swig_local_opts -interface "${target_file_stem}")
+    elseif(ARG_LANGUAGE STREQUAL "r")
+        # R requires that the package name is exactly the stem of the DSO so
+        # we need to use -module to overwrite the %module directive in case
+        # changes are made to OUTPUT_NAME, etc. even with the current mainline
+        # SWIG 4.5.0 attempting to set -package to a different value results in
+        # an error about attempting to copy a non-DOH object. the -dll option
+        # also isn't really helpful as it doesn't affect the package name
+        list(APPEND swig_local_opts -module "${target_file_stem}")
     endif()
+    # uppercase language + filename + stem + absolute path of the SWIG module
+    string(TOUPPER "${ARG_LANGUAGE}" lang_upper)
+    cmake_path(GET ARG_MODULE FILENAME module_file)
+    cmake_path(GET ARG_MODULE STEM module_stem)
+    cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
     # MODULE target with the target sources
     add_library(${target} MODULE ${ARG_SOURCES})
     # Python-specific changes
@@ -180,16 +194,31 @@ function(oa_swig_module target)
         if(WIN32)
             set_target_properties(${target} PROPERTIES SUFFIX ".pyd")
         endif()
+    # R-specific changes
+    elseif(ARG_LANGUAGE STREQUAL "r")
+        # read file and match the %module directive's value
+        file(READ "${module_path}" module_name)
+        set(module_regex "%module[ \t]*(\\([^(]+\\))?[ \t]+([a-zA-Z0-9_]+)")
+        string(REGEX MATCH "${module_regex}" module_name "${module_name}")
+        string(REGEX REPLACE "${module_regex}" "\\2" module_name "${module_name}")
+        # check
+        if(NOT module_name)
+            message(
+                FATAL_ERROR
+                "missing or malformed %module directive in ${module_file}"
+            )
+        endif()
+        # ensure that output name is exactly that of the %module directive as
+        # required by R
+        set_target_properties(
+            ${target} PROPERTIES
+            PREFIX "" OUTPUT_NAME "${module_name}"
+        )
     endif()
     # helper SWIG compile definitions + include directories genex
     set(swig_defs "$<TARGET_PROPERTY:${target},SWIG_COMPILE_DEFINITIONS>")
     set(swig_dirs "$<TARGET_PROPERTY:${target},SWIG_INCLUDE_DIRECTORIES>")
     set(tgt_includes "$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>")
-    # uppercase language + filename + stem + absolute path of the SWIG module
-    string(TOUPPER "${ARG_LANGUAGE}" lang_upper)
-    cmake_path(GET ARG_MODULE FILENAME module_file)
-    cmake_path(GET ARG_MODULE STEM module_stem)
-    cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
     # output + dependency file paths
     set(
         swig_output

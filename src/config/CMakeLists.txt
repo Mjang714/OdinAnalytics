@@ -92,13 +92,32 @@ else()
     )
 endif()
 
-# oa_config_swig: SWIG module with oa_config.py module wrapper
-if(SWIG_FOUND AND Python3_FOUND AND Python3_Development_FOUND)
-    oa_swig_module(oa_config_swig LANGUAGE python MODULE module.i CXX DOXYGEN)
-    target_link_libraries(
-        oa_config_swig PRIVATE
-        Python3::Module oa_config oa_sil
-    )
+# oa_config_py: SWIG module with oa_config.py module wrapper
+if(SWIG_python_FOUND AND Python3_FOUND AND Python3_Development_FOUND)
+    oa_swig_module(oa_config_py LANGUAGE python MODULE module.i CXX DOXYGEN)
+    target_link_libraries(oa_config_py PRIVATE Python3::Module oa_config oa_sil)
 else()
-    message(STATUS "Skipping oa_config_swig (requires SWIG + Python libraries)")
+    message(STATUS "Skipping oa_config_py (requires SWIG + Python libraries)")
+endif()
+
+# oa_config_r: SWIG module with oa_config_r.R module wrapper
+#
+# note:
+#
+# for exposition purposes. it works, but SWIG's R support is abysmal, so
+# out-of-the-box the .R wrapper is useless. loading the oa_config_r DSO with
+# dyn.load() and then using .Call() works, but is of course clunky. also, the
+# version_info class doesn't get wrapped correctly, and std::filesystem::path
+# never has a setClass() call so R has no idea how to treat it. building R C++
+# extensions also won't work on Windows with MSVC since the R toolchain uses a
+# MinGW GCC toolchain which has a different ABI.
+#
+if(SWIG_r_FOUND AND R_FOUND AND R_Development_FOUND)
+    oa_swig_module(oa_config_r LANGUAGE r MODULE module.i CXX DOXYGEN)
+    # note: output name explicitly set to avoid conflict with importing
+    # oa_config in Python as the DSO has priority over the .py file
+    set_target_properties(oa_config_r PROPERTIES OUTPUT_NAME oa_config_r)
+    target_link_libraries(oa_config_r PRIVATE R::R oa_config oa_sil)
+else()
+    message(STATUS "Skipping oa_config_r (requires SWIG + R libraries)")
 endif()
