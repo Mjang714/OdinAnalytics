@@ -39,7 +39,6 @@
 #include <Rversion.h>
 // if R version >= 4.6.0 enable legacy functions for SET_S4_OBJECT() visibility
 #if R_VERSION >= R_Version(4, 6, 0)
-// see Rinternals.h
 #define ENABLE_LEGACY_NONAPI_FUNS
 #endif  // R_VERSION >= R_Version(4, 6, 0)
 %}
