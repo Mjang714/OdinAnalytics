@@ -11,21 +11,25 @@
 This module provides wrappers for oa_config library functions and types."
 %enddef  // MODULE_DOCSTRING
 
+// note: docstring option only has an effect for Python wrappers
 %module(docstring=MODULE_DOCSTRING) oa_config
 
+#ifdef SWIGPYTHON
 // ensure release Python libraries are linked against
 %begin %{
 #ifdef _MSC_VER
 #define SWIG_PYTHON_INTERPRETER_NO_DEBUG
 #endif  // _MSC_VER
 %}
+#endif  // SWIGPYTHON
 
 %{
 #include "oa/config/paths.h"
 #include "oa/config/version_info.h"
 %}
 
-%include "oa/python.i"
+%include "oa/common.i"
+%include "oa/typemaps.i"
 
 OA_HANDLE_EXCEPTIONS
 
