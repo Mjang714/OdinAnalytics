@@ -12,7 +12,7 @@
 # load shared object
 dyn.load(paste("oa_config_r", .Platform$dynlib.ext, sep = ""))
 
-# TODO: could CLI args with commandArgs() for individual test running
+# TODO: parser commandArgs() CLI args for individual test running
 
 # test library_dir() and data_dir() are the same
 # note: SWIG adds an extra argument that we can ignore
