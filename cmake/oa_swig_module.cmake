@@ -158,8 +158,14 @@ function(oa_swig_module target)
             list(APPEND swig_local_opts -py3)
         endif()
         # ensure that the MODULE target name is passed to SWIG as it may not be
-        # the same as _ + the value of %module in the .i file
-        list(APPEND swig_local_opts -interface "_${target}")
+        # the same as _ + the value of %module in the .i file. we use target
+        # generator expression for this in case subsequent changes to the
+        # target's PREFIX and OUTPUT_NAME are made
+        list(
+            APPEND swig_local_opts
+            -interface
+            "$<TARGET_FILE_PREFIX:${target}>$<TARGET_FILE_BASE_NAME:${target}>"
+        )
     endif()
     # MODULE target with the target sources
     add_library(${target} MODULE ${ARG_SOURCES})
