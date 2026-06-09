@@ -175,7 +175,7 @@ if(R_FOUND)
         COMMAND R::R CMD INSTALL -l ${PROJECT_BINARY_DIR}/R
                 ${CMAKE_CURRENT_SOURCE_DIR}/oa.testutils
         DEPENDS ${oa_r_testutils_files}
-        COMMENT "R CMD INSTALL oa.testutils"
+        COMMENT "R INSTALL oa.testutils"
         VERBATIM
     )
     # add custom target to drive the build
