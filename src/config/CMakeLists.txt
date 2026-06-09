@@ -117,7 +117,7 @@ if(SWIG_r_FOUND AND R_FOUND AND R_Development_FOUND)
     # note: output name explicitly set to avoid conflict with importing
     # oa_config in Python as the DSO has priority over the .py file
     set_target_properties(oa_config_r PROPERTIES OUTPUT_NAME oa_config_r)
-    target_link_libraries(oa_config_r PRIVATE R::R oa_config oa_sil)
+    target_link_libraries(oa_config_r PRIVATE R::libR oa_config oa_sil)
 else()
     message(STATUS "Skipping oa_config_r (requires SWIG + R libraries)")
 endif()

@@ -25,8 +25,8 @@ cmake_minimum_required(VERSION 3.20)
 #
 # The following targets will also be defined:
 #
-#   R::Rscript              Rscript executable target. There is no target for
-#                           the interactive R interpreter.
+#   R::R                    R interactive interpreter target
+#   R::Rscript              Rscript executable target
 #
 # If the Development component is found, the following variables are defined:
 #
@@ -40,7 +40,7 @@ cmake_minimum_required(VERSION 3.20)
 #
 # The following targets will also be defined:
 #
-#   R::R                    R runtime library target for extension building
+#   R::libR                 R runtime library target for extension building
 #
 
 include(FindPackageHandleStandardArgs)
@@ -111,12 +111,16 @@ else()
     set(R_64BIT FALSE)
 endif()
 
-# create R::Rscript target and mark Interpreter component as found
+# R::R target
+add_executable(R::R IMPORTED)
+set_target_properties(R::R PROPERTIES IMPORTED_LOCATION "${R_EXECUTABLE}")
+# R::Rscript target
 add_executable(R::Rscript IMPORTED)
 set_target_properties(
     R::Rscript PROPERTIES
     IMPORTED_LOCATION "${R_SCRIPT_EXECUTABLE}"
 )
+# mark Interpreter component as found
 set(R_Interpreter_FOUND TRUE)
 
 # look for R headers. on Linux these are stored in <prefix>/share/R/include
@@ -145,13 +149,13 @@ if(R_INCLUDE_DIR AND R_LIBRARY)
     # get extension of R library + create library target as static/shared
     cmake_path(GET R_LIBRARY EXTENSION _r_library_ext)
     if(_r_library_ext STREQUAL ".a")
-        add_library(R::R STATIC IMPORTED)
+        add_library(R::libR STATIC IMPORTED)
     else()
-        add_library(R::R SHARED IMPORTED)
+        add_library(R::libR SHARED IMPORTED)
     endif()
     # set library location + includes
-    set_target_properties(R::R PROPERTIES IMPORTED_LOCATION "${R_LIBRARY}")
-    target_include_directories(R::R INTERFACE "${R_INCLUDE_DIR}")
+    set_target_properties(R::libR PROPERTIES IMPORTED_LOCATION "${R_LIBRARY}")
+    target_include_directories(R::libR INTERFACE "${R_INCLUDE_DIR}")
     # mark Development component as found
     set(R_Development_FOUND TRUE)
 endif()
