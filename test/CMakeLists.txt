@@ -152,6 +152,41 @@ if(TARGET oa_config_py)
     add_dependencies(oa_config_py_tests oa_config_py)
 endif()
 
+# oa_r_testutils: OA R test helpers package
+# note: this is "built" by direct installation via R CMD INSTALL which copies
+# from the oa.testutils directory. however, we avoid running this all the time
+# with a custom target by making using a custom command for the installed
+# DESCRIPTION file as we cannot mark a directory as a generated source
+if(R_FOUND)
+    # glob all files in oa.testutils to collect dependencies
+    # note: if you add untracked files this will change the deps and cause the
+    # rule to be re-run. but it's convenient to glob instead of listing files
+    file(
+        GLOB_RECURSE oa_r_testutils_files
+        "${CMAKE_CURRENT_SOURCE_DIR}/oa.testutils/*"
+    )
+    # custom command for installing the DESCRIPTION file and by proxy doing the
+    # actual R package installation from source. we have to specify a file, not
+    # a directory, and the DESCRIPTION file is always required
+    add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/R/oa.testutils/DESCRIPTION
+        # must ensure directory is created
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/R
+        COMMAND R::R CMD INSTALL -l ${PROJECT_BINARY_DIR}/R
+                ${CMAKE_CURRENT_SOURCE_DIR}/oa.testutils
+        DEPENDS ${oa_r_testutils_files}
+        COMMENT "R CMD INSTALL oa.testutils"
+        VERBATIM
+    )
+    # add custom target to drive the build
+    add_custom_target(
+        oa_r_testutils ALL
+        DEPENDS ${PROJECT_BINARY_DIR}/R/oa.testutils/DESCRIPTION
+    )
+else()
+    message(STATUS "Skipping oa_r_testutils (requires R)")
+endif()
+
 # oa_config_r tests
 # note: only this one basic test script (not much we can test anyways)
 if(TARGET oa_config_r)
@@ -160,5 +195,10 @@ if(TARGET oa_config_r)
         COMMAND R::Rscript "${CMAKE_CURRENT_SOURCE_DIR}/oa_config_test.R"
         WORKING_DIRECTORY "${ODIN_BUILD_DIR_GENEX}"
     )
-    set_tests_properties(oa_config_r_test PROPERTIES LABELS R)
+    set_tests_properties(
+        oa_config_r_test PROPERTIES
+        # ensure installed oa.testutils package can be loaded with library()
+        ENVIRONMENT "R_LIBS=${PROJECT_BINARY_DIR}/R"
+        LABELS R
+    )
 endif()
