@@ -185,7 +185,7 @@ if(R_FOUND)
         message(STATUS "R architecture: 32")
     endif()
     # library
-    if(TARGET R::R)
+    if(TARGET R::libR)
         message(STATUS "R libraries: Yes")
     else()
         message(STATUS "R libraries: No")
