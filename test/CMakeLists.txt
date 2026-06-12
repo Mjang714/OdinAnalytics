@@ -158,13 +158,6 @@ endif()
 # with a custom target by making using a custom command for the installed
 # DESCRIPTION file as we cannot mark a directory as a generated source
 if(R_FOUND)
-    # glob all files in oa.testutils to collect dependencies
-    # note: if you add untracked files this will change the deps and cause the
-    # rule to be re-run. but it's convenient to glob instead of listing files
-    file(
-        GLOB_RECURSE oa_r_testutils_files
-        "${CMAKE_CURRENT_SOURCE_DIR}/oa.testutils/*"
-    )
     # custom command for installing the DESCRIPTION file and by proxy doing the
     # actual R package installation from source. we have to specify a file, not
     # a directory, and the DESCRIPTION file is always required
@@ -174,7 +167,14 @@ if(R_FOUND)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/R
         COMMAND R::R CMD INSTALL -l ${PROJECT_BINARY_DIR}/R
                 ${CMAKE_CURRENT_SOURCE_DIR}/oa.testutils
-        DEPENDS ${oa_r_testutils_files}
+        # note: could glob for convenience but IDE builds won't automatically
+        # reconfigure to pick up added files since the CMakeLists.txt would not
+        # have changed. in general globbing is discouraged for this reason
+        DEPENDS oa.testutils/DESCRIPTION
+                oa.testutils/LICENSE
+                oa.testutils/NAMESPACE
+                oa.testutils/R/sys.R
+                oa.testutils/R/tu.R
         COMMENT "R INSTALL oa.testutils"
         VERBATIM
     )
