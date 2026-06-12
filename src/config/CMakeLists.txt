@@ -114,9 +114,15 @@ endif()
 #
 if(SWIG_r_FOUND AND R_FOUND AND R_Development_FOUND)
     oa_swig_module(oa_config_r LANGUAGE r MODULE module.i CXX DOXYGEN)
-    # note: output name explicitly set to avoid conflict with importing
-    # oa_config in Python as the DSO has priority over the .py file
-    set_target_properties(oa_config_r PROPERTIES OUTPUT_NAME oa_config_r)
+    # note: SWIG-generated R wrapper uses target name as the package name. in
+    # R, packages technically must not have underscores, and since we might
+    # want to create a package later, we follow R convention here
+    #
+    # note: for a package, we'd want to instead build this target as a PIC
+    # static library that would be be part of a binary package build done using
+    # R CMD INSTALL --build and set it as part of PKG_LIBS
+    #
+    set_target_properties(oa_config_r PROPERTIES OUTPUT_NAME oa.config)
     target_link_libraries(oa_config_r PRIVATE R::libR oa_config oa_sil)
 else()
     message(STATUS "Skipping oa_config_r (requires SWIG + R libraries)")
