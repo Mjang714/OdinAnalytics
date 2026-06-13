@@ -107,7 +107,7 @@ std::filesystem::path library_path()
       OA_PRETTY_FUNCTION_NAME + std::string{": dladdr() failed"}
     };
   // return absolute path
-  return info.dli_fname;
+  return std::filesystem::canonical(info.dli_fname);
 #endif  // !defined(_WIN32)
 }
 
