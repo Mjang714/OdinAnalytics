@@ -96,7 +96,7 @@ endfunction()
 # Arguments:
 #   target                  Target name
 #   LANGUAGE lang           Target language option, e.g. python, csharp
-#   MODULE                  SWIG .i module to compile
+#   MODULE module           SWIG .i module file to compile
 #
 #   [OUTPUT_DIR dir]        Output directory for generated language-specific
 #                           files, default is the location of ${target}
@@ -107,14 +107,25 @@ endfunction()
 #   [SOURCES sources...]    Additional C/C++ source files to compile
 #   [CXX]                   Run SWIG in C++ wrapping mode
 #   [DOXYGEN]               Run with -doxygen option for Python/Java
+#   [NAMESPACE]             Run with -namespace option for R
+#
+#   [STATIC]                Build target as static PIC library for later
+#                           linking. This is useful for R as the objects can be
+#                           linked into the final DSO by R CMD INSTALL.
 #
 function(oa_swig_module target)
     # parse arguments
     cmake_parse_arguments(
         ARG
-        "CXX;DOXYGEN" "LANGUAGE;MODULE;OUTPUT_DIR;OUTFILE_DIR" "SOURCES"
+        "CXX;DOXYGEN;NAMESPACE;STATIC"
+        "LANGUAGE;MODULE;OUTPUT_DIR;OUTFILE_DIR"
+        "SOURCES"
         ${ARGN}
     )
+    # check for unknown args
+    if(ARG_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "unrecognized arguments: ${ARG_UNPARSED_ARGUMENTS}")
+    endif()
     # SWIG is of course required
     if(NOT SWIG_EXECUTABLE)
         message(FATAL_ERROR "SWIG_EXECUTABLE required for invoking SWIG")
@@ -175,14 +186,31 @@ function(oa_swig_module target)
         # an error about attempting to copy a non-DOH object. the -dll option
         # also isn't really helpful as it doesn't affect the package name
         list(APPEND swig_local_opts -module "${target_file_stem}")
+        # generate a NAMESPACE file for a package
+        if(ARG_NAMESPACE)
+            list(APPEND swig_local_opts -namespace)
+        endif()
     endif()
     # uppercase language + filename + stem + absolute path of the SWIG module
     string(TOUPPER "${ARG_LANGUAGE}" lang_upper)
     cmake_path(GET ARG_MODULE FILENAME module_file)
     cmake_path(GET ARG_MODULE STEM module_stem)
     cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
-    # MODULE target with the target sources
-    add_library(${target} MODULE ${ARG_SOURCES})
+    # target type
+    if(ARG_STATIC)
+        set(target_type STATIC)
+    else()
+        set(target_type MODULE)
+    endif()
+    # target with the target sources
+    add_library(${target} ${target_type} ${ARG_SOURCES})
+    # ensure static library has position-independent objects
+    if(ARG_STATIC)
+        set_target_properties(
+            ${target} PROPERTIES
+            POSITION_INDEPENDENT_CODE TRUE
+        )
+    endif()
     # Python-specific changes
     if(ARG_LANGUAGE STREQUAL "python")
         # follow SWIG convention by ensuring binary stem is always _${target}
