@@ -196,6 +196,19 @@ function(oa_swig_module target)
     cmake_path(GET ARG_MODULE FILENAME module_file)
     cmake_path(GET ARG_MODULE STEM module_stem)
     cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
+    # read file and match the %module directive's value
+    # note: not always needed for every language but is a useful check
+    file(READ "${module_path}" module_name)
+    set(module_regex "%module[ \t]*(\\([^(]+\\))?[ \t]+([a-zA-Z0-9_]+)")
+    string(REGEX MATCH "${module_regex}" module_name "${module_name}")
+    string(REGEX REPLACE "${module_regex}" "\\2" module_name "${module_name}")
+    # check
+    if(NOT module_name)
+        message(
+            FATAL_ERROR
+            "missing or malformed %module directive in ${module_file}"
+        )
+    endif()
     # target type
     if(ARG_STATIC)
         set(target_type STATIC)
@@ -224,20 +237,8 @@ function(oa_swig_module target)
         endif()
     # R-specific changes
     elseif(ARG_LANGUAGE STREQUAL "r")
-        # read file and match the %module directive's value
-        file(READ "${module_path}" module_name)
-        set(module_regex "%module[ \t]*(\\([^(]+\\))?[ \t]+([a-zA-Z0-9_]+)")
-        string(REGEX MATCH "${module_regex}" module_name "${module_name}")
-        string(REGEX REPLACE "${module_regex}" "\\2" module_name "${module_name}")
-        # check
-        if(NOT module_name)
-            message(
-                FATAL_ERROR
-                "missing or malformed %module directive in ${module_file}"
-            )
-        endif()
-        # ensure that output name is exactly that of the %module directive as
-        # required by R
+        # ensure that output name is exactly that of the %module directive. R
+        # requires that the DSO have the same name as the package
         set_target_properties(
             ${target} PROPERTIES
             PREFIX "" OUTPUT_NAME "${module_name}"
