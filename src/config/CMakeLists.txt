@@ -113,7 +113,9 @@ endif()
 # MinGW GCC toolchain which has a different ABI.
 #
 if(SWIG_r_FOUND AND R_FOUND AND R_Development_FOUND)
-    oa_swig_module(oa_config_r LANGUAGE r MODULE module.i CXX DOXYGEN)
+    # TODO: use NAMESPACE and STATIC when we want to make a real package. we
+    # would then to set OUTPUT_DIR to a different directory
+    oa_swig_module(oa_config_r LANGUAGE r MODULE module.i CXX)
     # note: SWIG-generated R wrapper uses target name as the package name. in
     # R, packages technically must not have underscores, and since we might
     # want to create a package later, we follow R convention here
