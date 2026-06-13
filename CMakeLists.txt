@@ -77,6 +77,7 @@ include(CTest)
 
 include(oa_embed_version_info)
 include(oa_pdb_install)
+include(oa_r_package)
 include(oa_repair_gtest_version)
 include(oa_swig_module)
 include(oa_unittest_discover_tests)

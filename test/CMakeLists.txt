@@ -153,42 +153,16 @@ if(TARGET oa_config_py)
 endif()
 
 # oa_r_testutils: OA R test helpers package
-# note: this is "built" by direct installation via R CMD INSTALL which copies
-# from the oa.testutils directory. however, we avoid running this all the time
-# with a custom target by making using a custom command for the installed
-# DESCRIPTION file as we cannot mark a directory as a generated source
 if(R_FOUND)
-    # custom command for installing the DESCRIPTION file and by proxy doing the
-    # actual R package installation from source. we have to specify a file, not
-    # a directory, and the DESCRIPTION file is always required
-    add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/R/oa.testutils/DESCRIPTION
-        # must ensure directory is created
-        # TODO: this should be run as a custom target to prevent races
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/R
-        # note: unnecessary for source builds but important for binary builds
-        # as R CMD INSTALL will pollute the source tree
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_CURRENT_SOURCE_DIR}/oa.testutils
-                ${CMAKE_CURRENT_BINARY_DIR}/oa.testutils
-        # install from build directory for a clean source tree
-        COMMAND R::R CMD INSTALL -l ${PROJECT_BINARY_DIR}/R
-                ${CMAKE_CURRENT_BINARY_DIR}/oa.testutils
-        # note: could glob for convenience but IDE builds won't automatically
-        # reconfigure to pick up added files since the CMakeLists.txt would not
-        # have changed. in general globbing is discouraged for this reason
-        DEPENDS oa.testutils/DESCRIPTION
-                oa.testutils/LICENSE
-                oa.testutils/NAMESPACE
-                oa.testutils/R/sys.R
-                oa.testutils/R/tu.R
-        COMMENT "R INSTALL oa.testutils"
-        VERBATIM
-    )
-    # add custom target to drive the build
-    add_custom_target(
-        oa_r_testutils ALL
-        DEPENDS ${PROJECT_BINARY_DIR}/R/oa.testutils/DESCRIPTION
+    oa_r_package(
+        oa_r_testutils
+        PACKAGE oa.testutils
+        FILES
+            DESCRIPTION
+            LICENSE
+            NAMESPACE
+            R/sys.R
+            R/tu.R
     )
 else()
     message(STATUS "Skipping oa_r_testutils (requires R)")
