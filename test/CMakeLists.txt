@@ -164,9 +164,16 @@ if(R_FOUND)
     add_custom_command(
         OUTPUT ${PROJECT_BINARY_DIR}/R/oa.testutils/DESCRIPTION
         # must ensure directory is created
+        # TODO: this should be run as a custom target to prevent races
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/R
-        COMMAND R::R CMD INSTALL -l ${PROJECT_BINARY_DIR}/R
+        # note: unnecessary for source builds but important for binary builds
+        # as R CMD INSTALL will pollute the source tree
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
                 ${CMAKE_CURRENT_SOURCE_DIR}/oa.testutils
+                ${CMAKE_CURRENT_BINARY_DIR}/oa.testutils
+        # install from build directory for a clean source tree
+        COMMAND R::R CMD INSTALL -l ${PROJECT_BINARY_DIR}/R
+                ${CMAKE_CURRENT_BINARY_DIR}/oa.testutils
         # note: could glob for convenience but IDE builds won't automatically
         # reconfigure to pick up added files since the CMakeLists.txt would not
         # have changed. in general globbing is discouraged for this reason
