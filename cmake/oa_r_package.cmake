@@ -171,8 +171,8 @@ function(oa_r_package target)
     if(ARG_NO_TEST_LOAD)
         list(APPEND r_options --no-test-load)
     endif()
-    # add a build command to configure Makevars if it exists
-    if(EXISTS ${pkg_build_dir}/src/Makevars.in)
+    # add a build command to configure Makevars if it exists in source tree
+    if(EXISTS ${pkg_source_dir}/src/Makevars.in)
         # collect all library target properties
         set(cur_libs ${ARG_LIBRARIES})
         # loop through all target dependencies
