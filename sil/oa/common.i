@@ -13,6 +13,8 @@
 #include <stdexcept>
 %}
 
+%include "exception.i"  // for SWIG_exception()
+
 /**
  * `OA_HANDLE_EXCEPTIONS` macro for ensuring C++ exceptions are handled.
  *
@@ -21,6 +23,8 @@
 #if defined(SWIGPYTHON)
 /**
  * `OA_HANDLE_EXCEPTIONS` implementation that sets a Python `RuntimeError`.
+ *
+ * @todo Consider using `SWIG_exception(SWIG_RuntimError, ...)` for exceptions.
  */
 %define OA_HANDLE_EXCEPTIONS
 %exception {
@@ -40,6 +44,36 @@
     // note: truly exception-free call
     PyErr_SetString(PyExc_RuntimeError, "$fulldecl: unknown C++ exception");
     SWIG_fail;
+  }
+}
+%enddef  // OA_HANDLE_EXCEPTIONS
+#elif defined(SWIGR)
+/**
+ * `OA_HANDLE_EXCEPTIONS` implementation that later delegates to `Rf_error()`.
+ *
+ * This handler is not safe if there are additional stack-allocated C++ objects
+ * due to `Rf_error()` using `longjmp` as a non-local `goto` and therefore not
+ * properly unwinding the function's stack. Although the action and catch
+ * clauses are protected in braced contexts, other C++ objects, e.g. those
+ * allocated as part of a SWIG typemap fragment, must either have trivial
+ * destructors, or have their destructor explicitly invoked before `Rf_error()`
+ * is called. Otherwise, one risks memory leaks and other issues.
+ */
+%define OA_HANDLE_EXCEPTIONS
+%exception {
+  try {
+    $action
+  }
+  catch (const std::exception& exc) {
+    // note: technically not noexcept
+    std::stringstream ss;
+    ss << "$fulldecl: " << exc.what();
+    // note: temporary materialization rules mean str() is valid until end of
+    // the full-expression, i.e. until after SWIG_Error() has completed
+    SWIG_exception(SWIG_RuntimeError, ss.str().c_str());
+  }
+  catch (...) {
+    SWIG_exception(SWIG_RuntimeError, "$fulldecl: unknown C++ exception");
   }
 }
 %enddef  // OA_HANDLE_EXCEPTIONS
