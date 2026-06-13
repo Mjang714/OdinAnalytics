@@ -169,7 +169,7 @@ else()
 endif()
 
 # oa_config_r tests
-# note: only this one basic test script (not much we can test anyways)
+# TODO: update target to oa_config_r_package, add more tests, add test infra
 if(TARGET oa_config_r)
     add_test(
         NAME oa_config_r_test
