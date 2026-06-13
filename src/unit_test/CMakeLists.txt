@@ -14,7 +14,6 @@ add_executable(
     derived_time/cashflow_gen/cashflow_gen_test.cpp
     derived_time/date_formula/business_date_formula_test.cpp
     derived_time/date_formula/date_formula_test.cpp
-    enum_mappers/time_enum_mappers_test.cpp
     fixed_string_test.cpp
     helpers/business_logic_check_test.cpp
     helpers/enum_test.cpp
@@ -32,6 +31,7 @@ add_executable(
     time/day_count/day_count_act_360_test.cpp
     time/day_count/day_count_act_act_test.cpp
     time/day_count/day_count_factory_test.cpp
+    time_enum_mappers_test.cpp
 )
 # add oxl tests if oxl_api is available
 # note: no need to check if on Windows as oxl_api is Windows-only
@@ -60,7 +60,6 @@ target_link_libraries(
         oa_config
         oa_dao
         oa_derived_time
-        oa_enum_mappers
         oa_helpers
         oa_static_data_cache
         oa_time

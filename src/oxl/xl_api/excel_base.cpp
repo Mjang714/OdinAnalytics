@@ -1,10 +1,17 @@
 #include "excel_base.h"
 
+#include <string>
+#include <memory>
+#include <vector>
+
+#include "derived_time/cashflow_gen/cashflow_struct.h"
+#include "derived_time/date_formula/business_date_formula.h"
+#include "derived_time/derived_time_enums.h"
 #include "helpers/utils.h"
 #include "oxl/xl_api/cache_xl_obj.h"
 #include "oxl/xl_api/xl_array.h"
-#include "oxl/xl_api/xloper_converter.h"
 #include "oxl/xl_api/xl_utils.h"
+#include "oxl/xl_api/xloper_converter.h"
 #include "time/date.h"
 
 namespace oxl::xl_api
@@ -14,7 +21,7 @@ namespace oxl::xl_api
 		return std::make_shared<XlArray>(XLoperObj::LPXloperToXlArray(data_range));
 	}
 
-	xl_api::XlArray ConvertCFStructToXlArray(const std::vector<oa::derived_time::CashflowStruct>& cf_struct_array, oa::derived_time::CashflowType cf_type)
+	XlArray ConvertCFStructToXlArray(const std::vector<oa::derived_time::CashflowStruct>& cf_struct_array, oa::derived_time::CashflowType cf_type)
 	{
 
 		switch(cf_type)
@@ -22,7 +29,7 @@ namespace oxl::xl_api
 
 			case oa::derived_time::CashflowType::kFixed:
 			{
-				xl_api::XlArray xl_results(cf_struct_array.size() + 1, 14);
+				XlArray xl_results(cf_struct_array.size() + 1, 14);
 				xl_results[0] = {"Unadj_Start_Date", "Unadj_End_Date", "Start_Date", "End_Date", "Fixing_Date", "Payment_Date", "Notional", "Rate", "Fwd_Cashflow_PV", "Cashflow_NPV", "Day_Count", "Day_Count_Fraction", "Currency", "Cashflow_Type"};
 				//may want to put this into a seperate function that converts different cashflows into output idk feel free to comment.
 				for(size_t i = 1; i < xl_results.rows(); i++) {
@@ -49,7 +56,7 @@ namespace oxl::xl_api
 
 			default:
 			{
-				xl_api::XlArray xl_results(1,1);
+				XlArray xl_results(1,1);
 				xl_results(0,0) = std::string("Invalid input was given");
 				return xl_results;
 			}
@@ -58,28 +65,28 @@ namespace oxl::xl_api
 		}
 	}
 
-	std::shared_ptr<xl_api::XlDictionary> RetrieveXLDict(const xl_api::XlDictionary& dictionary, const std::string& chached_str)
+	std::shared_ptr<XlDictionary> RetrieveXLDict(const XlDictionary& dictionary, const std::string& chached_str)
 	{
 
 		auto fixing_dict_handle = std::get<std::string>(dictionary[chached_str]);
-		auto fixing_dict_str_key = oxl::xl_api::XlCacheObj::GetKeyFromHandle(fixing_dict_handle);
-		if (!xl_api::XlCacheObj::IsDictionary(fixing_dict_str_key))
+		auto fixing_dict_str_key = XlCacheObj::GetKeyFromHandle(fixing_dict_handle);
+		if (!XlCacheObj::IsDictionary(fixing_dict_str_key))
 		{
 			throw std::runtime_error(std::format("{} is not a valid cached dictionary handle please check input!", fixing_dict_handle));
 		}
 		auto cache_variant = XlCacheObj::GetVariant(fixing_dict_str_key);
-		auto xl_dictionary = std::get<std::shared_ptr<xl_api::XlDictionary>>(cache_variant);
+		auto xl_dictionary = std::get<std::shared_ptr<XlDictionary>>(cache_variant);
 		return xl_dictionary;
 
 
 	}
 
-	bool ValidBusinessDateDictionary(const xl_api::XlDictionary& dict)
+	bool ValidBusinessDateDictionary(const XlDictionary& dict)
 	{
 		return dict.Contains("Days") && dict.Contains("Calendar");
 	}
 
-	oa::derived_time::BusinessDateFormula GetBusinessDateFormulaFromDict(const xl_api::XlDictionary& dict, const std::string& date_rule_key)
+	oa::derived_time::BusinessDateFormula GetBusinessDateFormulaFromDict(const XlDictionary& dict, const std::string& date_rule_key)
 	{
 		auto date_rule_dict = RetrieveXLDict(dict, date_rule_key);
 		if (!ValidBusinessDateDictionary(*date_rule_dict))
@@ -91,7 +98,7 @@ namespace oxl::xl_api
 		return oa::derived_time::BusinessDateFormula(num_of_days, calendar);
 	}
 
-	bool ValidCashflowGenDictionary(const xl_api::XlDictionary& dictionary) {
+	bool ValidCashflowGenDictionary(const XlDictionary& dictionary) {
 		return dictionary.Contains("Start_Date") && dictionary.Contains("Mat_Date") && dictionary.Contains("Notional") && dictionary.Contains("Rate") && dictionary.Contains("Day_Count_Frac") && dictionary.Contains("Frequency") && dictionary.Contains("Date_Dir") && dictionary.Contains("Stub_Type");
 	}
 }

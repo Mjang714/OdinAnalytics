@@ -98,7 +98,9 @@ find_package(magic_enum 0.8.1 REQUIRED)
 message(STATUS "Magic Enum version: ${magic_enum_VERSION}")
 
 # find GoogleTest
-find_package(GTest 1.8)
+# note: bumped from the ancient 1.8 as <1.11.0 uses std::result_of in
+# gmock-actions.h which was removed in C++20
+find_package(GTest 1.11.0)
 if(GTest_FOUND)
     # set GTest_VERSION approximately if GTest found using FindGTest.cmake
     # note: if GTest_VERSION already set nothing is done
@@ -156,7 +158,7 @@ if(MSVC)
         /W4 /MP
         # C4668: macro not defined and replaced with 0. this is turned on with
         # /Wall, but since we are using /W4, we explicitly enable
-        /w34668
+        /wd4668
         # specific /Wall warnings we are ok with disabling
         # typically don't care if unreferenced inline functions are removed
         /wd4514

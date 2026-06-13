@@ -10,12 +10,12 @@
 #include <stdexcept>
 #include <string>
 
+#include "derived_time/derived_time_enum_mappers.h"
 #include "derived_time/cashflow_gen/cashflow_gen.h"
 #include "derived_time/cashflow_gen/cashflow_struct.h"
 #include "derived_time/date_formula/business_date_formula.h"
 #include "derived_time/date_formula/date_formula.h"
 #include "derived_time/derived_time_enums.h"
-#include "enum_mappers/time_enum_mappers.h"
 #include "helpers/utils.h"
 #include "static_data_cache/calendar_cache.h"
 #include "time/calendar.h"
@@ -133,9 +133,9 @@ namespace oxl {
 			auto rate = std::get<double>(dictionary["Rate"]);
 			auto day_cnt_frac = oa::time::MapInputToDayCountEnum(std::get<std::string>(dictionary["Day_Count_Frac"]));
 			auto freq_tenor_str = std::get<std::string>(dictionary["Frequency"]);
-			auto freq = (oa::utils::CheckTenorStr(freq_tenor_str)) ? oa::time::Tenor(freq_tenor_str) : CFGen::MapResetFreqEnumToTenor(oa::enum_mappers::MapInputToFreq(freq_tenor_str));
-			opt.date_direction(oa::enum_mappers::MapInputToDateDir(std::get<std::string>(dictionary["Date_Dir"])));
-			opt.stub_type(oa::enum_mappers::MapInputToStub(std::get<std::string>(dictionary["Stub_Type"])));
+			auto freq = (oa::utils::CheckTenorStr(freq_tenor_str)) ? oa::time::Tenor(freq_tenor_str) : CFGen::MapResetFreqEnumToTenor(oa::derived_time::MapInputToFreq(freq_tenor_str));
+			opt.date_direction(oa::derived_time::MapInputToDateDir(std::get<std::string>(dictionary["Date_Dir"])));
+			opt.stub_type(oa::derived_time::MapInputToStub(std::get<std::string>(dictionary["Stub_Type"])));
 
 			if(dictionary.Contains("Fixing_Date_Rule"))
 			{
@@ -169,7 +169,7 @@ namespace oxl {
 
 			if(dictionary.Contains("Calc_Type"))
 			{
-				opt.calc_type(oa::enum_mappers::MapInputToCalcType(std::get<std::string>(dictionary["Calc_Type"])));
+				opt.calc_type(oa::derived_time::MapInputToCalcType(std::get<std::string>(dictionary["Calc_Type"])));
 			}
 
 			auto cf_results = CFGen::CreateFixedCashflows(start_date, mat_date,freq, notional, rate, day_cnt_frac, opt);

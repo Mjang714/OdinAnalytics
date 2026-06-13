@@ -2,7 +2,8 @@
 #include "helpers/utils.h"
 
 #include "time/time_enum_mappers.h"
-#include "enum_mappers/time_enum_mappers.h"
+#include "derived_time/derived_time_enums.h"
+#include "derived_time/derived_time_enum_mappers.h"
 
 namespace {
 
@@ -33,7 +34,7 @@ template <>
 struct enum_name_mapper_test<oa::derived_time::DateDirection> {
     auto operator()(const std::string& name) const
     {
-        return oa::enum_mappers::MapInputToDateDir(name);
+        return oa::derived_time::MapInputToDateDir(name);
     }
 };
 
@@ -41,7 +42,7 @@ template <>
 struct enum_name_mapper_test<oa::derived_time::Frequency> {
     auto operator()(const std::string& name) const
     {
-        return oa::enum_mappers::MapInputToFreq(name);
+        return oa::derived_time::MapInputToFreq(name);
     }
 };
 
@@ -49,7 +50,7 @@ template <>
 struct enum_name_mapper_test<oa::derived_time::StubType> {
     auto operator()(const std::string& name) const
     {
-        return oa::enum_mappers::MapInputToStub(name);
+        return oa::derived_time::MapInputToStub(name);
     }
 };
 
@@ -57,7 +58,7 @@ template <>
 struct enum_name_mapper_test<oa::derived_time::CalcType> {
     auto operator()(const std::string& name) const
     {
-        return oa::enum_mappers::MapInputToCalcType(name);
+        return oa::derived_time::MapInputToCalcType(name);
     }
 };
 
