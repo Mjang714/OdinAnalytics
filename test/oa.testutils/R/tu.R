@@ -23,12 +23,20 @@
 #   0 on success, 1 on failure; interpret as number of test failures
 #
 oa.tu_run <- function(name, test) {
-  cat("[ RUN      ]", name, fill = TRUE)
-  if (test()) {
-    cat("[     PASS ]", name, fill = TRUE)
+  message("[ RUN      ] ", name)
+  # wrap in try-catch
+  res <- tryCatch(
+    test(),
+    error = function(err) {
+      message("Exception: ", err)
+      return(FALSE)
+    }
+  )
+  if (res) {
+    message("[     PASS ] ", name)
     return(0)
   } else {
-    cat("[     FAIL ]", name, fill = TRUE)
+    message("[     FAIL ] ", name)
     return(1)
   }
 }
@@ -50,27 +58,26 @@ oa.tu_run_n <- function(tests) {
   test_names <- names(tests)
   # default action is to run all test cases
   n_tests <- length(tests)
-  cat("Running", n_tests, "test cases...", fill = TRUE)
+  message("Running ", n_tests, " test cases...")
   # no tests to run
   if (n_tests == 0) {
-    cat("No tests to run!", fill = TRUE)
+    message("No tests to run!")
     return(0)
   }
   # count failed
   failed <- 0
   for (i in 1:n_tests)
     failed <- failed + oa.tu_run(test_names[i], tests[[i]])
-  # percentage pass
-  pass_pct <- 100 * (1 - failed / n_tests)
+  # percentage pass to 4 decimal places
+  pass_pct <- round(100 * (1 - failed / n_tests), 4)
   # report pass/fail + return number of failed
-  cat(
+  message(
+    "\n",
     pass_pct,
     "% tests passed, ",
     failed,
     " tests failed out of ",
-    n_tests,
-    sep = "",
-    fill = TRUE
+    n_tests
   )
   return(failed)
 }
@@ -110,12 +117,11 @@ oa.tu_main <- function(
   # default description if desc is empty
   if (desc == "")
     desc <- "R test runner."
-  # options description with trailing newline
+  # options description without trailing newline
   opts_help <- r"(Options:
   -h, --help                    Print this usage
   -l, --list-tests              List the names of all available tests
-  -t, --test-case <name>        Name of test case to run
-)"
+  -t, --test-case <name>        Name of test case to run)"
   # number of arguments
   argc <- length(argv)
   # test names
@@ -127,19 +133,19 @@ oa.tu_main <- function(
       break
     # -h, --help
     if (argv[i] == "-h" || argv[i] == "--help") {
-      cat(usage_line, "\n\n", desc, "\n\n", opts_help, sep = "")
+      message(usage_line, "\n\n", desc, "\n\n", opts_help)
       return(0)
     # -l, --list-tests
     } else if (argv[i] == "-l" || argv[i] == "--list-tests") {
       # print the test names + exit
       for (i in 1:length(test_names))
-        cat(test_names[i], fill = TRUE)
+        message(test_names[i])
       return(0)
     # -t, --test-case
     } else if (argv[i] == "-t" || argv[i] == "--test-case") {
       # need to have another argument available
       if (i == argc)
-        stop(paste("Error: -t, --test-case missing required test name"))
+        stop("Error: -t, --test-case missing required test name")
       # look up test case
       test_name <- argv[i + 1]
       test_case <- tests[[test_name]]
@@ -155,7 +161,7 @@ oa.tu_main <- function(
     ) {
     # ignore unknown options in case we haven't fully covered them
     } else {
-      cat("Warning: Unknown option \"", argv[i], "\"", sep = "", fill = TRUE)
+      message("Warning: Unknown option \"", argv[i], "\"")
     }
   }
   # default action is to run all test cases
