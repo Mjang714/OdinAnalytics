@@ -8,8 +8,6 @@ cmake_minimum_required(VERSION 3.22)
 
 include_guard(GLOBAL)
 
-include(${CMAKE_CURRENT_LIST_DIR}/oa_require_nonempty.cmake)
-
 ##
 # Implementation function for registering R test scripts with CTest.
 #
