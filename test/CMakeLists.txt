@@ -169,20 +169,8 @@ else()
 endif()
 
 # oa_config_r_package tests
-# TODO: add test infra + add more tests
 if(TARGET oa_config_r_package)
-    add_test(
-        NAME oa_config_r_test
-        COMMAND R::Rscript "${CMAKE_CURRENT_SOURCE_DIR}/oa_config_test.R"
-        WORKING_DIRECTORY "${ODIN_BUILD_DIR_GENEX}"
-    )
-    # ensure installed oa.testutils package can be loaded with library() +
-    # that the oa_config library can be loaded by R
-    set_property(
-        TEST oa_config_r_test PROPERTY ENVIRONMENT_MODIFICATION
-        "R_LIBS=path_list_append:${PROJECT_BINARY_DIR}/R"
-        "LD_LIBRARY_PATH=path_list_append:${ODIN_BUILD_DIR_GENEX}"
-    )
-    # add R test label
-    set_tests_properties(oa_config_r_test PROPERTIES LABELS R)
+    oa_r_discover_tests(oa_config_r_tests TESTS oa_config_test.R)
+    # note: since oa.testutils is required we have to let it build first
+    add_dependencies(oa_config_r_tests oa_config_r_package oa_r_testutils)
 endif()
