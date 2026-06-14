@@ -223,8 +223,20 @@ function(oa_r_package target)
                     if(lib_link_libs)
                         list(APPEND all_link_libs ${lib_link_libs})
                     endif()
-                    # use target file name generator expression
-                    list(APPEND all_link_options "$<TARGET_FILE:${lib}>")
+                    # use target file name generator expression. for static
+                    # libraries, automatically use -Wl,--whole-archive
+                    set(lib_file "$<TARGET_FILE:${lib}>")
+                    # note: on Windows would have to use MinGW-w64 toolchain in
+                    # which case the ld options would work anyways
+                    if(NOT WIN32 AND lib_type STREQUAL STATIC_LIBRARY)
+                        list(
+                            APPEND all_link_options
+                            "-Wl,--whole-archive" "${lib_file}"
+                            "-Wl,--no-whole-archive"
+                        )
+                    else()
+                        list(APPEND all_link_options "${lib_file}")
+                    endif()
                 else()
                     list(APPEND all_link_options ${lib})
                 endif()
@@ -253,11 +265,6 @@ function(oa_r_package target)
             all_pp_options
             "$<GENEX_EVAL:${all_defs_gen}$<SEMICOLON>${all_includes_gen}>"
         )
-        # ensure link options fully link objects in static libs
-        if(NOT WIN32)
-            list(PREPEND all_link_options "-Wl,--whole-archive")
-            list(APPEND all_link_options "-Wl,--no-whole-archive")
-        endif()
         # pass preprocessor, compiler, and linker options in custom command
         # note: was having some issues with VERBATIM in preserving quotes
         add_custom_command(
