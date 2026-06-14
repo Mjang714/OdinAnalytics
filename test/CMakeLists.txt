@@ -164,6 +164,8 @@ if(R_FOUND)
             R/sys.R
             R/tu.R
     )
+    oa_r_discover_tests(oa_r_testutils_tests TESTS oa_testutils_test.R)
+    add_dependencies(oa_r_testutils_tests oa_r_testutils)
 else()
     message(STATUS "Skipping oa_r_testutils (requires R)")
 endif()
