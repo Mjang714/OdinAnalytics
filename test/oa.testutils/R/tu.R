@@ -10,6 +10,31 @@
 #
 
 ##
+# Return an SGR color code.
+#
+# Arguments:
+#   val         SGR color code value, e.g. 33 for yellow, 36 for cyan
+#   bright      TRUE to add bright modifier to color
+#
+oa.fg_color <- function(val, bright = FALSE) {
+  c <- paste0("\x1b[", val, "m")
+  if (bright)
+    c <- paste0(c, "\x1b[1m")
+  return(c)
+}
+
+# standard SGR colors
+oa.fg_reset <- oa.fg_color(0)
+oa.fg_red <- oa.fg_color(31)
+oa.fg_green <- oa.fg_color(32)
+oa.fg_yellow <- oa.fg_color(33)
+
+# bright SGR colors
+oa.fg_bright_red <- oa.fg_color(31, TRUE)
+oa.fg_bright_green <- oa.fg_color(32, TRUE)
+oa.fg_bright_yellow <- oa.fg_color(33, TRUE)
+
+##
 # Run a single named test.
 #
 # The test function must take no parameters and return TRUE on success, FALSE
@@ -23,21 +48,49 @@
 #   0 on success, 1 on failure; interpret as number of test failures
 #
 oa.tu_run <- function(name, test) {
-  message("[ RUN      ] ", name)
+  message(oa.fg_green, "[ RUN      ] ", oa.fg_reset, name)
   # wrap in try-catch
   res <- tryCatch(
     test(),
     error = function(err) {
-      message("Exception: ", err)
+      message(oa.fg_red, "Exception: ", err, oa.fg_reset)
       return(FALSE)
     }
   )
   if (res) {
-    message("[     PASS ] ", name)
+    message(oa.fg_green, "[     PASS ] ", oa.fg_reset, name)
     return(0)
   } else {
-    message("[     FAIL ] ", name)
+    message(oa.fg_red, "[     FAIL ] ", oa.fg_reset, name)
     return(1)
+  }
+}
+
+##
+# Test two objects for equality.
+#
+# On success TRUE is returned while on error a message is printed and FALSE
+# returned. The expression itself is included in the error message.
+#
+# Arguments:
+#   expected    Expected value
+#   actual      Actual value
+#
+# Returns:
+#   TRUE on equality, FALSE on error
+#
+oa.tu_expect_eq <- function(expected, actual) {
+  if (expected == actual) {
+    return(TRUE)
+  } else {
+    message(
+      deparse(sys.call()), ": Failure\n",
+      "  expected:\n",
+      "    ", expected, "\n",
+      "  actual:\n",
+      "    ", actual
+    )
+    return(FALSE)
   }
 }
 
@@ -68,16 +121,25 @@ oa.tu_run_n <- function(tests) {
   failed <- 0
   for (i in 1:n_tests)
     failed <- failed + oa.tu_run(test_names[i], tests[[i]])
-  # percentage pass to 4 decimal places
-  pass_pct <- round(100 * (1 - failed / n_tests), 4)
+  # percentage pass rounded
+  pass_pct <- round(100 * (1 - failed / n_tests))
+  # if no failures, print % test passed in green
+  if(!failed) {
+    pct_color <- oa.fg_green
+  } else {
+    pct_color <- oa.fg_reset
+  }
+  # if failures, print number of failed in fre
+  if(failed) {
+    fail_color <- oa.fg_red
+  } else {
+    fail_color <- oa.fg_reset
+  }
   # report pass/fail + return number of failed
   message(
     "\n",
-    pass_pct,
-    "% tests passed, ",
-    failed,
-    " tests failed out of ",
-    n_tests
+    pct_color, pass_pct, "% tests passed", oa.fg_reset, ", ",
+    fail_color, failed, " tests failed ", oa.fg_reset, "out of ", n_tests
   )
   return(failed)
 }
