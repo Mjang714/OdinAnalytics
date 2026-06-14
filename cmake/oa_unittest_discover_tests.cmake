@@ -6,6 +6,8 @@ cmake_minimum_required(VERSION 3.22)
 # Enables CTest registration of unittest tests using oa_testutils.test_main.
 #
 
+include_guard(GLOBAL)
+
 ##
 # Helper function to require that a variable is nonempty.
 #
@@ -134,7 +136,7 @@ endfunction()
 # set_target_properties() to modify the runtime PYTHONPATH, etc. Below is the
 # list of properties that can be set to influence the test environment:
 #
-#   PYTHON_PATH             Semicolon-separated list of firectories to prepend
+#   PYTHON_PATH             Semicolon-separated list of directories to prepend
 #                           to PYTHONPATH for imports. By default, the top-level
 #                           binary directory, with per-config subdirectory, and
 #                           the current working directory, will already be
@@ -159,6 +161,9 @@ function(oa_unittest_discover_tests target)
     cmake_parse_arguments(ARG "" "TESTS" "" ${ARGN})
     if(NOT ARG_TESTS)
         message(FATAL_ERROR "TESTS required")
+    endif()
+    if(ARG_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "unparsed arguments: ${ARG_UNPARSED_ARGUMENTS}")
     endif()
     # indicate if multi-config generator is being used
     get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
