@@ -59,4 +59,4 @@ tests = c(
 )
 
 # main
-oa.tu_exit(oa.tu_main(desc = "oa_config unit tests.", tests = tests))
+oa.tu_exit(oa.tu_main(desc = "oa.config unit tests.", tests = tests))
