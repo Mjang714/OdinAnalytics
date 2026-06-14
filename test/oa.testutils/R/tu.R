@@ -95,6 +95,34 @@ oa.tu_expect_eq <- function(expected, actual) {
 }
 
 ##
+# Test that the first object is greater than or equal to the second.
+#
+# On success TRUE is returned while on error a message is printed and FALSE
+# returned. The expression itself is included in the error message.
+#
+# Arguments:
+#   x       First avlue
+#   y       Second value
+#
+# Returns:
+#   TRUE on success, FALSE on error
+#
+oa.tu_expect_ge <- function(x, y) {
+  if (x >= y) {
+    return(TRUE)
+  } else {
+    message(
+      deparse(sys.call()), ": Failure\n",
+      "  first:\n",
+      "    ", x, "\n",
+      "  second:\n",
+      "    ", y
+    )
+    return(FALSE)
+  }
+}
+
+##
 # Run a list of named tests.
 #
 # The tests object must be a named vector where each value is a function that
