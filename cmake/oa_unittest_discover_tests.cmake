@@ -30,6 +30,7 @@ endfunction()
 #
 # The following variables must be defined:
 #
+#   TARGET_NAME             Name of the associated CMake target
 #   Python3_EXECUTABLE      Path to the Python 3 interpreter used
 #   OUTPUT_DIR              Output directory for the .cmake test file
 #   OUTPUT_FILE             Filename of the .cmake test file to write
@@ -53,6 +54,7 @@ endfunction()
 #
 function(oa_unittest_discover_tests_impl)
     # check required variables
+    oa_require_nonempty(TARGET_NAME)
     oa_require_nonempty(Python3_EXECUTABLE)
     oa_require_nonempty(OUTPUT_DIR)
     oa_require_nonempty(OUTPUT_FILE)
@@ -91,11 +93,12 @@ function(oa_unittest_discover_tests_impl)
     # build up list of tests
     # note: must use old add_test() format
     foreach(test ${test_list})
+        set(test_name "${TARGET_NAME}.${test}")
         string(
             APPEND test_content
-"# ${test}\n"
+"# ${test_name}\n"
 "add_test(\n"
-"    ${test}\n"
+"    ${test_name}\n"
 # first change working directory
 "    \"${CMAKE_COMMAND}\" -E chdir \"${WORKING_DIRECTORY}\"\n"
 # run in modified environment
@@ -116,7 +119,7 @@ function(oa_unittest_discover_tests_impl)
 #   set_tests_properties()
 #   set_directory_properties()
 #
-"set_tests_properties(${test} PROPERTIES LABELS Python)\n"
+"set_tests_properties(${test_name} PROPERTIES LABELS Python)\n"
         )
     endforeach()
     # write into file
@@ -146,9 +149,10 @@ endfunction()
 #                           the working directory is CMAKE_CURRENT_SOURCE_DIR.
 #                           Generator exprssions can be specified.
 #
-# Each <class>.<function> unittest test will be registered as a CTest test of
-# the exact same name, e.g. "<class>.<function>", and automatically have the
-# "Python" label associated with the test, allowing CTest filtering by label.
+# Each <class>.<function> unittest test will be registered as a CTest test with
+# the name "<target>.<class>.<function>", where <target> is the target name. In
+# addition, each test will automatically have the "Python" label associated
+# with the test, allowing CTest filtering by label.
 #
 # Arguments:
 #   target          Test target name
@@ -179,6 +183,7 @@ function(oa_unittest_discover_tests target)
     add_custom_target(
         ${target} ALL
         COMMAND ${CMAKE_COMMAND}
+                -DTARGET_NAME=${target}
                 -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
                 -DOUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}
                 -DOUTPUT_FILE=${target}-$<IF:${is_multi_config},$<CONFIG>,impl>.cmake

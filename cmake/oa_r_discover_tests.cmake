@@ -14,6 +14,7 @@ include_guard(GLOBAL)
 #
 # The following variables must be defined:
 #
+#   TARGET_NAME             Name of the associated CMake target
 #   R_SCRIPT_EXECUTABLE     Path to the Rscript R interpreter frontend
 #   OUTPUT_DIR              Output directory for the .cmake test file
 #   OUTPUT_FILE             Filename of the .cmake test file to write
@@ -43,6 +44,7 @@ function(oa_r_discover_tests_impl)
     # check required variables
     set(
         required_vars
+        TARGET_NAME
         R_SCRIPT_EXECUTABLE
         OUTPUT_DIR OUTPUT_FILE TEST_FILE R_ROOT BINARY_DIR CURRENT_SOURCE_DIR
     )
@@ -85,11 +87,12 @@ function(oa_r_discover_tests_impl)
     # note: see oa_unittest_discover_tests_impl() for a discussion on why the
     # given commands behave differently in CTest
     foreach(test ${test_list})
+        set(test_name "${TARGET_NAME}.${test}")
         string(
             APPEND test_content
-"# ${test}\n"
+"# ${test_name}\n"
 "add_test(\n"
-"    ${test}\n"
+"    ${test_name}\n"
 # first change working directory
 "    \"${CMAKE_COMMAND}\" -E chdir \"${WORKING_DIRECTORY}\"\n"
 # run in modified environment
@@ -101,7 +104,7 @@ function(oa_r_discover_tests_impl)
 ")\n"
 # set test properties. see oa_unittest_discover_tests_impl() for why the
 # set_tests_properties() command is support but set_property() is not
-"set_tests_properties(${test} PROPERTIES LABELS R)\n"
+"set_tests_properties(${test_name} PROPERTIES LABELS R)\n"
         )
     endforeach()
     # write into file
@@ -137,8 +140,9 @@ endfunction()
 #                           Generator expressions can be specified.
 #
 # Each of the R test function names in the named vector of tests passed to
-# oa.tu_main() will be registered as a CTest test of the exact same name and
-# automatically have the "R" label associated with the test.
+# oa.tu_main() will be registered as a CTest test with name "<target>.<name>",
+# where <target> is the name of the CMake target. The test will automatically
+# have the "R" label associated for CTest test filtering.
 #
 # This function is very similar to oa_unittest_discover_tests() conceptually,
 # only differing in some the minor details of running scripts and variables. It
@@ -173,6 +177,7 @@ function(oa_r_discover_tests target)
     add_custom_target(
         ${target} ALL
         COMMAND ${CMAKE_COMMAND}
+                -DTARGET_NAME=${target}
                 -DR_SCRIPT_EXECUTABLE=${R_SCRIPT_EXECUTABLE}
                 -DOUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}
                 -DOUTPUT_FILE=${target}-$<IF:${is_multi_config},$<CONFIG>,impl>.cmake
