@@ -5,8 +5,8 @@
  * @copyright MIT License
  *
  * This file exists just to provide something for `R CMD INSTALL` to compile.
- * We will rely on the `configure` script to provide the actual object files
- * and libraries that are required for linking.
+ * We instead rely on the oa_r_package() CMake function to configure `Makevars`
+ * from `Makevars.in` to provide the object files and libraries to link.
  */
 
 #ifndef __cplusplus
