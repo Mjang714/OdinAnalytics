@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 # xlcall32_stub: a stub implementation of the real Excel XLCALL32 DLL
 #
-# this is provided so that any targets that link against the XLL SDK directly
-# or indirectly can correctly load at runtime. furthermore, any XLCALL32.DLL
-# exported functions called during runtime will complete but simply return an
-# error or failure value like xlRetFailed.
+# this is provided so that any targets that link against the XLL SDK or
+# oa_accel (which links against the XLL SDK implicitly) can correctly load at
+# runtime. furthermore, any XLCALL32.DLL exported function calls will complete,
+# but simply return a invalid/error failure like xlretFailed.
 #
 # see xlcall32_stub.cpp for more details on how the stub should be used.
 #
@@ -24,6 +24,7 @@ else()
 endif()
 
 # add library targets
+add_subdirectory(accel)
 add_subdirectory(config)
 add_subdirectory(dao)
 add_subdirectory(derived_time)

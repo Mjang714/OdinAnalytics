@@ -43,6 +43,17 @@ if(TARGET oxl_api)
         oxl/xl_dictionary_test.cpp
     )
 endif()
+# add oa_accel tests if oa_accel is available
+# note: no need to check if on Windows as oa_accel is Windows-only
+if(TARGET oa_accel)
+    target_sources(
+        oa_unit_test PRIVATE
+        accel/mref12_test.cpp
+        accel/oper12_test.cpp
+        accel/oper12_variant_test.cpp
+        accel/xl_conv_test.cpp
+    )
+endif()
 # add xlcall32_stub tests if xlcall32_stub is available
 if(TARGET xlcall32_stub)
     target_sources(oa_unit_test PRIVATE xlcall32_stub_test.cpp)
@@ -74,16 +85,21 @@ endif()
 if(TARGET xlcall32_stub)
     target_link_libraries(oa_unit_test PRIVATE XLLSDK::SDK12)
 endif()
+# link against oa_accel and XLL SDK as necessary
+if(TARGET oa_accel)
+    target_link_libraries(oa_unit_test PRIVATE oa_accel XLLSDK::SDK)
+endif()
 # ensure before oa_unit_test is built that static data is correctly copied.
 # although we could have hung this as a post-build command, this more correctly
 # chains the dependency of oa_unit_test on the static data being located in the
 # same directory as the project artifacts (for local builds)
 add_dependencies(oa_unit_test oa_copy_static_data)
-#
-# if linking against oxl_api, which indirectly links against XLCALL32.LIB and
-# therefore will require XLCALL32.DLL to be available at runtime, we must have
-# the XLCALL32.DLL stub built before oa_unit_test. otherwise, oa_unit_test will
-# not load correctly when gtest_discover_tests() is called and break the build.
+# ensure that xlcall32_stub is built before oa_unit_test. if linking against
+# oxl_api, which indirectly links against XLCALL32.LIB, or oa_accel, which
+# directly links against XLCALL32.LIB, XLCALL32.DLL needs to be available at
+# runtime. therefore, we must have the XLCALL32.DLL stub built before
+# oa_unit_test. otherwise, oa_unit_test will not load correctly when
+# gtest_discover_tests() is called and break the build.
 #
 # note:
 #
@@ -91,7 +107,7 @@ add_dependencies(oa_unit_test oa_copy_static_data)
 # to XLCALL32.DLL exported functions so the linker likely just stripped out the
 # unused function references as part of its optimization pass.
 #
-if(TARGET oxl_api)
+if(TARGET xlcall32_stub)
     add_dependencies(oa_unit_test xlcall32_stub)
 endif()
 
