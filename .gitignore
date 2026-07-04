@@ -12,3 +12,5 @@
 /packages
 # ignore Vim swap files
 *.swp
+# ignore __pycache__ directories
+**/__pycache__

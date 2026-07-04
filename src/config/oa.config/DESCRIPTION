@@ -1,0 +1,10 @@
+Package: oa.config
+Version: 0.1-0
+Date: 2026-06-12
+Title: OA Config Library
+License: MIT + file LICENSE
+Author: Derek Huang [aut]
+Maintainer: Derek Huang <djh458@stern.nyu.edu>
+Depends: R (>= 4.1.0)
+Description: OA R interface to the OA library configuration helpers. This
+  package requires that the

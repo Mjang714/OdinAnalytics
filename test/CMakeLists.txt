@@ -145,3 +145,34 @@ set_tests_properties(
     OA.ExtUsageRunTest PROPERTIES
     FIXTURES_REQUIRED OA.ExtUsageBuildTest
 )
+
+# oa_config_py tests
+if(TARGET oa_config_py)
+    oa_unittest_discover_tests(oa_config_py_tests TESTS oa_config_test.py)
+    add_dependencies(oa_config_py_tests oa_config_py)
+endif()
+
+# oa_r_testutils: OA R test helpers package
+if(R_FOUND)
+    oa_r_package(
+        oa_r_testutils
+        PACKAGE oa.testutils
+        FILES
+            DESCRIPTION
+            LICENSE
+            NAMESPACE
+            R/sys.R
+            R/tu.R
+    )
+    oa_r_discover_tests(oa_r_testutils_tests TESTS oa_testutils_test.R)
+    add_dependencies(oa_r_testutils_tests oa_r_testutils)
+else()
+    message(STATUS "Skipping oa_r_testutils (requires R)")
+endif()
+
+# oa_config_r_package tests
+if(TARGET oa_config_r_package)
+    oa_r_discover_tests(oa_config_r_tests TESTS oa_config_test.R)
+    # note: since oa.testutils is required we have to let it build first
+    add_dependencies(oa_config_r_tests oa_config_r_package oa_r_testutils)
+endif()

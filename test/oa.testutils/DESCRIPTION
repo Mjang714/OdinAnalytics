@@ -1,0 +1,10 @@
+Package: oa.testutils
+Version: 0.1-0
+Date: 2026-06-08
+Title: OA R Test Utilities
+License: MIT + file LICENSE
+Author: Derek Huang [aut]
+Maintainer: Derek Huang <djh458@stern.nyu.edu>
+Depends: R (>= 4.1.0)
+Description: OA R test utilities for simplifying writing of R unit tests. In
+  particular, it helps with unit testing and CTest integration.
