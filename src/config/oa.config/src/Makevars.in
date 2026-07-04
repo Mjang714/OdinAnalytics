@@ -1,0 +1,16 @@
+# Makevars.in
+#
+# R package Makevars configuration input.
+#
+# This file should be configured by CMake in a pre-build step before the actual
+# R CMD INSTALL step is run to compile dummy.cpp and perform linking.
+#
+# Author: Derek Huang
+# Copyright: MIT License
+#
+
+# preprocessor flags + include directories
+# note: no PKG_CXXFLAGS since dummy.cpp has no actual code
+PKG_CPPFLAGS = @PKG_CPPFLAGS@
+# object files and libraries to link
+PKG_LIBS = @PKG_LIBS@

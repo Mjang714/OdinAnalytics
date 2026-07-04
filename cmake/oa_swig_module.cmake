@@ -1,0 +1,296 @@
+cmake_minimum_required(VERSION 3.21)
+
+##
+# oa_swig_module.cmake
+#
+# SWIG module building helpers that correctly track SWIG dependencies.
+#
+# This module is motivated as a lighter replacement to CMake's UseSWIG module
+# which with Make as the build backend for some reason seems to lose tracking
+# of implicit dependencies if SWIG errors out with CMake 4.l.
+#
+
+##
+# Add SWIG compile options to the list of defaults.
+#
+# The semantics of this function are the same as add_compile_options().
+#
+# Options are picked up by any later target added with oa_swig_cxx_module().
+#
+function(oa_swig_compile_options)
+    set(
+        ODIN_SWIG_COMPILE_OPTIONS
+        ${ODIN_SWIG_COMPILE_OPTIONS} ${ARGN} PARENT_SCOPE
+    )
+endfunction()
+
+##
+# Add SWIG compile definitions to the list of defaults.
+#
+# The semantics of this function are the same as add_compile_definitions().
+#
+# Definitions are picked up by any later target added with oa_swig_cxx_module().
+#
+# Note:
+#
+# SWIG 4.2 finally added the ability to add VAR=value definition. If this
+# syntax is seen in any argument for SWIG < 4.2, a warning is emitted.
+#
+function(oa_swig_compile_definitions)
+    # for SWIG < 4.2, emit a helpful warning on the NAME=value syntax
+    if(SWIG_VERSION VERSION_LESS 4.2)
+        foreach(arg ${ARGN})
+            string(FIND "${arg}" "=" equals_pos)
+            if(NOT equals_pos EQUAL -1)
+                message(
+                    WARNING
+                    "${arg}: NAME=value macro definition cannot be used with "
+"SWIG ${SWIG_VERSION} < 4.2"
+                )
+            endif()
+        endforeach()
+    endif()
+    # prepend -D to every argument in the list that doesn't start with -D
+    foreach(arg ${ARGN})
+        string(FIND "${arg}" "-D" d_pos)
+        if(NOT d_pos EQUAL 0)
+            list(APPEND swig_defs "-D${arg}")
+        else()
+            list(APPEND swig_defs "${arg}")
+        endif()
+    endforeach()
+    # add to existing list in parent scope
+    set(
+        ODIN_SWIG_COMPILE_DEFINITIONS
+        ${ODIN_SWIG_COMPILE_DEFINITIONS} ${swig_defs} PARENT_SCOPE
+    )
+endfunction()
+
+##
+# Add a SWIG dynamic module for wrapping the given target language.
+#
+# By default, the generated .cxx file is written to CMAKE_CURRENT_BINARY_DIR,
+# and the language-specific wrapper files will be placed in the same directory
+# as the final dynamic module built from the SWIG-generated source file.
+#
+# Implicit dependencies are automatically tracked for optimal rebuild. The
+# output library target will be of MODULE type. Additional target properties
+# can be set to customize the build process, e.g.:
+#
+#   SWIG_COMPILE_DEFINITIONS        List of additional SWIG symbols to define.
+#                                   Note that SWIG >=4.2 supports NAME=value.
+#
+#   SWIG_COMPILE_OPTIONS            List of additional SWIG compile options
+#   SWIG_INCLUDE_DIRECTORIES        List of additional SWIG include directories
+#
+# By default the target's INCLUDE_DIRECTORIES property is forwarded to SWIG. To
+# set properties on the SWIG module target and to link libraries, the normal
+# usage of set_target_properties() and target_link_libraries() will work.
+#
+# This function has an advantage over swig_add_library() when using Makefile
+# generators as its use of a custom target to drive the C/C++ generation
+# ensures that when SWIG errors out, the build rule is correctly re-run. The
+# custom target is always out-of-date, and since it is made to depend on the
+# C/C++ generated file, it will ensure incremental builds work properly.
+#
+# Arguments:
+#   target                  Target name
+#   LANGUAGE lang           Target language option, e.g. python, csharp
+#   MODULE module           SWIG .i module file to compile
+#
+#   [OUTPUT_DIR dir]        Output directory for generated language-specific
+#                           files, default is the location of ${target}
+#
+#   [OUTFILE_DIR dir]       Output directory for the generated .cxx wrapper
+#                           file, default CMAKE_CURRENT_BINARY_DIR
+#
+#   [SOURCES sources...]    Additional C/C++ source files to compile
+#   [CXX]                   Run SWIG in C++ wrapping mode
+#   [DOXYGEN]               Run with -doxygen option for Python/Java
+#   [NAMESPACE]             Run with -namespace option for R
+#
+#   [STATIC]                Build target as static PIC library for later
+#                           linking. This is useful for R as the objects can be
+#                           linked into the final DSO by R CMD INSTALL.
+#
+function(oa_swig_module target)
+    # parse arguments
+    cmake_parse_arguments(
+        ARG
+        "CXX;DOXYGEN;NAMESPACE;STATIC"
+        "LANGUAGE;MODULE;OUTPUT_DIR;OUTFILE_DIR"
+        "SOURCES"
+        ${ARGN}
+    )
+    # check for unknown args
+    if(ARG_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "unrecognized arguments: ${ARG_UNPARSED_ARGUMENTS}")
+    endif()
+    # SWIG is of course required
+    if(NOT SWIG_EXECUTABLE)
+        message(FATAL_ERROR "SWIG_EXECUTABLE required for invoking SWIG")
+    endif()
+    # supported languages
+    set(valid_langs python r)
+    # LANGUAGE is required + must be one of the supported languages
+    if(NOT ARG_LANGUAGE)
+        message(FATAL_ERROR "LANGUAGE argument required")
+    endif()
+    if(NOT ARG_LANGUAGE IN_LIST valid_langs)
+        message(FATAL_ERROR "unsupported SWIG language ${ARG_LANGUAGE}")
+    endif()
+    # MODULE required
+    if(NOT ARG_MODULE)
+        message(FATAL_ERROR "MODULE argument required")
+    endif()
+    # OUTPUT_DIR defaults to the location of ${target}
+    if(NOT ARG_OUTPUT_DIR)
+        set(ARG_OUTPUT_DIR "$<TARGET_FILE_DIR:${target}>")
+    endif()
+    # OUTFILE_DIR defaults to CMAKE_CURRENT_BINARY_DIR
+    if(NOT ARG_OUTFILE_DIR)
+        set(ARG_OUTFILE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+    # build options from parameters
+    if(ARG_CXX)
+        list(APPEND swig_local_opts -c++)
+        set(swig_ext ".cxx")
+    else()
+        set(swig_ext ".c")
+    endif()
+    # generator expression for the target base name including the prefix
+    set(
+        target_file_stem
+        "$<TARGET_FILE_PREFIX:${target}>$<TARGET_FILE_BASE_NAME:${target}>"
+    )
+    # language-specific options
+    if(ARG_LANGUAGE STREQUAL "python")
+        # parse C++ Doxygen comments for docstrings
+        if(ARG_DOXYGEN)
+            list(APPEND swig_local_opts -doxygen)
+        endif()
+        # if SWIG < 4.2 we add the -py3 options
+        if(SWIG_VERSION VERSION_LESS 4.2)
+            list(APPEND swig_local_opts -py3)
+        endif()
+        # ensure that the MODULE target name is passed to SWIG as it may not be
+        # the same as _ + the value of %module in the .i file. we use target
+        # generator expression for this in case subsequent changes to the
+        # target's PREFIX and OUTPUT_NAME are made
+        list(APPEND swig_local_opts -interface "${target_file_stem}")
+    elseif(ARG_LANGUAGE STREQUAL "r")
+        # R requires that the package name is exactly the stem of the DSO so
+        # we need to use -module to overwrite the %module directive in case
+        # changes are made to OUTPUT_NAME, etc. even with the current mainline
+        # SWIG 4.5.0 attempting to set -package to a different value results in
+        # an error about attempting to copy a non-DOH object. the -dll option
+        # also isn't really helpful as it doesn't affect the package name
+        list(APPEND swig_local_opts -module "${target_file_stem}")
+        # generate a NAMESPACE file for a package
+        if(ARG_NAMESPACE)
+            list(APPEND swig_local_opts -namespace)
+        endif()
+    endif()
+    # uppercase language + filename + stem + absolute path of the SWIG module
+    string(TOUPPER "${ARG_LANGUAGE}" lang_upper)
+    cmake_path(GET ARG_MODULE FILENAME module_file)
+    cmake_path(GET ARG_MODULE STEM module_stem)
+    cmake_path(ABSOLUTE_PATH ARG_MODULE OUTPUT_VARIABLE module_path)
+    # read file and match the %module directive's value
+    # note: not always needed for every language but is a useful check
+    file(READ "${module_path}" module_name)
+    set(module_regex "%module[ \t]*(\\([^(]+\\))?[ \t]+([a-zA-Z0-9_]+)")
+    string(REGEX MATCH "${module_regex}" module_name "${module_name}")
+    string(REGEX REPLACE "${module_regex}" "\\2" module_name "${module_name}")
+    # check
+    if(NOT module_name)
+        message(
+            FATAL_ERROR
+            "missing or malformed %module directive in ${module_file}"
+        )
+    endif()
+    # target type
+    if(ARG_STATIC)
+        set(target_type STATIC)
+    else()
+        set(target_type MODULE)
+    endif()
+    # target with the target sources
+    add_library(${target} ${target_type} ${ARG_SOURCES})
+    # ensure static library has position-independent objects
+    if(ARG_STATIC)
+        set_target_properties(
+            ${target} PROPERTIES
+            POSITION_INDEPENDENT_CODE TRUE
+        )
+    endif()
+    # Python-specific changes
+    if(ARG_LANGUAGE STREQUAL "python")
+        # follow SWIG convention by ensuring binary stem is always _${target}
+        set_target_properties(
+            ${target} PROPERTIES
+            PREFIX "" OUTPUT_NAME "_${target}"
+        )
+        # Python extensions use .pyd suffix on Windows
+        if(WIN32)
+            set_target_properties(${target} PROPERTIES SUFFIX ".pyd")
+        endif()
+    # R-specific changes
+    elseif(ARG_LANGUAGE STREQUAL "r")
+        # ensure that output name is exactly that of the %module directive. R
+        # requires that the DSO have the same name as the package
+        set_target_properties(
+            ${target} PROPERTIES
+            PREFIX "" OUTPUT_NAME "${module_name}"
+        )
+    endif()
+    # helper SWIG compile definitions + include directories genex
+    set(swig_defs "$<TARGET_PROPERTY:${target},SWIG_COMPILE_DEFINITIONS>")
+    set(swig_dirs "$<TARGET_PROPERTY:${target},SWIG_INCLUDE_DIRECTORIES>")
+    set(tgt_includes "$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>")
+    # output + dependency file paths
+    set(
+        swig_output
+        "${ARG_OUTFILE_DIR}/${module_stem}${lang_upper}_wrap${swig_ext}"
+    )
+    set(
+        swig_depfile
+        "${CMAKE_CURRENT_BINARY_DIR}/${module_stem}${lang_upper}_wrap.d"
+    )
+    # custom command for the SWIG output file
+    add_custom_command(
+        OUTPUT "${swig_output}"
+        COMMAND ${SWIG_EXECUTABLE}
+                # SWIG compile definition defaults
+                ${ODIN_SWIG_COMPILE_DEFINITIONS}
+                # expand NAME[=value] defs into -DNAME[=value] if any
+                $<$<BOOL:${swig_defs}>:-D$<JOIN:${swig_defs},$<SEMICOLON>-D>>
+                # prepend -I onto SWIG + target include directories if any
+                $<$<BOOL:${swig_dirs}>:-I$<JOIN:${swig_dirs},$<SEMICOLON>-I>>
+                $<$<BOOL:${tgt_includes}>:-I$<JOIN:${tgt_includes},$<SEMICOLON>-I>>
+                # SWIG compile option defaults + language + local options
+                ${ODIN_SWIG_COMPILE_OPTIONS}
+                -${ARG_LANGUAGE}
+                ${swig_local_opts}
+                # SWIG compile options on target
+                $<TARGET_PROPERTY:${target},SWIG_COMPILE_OPTIONS>
+                -MMD -MF ${swig_depfile}
+                -outdir ${ARG_OUTPUT_DIR}
+                -o ${swig_output}
+                ${module_path}
+        COMMENT "SWIG ${swig_ext} compile ${module_file}"
+        DEPFILE ${swig_depfile}
+        VERBATIM
+        COMMAND_EXPAND_LISTS
+    )
+    # add the SWIG output to the target
+    target_sources(${target} PRIVATE "${swig_output}")
+    # use custom target to drive the SWIG generation. the target is always out
+    # of date so the SWIG output rule will be checked each build, ensuring that
+    # the MODULE target is correctly rebuilt when SWIG errors. Makefile
+    # generators seem to have a problem where if the target directly depends on
+    # the SWIG .cxx file, if SWIG errored out and did not write a depfile, the
+    # custom rule would not be reliably re-run, breaking incremental builds.
+    add_custom_target(${target}_driver DEPENDS "${swig_output}")
+    add_dependencies(${target} ${target}_driver)
+endfunction()
