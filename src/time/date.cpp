@@ -1,335 +1,386 @@
 #include "date.h"
 
 #include <chrono>
-#include <compare>
 #include <ctime>
+#include <limits>
+#include <stdexcept>
 #include <string>
 #include <tuple>
-#include <vector>
 
-#include <boost/algorithm/string.hpp>
-
-#include "oa/platform.h"
 #include "helpers/utils.h"
-#include "time/tenor.h"
-#include "time/time_enums.h"
+#include "oa/platform.h"
+#include "oa/time/tenor.h"
+#include "oa/time/enums.h"
 
 #if OA_HAS_CPP20_FORMAT
 #include <format>
 #endif  // !OA_HAS_CPP20_FORMAT
 
-namespace oa::time
+namespace oa::time {
+
+// TODO: need sanity checks on the year, month, and day values
+Date::Date(int year, unsigned month, unsigned day)
 {
+	// check that number of days is valid
+	// note: DaysInMonth() will throw if the month value is invalid
+	if (!day || day > DaysInMonth(year, month))
+		throw std::runtime_error{"invalid day number " + std::to_string(day)};
+	// all good, so convert to Julian day
+	julian_ = ConvertToJulian(year, month, day);
+}
 
-	Date::Date(const int year, const int month, const int day) : m_days_(day), m_months_(month), m_years_(year), m_julian_int_(ConvertToJulian(year, month, day))
+Date::Date(std::string_view ymd)
+{
+	// check if a character is an ASCII digit
+	// TODO: add an equivalent function in oa/string.h
+	auto is_digit = [](char c) noexcept
 	{
-
-	}
-
-	Date::Date(const std::string& date_str)
+		return (c >= '0') && (c <= '9');
+	};
+	// check if date is one of the valid delimiters
+	auto is_delim = [](char c) noexcept
 	{
-		std::vector <std::string> split_date_str{};
-
-		if (utils::CheckDateStr(date_str))
-		{
-			boost::split(split_date_str, date_str, boost::is_any_of("\\-\\/:"));
-			this->m_years_ = std::stoi(split_date_str.at(0));
-			this->m_months_ = std::stoi(split_date_str.at(1));
-			this->m_days_ = std::stoi(split_date_str.at(2));
-			this->m_julian_int_ = ConvertToJulian(m_years_, m_months_, m_days_);
+		switch (c) {
+		case '/':
+		case '-':
+		case ':':
+			return true;
+		default:
+			return false;
 		}
+	};
+	// parse the date string components
+	auto n_begin = ymd.begin();
+	auto n_end = ymd.begin();
+	// parse year
+	while (n_end != ymd.end() && is_digit(*n_end))
+		n_end++;
+	// error if range is empty or delimiter is invalid
+	// note: n_begin == n_end also catches case of empty date string
+	if (n_begin == n_end)
+		throw std::runtime_error{"date missing year component"};
+	if (!is_delim(*n_end))
+		throw std::runtime_error{"encountered invalid year delimiter"};
+	// save as current date delimiter + convert year
+	auto delim = *n_end;
+	// TODO: kind of inefficient to create a new temporary string
+	auto y = std::stoi(std::string{n_begin, n_end});
+	// parse month
+	n_begin = ++n_end;
+	while (n_end != ymd.end() && is_digit(*n_end))
+		n_end++;
+	// error if range is empty or delimiter is invalid
+	if (n_begin == n_end)
+		throw std::runtime_error{"date missing month component"};
+	if (*n_end != delim)
+		throw std::runtime_error{"encountered invalid/inconsistent month delimiter"};
+	// convert month
+	// TODO: kind of inefficient to create a new temporary string
+	auto m = std::stoi(std::string{n_begin, n_end});
+	// parse day
+	n_begin = ++n_end;
+	while (n_end != ymd.end() && is_digit(*n_end))
+		n_end++;
+	// error if range is empty or didn't reach end of string
+	if (n_begin == n_end)
+		throw std::runtime_error{"date missing day component"};
+	if (n_end != ymd.end())
+		throw std::runtime_error{"date string contains extra characters"};
+	// convert day
+	// TODO: kind of inefficient to create a new temporary string
+	auto d = std::stoi(std::string{n_begin, n_end});
+	// check that number of days is valid
+	// note: DaysInMonth() will throw if the month value is invalid
+	if (!d || d > DaysInMonth(y, m))
+		throw std::runtime_error{"invalid day number " + std::to_string(d)};
+	// convert to Julian date
+	julian_ = ConvertToJulian(y, m, d);
+}
 
-		else
-		{
-			throw std::invalid_argument{
-				"Invalid date string please check your string input!: " + date_str
-			};
-		}
+Date::Date(const time_point& tp)
+{
+	auto [y, m, d] = YMD(tp);
+	julian_ = ConvertToJulian(y, m, d);
+}
 
-	}
+Date::year_month_day
+Date::YMD(const time_point& tp)
+{
+	// convert to std::time_t integral time
+	auto c_time = std::chrono::system_clock::to_time_t(tp);
+	// get pointer to std::tm in GMT (UTC) and return time tuple
+	auto c_tm = std::gmtime(&c_time);
+	return {1900 + c_tm->tm_year, 1 + c_tm->tm_mon, c_tm->tm_mday};
+}
 
-	Date::Date(const int& julian_int) : m_julian_int_(julian_int)
-	{
-		std::tuple<int, int, int> results = ConvertToGregInt(julian_int);
-		PopulateYMDFromTuple(results);
+Date::year_month_day
+Date::YMD(const int julian_day) noexcept
+{
+	int y = 4716, j = 1401, m = 2,   n = 12, r = 4,      p = 1461,
+		v = 3,    u = 5,    s = 153, w = 2,  B = 274277, C = -38;
 
-	}
+	int f = julian_day + j + (((4 * julian_day + B) / 146097) * 3) / 4 + C;
+	int e = r * f + v;
+	int g = (e % p) / r;
+	int h = u * g + w;
 
-	Date::Date(const std::chrono::system_clock::time_point& time_point)
-	{
-		std::tuple<int, int, int> results = ConvertToGregInt(time_point);
-		PopulateYMDFromTuple(results);
-		this->m_julian_int_ = ConvertToJulian(this->m_years_, this->m_months_, this->m_days_);
-	}
+	int computed_days = (h % s) / u + 1;
+	int computed_months = (((h / s) + m) % n) + 1;
+	int computed_years = (e / p) - y + (n + m - computed_months) / n;
 
-	void Date::PopulateYMDFromTuple(const std::tuple<int, int, int>& results)
-	{
-		this->m_years_ = std::get<0>(results);
-		this->m_months_ = std::get<1>(results);
-		this->m_days_ = std::get<2>(results);
-	}
+	return {computed_years, computed_months, computed_days};
+}
 
-	std::tuple<int, int, int> Date::ConvertToGregInt(
-		const std::chrono::system_clock::time_point& time_point)
-	{
-		// convert to std::time_t integral time
-		auto c_time = std::chrono::system_clock::to_time_t(time_point);
-		// get pointer to std::tm in GMT (UTC) and return time tuple
-		auto c_tm = std::gmtime(&c_time);
-		return {1900 + c_tm->tm_year, 1 + c_tm->tm_mon, c_tm->tm_mday};
-	}
+int
+Date::ConvertToJulian(int year, int month, int day) noexcept
+{
+	return (1461 *(year + 4800 + (month - 14) / 12)) / 4 +
+		(367 *(month - 2 - 12 *((month - 14) / 12))) / 12 -
+		(3 *((year + 4900 + (month - 14) / 12) / 100)) / 4
+		+ day - 32075;
+}
 
-	std::tuple<int, int, int> Date::ConvertToGregInt(const int julian_day)
-	{
-		int y = 4716, j = 1401, m = 2,   n = 12, r = 4,      p = 1461,
-			v = 3,    u = 5,    s = 153, w = 2,  B = 274277, C = -38;
+int
+Date::GetJulian() const
+{
+	return julian_;
+}
 
-		int f = julian_day + j + (((4 * julian_day + B) / 146097) * 3) / 4 + C;
-		int e = r * f + v;
-		int g = (e % p) / r;
-		int h = u * g + w;
+int Date::GetDOWInt() const
+{
+	return GetDOWInt(julian_);
+}
 
-		int computed_days = (h % s) / u + 1;
-		int computed_months = (((h / s) + m) % n) + 1;
-		int computed_years = (e / p) - y + (n + m - computed_months) / n;
+int Date::GetDOWInt(int julian_date)
+{
+	// FIXME: may need a +1 according to Wikipedia
+	return julian_date % 7;
+}
 
-		return {computed_years, computed_months, computed_days};
-	}
+Date::time_point
+Date::ConvertToTimePt() const
+{
+	return ConvertToTimePt(*this);
+}
 
-	int Date::ConvertToJulian(int year, int month, int day)
-	{
-		return (1461 *(year + 4800 + (month - 14) / 12)) / 4 +
-			(367 *(month - 2 - 12 *((month - 14) / 12))) / 12 -
-			(3 *((year + 4900 + (month - 14) / 12) / 100)) / 4
-			+ day - 32075;
+Date::time_point
+Date::ConvertToTimePt(const Date& date)
+{
+	std::tm time_point_result {};
 
-	}
+	auto [y, m, d] = YMD(date.julian());
 
-	int Date::GetJulian() const
-	{
-		return m_julian_int_;
-	}
+	time_point_result.tm_year = y - 1900;
+	time_point_result.tm_mon = m - 1;
+	time_point_result.tm_mday = d;
+	time_point_result.tm_hour = 0;
+	time_point_result.tm_min = 0;
+	time_point_result.tm_sec = 0;
+	time_point_result.tm_isdst = -1;
 
-	int Date::GetDOWInt() const
-	{
-		return GetDOWInt(m_julian_int_);
-	}
+	return std::chrono::system_clock::from_time_t(std::mktime(&time_point_result));
+}
 
-	int Date::GetDOWInt(int julian_date)
-	{
-		return julian_date % 7;
-	}
-
-	std::chrono::system_clock::time_point Date::ConvertToTimePt(void) const
-	{
-		return ConvertToTimePt(*this);
-	}
-
-	std::chrono::system_clock::time_point Date::ConvertToTimePt(const Date& given_date)
-	{
-		std::tm time_point_result {};
-
-		time_point_result.tm_year = given_date.m_years_ - 1900;
-		time_point_result.tm_mon = given_date.m_months_ - 1;
-		time_point_result.tm_mday = given_date.m_days_;
-		time_point_result.tm_hour = 0;
-		time_point_result.tm_min = 0;
-		time_point_result.tm_sec = 0;
-		time_point_result.tm_isdst = -1;
-
-		return std::chrono::system_clock::from_time_t(std::mktime(&time_point_result));
-	}
-
-	std::string Date::ToString() const
-	{
+std::string
+Date::ToString() const
+{
+	auto [y, m, d] = YMD(julian_);
 #if OA_HAS_CPP20_FORMAT
-		return std::format(
-			"{}-{}-{} : Julian Integer = {}",
-			std::to_string(m_years_),
-			std::to_string(m_months_),
-			std::to_string(m_days_),
-			std::to_string(m_julian_int_)
-		);
+	return std::format("{}-{}-{} : Julian Integer = {}", y, m, d, julian_);
 #else
-		return
-			std::to_string(m_years_) + "-" + std::to_string(m_months_) + "-" +
-			std::to_string(m_days_) + " : Julian Integer = " +
-			std::to_string(m_julian_int_);
+	return
+		std::to_string(y) + "-" + std::to_string(m) + "-" + std::to_string(d) +
+		" : Julian Integer = " + std::to_string(julian_);
 #endif  // !OA_HAS_CPP20_FORMAT
+}
+
+bool
+Date::IsLeap() const noexcept
+{
+	// note: silence warnings about m, d being unused
+	[[maybe_unused]] auto [y, m, d] = YMD(julian_);
+	return IsLeap(y);
+}
+
+bool
+Date::IsLeap(int year) noexcept
+{
+	return (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0));
+}
+
+unsigned
+Date::DaysInMonth(int year, unsigned month)
+{
+	// sanity check
+	if (month < 1 || month > 12)
+		throw std::runtime_error("month must be in the range [1, 12]");
+	// simple switch
+	switch (month) {
+	case 2:
+		return (IsLeap(year)) ? 29 : 28;
+	case 4:
+	case 6:
+	case 9:
+	case 11:
+		return 30;
+	default:
+		return 31;
 	}
+}
 
-	bool Date::IsLeap() const
+Date Date::SubTenor(const Tenor& tenor) const
+{
+	return *this - tenor;
+}
+
+Date Date::AddTenor(const Tenor& tenor) const
+{
+	return *this + tenor;
+}
+
+Date
+Date::AddDays(int days) const noexcept
+{
+	return Date(julian_ + days);
+}
+
+Date
+Date::AddWeeks(int weeks) const noexcept
+{
+	return Date(julian_ + 7 * weeks);
+}
+
+Date
+Date::AddMonths(int months) const
+{
+	// get Gregorian year, month, day
+	auto [year, month, day] = YMD(julian_);
+	// compute the numbers of years + months
+	int new_year = 0;
+	int new_month = 0;
+	if (months > 0)
 	{
-		return IsLeap(m_years_);
-	}
-
-	bool Date::IsLeap( int year)
-	{
-		return  (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0));
-	}
-
-	int Date::DaysInMonth( int month, int year)
-	{
-
-		if (month == 2)
+		new_year = year + (month + months) / 12;
+		new_month = (month + months) % 12;
+		//added this for when you are in june add 6M then land in decmebr but the year counter increments :S
+		if (new_month <= 0)
 		{
-			return (IsLeap(year)) ? 29 : 28;
+			new_month = new_month + 12;
+			new_year--;
 		}
-		else if (month == 4 || month == 6 || month == 9 || month == 11)
-		{
-			return 30;
-		}
-
-		else
-		{
-			return 31;
-		}
 	}
-
-	Date Date::SubTenor(const oa::time::Tenor& tenor) const
+	else
 	{
-		return AddTenor(tenor.FlipSign());
-	}
-
-	Date Date::AddTenor(const oa::time::Tenor& tenor) const
-	{
-		auto [lenght_of_time, tenor_enum] = tenor.GetValues();
-
-		switch(tenor_enum)
+		new_year = year + (month + months) / 12;
+		new_month = (month + months) % 12;
+		if (new_month < 1)
 		{
-			case oa::time::Tenors::kDays:
-				return AddDays(lenght_of_time);
-
-			case oa::time::Tenors::kWeeks:
-				return AddWeeks(lenght_of_time);
-
-			case oa::time::Tenors::kMonths:
-				return AddMonths(lenght_of_time);
-
-			case oa::time::Tenors::kYears:
-				return AddYears(lenght_of_time);
-
-			default:
-				throw "Not a valid Tenor please check input tenor of:" + utils::GetCleanName(tenor_enum);
-		}
-	}
-
-	Date Date::AddDays(const int& time_length) const
-	{
-		return Date(GetJulian() + time_length);
-	}
-
-	Date Date::AddWeeks(const int& time_length) const
-	{
-		return Date(GetJulian() + time_length * 7);
-	}
-
-	Date Date::AddMonths(const int& time_length) const
-	{
-		int new_day(0), new_month(0), new_year(0);
-
-		//compute the numbers of years
-		if (time_length > 0)
-		{
-			new_year = m_years_ + (m_months_ + time_length) / 12;
-			new_month = (m_months_ + time_length) % 12;
-			//added this for when you are in june add 6M then land in decmebr but the year counter increments :S
-			if (new_month <= 0)
-			{
-				new_month = new_month + 12;
-				new_year--;
-			}
-		}
-
-		else
-		{
-			new_year = m_years_ + (m_months_ + time_length) / 12;
-			new_month = (m_months_ + time_length) % 12;
-			if (new_month < 1)
-			{
-				new_year += -1;
-			}
-
-			//check for when we add negative dates
-			if (new_month <= 0)
-			{
-				new_month = new_month + 12;
-			}
+			new_year += -1;
 		}
 
-		//logic to check the day part is right
-		new_day = m_days_;
-		if (new_day > DaysInMonth(new_month, new_year))
+		//check for when we add negative dates
+		if (new_month <= 0)
 		{
-			new_day = DaysInMonth(new_month, new_year);
+			new_month = new_month + 12;
 		}
-
-		return Date(new_year, new_month, new_day);
 	}
-
-	Date Date::AddYears(const int& time_length) const
+	// logic to check the day part is right
+	auto new_day = day;
+	// note: DaysInMonth() should not throw here
+	if (new_day > DaysInMonth(new_year, new_month))
 	{
-		int new_day(0), new_month(0), new_year(0);
-		new_year = m_years_ + time_length;
-		new_month = m_months_;
-		new_day = m_days_;
-
-		//if it is not leap year then check to see if this
-		if (!IsLeap(new_year) && (new_month == 2))
-		{
-
-			new_day = (new_day > DaysInMonth(new_month, new_year)) ? DaysInMonth(new_month, new_year) : new_day;
-
-		}
-
-		return Date(new_year, new_month, new_day);
+		new_day = DaysInMonth(new_year, new_month);
 	}
+	// create from new Gregorian year, month, day
+	// TODO: deal with narrowing issue
+	return Date(new_year, new_month, new_day);
+}
 
-	Date Date::SubDays(const int& time_length) const
+Date
+Date::AddYears(int years) const
+{
+	// get Gregorian year, month, day + add years
+	auto [year, month, day] = YMD(julian_);
+	year += years;
+	//if it is not leap year then check to see if this
+	// TODO: not sure what the above comment means. but looks like a special
+	// check to handle February when we aren't in a leap year
+	if (!IsLeap(year) && (month == 2))
 	{
-		return AddDays(-time_length);
+		auto month_days = DaysInMonth(year, month);
+		day = (day > month_days) ? month_days : day;
 	}
+	// TODO: deal with narrowing issue
+	return Date(year, month, day);
+}
 
-	Date Date::SubWeeks(const int& time_length) const
-	{
-		return AddWeeks(-time_length);
-	}
+int
+Date::julian() const noexcept
+{
+	return julian_;
+}
 
-	Date Date::SubMonths(const int& time_length) const
-	{
-		return AddMonths(-time_length);
-	}
+Date::year_month_day
+Date::gregorian() const
+{
+	return YMD(julian_);
+}
 
-	Date Date::SubYears(const int& time_length) const
-	{
-		return AddYears(-time_length);
-	}
+int
+Date::year() const
+{
+	return std::get<0>(gregorian());
+}
 
-	int Date::julian() const noexcept
-	{
-		return m_julian_int_;
-	}
+int
+Date::month() const
+{
+	return std::get<1>(gregorian());
+}
 
-	Date::operator bool() const noexcept
-	{
-		return !!m_julian_int_;
-	}
+int
+Date::day() const
+{
+	return std::get<2>(gregorian());
+}
 
-	Date Date::value_or(Date other) const noexcept
-	{
-		return (*this) ? *this : other;
-	}
+Date::operator bool() const noexcept
+{
+	return julian_ < 0;
+}
 
-	// defining operator overloading
-	bool Date::operator==(const Date& right_value) const
-	{
-		return std::is_eq(m_julian_int_ <=> right_value.m_julian_int_);
-	}
+Date
+Date::value_or(Date other) const noexcept
+{
+	// note: 0 is technically still a valid Julian day number
+	return (julian_ > 0) ? *this : other;
+}
 
-	std::strong_ordering Date::operator<=>(const Date& right_value) const
-	{
-		return m_julian_int_ <=> right_value.m_julian_int_;
+Date
+Date::operator+(const Tenor& tenor) const
+{
+	switch (tenor.unit()) {
+	case Tenors::kDays:
+		return AddDays(tenor.count());
+	case Tenors::kWeeks:
+		return AddWeeks(tenor.count());
+	case Tenors::kMonths:
+		return AddMonths(tenor.count());
+	case Tenors::kYears:
+		return AddYears(tenor.count());
+	default:
+		throw std::runtime_error{
+			"Not a valid Tenor please check input tenor of:" +
+			utils::GetCleanName(tenor.unit())
+		};
 	}
+}
+
+Date
+Date::operator-(const Tenor& tenor) const
+{
+	return *this + -tenor;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // operators                                                                  //
@@ -343,6 +394,11 @@ Date operator+(const Date& date, int days) /*noexcept*/
 Date operator+(int days, const Date& date) /*noexcept*/
 {
 	return date + days;
+}
+
+Date operator+(const Tenor& tenor, const Date& date)
+{
+	return date + tenor;
 }
 
 Date operator-(const Date& date, int days) /*noexcept*/
