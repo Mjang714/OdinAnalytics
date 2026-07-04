@@ -11,8 +11,8 @@ namespace
 		EXPECT_ANY_THROW(oa::time::Date("12-10-2007"));
 		EXPECT_ANY_THROW(oa::time::Date("12-10-2OO7"));
 		EXPECT_ANY_THROW(oa::time::Date("12-00-2007"));
-		EXPECT_ANY_THROW(oa::time::Date("12-32-2007"));
-		EXPECT_ANY_THROW(oa::time::Date("2-30-2008"));
+		EXPECT_ANY_THROW(oa::time::Date("2007-12-32"));
+		EXPECT_ANY_THROW(oa::time::Date("2008-2-30"));
 	}
 
 	TEST(DateClassTest, ValidContructor)
@@ -20,8 +20,8 @@ namespace
 		EXPECT_NO_THROW(oa::time::Date("1900-12-04"));
 		EXPECT_NO_THROW(oa::time::Date("1900:12:04"));
 		EXPECT_NO_THROW(oa::time::Date("1900/12/04"));
-		EXPECT_NO_THROW(oa::time::Date("12-31-2007"));
-		EXPECT_NO_THROW(oa::time::Date("2-28-2008"));
+		EXPECT_NO_THROW(oa::time::Date("2007-12-31"));
+		EXPECT_NO_THROW(oa::time::Date("2008-2-28"));
 
 	}
 
