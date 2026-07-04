@@ -95,7 +95,7 @@ public:
    * Return a view of the company or developer string if present.
    *
    * This typically returns `"OA Developers"`. On Windows, this corresponds to
-   * the resource sub-block `StringFileInfo\040904E4\CompanyName`, while on
+   * the resource sub-block `StringFileInfo\\040904E4\\CompanyName`, while on
    * Unix-likes, it corresponds to the `oa.company` ELF object section.
    *
    * If not present an empty view is returned.
@@ -106,7 +106,7 @@ public:
    * Return a view of the description string if present.
    *
    * This should be a short string description of the binary file. On Windows,
-   * this is the `StringFileInfo\040904E4\FileDescription` resource, while on
+   * this is the `StringFileInfo\\040904E4\\FileDescription` resource, while on
    * Unix-likes, it corresponds to the `oa.description` ELF object section.
    *
    * If not present an empty view is returned.
@@ -117,7 +117,7 @@ public:
    * Return a view of the binary file's original file name.
    *
    * This is the name of the file bestowed at build time. On Windows, this is
-   * the `StringFileInfo\040904E4\OriginalFileName` resource, while on Unix-
+   * the `StringFileInfo\\040904E4\\OriginalFileName` resource, while on Unix-
    * likes, it corresponds to the `oa.filename` ELF object section.
    *
    * If not present an empty view is returned.
@@ -129,7 +129,7 @@ public:
    *
    * This represents the overall product suite that the binary is part of. For
    * example, this might return `"OA Software Suite"`. On Windows, this
-   * corresponds to the resource `StringFileInfo\040904E4\ProductName`, while
+   * corresponds to the resource `StringFileInfo\\040904E4\\ProductName`, while
    * on Unix-likes, it corresponds to the `oa.product` ELF object section.
    *
    * If not present an empty view is returned.
@@ -141,7 +141,7 @@ public:
    *
    * This consists of the full version number as well as any build metadata.
    * For example, "0.1.0-14c2052" for a development build. On Windows, this
-   * corresponds to the `StringFileInfo\040904E4\ProductVersion` field, which
+   * corresponds to the `StringFileInfo\\040904E4\\ProductVersion` field, which
    * means the string values will be in the Windows code page 1252 encoding.
    *
    * On Unix-likes this corresponds to the `oa.version` ELF object section.

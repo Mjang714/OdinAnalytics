@@ -77,7 +77,11 @@ include(CTest)
 
 include(oa_embed_version_info)
 include(oa_pdb_install)
+include(oa_r_discover_tests)
+include(oa_r_package)
 include(oa_repair_gtest_version)
+include(oa_swig_module)
+include(oa_unittest_discover_tests)
 include(oa_unity_enable_unique_id)
 
 # find Boost [headers]
@@ -121,14 +125,6 @@ else()
     message(STATUS "GoogleMock version: None")
 endif()
 
-# find Python 3. this is required for code generation (bindings too later on)
-find_package(Python3 3.10 COMPONENTS Interpreter)
-if(Python3_FOUND)
-    message(STATUS "Python version: ${Python3_VERSION}")
-else()
-    message(STATUS "Python version: None")
-endif()
-
 # look for Excel 2013 XLL SDK
 # note: we don't actually need the GENERIC sample XLL but it is a nice example
 if(WIN32)
@@ -143,6 +139,71 @@ if(XLLSDK_FOUND)
     endif()
 else()
     message(STATUS "XLL SDK version: None")
+endif()
+
+# look for Python 3 interpreter + development headers/libraries
+# note: 32-bit Python is almost never used now
+# note: to force FindPython3 to only look in venv set Python3_FIND_VIRTUALENV
+# to ONLY. by default, FindPython3 will still look outside a venv for Python
+find_package(Python3 3.10 COMPONENTS Interpreter Development)
+# FindPython3 does an architecture check when Interpreter and Development are
+# both specified. however, since oxlgen.py is agnostic to whether the Python
+# used is 32- or 64-bit, this is overly restrictive; we can build a 32-bit
+# Excel add-in with a 64-bit Python. so this time we only look for interpreter
+if(NOT Python3_FOUND)
+    find_package(Python3 3.10 COMPONENTS Interpreter)
+endif()
+# report
+if(Python3_FOUND)
+    # compute Python architecture. sys.maxsize is the max value of the signed
+    # Py_ssize_t so we need to count an extra bit and take log of maxsize + 1
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -c
+                "import math; import sys; print(1 + int(math.log2(sys.maxsize + 1)))"
+        OUTPUT_VARIABLE ODIN_PYTHON_ARCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND_ERROR_IS_FATAL ANY
+    )
+    # print messages
+    message(STATUS "Python version: ${Python3_VERSION}")
+    message(STATUS "Python architecture: ${ODIN_PYTHON_ARCH}")
+    if(Python3_Development_FOUND)
+        message(STATUS "Python libraries: Yes")
+    else()
+        message(STATUS "Python libraries: No")
+    endif()
+else()
+    message(STATUS "Python version: None")
+endif()
+
+# find the R executables + development artifacts
+find_package(R 4.1 COMPONENTS Interpreter OPTIONAL_COMPONENTS Development)
+if(R_FOUND)
+    message(STATUS "R version: ${R_VERSION}")
+    # architecture
+    if(R_64BIT)
+        message(STATUS "R architecture: 64")
+    else()
+        message(STATUS "R architecture: 32")
+    endif()
+    # library
+    if(TARGET R::libR)
+        message(STATUS "R libraries: Yes")
+    else()
+        message(STATUS "R libraries: No")
+    endif()
+else()
+    message(STATUS "R version: None")
+endif()
+
+# look for SWIG
+# note: we don't use UseSWIG since swig_add_library() fails to correctly re-run
+# incremental builds with Makefile generators. see oa_swig_module.cmake
+find_package(SWIG 4.0 OPTIONAL_COMPONENTS python r)
+if(SWIG_FOUND)
+    message(STATUS "SWIG version: ${SWIG_VERSION}")
+else()
+    message(STATUS "SWIG version: None")
 endif()
 
 # set compiler-specific definitions and options
@@ -193,6 +254,11 @@ else()
     )
 endif()
 
+# SWIG-specific default compile options
+if(SWIG_FOUND)
+    oa_swig_compile_options(-Wall)
+endif()
+
 # major, minor, patch version components
 set(ODIN_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
 set(ODIN_MINOR_VERSION ${PROJECT_VERSION_MINOR})
@@ -227,6 +293,8 @@ set(ODIN_VERSION "${ODIN_MAJOR_VERSION}.${ODIN_MINOR_VERSION}.${ODIN_PATCH_VERSI
 if(NOT ODIN_BUILD_RELEASE)
     string(APPEND ODIN_VERSION "-${ODIN_BUILD_INFO}")
 endif()
+# set Python version string (use "+" instead for local versions)
+string(REPLACE "-" "+" ODIN_PY_VERSION "${ODIN_VERSION}")
 
 # print version info
 message(STATUS "Build version: ${ODIN_VERSION}")
@@ -288,6 +356,7 @@ target_include_directories(
 # install rule for oa_core (provides just an IMPORTED target)
 install(TARGETS oa_core EXPORT odin_exports)
 
+add_subdirectory(sil)
 add_subdirectory(src)
 add_subdirectory(test)
 

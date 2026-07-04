@@ -100,4 +100,4 @@ endif()
 # oa_unity_enable_unique_id(oa_unit_test)
 
 # discover tests for CTest (timeout increased beyond default 5 seconds for CI)
-gtest_discover_tests(oa_unit_test DISCOVERY_TIMEOUT 15)
+gtest_discover_tests(oa_unit_test DISCOVERY_TIMEOUT 15 PROPERTIES LABELS CXX)

@@ -72,6 +72,8 @@ jobs:
       - name: Python Setup
         uses: actions/setup-python@v6
         with:
+          # one-off translation of Win32 -> x86
+          architecture: ${{ case(matrix.arch == 'Win32', 'x86', matrix.arch) }}
           python-version: 3.12
       # check Python + install dependencies (oxlgen.py needs PyYAML)
       - name: Install Python dependencies
