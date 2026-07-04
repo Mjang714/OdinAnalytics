@@ -33,6 +33,20 @@ namespace oa::time
 		if (utils::CheckDateStr(date_str))
 		{
 			boost::split(split_date_str, date_str, boost::is_any_of("\\-\\/:"));
+
+			if(std::stoi(split_date_str.at(1)) < 1 || std::stoi(split_date_str.at(1)) > 12)
+			{
+				throw std::invalid_argument{
+					"Invalid date string please check your string input!: " + date_str
+				};
+			}
+
+			if(std::stoi(split_date_str.at(2)) < 1 || std::stoi(split_date_str.at(2)) > DaysInMonth(std::stoi(split_date_str.at(1)), std::stoi(split_date_str.at(0))))
+			{
+				throw std::invalid_argument{
+					"Invalid date string please check your string input!: " + date_str
+				};
+			}
 			this->m_years_ = std::stoi(split_date_str.at(0));
 			this->m_months_ = std::stoi(split_date_str.at(1));
 			this->m_days_ = std::stoi(split_date_str.at(2));
@@ -170,20 +184,19 @@ namespace oa::time
 
 	int Date::DaysInMonth( int month, int year)
 	{
+		switch(month)
+		{
+			case 2:
+				return (IsLeap(year)) ? 29 : 28;
+			case 4:
+			case 6:
+			case 9:
+			case 11:
+				return 30;
+			default:
+				return 31;
+		}
 
-		if (month == 2)
-		{
-			return (IsLeap(year)) ? 29 : 28;
-		}
-		else if (month == 4 || month == 6 || month == 9 || month == 11)
-		{
-			return 30;
-		}
-
-		else
-		{
-			return 31;
-		}
 	}
 
 	Date Date::SubTenor(const oa::time::Tenor& tenor) const
