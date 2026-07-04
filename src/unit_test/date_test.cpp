@@ -1,6 +1,6 @@
 //if gtest/gtest.h cannot be fount than it is most likely the solution file cannot find it google test fixture  best to reolad the UnitTest project
 #include "gtest/gtest.h"
-#include "time/date.h" 
+#include "time/date.h"
 
 namespace
 {
@@ -60,11 +60,11 @@ namespace
 
 	TEST(DateClassTest, IsLeap)
 	{
-		// test to see if the year 2000 is a leap year 
+		// test to see if the year 2000 is a leap year
 		oa::time::Date test_date_1("2000-7-31");
 		EXPECT_TRUE(test_date_1.IsLeap());
 
-		// test to see if the year 2024 is a leap year 
+		// test to see if the year 2024 is a leap year
 		oa::time::Date test_date_2("2024-7-31");
 		EXPECT_TRUE(test_date_2.IsLeap());
 
@@ -75,22 +75,23 @@ namespace
 
 	TEST(DateClassTest, DaysInMonth)
 	{
+		using oa::time::Date;
 		//Test to see if we get leap year correct days
-		EXPECT_EQ(29, oa::time::Date::DaysInMonth(2, 2000));
-		EXPECT_EQ(28, oa::time::Date::DaysInMonth(2, 2100));
-		EXPECT_EQ(28, oa::time::Date::DaysInMonth(2, 2030));
-		EXPECT_EQ(30, oa::time::Date::DaysInMonth(11, 2010));
-		EXPECT_EQ(31, oa::time::Date::DaysInMonth(12, 2020));
+		EXPECT_EQ(29, Date::DaysInMonth(2000, 2));
+		EXPECT_EQ(28, Date::DaysInMonth(2100, 2));
+		EXPECT_EQ(28, Date::DaysInMonth(2030, 2));
+		EXPECT_EQ(30, Date::DaysInMonth(2010, 11));
+		EXPECT_EQ(31, Date::DaysInMonth(2020, 12));
 	}
 
 	TEST(DateClassTest, DateOpOverloadingRelational)
 	{
-		// test to see if the year 2000 is a leap year 
+		// test to see if the year 2000 is a leap year
 		oa::time::Date test_date_1("2000-7-31");
 		oa::time::Date test_date_2("2010-10-25");
 		oa::time::Date test_date_3("2000-7-31");
 
-		//test false date logic 
+		//test false date logic
 		EXPECT_FALSE(test_date_1 == test_date_2);
 		EXPECT_FALSE(test_date_1 >= test_date_2);
 		EXPECT_FALSE(test_date_1 > test_date_2);
@@ -158,13 +159,13 @@ namespace
 		oa::time::Date new_date_4 = base_date_1.AddTenor(test_tenor_4);
 		EXPECT_EQ("2028-2-29 : Julian Integer = 2461831", new_date_4.ToString());
 
-		//Test adding month to end of a month wher the last day 31st 
+		//Test adding month to end of a month wher the last day 31st
 		oa::time::Date base_date_2(2022, 8, 31);
 		oa::time::Tenor test_tenor_5("1M");
 
 		oa::time::Date new_date_5 = base_date_2.AddTenor(test_tenor_5);
 		EXPECT_EQ("2022-9-30 : Julian Integer = 2459853", new_date_5.ToString());
-		
+
 	}
 
 	TEST(DateClassTest, AddYears)
@@ -236,14 +237,14 @@ namespace
 		oa::time::Date new_date_4 = base_date_1.AddTenor(test_tenor_4);
 		EXPECT_EQ("2016-12-29 : Julian Integer = 2457752", new_date_4.ToString());
 
-		////Test adding month to end of a month wher the last day 31st 
+		////Test adding month to end of a month wher the last day 31st
 		oa::time::Date base_date_2(2022, 8, 31);
 		oa::time::Tenor test_tenor_5("-2M");
 
 		oa::time::Date new_date_5 = base_date_2.AddTenor(test_tenor_5);
 		EXPECT_EQ("2022-6-30 : Julian Integer = 2459761", new_date_5.ToString());
 
-		// subtract out years 
+		// subtract out years
 		oa::time::Tenor test_tenor_6("-36M");
 
 		oa::time::Date new_date_6 = base_date_2.AddTenor(test_tenor_6);
@@ -319,14 +320,14 @@ namespace
 		oa::time::Date new_date_4 = base_date_1.SubTenor(test_tenor_4);
 		EXPECT_EQ("2016-12-29 : Julian Integer = 2457752", new_date_4.ToString());
 
-		////Test adding month to end of a month wher the last day 31st 
+		////Test adding month to end of a month wher the last day 31st
 		oa::time::Date base_date_2(2022, 8, 31);
 		oa::time::Tenor test_tenor_5("2M");
 
 		oa::time::Date new_date_5 = base_date_2.SubTenor(test_tenor_5);
 		EXPECT_EQ("2022-6-30 : Julian Integer = 2459761", new_date_5.ToString());
 
-		// subtract out years 
+		// subtract out years
 		oa::time::Tenor test_tenor_6("36M");
 
 		oa::time::Date new_date_6 = base_date_2.SubTenor(test_tenor_6);
@@ -345,7 +346,7 @@ namespace
 
 		EXPECT_EQ("2023-2-28 : Julian Integer = 2460004", base_date_1.SubTenor(test_tenor_1).ToString());
 		EXPECT_EQ("2021-9-15 : Julian Integer = 2459473", base_date_2.SubTenor(test_tenor_2).ToString());
-		EXPECT_EQ("1915-8-31 : Julian Integer = 2420741", base_date_3.SubTenor(test_tenor_3).ToString()); 
+		EXPECT_EQ("1915-8-31 : Julian Integer = 2420741", base_date_3.SubTenor(test_tenor_3).ToString());
 	}
 
 	TEST(DateClassTest, SubNegDays)
@@ -402,7 +403,7 @@ namespace
 		oa::time::Date new_date_4 = base_date_1.SubTenor(test_tenor_4);
 		EXPECT_EQ("2028-2-29 : Julian Integer = 2461831", new_date_4.ToString());
 
-		//Test adding month to end of a month wher the last day 31st 
+		//Test adding month to end of a month wher the last day 31st
 		oa::time::Date base_date_2(2022, 8, 31);
 		oa::time::Tenor test_tenor_5("-1M");
 
