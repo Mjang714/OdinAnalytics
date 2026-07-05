@@ -34,13 +34,6 @@ namespace oa::time
 		{
 			boost::split(split_date_str, date_str, boost::is_any_of("\\-\\/:"));
 
-			if(std::stoi(split_date_str.at(1)) < 1 || std::stoi(split_date_str.at(1)) > 12)
-			{
-				throw std::invalid_argument{
-					"Invalid date string please check your string input!: " + date_str
-				};
-			}
-
 			if(std::stoi(split_date_str.at(2)) < 1 || std::stoi(split_date_str.at(2)) > DaysInMonth(std::stoi(split_date_str.at(1)), std::stoi(split_date_str.at(0))))
 			{
 				throw std::invalid_argument{
