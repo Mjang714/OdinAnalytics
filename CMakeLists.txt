@@ -130,9 +130,9 @@ endif()
 # querying of the benchmark library version being used
 find_package(benchmark 1.6.1)
 if(benchmark_FOUND)
-    message(STATUS "benchmark version: ${benchmark_VERSION}")
+    message(STATUS "Benchmark version: ${benchmark_VERSION}")
 else()
-    message(STATUS "benchmark version: None")
+    message(STATUS "Benchmark version: None")
 endif()
 
 # look for Excel 2013 XLL SDK

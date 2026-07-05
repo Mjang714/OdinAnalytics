@@ -52,7 +52,7 @@ if(benchmark_FOUND)
     # itself, so we use PUBLIC to ensure usage requirements are propagated
     target_link_libraries(oa_benchmark_main PUBLIC benchmark::benchmark)
 else()
-    message(STATUS "Skipping oa_benchmark_main (requires benchmark)")
+    message(STATUS "Skipping oa_benchmark_main (requires Benchmark)")
 endif()
 
 # isdigit_bench: oa::is_digit() vs. std::isdigit() microbenchmark
@@ -62,5 +62,5 @@ if(benchmark_FOUND)
     add_executable(isdigit_bench isdigit_bench.cpp)
     target_link_libraries(isdigit_bench PRIVATE oa_benchmark_main oa_core)
 else()
-    message(STATUS "Skipping isdigit_bench (requires benchmark)")
+    message(STATUS "Skipping isdigit_bench (requires Benchmark)")
 endif()
