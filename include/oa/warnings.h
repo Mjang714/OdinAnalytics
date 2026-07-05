@@ -61,14 +61,14 @@
 #define OA_GNU_WARNING_POP()
 #endif  // __GNUC__
 
-#if defined(_MSC_VER)
 // internal macro for emitting a preprocessing message with file, line number,
-// and a message prefix. this implements OA_MESSAGE(), OA_WARNING()
-#define OA_CUSTOM_MESSAGE(pre, msg) \
+// and a message prefix. this implements OA_MESSAGE(), OA_WARNING() for MSVC
+#define OA_CUSTOM_MESSAGE_(pre, msg) \
   _Pragma(OA_STRINGIFY(message( \
     __FILE__ ":" OA_STRINGIFY(__LINE__) ": " pre ": " msg \
   )))
 
+#if defined(_MSC_VER)
 /**
  * Emit an informational message during preprocessing.
  *
@@ -77,7 +77,7 @@
  *
  * @param msg Message string literal
  */
-#define OA_MESSAGE(msg) OA_CUSTOM_MESSAGE("message", msg)
+#define OA_MESSAGE(msg) OA_CUSTOM_MESSAGE_("message", msg)
 
 /**
  * Emit a warning message during preprocessing.
@@ -87,7 +87,7 @@
  *
  * @param msg Message string literal
  */
-#define OA_WARNING(msg) OA_CUSTOM_MESSAGE("warning", msg)
+#define OA_WARNING(msg) OA_CUSTOM_MESSAGE_("warning", msg)
 #elif defined(__GNUC__)
 /**
  * Emit an informational message during preprocessing.
