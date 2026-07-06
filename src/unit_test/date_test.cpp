@@ -287,7 +287,7 @@ private:
 	 *
 	 * @note The extra index argument enables us to create partial
 	 *  specializations by changing `T` as we cannot have explicit template
-	 *  specializations in a non-namespace space in C++.
+	 *  specializations in a non-namespace context in C++.
 	 *
 	 * @tparam J Input index
 	 * @tparam T Input type
