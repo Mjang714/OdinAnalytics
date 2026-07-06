@@ -23,7 +23,12 @@ namespace oa::time
 
 	Date::Date(const int year, const int month, const int day) : m_days_(day), m_months_(month), m_years_(year), m_julian_int_(ConvertToJulian(year, month, day))
 	{
-
+		if( year < 1 || month < 1 || month > 12 || day < 1 || day > DaysInMonth(month, year))
+		{
+			throw std::invalid_argument{
+				"Invalid date string please check your string input!: " + std::to_string(year) + "-" + std::to_string(month) + "-" + std::to_string(day)
+			};
+		}
 	}
 
 	Date::Date(const std::string& date_str)
