@@ -307,8 +307,7 @@ Date::AddMonths(int months) const
 		new_day = DaysInMonth(new_year, new_month);
 	}
 	// create from new Gregorian year, month, day
-	// TODO: deal with narrowing issue
-	return Date(new_year, new_month, new_day);
+	return {new_year, new_month, new_day};
 }
 
 Date
@@ -325,8 +324,7 @@ Date::AddYears(int years) const
 		auto month_days = DaysInMonth(year, month);
 		day = (day > month_days) ? month_days : day;
 	}
-	// TODO: deal with narrowing issue
-	return Date(year, month, day);
+	return {year, month, day};
 }
 
 int
