@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <compare>
+#include <iosfwd>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -34,7 +35,7 @@ public:
 	// provides compatibility with the system clock + C time structs
 	using time_point = std::chrono::system_clock::time_point;
 	// year, month, day tuple for Gregorian date components
-	// note: may want to rename for better std::chrono::year_month_day interop
+	// TODO: may want to rename for better std::chrono::year_month_day interop
 	using year_month_day = std::tuple<int, int, int>;
 
 	/**
@@ -52,19 +53,21 @@ public:
 	 * Ctor.
 	 *
 	 * Constructs a `Date` from the given Gregorian year, month, and day.
+	 * Although month and day should never be negative, for convenience all
+	 * parameters are signed integers. An exception is thrown on bad inputs.
 	 *
 	 * @param year Gregorian year
 	 * @param month Month number starting from 1
 	 * @param day Day number of a month starting from 1
 	 */
-	Date(int year, unsigned month, unsigned day);
+	Date(int year, int month, int day);
 
 	/**
 	 * Ctor.
 	 *
-	 * Construct a `Date` object from a Gregorian `YYYY-MM-DD` string, where
-	 * the `-` delimiter may be instead replaced with `:` or `/`. If the given
-	 * Gregorian date is invalid, an exception is thrown.
+	 * Construct a `Date` object from a Gregorian `YYYY-[M]M-[D]D` string,
+	 * where the `-` delimiter may be instead replaced with `:` or `/`. If the
+	 * given Gregorian date is invalid, an exception is thrown.
 	 *
 	 * @note This is slower than direct construction using a Julian day number
 	 *  because of the need for string parsing but is more user-friendly.
@@ -76,7 +79,11 @@ public:
 	/**
 	 * Ctor.
 	 *
-	 * Valid Julian day numbers must be nonnegative.
+	 * This directly constructs using the given Julian day number.
+	 *
+	 * @note Although negative Julian day numbers are allowed, by convention,
+	 *  Julian day numbers are expected to be nonnegative. For financial
+	 *  applications, of course, the Julian day number is always positive.
 	 *
 	 * @param jdn Julian day number
 	 */
@@ -103,10 +110,15 @@ public:
 	 */
 	static int ConvertToJulian(int year, int month, int day) noexcept;
 
-	/// <summary>
-	///  this function takes the date class internal parameters and creates a string form of the date
-	/// </summary>
-	/// <returns>a string of the date formatted "YYYY-MM-DD : Julian Integer = ######"</returns>
+	/**
+	 * Return a string representation for the `Date` object.
+	 *
+	 * The format is something like `"2022-7-31 : Julian Integer = 2459792"`.
+	 * No extra padding is added for any of the integer fields.
+	 *
+	 * @todo Deprecate this in favor of `operator<<`. We are keeping it around
+	 *  for now simply for compatibility with the existing tests.
+	 */
 	std::string ToString() const;
 
 	/// <summary>
@@ -160,25 +172,30 @@ public:
 	 * Proleptic Gregorian years are allowed and an exception will be thrown if
 	 * the month value is invalid, i.e. not in `[1, 12]` inclusive.
 	 *
+	 * @note We should probably return an unsigned value but it's convenient to
+	 *  to return a signed value when integrating with existing code.
+	 *
 	 * @param year [Proleptic] Gregorian year
 	 * @param month Month number starting from 1
 	 */
-	static unsigned DaysInMonth(int year, unsigned month);
+	static int DaysInMonth(int year, int month);
 
-	// TODO: implemented using operator+
-	/// <summary>
-	/// takes in a tenor and adds it the date objects
-	/// </summary>
-	/// <param name="tenor">given a year</param>
-	/// <returns>a new date that has the tenor added</returns>
+	/**
+	 * Return a new date with the given tenor added.
+	 *
+	 * @todo Remove in favor of `operator+` (kept for tests).
+	 *
+	 * @param tenor Tenor to add to the date
+	 */
 	Date AddTenor(const oa::time::Tenor& tenor) const;
 
-	// TODO: implemented using operator-
-	/// <summary>
-	///  takes in a tenor and subtracts it from the date object
-	/// </summary>
-	/// <param name="tenor"></param>
-	/// <returns>a new date that has the tenor subtracted</returns>
+	/**
+	 * Return a new date with the given tenor subtracted.
+	 *
+	 * @todo Remove in favor of `operator+` (kept for tests).
+	 *
+	 * @param tenor Tenor to subtract from the date
+	 */
 	Date SubTenor(const oa::time::Tenor& tenor) const;
 
 	/**
@@ -213,22 +230,19 @@ public:
 	int day() const;
 
 	/**
-	 * Indicate if the `Date` is valid or not.
+	 * Indicate if the `Date` is default-constructed or not.
 	 *
-	 * The `Date` is invalid if the Julian date number is negative. To check if
-	 * a `Date` was default constructed, compare against a defaulted instance.
-	 *
-	 * @note The semantics have changed since the original implementation which
-	 *  simply checked to see if the `Date` was defaulted or not.
+	 * Default-constructed dates have a Julian day number of zero.
 	 */
 	explicit operator bool() const noexcept;
 
 	/**
-	 * Return self if valid and not defaulted otherwise the given date.
+	 * Return self if not defaulted otherwise the given date.
 	 *
 	 * @note Since a defaulted `Date` is technically valid it is a bit tricky
-	 *  to use one as an "optional" value. We might want to encourage use of
-	 *  `std::optional<Date>` later and remove this feature.
+	 *  to use one as an "optional" value. However, in financial applications,
+	 *  the Julian day number should always be positive, so it's ok to just use
+	 *  a default-constructed `Date` as indicating an invalid date.
 	 *
 	 * @param other Default date value to use
 	 */
@@ -263,6 +277,7 @@ private:
 	// note: only member of the class to ensure it fits in a register
 	int julian_{};
 
+	// TODO: consider these constants that we don't use
 	static constexpr int kChronoYearOffset = 1900;
 	static constexpr int kMonthOffset = 1;
 
@@ -283,12 +298,43 @@ private:
 	static year_month_day YMD(const int jdn) noexcept;
 
 	/**
+	 * Convert a `YYYY-[M]M-[D]D` string into a [proleptic] Gregorian date.
+	 *
+	 * The `-` delimiter may be instead replaced with `:` or `/`. If the given
+	 * Gregorian date string is invalid, an exception is thrown.
+	 *
+	 * @todo May want to make this public or split out the parse logic.
+	 *
+	 * @param ymd [Proleptic] Gregorian year, month, and day string
+	 */
+	static year_month_day YMD(std::string_view ymd);
+
+	/**
 	 * Convert a `std::chrono` system clock time point into a Gregorian date.
 	 *
 	 * @param tp `std::chrono` system clock time point
 	 */
 	static year_month_day YMD(const time_point& tp);
 };
+
+/**
+ * Stream the `Date` to the given stream.
+ *
+ * The output will be something like `"2025-02-28"`. The year, month, and day
+ * fields are zero-padded to exactly, 4, 2, and 2 characters wide.
+ *
+ * @todo For more flexible formatting a `std::formatter<Date>` is required.
+ *
+ * @par
+ *
+ * @todo If we want to add a `to_string()` overload in the `oa::` namespace we
+ *  still need to settle on what the final format of date should be.
+ *
+ * @param out Output stream
+ * @param date Date to format
+ */
+OA_TIME_API
+std::ostream& operator<<(std::ostream& out, const Date& date);
 
 /**
  * Add the given number of days to the date.

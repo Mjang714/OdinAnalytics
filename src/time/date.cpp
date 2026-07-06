@@ -1,25 +1,32 @@
-#include "date.h"
+/**
+ * @file time/date.cpp
+ * @author Michael Jang, Derek Huang
+ * @brief C++ source for a date class
+ * @copyright MIT License
+ */
+
+#include "oa/time/date.h"
 
 #include <chrono>
 #include <ctime>
+#include <iomanip>
 #include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <tuple>
+#include <utility>
 
 #include "helpers/utils.h"
-#include "oa/platform.h"
+#include "oa/string.h"
+#include "oa/to.h"
 #include "oa/time/tenor.h"
 #include "oa/time/enums.h"
 
-#if OA_HAS_CPP20_FORMAT
-#include <format>
-#endif  // !OA_HAS_CPP20_FORMAT
-
 namespace oa::time {
 
-// TODO: need sanity checks on the year, month, and day values
-Date::Date(int year, unsigned month, unsigned day)
+Date::Date(int year, int month, int day)
 {
 	// check that number of days is valid
 	// note: DaysInMonth() will throw if the month value is invalid
@@ -31,12 +38,30 @@ Date::Date(int year, unsigned month, unsigned day)
 
 Date::Date(std::string_view ymd)
 {
-	// check if a character is an ASCII digit
-	// TODO: add an equivalent function in oa/string.h
-	auto is_digit = [](char c) noexcept
-	{
-		return (c >= '0') && (c <= '9');
-	};
+	// convert to Gregorian date (throws if string is invalid) + convert
+	auto [y, m, d] = YMD(ymd);
+	julian_ = ConvertToJulian(y, m, d);
+}
+
+Date::Date(const time_point& tp)
+{
+	auto [y, m, d] = YMD(tp);
+	julian_ = ConvertToJulian(y, m, d);
+}
+
+Date::year_month_day
+Date::YMD(const time_point& tp)
+{
+	// convert to std::time_t integral time
+	auto c_time = std::chrono::system_clock::to_time_t(tp);
+	// get pointer to std::tm in GMT (UTC) and return time tuple
+	auto c_tm = std::gmtime(&c_time);
+	return {1900 + c_tm->tm_year, 1 + c_tm->tm_mon, c_tm->tm_mday};
+}
+
+Date::year_month_day
+Date::YMD(std::string_view ymd)
+{
 	// check if date is one of the valid delimiters
 	auto is_delim = [](char c) noexcept
 	{
@@ -55,62 +80,55 @@ Date::Date(std::string_view ymd)
 	// parse year
 	while (n_end != ymd.end() && is_digit(*n_end))
 		n_end++;
-	// error if range is empty or delimiter is invalid
+	// error if range is empty, wrong size, delimiter is invalid, or no month
 	// note: n_begin == n_end also catches case of empty date string
+	// note: always do n_end - n_begin as MSVC STL is strict and in debug mode
+	// raises an assertion if you try to seek past the end of a string_view
 	if (n_begin == n_end)
 		throw std::runtime_error{"date missing year component"};
+	if (n_end - n_begin != 4)
+		throw std::runtime_error{"date year field must be 4 characters wide"};
 	if (!is_delim(*n_end))
 		throw std::runtime_error{"encountered invalid year delimiter"};
+	if (n_end == ymd.end())
+		throw std::runtime_error{"date string truncated (no month)"};
 	// save as current date delimiter + convert year
 	auto delim = *n_end;
-	// TODO: kind of inefficient to create a new temporary string
-	auto y = std::stoi(std::string{n_begin, n_end});
+	auto y = to<int>(n_begin, n_end, unsafe);
 	// parse month
 	n_begin = ++n_end;
 	while (n_end != ymd.end() && is_digit(*n_end))
 		n_end++;
-	// error if range is empty or delimiter is invalid
+	// error if range is empty, wrong size, delimiter is invalid, or no day
 	if (n_begin == n_end)
 		throw std::runtime_error{"date missing month component"};
+	if (n_end - n_begin > 2)
+		throw std::runtime_error{"date month field must be <=2 characters wide"};
 	if (*n_end != delim)
 		throw std::runtime_error{"encountered invalid/inconsistent month delimiter"};
+	if (n_end == ymd.end())
+		throw std::runtime_error{"date string truncated (no day)"};
 	// convert month
-	// TODO: kind of inefficient to create a new temporary string
-	auto m = std::stoi(std::string{n_begin, n_end});
+	auto m = to<int>(n_begin, n_end, unsafe);
 	// parse day
 	n_begin = ++n_end;
 	while (n_end != ymd.end() && is_digit(*n_end))
 		n_end++;
-	// error if range is empty or didn't reach end of string
+	// error if range is empty, wrong size, or didn't reach end of string
 	if (n_begin == n_end)
 		throw std::runtime_error{"date missing day component"};
+	if (n_end - n_begin > 2)
+		throw std::runtime_error{"date month field must be <=2 characters wide"};
 	if (n_end != ymd.end())
 		throw std::runtime_error{"date string contains extra characters"};
 	// convert day
-	// TODO: kind of inefficient to create a new temporary string
-	auto d = std::stoi(std::string{n_begin, n_end});
+	auto d = to<int>(n_begin, n_end, unsafe);
 	// check that number of days is valid
 	// note: DaysInMonth() will throw if the month value is invalid
 	if (!d || d > DaysInMonth(y, m))
 		throw std::runtime_error{"invalid day number " + std::to_string(d)};
-	// convert to Julian date
-	julian_ = ConvertToJulian(y, m, d);
-}
-
-Date::Date(const time_point& tp)
-{
-	auto [y, m, d] = YMD(tp);
-	julian_ = ConvertToJulian(y, m, d);
-}
-
-Date::year_month_day
-Date::YMD(const time_point& tp)
-{
-	// convert to std::time_t integral time
-	auto c_time = std::chrono::system_clock::to_time_t(tp);
-	// get pointer to std::tm in GMT (UTC) and return time tuple
-	auto c_tm = std::gmtime(&c_time);
-	return {1900 + c_tm->tm_year, 1 + c_tm->tm_mon, c_tm->tm_mday};
+	// done
+	return {y, m, d};
 }
 
 Date::year_month_day
@@ -153,7 +171,6 @@ int Date::GetDOWInt() const
 
 int Date::GetDOWInt(int julian_date)
 {
-	// FIXME: may need a +1 according to Wikipedia
 	return julian_date % 7;
 }
 
@@ -184,14 +201,12 @@ Date::ConvertToTimePt(const Date& date)
 std::string
 Date::ToString() const
 {
+	std::stringstream ss;
 	auto [y, m, d] = YMD(julian_);
-#if OA_HAS_CPP20_FORMAT
-	return std::format("{}-{}-{} : Julian Integer = {}", y, m, d, julian_);
-#else
-	return
-		std::to_string(y) + "-" + std::to_string(m) + "-" + std::to_string(d) +
-		" : Julian Integer = " + std::to_string(julian_);
-#endif  // !OA_HAS_CPP20_FORMAT
+	// note: this format is a bit different from operator<<
+	ss << y << '-' << m << '-' << d << " : Julian Integer = " << julian_;
+	// note: C++20 allows move-constructing using ref-qualified str()
+	return std::move(ss).str();
 }
 
 bool
@@ -208,8 +223,8 @@ Date::IsLeap(int year) noexcept
 	return (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0));
 }
 
-unsigned
-Date::DaysInMonth(int year, unsigned month)
+int
+Date::DaysInMonth(int year, int month)
 {
 	// sanity check
 	if (month < 1 || month > 12)
@@ -346,14 +361,13 @@ Date::day() const
 
 Date::operator bool() const noexcept
 {
-	return julian_ < 0;
+	return !!julian_;
 }
 
 Date
 Date::value_or(Date other) const noexcept
 {
-	// note: 0 is technically still a valid Julian day number
-	return (julian_ > 0) ? *this : other;
+	return (julian_) ? *this : other;
 }
 
 Date
@@ -385,6 +399,25 @@ Date::operator-(const Tenor& tenor) const
 ////////////////////////////////////////////////////////////////////////////////
 // operators                                                                  //
 ////////////////////////////////////////////////////////////////////////////////
+
+std::ostream& operator<<(std::ostream& out, const Date& date)
+{
+	// save current stream fill character and set to '0'
+	// note: if an exception were thrown in this function the fill character
+	// would not be reset. for exception safety a scope guard is necessary
+	auto fill_char = out.fill();
+	out.fill('0');
+	// get Gregorian date components
+	auto [y, m, d] = date.gregorian();
+	// print in YYYY/MM/DD ([0-9]+), note std::setw resets each operator<<
+	out <<
+		std::setw(4) << y << "-" <<
+		std::setw(2) << m << "-" <<
+		std::setw(2) << d;
+	// fill character needs to be manually reset
+	out.fill(fill_char);
+	return out;
+}
 
 Date operator+(const Date& date, int days) /*noexcept*/
 {
