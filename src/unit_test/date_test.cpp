@@ -16,19 +16,42 @@
 
 #include <gtest/gtest.h>
 
-#include "oa/testing/gtest.h"  // for oa::testing::index_types
+#include "oa/ctti.h"           // for OA_PRETTY_FUNCTION_NAME
+#include "oa/testing/gtest.h"  // for index_types, binary_format_traits
 #include "oa/time/tenor.h"     // for oa::time::Tenor
 
 namespace {
 
 /**
- * `Date` class test fixture.
+ * Date `IsLeap()` test case dispatching and input type.
+ *
+ * This indicates whether the date is expected to be in a leap year or not.
  */
-class DateTest : public ::testing::Test {};
+class DateIsLeap {
+public:
+	constexpr DateIsLeap(bool v) noexcept : v_{v} {}
+	constexpr bool value() const noexcept { return v_; }
+	constexpr explicit operator bool() const noexcept { return v_; }
+private:
+	bool v_;
+};
 
-// TODO: revisit testing infra to enable more thorough testing
+/**
+ * `Date::DaysInMonth()` test case dispatching and input type.
+ *
+ * This provides the `Date::DaysInMonth()` input parameters.
+ */
+class DaysInMonthInput {
+public:
+	constexpr DaysInMonthInput(int y, int m) noexcept : year_{y}, month_{m} {}
+	constexpr int year() const noexcept { return year_; }
+	constexpr int month() const noexcept { return month_; }
+private:
+	int year_;
+	int month_;
+};
 
-// DateTemplateTest inputs for constructor testing
+// DateTest inputs
 constexpr auto date_template_test_inputs = std::make_tuple(
 	// original bad inputs
 	std::pair{"190O-12-04", false},
@@ -39,6 +62,14 @@ constexpr auto date_template_test_inputs = std::make_tuple(
 	std::pair{"2008-2-30", false},
 	std::pair{std::tuple{2008, 2, 30}, false},
 	std::pair{std::tuple{2008, 13, 30}, false},
+	// additional bad inputs
+	std::pair{"bad string", false},
+	std::pair{"2000", false},
+	std::pair{"2004-", false},
+	std::pair{"2005-6", false},
+	std::pair{"20-6-6", false},
+	std::pair{"2006/09/", false},
+	std::pair{"/234sdfs", false},
 	// test delimiter consistency
 	std::pair{"2020/09-24", false},
 	std::pair{"2025:1-23", false},
@@ -60,156 +91,273 @@ constexpr auto date_template_test_inputs = std::make_tuple(
 	std::pair{std::tuple{1970, 1, 1}, std::chrono::days{0}},
 	std::pair{std::tuple{1970, 1, 3}, std::chrono::days{2}},
 	std::pair{std::tuple{1970, 1, 12}, std::chrono::days{11}},
+	// test if date is in a leap year
+	std::pair{std::tuple{2000, 7, 31}, DateIsLeap{true}},
+	std::pair{std::tuple{2024, 7, 31}, DateIsLeap{true}},
+	std::pair{std::tuple{2100, 1, 1}, DateIsLeap{false}},
+	// test if Date::DaysInMonth() works as expected
+	std::pair{29, DaysInMonthInput{2000, 2}},
+	std::pair{28, DaysInMonthInput{2100, 2}},
+	std::pair{28, DaysInMonthInput{2030, 2}},
+	std::pair{30, DaysInMonthInput{2010, 11}},
+	std::pair{31, DaysInMonthInput{2020, 12}},
+	// original binary comparison operation tests
+	std::tuple{
+		std::tuple{2000, 7, 31},
+		std::equal_to{},
+		std::tuple{2010, 10, 25},
+		false
+	},
+	std::tuple{
+		std::tuple{2000, 7, 31},
+		std::greater{},
+		std::tuple{2010, 10, 25},
+		false
+	},
+	std::tuple{
+		std::tuple{2000, 7, 31},
+		std::greater_equal{},
+		std::tuple{2010, 10, 25},
+		false
+	},
+	std::tuple{
+		std::tuple{2000, 7, 31},
+		std::greater{},
+		std::tuple{2000, 7, 31},
+		false
+	},
+	std::tuple{
+		std::tuple{2000, 7, 31},
+		std::less{},
+		std::tuple{2000, 7, 31},
+		false
+	},
+	std::tuple{
+		std::tuple{2000, 7, 31},
+		std::equal_to{},
+		std::tuple{2000, 7, 31},
+		true
+	},
+	std::tuple{
+		std::tuple{2000, 7, 31},
+		std::less_equal{},
+		std::tuple{2010, 10, 25},
+		true
+	},
+	std::tuple{
+		std::tuple{2000, 7, 31},
+		std::less{},
+		std::tuple{2010, 10, 25},
+		true
+	},
 	// original AddTenor() tests
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"2D",
+		std::equal_to{},
 		"2022-7-31 : Julian Integer = 2459792"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"580d",
+		std::equal_to{},
 		"2024-2-29 : Julian Integer = 2460370"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"0d",
+		std::equal_to{},
 		"2022-7-29 : Julian Integer = 2459790"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 28},
+		std::plus{},
 		"2w",
+		std::equal_to{},
 		"2022-8-11 : Julian Integer = 2459803"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 28},
+		std::plus{},
 		"83w",
+		std::equal_to{},
 		"2024-2-29 : Julian Integer = 2460370"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 28},
+		std::plus{},
 		"0w",
+		std::equal_to{},
 		"2022-7-28 : Julian Integer = 2459789"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"2M",
+		std::equal_to{},
 		"2022-9-29 : Julian Integer = 2459852"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"19M",
+		std::equal_to{},
 		"2024-2-29 : Julian Integer = 2460370"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"7M",
+		std::equal_to{},
 		"2023-2-28 : Julian Integer = 2460004"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"67M",
+		std::equal_to{},
 		"2028-2-29 : Julian Integer = 2461831"
 	},
 	// note: tests adding month to end of a month with 31st as the last day
 	std::tuple{
 		std::tuple{2022, 8, 31},
+		std::plus{},
 		"1M",
+		std::equal_to{},
 		"2022-9-30 : Julian Integer = 2459853"
 	},
 	std::tuple{
 		std::tuple{2024, 2, 29},
+		std::plus{},
 		"1Y",
+		std::equal_to{},
 		"2025-2-28 : Julian Integer = 2460735"
 	},
 	std::tuple{
 		std::tuple{2021, 9, 15},
+		std::plus{},
 		"60Y",
+		std::equal_to{},
 		"2081-9-15 : Julian Integer = 2481388"
 	},
 	std::tuple{
 		std::tuple{2015, 8, 31},
+		std::plus{},
 		"100Y",
+		std::equal_to{},
 		"2115-8-31 : Julian Integer = 2493790"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"-2D",
+		std::equal_to{},
 		"2022-7-27 : Julian Integer = 2459788"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"-580d",
+		std::equal_to{},
 		"2020-12-26 : Julian Integer = 2459210"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"-0d",
+		std::equal_to{},
 		"2022-7-29 : Julian Integer = 2459790"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 28},
+		std::plus{},
 		"-2w",
+		std::equal_to{},
 		"2022-7-14 : Julian Integer = 2459775"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 28},
+		std::plus{},
 		"-83w",
+		std::equal_to{},
 		"2020-12-24 : Julian Integer = 2459208"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 28},
+		std::plus{},
 		"-0w",
+		std::equal_to{},
 		"2022-7-28 : Julian Integer = 2459789"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"-2M",
+		std::equal_to{},
 		"2022-5-29 : Julian Integer = 2459729"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"-29M",
+		std::equal_to{},
 		"2020-2-29 : Julian Integer = 2458909"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"-7M",
+		std::equal_to{},
 		"2021-12-29 : Julian Integer = 2459578"
 	},
 	std::tuple{
 		std::tuple{2022, 7, 29},
+		std::plus{},
 		"-67M",
+		std::equal_to{},
 		"2016-12-29 : Julian Integer = 2457752"
 	},
 	// note: tests subtracting month to end of month with 31st as last day
 	std::tuple{
 		std::tuple{2022, 8, 31},
+		std::plus{},
 		"-2M",
+		std::equal_to{},
 		"2022-6-30 : Julian Integer = 2459761"
 	},
 	// note: tests subtracting month to end of month with 31st as last day
 	std::tuple{
 		std::tuple{2022, 8, 31},
+		std::plus{},
 		"-36M",
+		std::equal_to{},
 		"2019-8-31 : Julian Integer = 2458727"
 	},
 	std::tuple{
 		std::tuple{2024, 2, 29},
+		std::plus{},
 		"-1Y",
+		std::equal_to{},
 		"2023-2-28 : Julian Integer = 2460004"
 	},
 	std::tuple{
 		std::tuple{2081, 9, 15},
+		std::plus{},
 		"-60Y",
+		std::equal_to{},
 		"2021-9-15 : Julian Integer = 2459473"
 	},
 	std::tuple{
 		std::tuple{2015, 8, 31},
+		std::plus{},
 		"-100Y",
+		std::equal_to{},
 		"1915-8-31 : Julian Integer = 2420741"
 	},
-	// testing adding tenors to dates or dates to tenors
+	// test adding tenors to dates or dates to tenors
 	std::tuple{
 		std::tuple{2022, 7, 29},
 		std::plus{},
@@ -251,6 +399,235 @@ constexpr auto date_template_test_inputs = std::make_tuple(
 		std::pair{100, oa::time::Tenors::kYears},
 		std::equal_to{},
 		std::tuple{2115, 8, 31}
+	},
+	// test adding day counts to dates
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::plus{},
+		2,
+		std::equal_to{},
+		std::tuple{2022, 7, 31}
+	},
+	std::tuple{
+		580,
+		std::plus{},
+		std::tuple{2022, 7, 29},
+		std::equal_to{},
+		std::tuple{2024, 2, 29}
+	},
+	std::tuple{
+		0,
+		std::plus{},
+		std::tuple{2022, 7, 29},
+		std::equal_to{},
+		std::tuple{2022, 7, 29}
+	},
+	// original SubTenor tests
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"2D",
+		std::equal_to{},
+		"2022-7-27 : Julian Integer = 2459788"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"580d",
+		std::equal_to{},
+		"2020-12-26 : Julian Integer = 2459210"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"0d",
+		std::equal_to{},
+		"2022-7-29 : Julian Integer = 2459790"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 28},
+		std::minus{},
+		"2w",
+		std::equal_to{},
+		"2022-7-14 : Julian Integer = 2459775"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 28},
+		std::minus{},
+		"83w",
+		std::equal_to{},
+		"2020-12-24 : Julian Integer = 2459208"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 28},
+		std::minus{},
+		"0w",
+		std::equal_to{},
+		"2022-7-28 : Julian Integer = 2459789"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"2M",
+		std::equal_to{},
+		"2022-5-29 : Julian Integer = 2459729"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"29M",
+		std::equal_to{},
+		"2020-2-29 : Julian Integer = 2458909"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"7M",
+		std::equal_to{},
+		"2021-12-29 : Julian Integer = 2459578"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"67M",
+		std::equal_to{},
+		"2016-12-29 : Julian Integer = 2457752"
+	},
+	// note: tests subtracting month to end of month with 31st as last day
+	std::tuple{
+		std::tuple{2022, 8, 31},
+		std::minus{},
+		"2M",
+		std::equal_to{},
+		"2022-6-30 : Julian Integer = 2459761"
+	},
+	// note: tests subtracting month to end of month with 31st as last day
+	std::tuple{
+		std::tuple{2022, 8, 31},
+		std::minus{},
+		"36M",
+		std::equal_to{},
+		"2019-8-31 : Julian Integer = 2458727"
+	},
+	std::tuple{
+		std::tuple{2024, 2, 29},
+		std::minus{},
+		"1Y",
+		std::equal_to{},
+		"2023-2-28 : Julian Integer = 2460004"
+	},
+	std::tuple{
+		std::tuple{2081, 9, 15},
+		std::minus{},
+		"60Y",
+		std::equal_to{},
+		"2021-9-15 : Julian Integer = 2459473"
+	},
+	std::tuple{
+		std::tuple{2015, 8, 31},
+		std::minus{},
+		"100Y",
+		std::equal_to{},
+		"1915-8-31 : Julian Integer = 2420741"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"-2D",
+		std::equal_to{},
+		"2022-7-31 : Julian Integer = 2459792"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"-580d",
+		std::equal_to{},
+		"2024-2-29 : Julian Integer = 2460370"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"0d",
+		std::equal_to{},
+		"2022-7-29 : Julian Integer = 2459790"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 28},
+		std::minus{},
+		"-2w",
+		std::equal_to{},
+		"2022-8-11 : Julian Integer = 2459803"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 28},
+		std::minus{},
+		"-83w",
+		std::equal_to{},
+		"2024-2-29 : Julian Integer = 2460370"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 28},
+		std::minus{},
+		"-0w",
+		std::equal_to{},
+		"2022-7-28 : Julian Integer = 2459789"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"-2M",
+		std::equal_to{},
+		"2022-9-29 : Julian Integer = 2459852"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"-19M",
+		std::equal_to{},
+		"2024-2-29 : Julian Integer = 2460370"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"-7M",
+		std::equal_to{},
+		"2023-2-28 : Julian Integer = 2460004"
+	},
+	std::tuple{
+		std::tuple{2022, 7, 29},
+		std::minus{},
+		"-67M",
+		std::equal_to{},
+		"2028-2-29 : Julian Integer = 2461831"
+	},
+	// note: tests adding month to end of month with 31st as last day
+	std::tuple{
+		std::tuple{2022, 8, 31},
+		std::minus{},
+		"-1M",
+		std::equal_to{},
+		"2022-9-30 : Julian Integer = 2459853"
+	},
+	std::tuple{
+		std::tuple{2024, 2, 29},
+		std::minus{},
+		"-1Y",
+		std::equal_to{},
+		"2025-2-28 : Julian Integer = 2460735"
+	},
+	std::tuple{
+		std::tuple{2021, 9, 15},
+		std::minus{},
+		"-60Y",
+		std::equal_to{},
+		"2081-9-15 : Julian Integer = 2481388"
+	},
+	std::tuple{
+		std::tuple{2015, 8, 31},
+		std::minus{},
+		"-100Y",
+		std::equal_to{},
+		"2115-8-31 : Julian Integer = 2493790"
 	}
 );
 
@@ -260,7 +637,7 @@ constexpr auto date_template_test_inputs = std::make_tuple(
  * @tparam T `oa::testing::index<I>` where `I` indexes into the inputs array
  */
 template <typename T = void>
-class DateTemplateTest : public DateTest {
+class DateTest : public ::testing::Test {
 public:
 	// size of the test input
 	static constexpr auto inputs_size =
@@ -268,15 +645,21 @@ public:
 };
 
 /**
- * Partial specialization for the actual `DateTemplateTest` instantiation.
+ * Partial specialization for the actual `DateTest` instantiation.
+ *
+ * To handle a new kind of testing input, add a new [partial] specialization
+ * for `dispatch_type<J, T>` and add the corresponding `T` inputs to the list
+ * of test inputs in the `date_test_input_cases` tuple.
  *
  * @tparam I Input index
  */
 template <std::size_t I>
-class DateTemplateTest<oa::testing::index<I>> : public DateTest {
+class DateTest<oa::testing::index<I>> : public ::testing::Test {
 private:
-	// type of the input tuple + safety check
+	// type of the input tuple
 	using inputs_type = decltype(date_template_test_inputs);
+
+	// safety check
 	static_assert(I < std::tuple_size_v<inputs_type>, "I out of bounds");
 
 	/**
@@ -364,6 +747,103 @@ private:
 	};
 
 	/**
+	 * Partial specialization for `Date` leap year checking.
+	 *
+	 * @tparam J Input index
+	 */
+	template <std::size_t J>
+	struct dispatch_type<J, std::pair<std::tuple<int, int, int>, DateIsLeap>> {
+		/**
+		 * Check if the `Date` is in a leap year or not as expected.
+		 */
+		void operator()() const
+		{
+			constexpr auto inputs = std::get<J>(date_template_test_inputs);
+			// get date inputs + create date
+			auto [y, m, d] = inputs.first;
+			oa::time::Date date{y, m, d};
+			// check
+			EXPECT_EQ(!!inputs.second, date.IsLeap());
+		}
+	};
+
+	/**
+	 * Partial specialization for `DaysInMonth()` tests.
+	 *
+	 * @tparam J Input index
+	 */
+	template <std::size_t J>
+	struct dispatch_type<J, std::pair<int, DaysInMonthInput>> {
+		/**
+		 * Check if `DaysInMonth()` works as expected.
+		 */
+		void operator()() const
+		{
+			auto [month_days, input] = std::get<J>(date_template_test_inputs);
+			EXPECT_EQ(
+				month_days,
+				oa::time::Date::DaysInMonth(input.year(), input.month())
+			);
+		}
+	};
+
+	/**
+	 * Traits helper to indicate supported `Date` binary comparison operations.
+	 *
+	 * @tparam F Binary invocable
+	 */
+	template <typename F>
+	static constexpr bool is_date_comparison_op_v = (
+		std::is_same_v<F, std::equal_to<>> ||
+		std::is_same_v<F, std::not_equal_to<>> ||
+		std::is_same_v<F, std::less<>> ||
+		std::is_same_v<F, std::less_equal<>> ||
+		std::is_same_v<F, std::greater<>> ||
+		std::is_same_v<F, std::greater_equal<>>
+	);
+
+	/**
+	 * Partial specialization for `Date` binary comparisons.
+	 *
+	 * @tparam J Input index
+	 * @tparam C Binary comparison operator
+	 */
+	template <std::size_t J, typename C>
+	requires (is_date_comparison_op_v<C>)
+	struct dispatch_type<
+		J,
+		std::tuple<
+			std::tuple<int, int, int>,  // date 1
+			C,                          // ==, !=, <, <=, >, >=
+			std::tuple<int, int, int>,  // date 2
+			bool                        // expected comparison result
+		>
+	> {
+		/**
+		 * Check that two `Date` objects compare as expected.
+		 */
+		void operator()() const
+		{
+			constexpr auto inputs = std::get<J>(date_template_test_inputs);
+			// get date inputs
+			auto [y1, m1, d1] = std::get<0>(inputs);
+			auto [y2, m2, d2] = std::get<2>(inputs);
+			// comparator + expected result
+			auto comp = std::get<1>(inputs);
+			auto expected = std::get<3>(inputs);
+			// create dates
+			oa::time::Date dt1{y1, m1, d1};
+			oa::time::Date dt2{y2, m2, d2};
+			// check based on expected result
+			EXPECT_EQ(expected, comp(dt1, dt2)) <<
+				"error: " << expected << " != (" <<
+				dt1 << " " <<
+				oa::testing::binary_format_traits<C>::op_string << " " <<
+				dt2 << ")";
+		}
+	};
+
+	/**
 	 * Partial specialization for `std::tuple<int, const char*, int>`.
 	 *
 	 * @tparam J Input index
@@ -415,16 +895,31 @@ private:
 	};
 
 	/**
-	 * Partial specialization for the old `AddTenor()` tests.
+	 * Traits helper to indicate supported `Date` arithmetic operators.
+	 *
+	 * @tparam F Binary invocable
+	 */
+	template <typename F>
+	static constexpr bool is_date_arithmetic_op_v = (
+		std::is_same_v<F, std::plus<>> ||
+		std::is_same_v<F, std::minus<>>
+	);
+
+	/**
+	 * Partial specialization for the old `AddTenor()` and `SubTenor()` tests.
 	 *
 	 * @tparam J Input index
+	 * @tparam F `std::plus<>` or `std::minus<>`
 	 */
-	template <std::size_t J>
+	template <std::size_t J, typename F>
+	requires (is_date_arithmetic_op_v<F>)
 	struct dispatch_type<
 		J,
 		std::tuple<
 			std::tuple<int, int, int>,  // input date
+			F,                          // +/-
 			const char*,                // tenor string
+			std::equal_to<>,            // =
 			const char*                 // expected date format string
 		>
 	> {
@@ -434,29 +929,51 @@ private:
 		void operator()() const
 		{
 			constexpr auto inputs = std::get<J>(date_template_test_inputs);
-			// construct date from input YMD
+			// construct date from input YMD + get tenor
 			auto [y, m, d] = std::get<0>(inputs);
 			oa::time::Date d1{y, m, d};
-			// tenor
-			oa::time::Tenor t1{std::get<1>(inputs)};
-			// create new date + check
-			auto d2 = d1.AddTenor(t1);
-			EXPECT_EQ(std::get<2>(inputs), d2.ToString());
+			oa::time::Tenor t1{std::get<2>(inputs)};
+			// create new date using AddTenor() or SubTenor()
+			auto d2 = [&d1, &t1]
+			{
+				if constexpr (std::is_same_v<F, std::plus<>>)
+					return d1.AddTenor(t1);
+				else
+					return d1.SubTenor(t1);
+			}();
+			// check
+			EXPECT_EQ(std::get<4>(inputs), d2.ToString());
 		}
 	};
 
 	/**
-	 * Partial specialization for adding dates and tenors together.
+	 * Traits helper for supported `Date` arithmetic operator arguments.
+	 *
+	 * These are not the actual arguments but types in the test input list.
+	 *
+	 * @tparam T `int` or `std::pair<int, oa::time::Tenors>`
+	 */
+	template <typename T>
+	static constexpr bool is_date_arithmetic_arg_v = (
+		std::is_same_v<T, int> ||
+		std::is_same_v<T, std::pair<int, oa::time::Tenors>>
+	);
+
+	/**
+	 * Partial specialization for adding/subtracting tenors/days from dates.
 	 *
 	 * @tparam J Input index
+	 * @tparam F `std::plus<>` or `std::minus<>`
+	 * @tparam T `std::pair<int, oa::time::Tenors` or `int`
 	 */
-	template <std::size_t J>
+	template <std::size_t J, typename F, typename T>
+	requires (is_date_arithmetic_op_v<F> && is_date_arithmetic_arg_v<T>)
 	struct dispatch_type<
 		J,
 		std::tuple<
 			std::tuple<int, int, int>,         // input date
-			std::plus<>,                       // +
-			std::pair<int, oa::time::Tenors>,  // tenor
+			F,                                 // +/-
+			T,                                 // tenor/int
 			std::equal_to<>,                   // =
 			std::tuple<int, int, int>          // expected date
 		>
@@ -467,29 +984,51 @@ private:
 		void operator()() const
 		{
 			constexpr auto inputs = std::get<J>(date_template_test_inputs);
-			// input YMD, tenor inputs, output YMD
+			// input + output YMD
 			auto [y1, m1, d1] = std::get<0>(inputs);
-			auto [tc, tu] = std::get<2>(inputs);
 			auto [y2, m2, d2] = std::get<4>(inputs);
 			// create dates + tenor
 			oa::time::Date dt1{y1, m1, d1};
-			oa::time::Tenor t1{tc, tu};
 			oa::time::Date dt2{y2, m2, d2};
+			// get tenor or day count
+			// note: can't implicitly capture inputs (compiler deficiency)
+			auto t1 = [v = std::get<2>(inputs)]
+			{
+				// day count
+				if constexpr (std::is_same_v<T, int>)
+					return v;
+				// tenor inputs
+				else
+					return oa::time::Tenor{v.first, v.second};
+			}();
 			// check
-			EXPECT_EQ(dt2, dt1 + t1);
+			// note: could invoke F{} directly but for nicer error formatting
+			// we would need to have a better way of representing the F binary
+			// operation as a string in the error message
+			if constexpr (std::is_same_v<F, std::plus<>>)
+				EXPECT_EQ(dt2, dt1 + t1);
+			else if constexpr (std::is_same_v<F, std::minus<>>)
+				EXPECT_EQ(dt2, dt1 - t1);
+			// guarded by requires() and uses function signature for relatively
+			// quick and dirty inclusion of the F type in the message
+			else
+				GTEST_FAIL() << OA_PRETTY_FUNCTION_NAME <<
+					": unknown binary functor provided";
 		}
 	};
 
 	/**
-	 * Partial specialization for adding tenors and dates together.
+	 * Partial specialization for adding tenors/days to dates.
 	 *
 	 * @tparam J Input index
+	 * @tparam T `std::pair<int, oa::time::Tenors` or `int`
 	 */
-	template <std::size_t J>
+	template <std::size_t J, typename T>
+	requires (is_date_arithmetic_arg_v<T>)
 	struct dispatch_type<
 		J,
 		std::tuple<
-			std::pair<int, oa::time::Tenors>,  // tenor
+			T,                                 // tenor/int
 			std::plus<>,                       // +
 			std::tuple<int, int, int>,         // input date
 			std::equal_to<>,                   // =
@@ -497,19 +1036,28 @@ private:
 		>
 	> {
 		/**
-		 * Check that adding a tenor to a date works as expected.
+		 * Check that adding a date to a tenor or day count works as expected.
 		 */
 		void operator()() const
 		{
 			constexpr auto inputs = std::get<J>(date_template_test_inputs);
-			// tenor inputs, input YMD, output YMD
-			auto [tc, tu] = std::get<0>(inputs);
+			// input + output YMD
 			auto [y1, m1, d1] = std::get<2>(inputs);
 			auto [y2, m2, d2] = std::get<4>(inputs);
-			// create dates + tenor
+			// create dates
 			oa::time::Date dt1{y1, m1, d1};
-			oa::time::Tenor t1{tc, tu};
 			oa::time::Date dt2{y2, m2, d2};
+			// get tenor or day count
+			// note: can't implicitly capture inputs (compiler deficiency)
+			auto t1 = [v = std::get<0>(inputs)]
+			{
+				// day count
+				if constexpr (std::is_same_v<T, int>)
+					return v;
+				// tenor inputs
+				else
+					return oa::time::Tenor{v.first, v.second};
+			}();
 			// check
 			EXPECT_EQ(dt2, t1 + dt1);
 		}
@@ -526,248 +1074,15 @@ protected:
 	}
 };
 
-/**
- * Traits type providing the `DateTemplateTest` input types.
- *
- * @tparam N Number of test cases
- */
-TYPED_TEST_SUITE(
-	DateTemplateTest,
-	oa::testing::index_types<DateTemplateTest<>::inputs_size>
-);
+// instantiate with DateTest input index types
+TYPED_TEST_SUITE(DateTest, oa::testing::index_types<DateTest<>::inputs_size>);
 
 /**
- * Evaluate the `DateTemplateTest` test.
+ * Evaluate the `DateTest` test.
  */
-TYPED_TEST(DateTemplateTest, Test)
+TYPED_TEST(DateTest, Test)
 {
-	constexpr std::chrono::system_clock::time_point a{};
 	(*this)();
-}
-
-TEST_F(DateTest, IsLeap)
-{
-	// test to see if the year 2000 is a leap year
-	oa::time::Date test_date_1("2000-7-31");
-	EXPECT_TRUE(test_date_1.IsLeap());
-
-	// test to see if the year 2024 is a leap year
-	oa::time::Date test_date_2("2024-7-31");
-	EXPECT_TRUE(test_date_2.IsLeap());
-
-	// test if the 2100 is not a leap year
-	oa::time::Date test_date_3("2100-1-1");
-	EXPECT_FALSE(test_date_3.IsLeap());
-}
-
-TEST_F(DateTest, DaysInMonth)
-{
-	using oa::time::Date;
-	//Test to see if we get leap year correct days
-	EXPECT_EQ(29, Date::DaysInMonth(2000, 2));
-	EXPECT_EQ(28, Date::DaysInMonth(2100, 2));
-	EXPECT_EQ(28, Date::DaysInMonth(2030, 2));
-	EXPECT_EQ(30, Date::DaysInMonth(2010, 11));
-	EXPECT_EQ(31, Date::DaysInMonth(2020, 12));
-}
-
-TEST_F(DateTest, DateOpOverloadingRelational)
-{
-	// test to see if the year 2000 is a leap year
-	oa::time::Date test_date_1("2000-7-31");
-	oa::time::Date test_date_2("2010-10-25");
-	oa::time::Date test_date_3("2000-7-31");
-
-	//test false date logic
-	EXPECT_FALSE(test_date_1 == test_date_2);
-	EXPECT_FALSE(test_date_1 >= test_date_2);
-	EXPECT_FALSE(test_date_1 > test_date_2);
-	EXPECT_FALSE(test_date_1 > test_date_3);
-	EXPECT_FALSE(test_date_1 < test_date_3);
-
-	//test true logic
-	EXPECT_TRUE(test_date_1 == test_date_3);
-	EXPECT_TRUE(test_date_1 <= test_date_2);
-	EXPECT_TRUE(test_date_1 < test_date_2);
-}
-
-/**
- * Test adding days using `operator+`.
- */
-TEST_F(DateTest, OpAddDays)
-{
-	using oa::time::Date;
-	// base date
-	Date d0{2022, 7, 29};
-	// expected dates
-	Date d1{2022, 7, 31};
-	Date d2{2024, 2, 29};
-	Date d3{2022, 7, 29};
-	// check when modified by increments
-	EXPECT_EQ(d1, d0 + 2);
-	EXPECT_EQ(d2, 580 + d0);
-	EXPECT_EQ(d3, d0 + 0);
-}
-
-TEST_F(DateTest, SubDays)
-{
-	oa::time::Date base_date(2022, 7, 29);
-	oa::time::Tenor test_tenor_1("2D");
-	oa::time::Tenor test_tenor_2("580d");
-	oa::time::Tenor test_tenor_3("0d");
-
-	oa::time::Date new_date_1 = base_date.SubTenor(test_tenor_1);
-	EXPECT_EQ("2022-7-27 : Julian Integer = 2459788", new_date_1.ToString());
-
-	oa::time::Date new_date_2 = base_date.SubTenor(test_tenor_2);
-	EXPECT_EQ("2020-12-26 : Julian Integer = 2459210", new_date_2.ToString());
-
-	oa::time::Date new_date_3 = base_date.SubTenor(test_tenor_3);
-	EXPECT_EQ("2022-7-29 : Julian Integer = 2459790", new_date_3.ToString());
-}
-
-TEST_F(DateTest, SubWeeks)
-{
-	oa::time::Date base_date(2022, 7, 28);
-	oa::time::Tenor test_tenor_1("2w");
-	oa::time::Tenor test_tenor_2("83w");
-	oa::time::Tenor test_tenor_3("0w");
-
-	oa::time::Date new_date_1 = base_date.SubTenor(test_tenor_1);
-	EXPECT_EQ("2022-7-14 : Julian Integer = 2459775", new_date_1.ToString());
-
-	oa::time::Date new_date_2 = base_date.SubTenor(test_tenor_2);
-	EXPECT_EQ("2020-12-24 : Julian Integer = 2459208", new_date_2.ToString());
-
-	oa::time::Date new_date_3 = base_date.SubTenor(test_tenor_3);
-	EXPECT_EQ("2022-7-28 : Julian Integer = 2459789", new_date_3.ToString());
-}
-
-TEST_F(DateTest, SubMonths)
-{
-	oa::time::Date base_date_1(2022, 7, 29);
-	oa::time::Tenor test_tenor_1("2M");
-	oa::time::Tenor test_tenor_2("29M");
-	oa::time::Tenor test_tenor_3("7M");
-	oa::time::Tenor test_tenor_4("67M");
-
-	oa::time::Date new_date_1 = base_date_1.SubTenor(test_tenor_1);
-	EXPECT_EQ("2022-5-29 : Julian Integer = 2459729", new_date_1.ToString());
-
-	oa::time::Date new_date_2 = base_date_1.SubTenor(test_tenor_2);
-	EXPECT_EQ("2020-2-29 : Julian Integer = 2458909", new_date_2.ToString());
-
-	oa::time::Date new_date_3 = base_date_1.SubTenor(test_tenor_3);
-	EXPECT_EQ("2021-12-29 : Julian Integer = 2459578", new_date_3.ToString());
-
-	oa::time::Date new_date_4 = base_date_1.SubTenor(test_tenor_4);
-	EXPECT_EQ("2016-12-29 : Julian Integer = 2457752", new_date_4.ToString());
-
-	////Test adding month to end of a month wher the last day 31st
-	oa::time::Date base_date_2(2022, 8, 31);
-	oa::time::Tenor test_tenor_5("2M");
-
-	oa::time::Date new_date_5 = base_date_2.SubTenor(test_tenor_5);
-	EXPECT_EQ("2022-6-30 : Julian Integer = 2459761", new_date_5.ToString());
-
-	// subtract out years
-	oa::time::Tenor test_tenor_6("36M");
-
-	oa::time::Date new_date_6 = base_date_2.SubTenor(test_tenor_6);
-	EXPECT_EQ("2019-8-31 : Julian Integer = 2458727", new_date_6.ToString());
-}
-
-TEST_F(DateTest, SubYears)
-{
-	oa::time::Date base_date_1(2024, 2, 29);
-	oa::time::Date base_date_2(2081, 9, 15);
-	oa::time::Date base_date_3(2015, 8, 31);
-
-	oa::time::Tenor test_tenor_1("1Y");
-	oa::time::Tenor test_tenor_2("60Y");
-	oa::time::Tenor test_tenor_3("100Y");
-
-	EXPECT_EQ("2023-2-28 : Julian Integer = 2460004", base_date_1.SubTenor(test_tenor_1).ToString());
-	EXPECT_EQ("2021-9-15 : Julian Integer = 2459473", base_date_2.SubTenor(test_tenor_2).ToString());
-	EXPECT_EQ("1915-8-31 : Julian Integer = 2420741", base_date_3.SubTenor(test_tenor_3).ToString());
-}
-
-TEST_F(DateTest, SubNegDays)
-{
-	oa::time::Date base_date(2022, 7, 29);
-	oa::time::Tenor test_tenor_1("-2D");
-	oa::time::Tenor test_tenor_2("-580d");
-	oa::time::Tenor test_tenor_3("-0d");
-
-	oa::time::Date new_date_1 = base_date.SubTenor(test_tenor_1);
-	EXPECT_EQ("2022-7-31 : Julian Integer = 2459792", new_date_1.ToString());
-
-	oa::time::Date new_date_2 = base_date.SubTenor(test_tenor_2);
-	EXPECT_EQ("2024-2-29 : Julian Integer = 2460370", new_date_2.ToString());
-
-	oa::time::Date new_date_3 = base_date.SubTenor(test_tenor_3);
-	EXPECT_EQ("2022-7-29 : Julian Integer = 2459790", new_date_3.ToString());
-}
-
-TEST_F(DateTest, SubNegWeeks)
-{
-	oa::time::Date base_date(2022, 7, 28);
-	oa::time::Tenor test_tenor_1("-2w");
-	oa::time::Tenor test_tenor_2("-83w");
-	oa::time::Tenor test_tenor_3("-0w");
-
-	oa::time::Date new_date_1 = base_date.SubTenor(test_tenor_1);
-	EXPECT_EQ("2022-8-11 : Julian Integer = 2459803", new_date_1.ToString());
-
-	oa::time::Date new_date_2 = base_date.SubTenor(test_tenor_2);
-	EXPECT_EQ("2024-2-29 : Julian Integer = 2460370", new_date_2.ToString());
-
-	oa::time::Date new_date_3 = base_date.SubTenor(test_tenor_3);
-	EXPECT_EQ("2022-7-28 : Julian Integer = 2459789", new_date_3.ToString());
-}
-
-TEST_F(DateTest, SubNegMonths)
-{
-	oa::time::Date base_date_1(2022, 7, 29);
-	oa::time::Tenor test_tenor_1("-2M");
-	oa::time::Tenor test_tenor_2("-19M");
-	oa::time::Tenor test_tenor_3("-7M");
-	oa::time::Tenor test_tenor_4("-67M");
-
-	oa::time::Date new_date_1 = base_date_1.SubTenor(test_tenor_1);
-	EXPECT_EQ("2022-9-29 : Julian Integer = 2459852", new_date_1.ToString());
-
-	oa::time::Date new_date_2 = base_date_1.SubTenor(test_tenor_2);
-	EXPECT_EQ("2024-2-29 : Julian Integer = 2460370", new_date_2.ToString());
-
-	oa::time::Date new_date_3 = base_date_1.SubTenor(test_tenor_3);
-	EXPECT_EQ("2023-2-28 : Julian Integer = 2460004", new_date_3.ToString());
-
-	oa::time::Date new_date_4 = base_date_1.SubTenor(test_tenor_4);
-	EXPECT_EQ("2028-2-29 : Julian Integer = 2461831", new_date_4.ToString());
-
-	//Test adding month to end of a month wher the last day 31st
-	oa::time::Date base_date_2(2022, 8, 31);
-	oa::time::Tenor test_tenor_5("-1M");
-
-	oa::time::Date new_date_5 = base_date_2.SubTenor(test_tenor_5);
-	EXPECT_EQ("2022-9-30 : Julian Integer = 2459853", new_date_5.ToString());
-
-}
-
-TEST_F(DateTest, SubNegYears)
-{
-	oa::time::Date base_date_1(2024, 2, 29);
-	oa::time::Date base_date_2(2021, 9, 15);
-	oa::time::Date base_date_3(2015, 8, 31);
-
-	oa::time::Tenor test_tenor_1("-1Y");
-	oa::time::Tenor test_tenor_2("-60Y");
-	oa::time::Tenor test_tenor_3("-100Y");
-
-	EXPECT_EQ("2025-2-28 : Julian Integer = 2460735", base_date_1.SubTenor(test_tenor_1).ToString());
-	EXPECT_EQ("2081-9-15 : Julian Integer = 2481388", base_date_2.SubTenor(test_tenor_2).ToString());
-	EXPECT_EQ("2115-8-31 : Julian Integer = 2493790", base_date_3.SubTenor(test_tenor_3).ToString());
 }
 
 }  // namespace
