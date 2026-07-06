@@ -12,6 +12,7 @@
 #define OA_TESTING_GTEST_H_
 
 #include <concepts>
+#include <cstddef>
 #include <cstdlib>  // for OA_GTEST_ENSURE_BASE_DIR
 #include <functional>
 #include <iomanip>
@@ -454,6 +455,80 @@ auto eq(const T& x, const U& y)
   else
     return ::testing::AssertionFailure() << x << " != " << y;
 }
+
+/**
+ * Compile-time index type.
+ *
+ * This is useful for specializing `::testing::Test<T>` where `T` is a type
+ * that holds an integral value. The reason we don't use the standard library
+ * `std::integral_constantstd::size_t, I>` or `std::index_sequence<I>` is due
+ * to both of these options having longer, more verbose type names.
+ *
+ * @tparam I Index value
+ */
+template <std::size_t I>
+class index {
+public:
+  static constexpr auto value = I;
+
+  /**
+   * Implicitly convert to the non-type type parameter value.
+   */
+  constexpr operator std::size_t() const noexcept
+  {
+    return I;
+  }
+
+  /**
+   * Return the non-type type parameter value.
+   */
+  constexpr auto operator()() const noexcept
+  {
+    return I;
+  }
+};
+
+/**
+ * Traits type to construct a `::testing::Types<...>` from another type.
+ *
+ * Typically the `T` is a `std::index_sequence<Is...>` where each `Is` indexes
+ * into an input array and each test template input type is
+ * `std::index_sequence<Is>` to index the input array.
+ *
+ * @tparam T `std::index_sequence<...>`
+ */
+template <typename T>
+struct test_types {};
+
+/**
+ * Partial specialization for a `std::index_sequence<Is...>`.
+ *
+ * This is commonly used in the aforementioned scenario where each GoogleTest
+ * test template is instantiated with an `oa::testing::index<Is>`, where each
+ * `Is` is in index into an array of inputs.
+ *
+ * @tparam Is Indices 0 through the size of the input range
+ */
+template <std::size_t... Is>
+struct test_types<std::index_sequence<Is...>> {
+  using type = ::testing::Types<index<Is>...>;
+};
+
+/**
+ * SFINAE helper to get the `::testing::Types<...>` from `test_types<T>`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+using test_types_t = typename test_types<T>::type;
+
+/**
+ * Traits type for a `::testing::Types<...>` of `oa::testing::index<Is>`.
+ *
+ * @tparam N Number of test inputs
+ */
+template <std::size_t N>
+using index_types = test_types_t<std::make_index_sequence<N>>;
 
 }  // namespace testing
 }  // namespace oa
