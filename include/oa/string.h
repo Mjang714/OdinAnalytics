@@ -36,6 +36,16 @@ constexpr char to_lower(char c) noexcept
   return (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c;
 }
 
+/**
+ * Check if a character value is an ASCII digit or not.
+ *
+ * @param c ASCII character to convert
+ */
+constexpr bool is_digit(char c) noexcept
+{
+  return c >= '0' && c <= '9';
+}
+
 }  // namespace oa
 
 #endif  // OA_STRING_H_
