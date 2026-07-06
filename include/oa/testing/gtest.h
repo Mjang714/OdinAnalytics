@@ -204,7 +204,35 @@ struct binary_format_traits<std::less<T>> {
   static constexpr const char op_string[] = "<";
 };
 
-// TODO: add more binary_format_traits specializations as appropriate
+/**
+ * Format specialization for `std::less_equal`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::less_equal<T>> {
+  static constexpr const char op_string[] = "<=";
+};
+
+/**
+ * Format specialization for `std::greater`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::greater<T>> {
+  static constexpr const char op_string[] = ">";
+};
+
+/**
+ * Format specialization for `std::greater_equal`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::greater_equal<T>> {
+  static constexpr const char op_string[] = ">=";
+};
 
 /**
  * Format multiple values into an output stream using a delimiter.
