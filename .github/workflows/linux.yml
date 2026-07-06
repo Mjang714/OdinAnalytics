@@ -85,6 +85,13 @@ jobs:
           apt-cache show libgtest-dev | grep Version | sed -E 's/Version:\s+//g'
           echo -n "GoogleMock version: "
           apt-cache show libgmock-dev | grep Version | sed -E 's/Version:\s+//g'
+      # note: although a Google library, it is not Google "branded" in its
+      # naming, so we just refer to it as Google's benchmark library
+      - name: Install Benchmark
+        run: |
+          sudo apt install libbenchmark-dev
+          echo -n "Benchmark version: "
+          apt-cache show libbenchmark-dev | grep Version | sed -E 's/Version:\s+//g'
       # note: oddly, the ubuntu-22.04 runner already has R installed, and
       # although it reports the correct 4.1.2-ubuntu2 version, it actually has
       # R 4.6.0 installed, which seems like an error on GitHub's part

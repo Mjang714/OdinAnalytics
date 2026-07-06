@@ -37,3 +37,30 @@ if(GTest_FOUND AND GMock_FOUND)
 else()
     message(STATUS "Skipping oa_unit_test (requires GoogleTest + GoogleMock)")
 endif()
+
+# oa_benchmark_main: Google benchmark main() stub
+#
+# this is provided to avoid issues with the upstream Ubuntu 22.04 package
+# libbenchmark-dev 1.6.1-1 which provides a libbenchmark_main.a with an older,
+# incompatible LTO version. since LTO doesn't really matter for a main() stub,
+# we simply provide our own version to avoid any LTO incompatibilities.
+#
+if(benchmark_FOUND)
+    add_library(oa_benchmark_main STATIC benchmark_main.cpp)
+    # note: although oa_benchmark_main only requires PRIVATE linkage to build,
+    # any consumer will of course need to link against the benchmark target
+    # itself, so we use PUBLIC to ensure usage requirements are propagated
+    target_link_libraries(oa_benchmark_main PUBLIC benchmark::benchmark)
+else()
+    message(STATUS "Skipping oa_benchmark_main (requires Benchmark)")
+endif()
+
+# isdigit_bench: oa::is_digit() vs. std::isdigit() microbenchmark
+# note: not added as a CTest test since benchmarking programs are not tests and
+# should be run isolated to ensure accurate benchmarking results
+if(benchmark_FOUND)
+    add_executable(isdigit_bench isdigit_bench.cpp)
+    target_link_libraries(isdigit_bench PRIVATE oa_benchmark_main oa_core)
+else()
+    message(STATUS "Skipping isdigit_bench (requires Benchmark)")
+endif()

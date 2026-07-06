@@ -125,6 +125,16 @@ else()
     message(STATUS "GoogleMock version: None")
 endif()
 
+# find Google's benchmarking library
+# note: GetBenchmarkVersion() was added in the 1.8.4 release to allow runtime
+# querying of the benchmark library version being used
+find_package(benchmark 1.6.1)
+if(benchmark_FOUND)
+    message(STATUS "Benchmark version: ${benchmark_VERSION}")
+else()
+    message(STATUS "Benchmark version: None")
+endif()
+
 # look for Excel 2013 XLL SDK
 # note: we don't actually need the GENERIC sample XLL but it is a nice example
 if(WIN32)
