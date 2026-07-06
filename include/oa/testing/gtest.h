@@ -28,8 +28,6 @@
 #include <gtest/gtest.h>
 
 #include "oa/warnings.h"
-// TODO: refactor include path when namespacing is implemented
-#include "time/date.h"
 
 // GTEST_SKIP compatibility macro for pre-1.10 Google Test versions
 #ifdef GTEST_SKIP
@@ -60,37 +58,6 @@
 #ifndef INSTANTIATE_TYPED_TEST_SUITE_P
 #define INSTANTIATE_TYPED_TEST_SUITE_P INSTANTIATE_TYPED_TEST_CASE_P
 #endif  // INSTANTIATE_TYPED_TEST_SUITE_P
-
-namespace oa {
-namespace time {
-
-/**
- * Custom Google Test printer for `oa::time::Date`.
- *
- * The print format is `YYYY/MM/DD ([0-9]+)`, where the integer portion in
- * parentheses is the Julian date integer value of the date object.
- *
- * @param date Date to print
- * @param stream Stream to write to
- */
-inline void PrintTo(const Date& date, std::ostream* stream)
-{
-  // save current stream fill character and set to '0'
-  auto fill_char = stream->fill();
-  stream->fill('0');
-  // get Gregorian date components
-  auto [y, m, d] = date.gregorian();
-  // print in YYYY/MM/DD ([0-9]+), note std::setw resets after each expression
-  *stream <<
-    std::setw(4) << y << "/" <<
-    std::setw(2) << m << "/" <<
-    std::setw(2) << d << " (" << date.julian() << ")";
-  // fill character needs to be manually reset
-  stream->fill(fill_char);
-}
-
-}  // namespace time
-}  // namespace oa
 
 namespace oa {
 namespace testing {
