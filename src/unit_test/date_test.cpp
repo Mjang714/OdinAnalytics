@@ -34,6 +34,11 @@ constexpr auto date_template_test_inputs = std::make_tuple(
 	std::pair{"190O-12-04", false},
 	std::pair{"19-10-2004", false},
 	std::pair{"12-10-2007", false},
+	std::pair{"12-00-2007", false},
+	std::pair{"2007-12-32", false},
+	std::pair{"2008-2-30", false},
+	std::pair{std::tuple{2008, 2, 30}, false},
+	std::pair{std::tuple{2008, 13, 30}, false},
 	// test delimiter consistency
 	std::pair{"2020/09-24", false},
 	std::pair{"2025:1-23", false},
@@ -41,6 +46,10 @@ constexpr auto date_template_test_inputs = std::make_tuple(
 	std::pair{"1900-12-04", true},
 	std::pair{"1900:12:04", true},
 	std::pair{"1900/12/04", true},
+	std::pair{"2007-12-31", true},
+	std::pair{"2008-2-28", true},
+	std::pair{std::tuple{2008, 2, 28}, true},
+	std::pair{std::tuple{2007, 12, 31}, true},
 	// test Julian day number and day of week
 	std::tuple{"2022-7-31", 2459792, 6},
 	std::tuple{"2000-1-1", 2451545, 5},
@@ -305,6 +314,31 @@ private:
 				EXPECT_NO_THROW(oa::time::Date{inputs.first});
 			else
 				EXPECT_ANY_THROW(oa::time::Date{inputs.first});
+		}
+	};
+
+	/**
+	 * Partial specialization for `std::pair<std::tuple<int, int, int>, bool>`.
+	 *
+	 * @tparam J Input index
+	 */
+	template <std::size_t J>
+	struct dispatch_type<J, std::pair<std::tuple<int, int, int>, bool>> {
+		/**
+		 * Check that the given input throws or does not throw appropriately.
+		 */
+		void operator()() const
+		{
+			constexpr auto inputs = std::get<J>(date_template_test_inputs);
+			// get year, month, day
+			auto [y, m, d] = inputs.first;
+			// check
+			// note: extra parentheses required to treat braced-list-init in
+			// macro invocation as a single argument
+			if constexpr (inputs.second)
+				EXPECT_NO_THROW((oa::time::Date{y, m, d}));
+			else
+				EXPECT_ANY_THROW((oa::time::Date{y, m, d}));
 		}
 	};
 
