@@ -80,7 +80,7 @@ Date::YMD(std::string_view ymd)
 	// parse year
 	while (n_end != ymd.end() && is_digit(*n_end))
 		n_end++;
-	// error if range is empty, wrong size, delimiter is invalid, or no month
+	// error if range is empty, wrong size, no month, or delimiter is invalid
 	// note: n_begin == n_end also catches case of empty date string
 	// note: always do n_end - n_begin as MSVC STL is strict and in debug mode
 	// raises an assertion if you try to seek past the end of a string_view
@@ -88,10 +88,10 @@ Date::YMD(std::string_view ymd)
 		throw std::runtime_error{"date missing year component"};
 	if (n_end - n_begin != 4)
 		throw std::runtime_error{"date year field must be 4 characters wide"};
-	if (!is_delim(*n_end))
-		throw std::runtime_error{"encountered invalid year delimiter"};
 	if (n_end == ymd.end())
 		throw std::runtime_error{"date string truncated (no month)"};
+	if (!is_delim(*n_end))
+		throw std::runtime_error{"encountered invalid year delimiter"};
 	// save as current date delimiter + convert year
 	auto delim = *n_end;
 	auto y = to<int>(n_begin, n_end, unsafe);
@@ -99,15 +99,15 @@ Date::YMD(std::string_view ymd)
 	n_begin = ++n_end;
 	while (n_end != ymd.end() && is_digit(*n_end))
 		n_end++;
-	// error if range is empty, wrong size, delimiter is invalid, or no day
+	// error if range is empty, wrong size, no day, or delimiter is invalid
 	if (n_begin == n_end)
 		throw std::runtime_error{"date missing month component"};
 	if (n_end - n_begin > 2)
 		throw std::runtime_error{"date month field must be <=2 characters wide"};
-	if (*n_end != delim)
-		throw std::runtime_error{"encountered invalid/inconsistent month delimiter"};
 	if (n_end == ymd.end())
 		throw std::runtime_error{"date string truncated (no day)"};
+	if (*n_end != delim)
+		throw std::runtime_error{"encountered invalid/inconsistent month delimiter"};
 	// convert month
 	auto m = to<int>(n_begin, n_end, unsafe);
 	// parse day
