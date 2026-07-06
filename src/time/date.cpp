@@ -409,7 +409,8 @@ std::ostream& operator<<(std::ostream& out, const Date& date)
 	out.fill('0');
 	// get Gregorian date components
 	auto [y, m, d] = date.gregorian();
-	// print in YYYY/MM/DD ([0-9]+), note std::setw resets each operator<<
+	// print in YYYY-MM-DD
+	// note: std::setw resets each after operator<< on an integral value
 	out <<
 		std::setw(4) << y << "-" <<
 		std::setw(2) << m << "-" <<
