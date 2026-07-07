@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cstddef>
 #include <functional>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -70,6 +71,8 @@ constexpr auto date_template_test_inputs = std::make_tuple(
 	std::pair{"20-6-6", false},
 	std::pair{"2006/09/", false},
 	std::pair{"/234sdfs", false},
+	std::pair{std::tuple{2005, -12, 111}, false},
+	std::pair{std::tuple{-100, 2, 45}, false},
 	// test delimiter consistency
 	std::pair{"2020/09-24", false},
 	std::pair{"2025:1-23", false},
@@ -667,6 +670,7 @@ private:
 	 *
 	 * This allows us to segregate logic based on the test case input type
 	 * while also ensuring we can obtain the input as a constant expression.
+	 * Each dispatcher should implement `operator()` to run the testing logic.
 	 *
 	 * @note The extra index argument enables us to create partial
 	 *  specializations by changing `T` as we cannot have explicit template
@@ -696,7 +700,7 @@ private:
 			if constexpr (inputs.second)
 				EXPECT_NO_THROW(oa::time::Date{inputs.first});
 			else
-				EXPECT_ANY_THROW(oa::time::Date{inputs.first});
+				EXPECT_THROW(oa::time::Date{inputs.first}, std::runtime_error);
 		}
 	};
 
@@ -721,7 +725,7 @@ private:
 			if constexpr (inputs.second)
 				EXPECT_NO_THROW((oa::time::Date{y, m, d}));
 			else
-				EXPECT_ANY_THROW((oa::time::Date{y, m, d}));
+				EXPECT_THROW((oa::time::Date{y, m, d}), std::runtime_error);
 		}
 	};
 
