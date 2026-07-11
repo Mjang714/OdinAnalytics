@@ -17,7 +17,6 @@
 
 #include <gtest/gtest.h>
 
-#include "oa/ctti.h"           // for OA_PRETTY_FUNCTION_NAME
 #include "oa/testing/gtest.h"  // for index_types, binary_format_traits
 #include "oa/time/tenor.h"     // for oa::time::Tenor
 
@@ -840,7 +839,7 @@ private:
 			oa::time::Date dt2{y2, m2, d2};
 			// check based on expected result
 			EXPECT_EQ(expected, comp(dt1, dt2)) <<
-				"error: " << expected << " != (" <<
+				"FAIL: " << expected << " != (" <<
 				dt1 << " " <<
 				oa::testing::binary_format_traits<C>::op_string << " " <<
 				dt2 << ")";
@@ -988,10 +987,12 @@ private:
 		void operator()() const
 		{
 			constexpr auto inputs = std::get<J>(date_template_test_inputs);
+			// get binary invocable
+			auto op = std::get<1>(inputs);
 			// input + output YMD
 			auto [y1, m1, d1] = std::get<0>(inputs);
 			auto [y2, m2, d2] = std::get<4>(inputs);
-			// create dates + tenor
+			// create dates
 			oa::time::Date dt1{y1, m1, d1};
 			oa::time::Date dt2{y2, m2, d2};
 			// get tenor or day count
@@ -1006,18 +1007,11 @@ private:
 					return oa::time::Tenor{v.first, v.second};
 			}();
 			// check
-			// note: could invoke F{} directly but for nicer error formatting
-			// we would need to have a better way of representing the F binary
-			// operation as a string in the error message
-			if constexpr (std::is_same_v<F, std::plus<>>)
-				EXPECT_EQ(dt2, dt1 + t1);
-			else if constexpr (std::is_same_v<F, std::minus<>>)
-				EXPECT_EQ(dt2, dt1 - t1);
-			// guarded by requires() and uses function signature for relatively
-			// quick and dirty inclusion of the F type in the message
-			else
-				GTEST_FAIL() << OA_PRETTY_FUNCTION_NAME <<
-					": unknown binary functor provided";
+			EXPECT_EQ(dt2, op(dt1, t1)) <<
+				"FAIL: " << dt2 << " != (" <<
+				dt1 << " " <<
+				oa::testing::binary_format_traits<F>::op_string << " " <<
+				t1 << ")";
 		}
 	};
 
