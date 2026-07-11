@@ -982,7 +982,7 @@ private:
 		>
 	> {
 		/**
-		 * Check that adding a tenor to a date works as expected.
+		 * Check that adding/subtracting to/from a tenor works as expected.
 		 */
 		void operator()() const
 		{
