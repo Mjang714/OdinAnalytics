@@ -102,19 +102,19 @@ namespace oa {
 namespace testing {
 
 /**
- * Format traits for binary comparators.
+ * Format traits for binary comparators or operators.
  *
- * Eligible binary invocables, e.g. `std::equal_to<>`, can specialize this type
- * with a `static constexpr const char[]` member named `op_string` that
- * represents how the operator should be represented textually.
+ * Eligible binary invocables, e.g. `std::equal_to<>`, `std::plus<>`, can
+ * specialize this type with a `static constexpr const char[]` member named
+ * `op_string` that provides a textual representation for the operator.
  *
- * @tparam T Binary comparator
+ * @tparam T Binary invocable
  */
 template <typename T>
 struct binary_format_traits {};
 
 /**
- * Traits to check if a binary comparator has a valid traits specialization.
+ * Traits to check if a binary invocable has a valid traits specialization.
  *
  * @tparam T type
  */
@@ -122,7 +122,7 @@ template <typename T, typename = void>
 struct has_binary_format_traits : std::false_type {};
 
 /**
- * True specialization for a binary comparator with the `op_string` member.
+ * True specialization for a binary invocable with the `op_string` member.
  *
  * @note We could be more detailed in checking `op_string` traits.
  *
@@ -134,7 +134,7 @@ struct has_binary_format_traits<
   : std::true_type {};
 
 /**
- * Indicate if a binary comparator has a valid traits specialization.
+ * Indicate if a binary invocable has a valid traits specialization.
  *
  * @tparam T type
  */
@@ -200,6 +200,48 @@ template <typename T>
 struct binary_format_traits<std::greater_equal<T>> {
   static constexpr const char op_string[] = ">=";
 };
+
+/**
+ * Format specialization for `std::plus`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::plus<T>> {
+  static constexpr const char op_string[] = "+";
+};
+
+/**
+ * Format specialization for `std::minus`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::minus<T>> {
+  static constexpr const char op_string[] = "-";
+};
+
+/**
+ * Format specialization for `std::multiplies`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::multiplies<T>> {
+  static constexpr const char op_string[] = "*";
+};
+
+/**
+ * Format specialization for `std::divides`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::divides<T>> {
+  static constexpr const char op_string[] = "/";
+};
+
+// note: can add more specializations, e.g. for std::logical_and, etc.
 
 /**
  * Format multiple values into an output stream using a delimiter.
