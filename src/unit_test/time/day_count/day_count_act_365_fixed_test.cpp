@@ -1,254 +1,112 @@
-#include "gtest/gtest.h"
-
-#include "time/date.h"
 #include "time/day_count/day_count_act_365_fixed.h"
 
+#include <cstddef>
+#include <tuple>
 
-namespace
-{
-	class DayCountAct365FixedTest : public::testing::Test
+#include <gtest/gtest.h>
+
+// TODO: fix includes
+#include "oa/testing/day_count.h"
+#include "oa/testing/gtest.h"
+// TODO: way too many separate headers for day counters
+#include "time/day_count/day_count_act_365_fixed.h"
+
+namespace {
+
+/**
+ * `DayCountAct365Fixed` test template.
+ *
+ * @tparam T `oa::testing::index<I>` for test case `I` or `void`
+ */
+template <typename T = void>
+class DayCountAct365FixedTest {
+public:
+	// convenience type alias for the CRTP base type corresponding to test I
+	template <std::size_t I>
+	using base_type = oa::testing::DayCountTestBase<
+		DayCountAct365FixedTest<oa::testing::index<I>>
+	>;
+
+	// test inputs
+	static constexpr auto inputs = std::make_tuple(
+		// day count tests
+		std::tuple{std::tuple{2007, 1, 15}, std::tuple{2007, 1, 30}, 15},
+		std::tuple{std::tuple{2007, 1, 15}, std::tuple{2007, 2, 15}, 31},
+		std::tuple{std::tuple{2007, 1, 15}, std::tuple{2007, 7, 15}, 181},
+		std::tuple{std::tuple{2007, 9, 30}, std::tuple{2008, 3, 31}, 183},
+		std::tuple{std::tuple{2007, 9, 30}, std::tuple{2007, 10, 31}, 31},
+		std::tuple{std::tuple{2007, 9, 30}, std::tuple{2008, 9, 30}, 366},
+		std::tuple{std::tuple{2007, 1, 15}, std::tuple{2007, 1, 31}, 16},
+		std::tuple{std::tuple{2007, 1, 31}, std::tuple{2007, 2, 28}, 28},
+		std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 31},
+		std::tuple{std::tuple{2006, 8, 31}, std::tuple{2007, 2, 28}, 181},
+		std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 8, 31}, 184},
+		std::tuple{std::tuple{2007, 2, 14}, std::tuple{2007, 2, 28}, 14},
+		std::tuple{std::tuple{2007, 2, 26}, std::tuple{2008, 2, 29}, 368},
+		std::tuple{std::tuple{2008, 2, 29}, std::tuple{2009, 2, 28}, 365},
+		std::tuple{std::tuple{2008, 2, 29}, std::tuple{2008, 3, 30}, 30},
+		std::tuple{std::tuple{2008, 2, 29}, std::tuple{2008, 3, 31}, 31},
+		std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 5}, 5},
+		std::tuple{std::tuple{2007, 10, 31}, std::tuple{2007, 11, 28}, 28},
+		std::tuple{std::tuple{2007, 8, 31}, std::tuple{2008, 2, 29}, 182},
+		std::tuple{std::tuple{2008, 2, 29}, std::tuple{2008, 8, 31}, 184},
+		std::tuple{std::tuple{2008, 8, 31}, std::tuple{2009, 2, 28}, 181},
+		std::tuple{std::tuple{2009, 2, 28}, std::tuple{2009, 8, 31}, 184},
+		// year fraction tests
+		std::tuple{std::tuple{2007, 1, 15}, std::tuple{2007, 1, 30}, 15 / 365.},
+		std::tuple{std::tuple{2007, 1, 15}, std::tuple{2007, 2, 15}, 31 / 365.},
+		std::tuple{std::tuple{2007, 1, 15}, std::tuple{2007, 7, 15}, 181 / 365.},
+		std::tuple{std::tuple{2007, 9, 30}, std::tuple{2008, 3, 31}, 183 / 365.},
+		std::tuple{std::tuple{2007, 9, 30}, std::tuple{2007, 10, 31}, 31 / 365.},
+		std::tuple{std::tuple{2007, 9, 30}, std::tuple{2008, 9, 30}, 366 / 365.},
+		std::tuple{std::tuple{2007, 1, 15}, std::tuple{2007, 1, 31}, 16 / 365.},
+		std::tuple{std::tuple{2007, 1, 31}, std::tuple{2007, 2, 28}, 28 / 365.},
+		std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 31 / 365.},
+		std::tuple{std::tuple{2006, 8, 31}, std::tuple{2007, 2, 28}, 181 / 365.},
+		std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 8, 31}, 184 / 365.},
+		std::tuple{std::tuple{2007, 2, 14}, std::tuple{2007, 2, 28}, 14 / 365.},
+		std::tuple{std::tuple{2007, 2, 26}, std::tuple{2008, 2, 29}, 368 / 365.},
+		std::tuple{std::tuple{2008, 2, 29}, std::tuple{2009, 2, 28}, 1.},
+		std::tuple{std::tuple{2008, 2, 29}, std::tuple{2008, 3, 30}, 30 / 365.},
+		std::tuple{std::tuple{2008, 2, 29}, std::tuple{2008, 3, 31}, 31 / 365.},
+		std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 5}, 5 / 365.},
+		std::tuple{std::tuple{2007, 10, 31}, std::tuple{2007, 11, 28}, 28 / 365.},
+		std::tuple{std::tuple{2007, 8, 31}, std::tuple{2008, 2, 29}, 182 / 365.},
+		std::tuple{std::tuple{2008, 2, 29}, std::tuple{2008, 8, 31}, 184 / 365.},
+		std::tuple{std::tuple{2008, 8, 31}, std::tuple{2009, 2, 28}, 181 / 365.},
+		std::tuple{std::tuple{2009, 2, 28}, std::tuple{2009, 8, 31}, 184 / 365.}
+	);
+	// number of test inputs for index_types
+	static constexpr auto inputs_size = std::tuple_size_v<decltype(inputs)>;
+
+	// helper to retrieve input I
+	template <std::size_t I>
+	static constexpr auto& input() noexcept
 	{
-		public:
-			oa::time::DayCountAct365Fixed day_counter_act_365_fixed;
-
-			void SetUp() override
-			{
-				day_counter_act_365_fixed = oa::time::DayCountAct365Fixed();
-			}
-
-			void TearDown() override
-			{
-				//remove any heap allocated objtects if there were any
-			}
-	};
-
-	TEST_F(DayCountAct365FixedTest, DayCountTest)
-	{
-		oa::time::Date day1, day2;
-
-		// first test
-		day1 = oa::time::Date(2007, 1, 15);
-		day2 = oa::time::Date(2007, 1, 30);
-		EXPECT_EQ(15, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//second test
-		day1 = oa::time::Date(2007, 1, 15);
-		day2 = oa::time::Date(2007, 2, 15);
-		EXPECT_EQ(31, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//third test
-		day1 = oa::time::Date(2007, 1, 15);
-		day2 = oa::time::Date(2007, 7, 15);
-		EXPECT_EQ(181, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//fourth test
-		day1 = oa::time::Date(2007, 9, 30);
-		day2 = oa::time::Date(2008, 3, 31);
-		EXPECT_EQ(183, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//fifth test
-		day1 = oa::time::Date(2007, 9, 30);
-		day2 = oa::time::Date(2007, 10, 31);
-		EXPECT_EQ(31, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//sixth test
-		day1 = oa::time::Date(2007, 9, 30);
-		day2 = oa::time::Date(2008, 9, 30);
-		EXPECT_EQ(366, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//seventh test
-		day1 = oa::time::Date(2007, 1, 15);
-		day2 = oa::time::Date(2007, 1, 31);
-		EXPECT_EQ(16, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//eigth test
-		day1 = oa::time::Date(2007, 1, 31);
-		day2 = oa::time::Date(2007, 2, 28);
-		EXPECT_EQ(28, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//ninth test
-		day1 = oa::time::Date(2007, 2, 28);
-		day2 = oa::time::Date(2007, 3, 31);
-		EXPECT_EQ(31, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//tenth test
-		day1 = oa::time::Date(2006, 8, 31);
-		day2 = oa::time::Date(2007, 2, 28);
-		EXPECT_EQ(181, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//evenlth test
-		day1 = oa::time::Date(2007, 2, 28);
-		day2 = oa::time::Date(2007, 8, 31);
-		EXPECT_EQ(184, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//twelfth test
-		day1 = oa::time::Date(2007, 2, 14);
-		day2 = oa::time::Date(2007, 2, 28);
-		EXPECT_EQ(14, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//thirteen test
-		day1 = oa::time::Date(2007, 2, 26);
-		day2 = oa::time::Date(2008, 2, 29);
-		EXPECT_EQ(368, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//fourteenth test (check this)
-		day1 = oa::time::Date(2008, 2, 29);
-		day2 = oa::time::Date(2009, 2, 28);
-		EXPECT_EQ(365, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//fifteenth test
-		day1 = oa::time::Date(2008, 2, 29);
-		day2 = oa::time::Date(2008, 3, 30);
-		EXPECT_EQ(30, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//sixteenth test
-		day1 = oa::time::Date(2008, 2, 29);
-		day2 = oa::time::Date(2008, 3, 31);
-		EXPECT_EQ(31, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//seventeenth test
-		day1 = oa::time::Date(2007, 2, 28);
-		day2 = oa::time::Date(2007, 3, 5);
-		EXPECT_EQ(5, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//eighteenth test
-		day1 = oa::time::Date(2007, 10, 31);
-		day2 = oa::time::Date(2007, 11, 28);
-		EXPECT_EQ(28, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//nineteenth test
-		day1 = oa::time::Date(2007, 8, 31);
-		day2 = oa::time::Date(2008, 2, 29);
-		EXPECT_EQ(182, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//twentieth test
-		day1 = oa::time::Date(2008, 2, 29);
-		day2 = oa::time::Date(2008, 8, 31);
-		EXPECT_EQ(184, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//twenty first test (check this)
-		day1 = oa::time::Date(2008, 8, 31);
-		day2 = oa::time::Date(2009, 2, 28);
-		EXPECT_EQ(181, day_counter_act_365_fixed.DayCount(day1, day2));
-
-		//twenty second test
-		day1 = oa::time::Date(2009, 2, 28);
-		day2 = oa::time::Date(2009, 8, 31);
-		EXPECT_EQ(184, day_counter_act_365_fixed.DayCount(day1, day2));
+		return std::get<I>(inputs);
 	}
+};
 
-	TEST_F(DayCountAct365FixedTest, YearFractionTest)
-	{
-		oa::time::Date day1, day2;
+/**
+ * Partial specialization for test case input `I`.
+ *
+ * @tparam T Test input index in `DayCountAct365FixedTest<>::inputs`
+ */
+template <std::size_t I>
+class DayCountAct365FixedTest<oa::testing::index<I>>
+  : public DayCountAct365FixedTest<>::base_type<I> {
+public:
+	oa::time::DayCountAct365Fixed dc;
+	static constexpr auto& input = DayCountAct365FixedTest<>::input<I>();
+};
 
-		// first test
-		day1 = oa::time::Date(2007, 1, 15);
-		day2 = oa::time::Date(2007, 1, 30);
-		EXPECT_DOUBLE_EQ(15/365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
+// instantiate index<I> types
+TYPED_TEST_SUITE(
+	DayCountAct365FixedTest,
+	oa::testing::index_types<DayCountAct365FixedTest<>::inputs_size>
+);
 
-		//second test
-		day1 = oa::time::Date(2007, 1, 15);
-		day2 = oa::time::Date(2007, 2, 15);
-		EXPECT_DOUBLE_EQ(31 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
+// instantiate test
+OA_DAY_COUNT_TEST(DayCountAct365FixedTest);
 
-		//third test
-		day1 = oa::time::Date(2007, 1, 15);
-		day2 = oa::time::Date(2007, 7, 15);
-		EXPECT_DOUBLE_EQ(181 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//fourth test
-		day1 = oa::time::Date(2007, 9, 30);
-		day2 = oa::time::Date(2008, 3, 31);
-		EXPECT_DOUBLE_EQ(183 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//fifth test
-		day1 = oa::time::Date(2007, 9, 30);
-		day2 = oa::time::Date(2007, 10, 31);
-		EXPECT_DOUBLE_EQ(31 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//sixth test
-		day1 = oa::time::Date(2007, 9, 30);
-		day2 = oa::time::Date(2008, 9, 30);
-		EXPECT_DOUBLE_EQ(366 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//seventh test
-		day1 = oa::time::Date(2007, 1, 15);
-		day2 = oa::time::Date(2007, 1, 31);
-		EXPECT_DOUBLE_EQ(16 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//eigth test
-		day1 = oa::time::Date(2007, 1, 31);
-		day2 = oa::time::Date(2007, 2, 28);
-		EXPECT_DOUBLE_EQ(28 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//ninth test
-		day1 = oa::time::Date(2007, 2, 28);
-		day2 = oa::time::Date(2007, 3, 31);
-		EXPECT_DOUBLE_EQ(31 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//tenth test
-		day1 = oa::time::Date(2006, 8, 31);
-		day2 = oa::time::Date(2007, 2, 28);
-		EXPECT_DOUBLE_EQ(181 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//evenlth test
-		day1 = oa::time::Date(2007, 2, 28);
-		day2 = oa::time::Date(2007, 8, 31);
-		EXPECT_DOUBLE_EQ(184 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//twelfth test
-		day1 = oa::time::Date(2007, 2, 14);
-		day2 = oa::time::Date(2007, 2, 28);
-		EXPECT_DOUBLE_EQ(14 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//thirteen test
-		day1 = oa::time::Date(2007, 2, 26);
-		day2 = oa::time::Date(2008, 2, 29);
-		EXPECT_DOUBLE_EQ(368 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//fourteenth test (check this)
-		day1 = oa::time::Date(2008, 2, 29);
-		day2 = oa::time::Date(2009, 2, 28);
-		EXPECT_DOUBLE_EQ(365 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//fifteenth test
-		day1 = oa::time::Date(2008, 2, 29);
-		day2 = oa::time::Date(2008, 3, 30);
-		EXPECT_DOUBLE_EQ(30 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//sixteenth test
-		day1 = oa::time::Date(2008, 2, 29);
-		day2 = oa::time::Date(2008, 3, 31);
-		EXPECT_DOUBLE_EQ(31 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//seventeenth test
-		day1 = oa::time::Date(2007, 2, 28);
-		day2 = oa::time::Date(2007, 3, 5);
-		EXPECT_DOUBLE_EQ(5 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//eighteenth test
-		day1 = oa::time::Date(2007, 10, 31);
-		day2 = oa::time::Date(2007, 11, 28);
-		EXPECT_DOUBLE_EQ(28 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//nineteenth test
-		day1 = oa::time::Date(2007, 8, 31);
-		day2 = oa::time::Date(2008, 2, 29);
-		EXPECT_DOUBLE_EQ(182 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//twentieth test
-		day1 = oa::time::Date(2008, 2, 29);
-		day2 = oa::time::Date(2008, 8, 31);
-		EXPECT_DOUBLE_EQ(184 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//twenty first test (check this)
-		day1 = oa::time::Date(2008, 8, 31);
-		day2 = oa::time::Date(2009, 2, 28);
-		EXPECT_DOUBLE_EQ(181 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-
-		//twenty second test
-		day1 = oa::time::Date(2009, 2, 28);
-		day2 = oa::time::Date(2009, 8, 31);
-		EXPECT_DOUBLE_EQ(184 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
-	}
-}
+}  // namespace
