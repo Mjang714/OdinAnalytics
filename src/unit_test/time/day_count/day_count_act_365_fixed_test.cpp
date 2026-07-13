@@ -1,3 +1,4 @@
+// TODO: way too many separate headers for day counters
 #include "time/day_count/day_count_act_365_fixed.h"
 
 #include <cstddef>
@@ -5,11 +6,8 @@
 
 #include <gtest/gtest.h>
 
-// TODO: fix includes
 #include "oa/testing/day_count.h"
 #include "oa/testing/gtest.h"
-// TODO: way too many separate headers for day counters
-#include "time/day_count/day_count_act_365_fixed.h"
 
 namespace {
 
