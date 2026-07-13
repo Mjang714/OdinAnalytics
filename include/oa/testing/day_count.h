@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 
+#include "oa/common.h"
 #include "oa/testing/gtest.h"
 #include "oa/time/date.h"
 
@@ -69,7 +70,10 @@ namespace testing {
  * );
  *
  * // instantiate test
- * OA_DAY_COUNT_TEST(DayCountAct265FixedTest);
+ * TYPED_TEST(DayCountAct265FixedTest, Test)
+ * {
+ *   (*this)();
+ * }
  * @endcode
  *
  * This allows elimination of repeated `EXPECT_EQ()` and `EXPECT_DOUBLE_EQ()`
@@ -82,11 +86,17 @@ namespace testing {
  *
  * Note that the two required members of the derived test type are:
  *
- *  * `dc`, a `DayCounterBase` derived type
- *  * `input`, a copy or const reference to the test input `I`
+ *  - `dc`, a `DayCounterBase` derived type
+ *  - `input`, a copy or const reference to the test input `I`
  *
  * Both `dc` and `input` can be static or non-static members, but it is
  * recommended to at least make `input` static and `constexpr` if possible.
+ * Furthermore, the only accepted test case input types are as follows:
+ *
+ *  - `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, int>`
+ *    for a test case testing the day count between two dates
+ *  - `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, double>`
+ *    for a test case testing the year fraction between two dates
  *
  * @tparam T `TYPED_TEST()` test case template where `oa::testing::index<I>` is
  *  the intended template parameter, `I` indexing into the test cases, although
@@ -222,18 +232,64 @@ protected:
   }
 };
 
+#if 0
 /**
- * Instantiate the `TYPED_TEST()` for the `DayCountTestBase<T>` test.
+ * Instantiate the types and `TYPED_TEST()` for a `DayCountTestBase<T>` test.
  *
- * @param test_type `DayCountTestBase<T>` derived test type
+ * This defines all the necessary templates for a `DayCountTestBase<T>` derived
+ * test, using the assumption that a `std::make_tuple(...)` will used to create
+ * the test case inputs. If no additional customizations need to be made, this
+ * macro simply requires the template type name + a list of test inputs.
+ *
+ * The test associated with the test type is simply called `Test`.
+ *
+ * @note This macro cannot be used until GoogleTest changes their typed test
+ *  macros to first properly expand their arguments.
+ *
+ * @param day_count_type `oa::time::` day counter type name
+ * @param ... Test inputs of type
+ *  `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, int>` or
+ *  `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, double>`
  */
-#define OA_DAY_COUNT_TEST(test_type) \
-  TYPED_TEST(test_type, Test) \
+#define OA_DAY_COUNT_TEST(day_count_type, ...) \
+  /* base template for managing test inputs and other data */ \
+  template <typename T = void> \
+  class OA_CONCAT(day_count_type, Test) { \
+  public: \
+    /* test inputs + number of test inputs */ \
+    static constexpr auto inputs = std::make_tuple(__VA_ARGS__); \
+    static constexpr auto inputs_size = std::tuple_size_v<decltype(inputs)>; \
+    /* helper to get a reference to input I */ \
+    template <std::size_t I> \
+    static constexpr auto& input() noexcept { return std::get<I>(inputs); } \
+  }; \
+  \
+  /* partial specialization for test case input I */ \
+  template <std::size_t I> \
+  class OA_CONCAT(day_count_type, Test)<oa::testing::index<I>> \
+    : public oa::testing::DayCountTestBase< \
+        OA_CONCAT(day_count_type, Test)<oa::testing::index<I>> > { \
+  public: \
+    /* day counter member + test input */ \
+    oa::time::day_count_type dc; \
+    /* reference to input I */ \
+    static constexpr auto& input = OA_CONCAT(day_count_type, Test)<>::input<I>(); \
+  }; \
+  \
+  /* instantiate index<I> types */ \
+  TYPED_TEST_SUITE( \
+    OA_CONCAT(day_count_type, Test), \
+    oa::testing::index_types<OA_CONCAT(day_count_type, Test)<>::inputs_size> \
+  ); \
+  \
+  /* instantiate the test for test_type*/ \
+  TYPED_TEST(OA_CONCAT(day_count_type, Test), Test) \
   { \
     (*this)(); \
   } \
   /* enforce terminating semicolon */ \
   static_assert(true)
+#endif  // 0
 
 }  // namespace testing
 }  // namespace oa
