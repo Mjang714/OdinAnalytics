@@ -1,6 +1,14 @@
-#include "gtest/gtest.h"
+// TODO: way too many separate headers for day counters
+#include "time/day_count/day_counter_factory.h"
 
-#include "time/date.h"
+#include <cstddef>
+#include <memory>
+#include <tuple>
+
+#include <gtest/gtest.h>
+
+#include "oa/testing/day_count.h"
+#include "oa/testing/gtest.h"
 #include "time/day_count/day_count_base.h"
 #include "time/day_count/day_count_30_360_bond_basis.h"
 #include "time/day_count/day_count_30_360e_isda.h"
@@ -8,67 +16,205 @@
 #include "time/day_count/day_count_act_360.h"
 #include "time/day_count/day_count_act_act.h"
 #include "time/day_count/day_count_act_365_fixed.h"
-#include "time/day_count/day_counter_factory.h"
 
-namespace
-{
-	class FactoryTestDayCount : public::testing::Test
+namespace {
+
+/**
+ * Class template mixin to generate the day counter instance.
+ *
+ * @tparam type `DayCountRule` enumerator
+ */
+template <oa::time::DayCountRule type>
+class DayCounterGenerator {
+public:
+	/**
+	 * Return the appropriate day counter instance given the enum type.
+	 */
+	auto counter() const
 	{
-		public:
-			std::unique_ptr <oa::time::DayCounterBase> day_count_act_act;
-			std::unique_ptr <oa::time::DayCounterBase> day_count_act_360;
-			std::unique_ptr <oa::time::DayCounterBase> day_count_act_365f;
-			std::unique_ptr <oa::time::DayCounterBase> day_count_30_360;
-			std::unique_ptr <oa::time::DayCounterBase> day_count_30E_360;
-			std::unique_ptr <oa::time::DayCounterBase> day_count_30E_360_isda;
+		return oa::time::DayCounterFactory::GenerateDayCounter(type);
+	}
+};
 
-			oa::time::Date start_date;
-			oa::time::Date end_date;
-
-			void SetUp() override
-			{
-				day_count_act_act = oa::time::DayCounterFactory::GenerateDayCounter(oa::time::DayCountRule::kACT_ACT);
-				day_count_act_360 = oa::time::DayCounterFactory::GenerateDayCounter(oa::time::DayCountRule::kACT_360);
-				day_count_act_365f = oa::time::DayCounterFactory::GenerateDayCounter(oa::time::DayCountRule::kACT_365_FIXED);
-				day_count_30_360 = oa::time::DayCounterFactory::GenerateDayCounter(oa::time::DayCountRule::k30_360_BOND_BASIS);
-				day_count_30E_360 = oa::time::DayCounterFactory::GenerateDayCounter(oa::time::DayCountRule::k30_360_E_EUROBOND);
-				day_count_30E_360_isda = oa::time::DayCounterFactory::GenerateDayCounter(oa::time::DayCountRule::k30_E_360_ISDA);
-
-				start_date = oa::time::Date(2007, 2, 28);
-				end_date = oa::time::Date(2007, 3, 31);
-			}
-
-			void TearDown() override
-			{
-
-			}
-	};
-
-	TEST_F(FactoryTestDayCount, DayCountTest)
-	{
-		//check normal dates work
-		EXPECT_EQ(31, day_count_act_act->DayCount(start_date, end_date));
-		EXPECT_EQ(31, day_count_act_360->DayCount(start_date, end_date));
-		EXPECT_EQ(31, day_count_act_365f->DayCount(start_date, end_date));
-		EXPECT_EQ(33, day_count_30_360->DayCount(start_date, end_date));
-		EXPECT_EQ(32, day_count_30E_360->DayCount(start_date, end_date));
-		EXPECT_EQ(30, day_count_30E_360_isda->DayCount(start_date, end_date));
-
-		//check the reverse dates
-		EXPECT_EQ(-31, day_count_act_act->DayCount(end_date, start_date));
-		EXPECT_EQ(-31, day_count_act_360->DayCount(end_date, start_date));
-		EXPECT_EQ(-31, day_count_act_365f->DayCount(end_date, start_date));
-		EXPECT_EQ(-33, day_count_30_360->DayCount(end_date, start_date));
-		EXPECT_EQ(-32, day_count_30E_360->DayCount(end_date, start_date));
-		EXPECT_EQ(-30, day_count_30E_360_isda->DayCount(end_date, start_date));
+/**
+ * Declare a day count factory test with the given name and inputs.
+ *
+ * This defines the base GoogleTest test class template to hold the tuple of
+ * inputs as well as help members and member functions.
+ *
+ * @note `test_name` cannot be a macro due to a shortcoming in GoogleTest's
+ *  implementation of `TYPED_TEST_SUITE()` and `TYPED_TEST()`.
+ *
+ * @param test_name GoogleTest test class name
+ * @param ... Test inputs of type
+ *  `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, int>` or
+ *  `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, double>`
+ */
+#define OA_DECLARE_DAY_COUNT_FACTORY_TEST(test_name, ...) \
+	/* base template for managing test inputs + other data */ \
+	template <typename T = void> \
+	class test_name { \
+	public: \
+		/* base type template for input I */ \
+		template <std::size_t I> \
+		using base_type = oa::testing::DayCountTestBase< \
+			test_name<oa::testing::index<I>> \
+		>; \
+		\
+		/* test inputs + number of test inputs */ \
+		static constexpr auto inputs = std::make_tuple(__VA_ARGS__); \
+		static constexpr auto inputs_size = std::tuple_size_v<decltype(inputs)>; \
+		\
+		/* helper to retrieve test input I */ \
+		template <std::size_t I> \
+		static constexpr auto& input() noexcept \
+		{ \
+			return std::get<I>(inputs); \
+		} \
 	}
 
-	TEST_F(FactoryTestDayCount, YearFractionTest)
-	{
-		EXPECT_DOUBLE_EQ(31 / 360.0, day_count_act_360->YearFraction(start_date, end_date));
-		EXPECT_DOUBLE_EQ(31 / 365.0, day_count_act_365f->YearFraction(start_date, end_date));
-		EXPECT_DOUBLE_EQ(33 / 360.0, day_count_30_360->YearFraction(start_date, end_date));
-		EXPECT_DOUBLE_EQ(32 / 360.0, day_count_30E_360->YearFraction(start_date, end_date));
-		EXPECT_DOUBLE_EQ(30 / 360.0, day_count_30E_360_isda->YearFraction(start_date, end_date));
-	}
-}
+/**
+ * Define the day count factory test with the given name and day count rule.
+ *
+ * This defines the `oa::testing::index<I>` partial specialization for the test
+ * class template, instantiates the types for `TYPED_TEST_SUITE()`, and defines
+ * a test named `Test` using `TYPED_TEST()` for the test class template.
+ *
+ * @note `test_name` cannot be a macro due to a shortcoming in GoogleTest's
+ *  implementation of `TYPED_TEST_SUITE()` and `TYPED_TEST()`.
+ *
+ * @param test_name GoogleTest test class name
+ * @param rule `oa::time::DayCountRule` enumerator value
+ */
+#define OA_DEFINE_DAY_COUNT_FACTORY_TEST(test_name, rule) \
+	/* partial specialization for each test case I */ \
+	template <std::size_t I> \
+	class test_name<oa::testing::index<I>> \
+	  : public test_name<>::base_type<I>, \
+		public DayCounterGenerator<rule> { \
+	public: \
+		std::unique_ptr<oa::time::DayCounterBase> dc = counter(); \
+		static constexpr auto& input = test_name<>::input<I>(); \
+	}; \
+	\
+	/* instantiate index<I> types */ \
+	TYPED_TEST_SUITE( \
+		test_name, \
+		oa::testing::index_types<test_name<>::inputs_size> \
+	); \
+	\
+	/* instantiate test */ \
+	TYPED_TEST(test_name, Test) \
+	{ \
+		(*this)(); \
+	} \
+	/* enforce terminating semicolon */ \
+	static_assert(true)
+
+////////////////////////////////////////////////////////////////////////////////
+// kACT_ACT tests                                                             //
+////////////////////////////////////////////////////////////////////////////////
+
+OA_DECLARE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactoryActActTest,
+	// day count tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 31},
+	std::tuple{std::tuple{2007, 3, 31}, std::tuple{2007, 2, 28}, -31}
+);
+
+OA_DEFINE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactoryActActTest,
+	oa::time::DayCountRule::kACT_ACT
+);
+
+////////////////////////////////////////////////////////////////////////////////
+// kACT_360 tests                                                             //
+////////////////////////////////////////////////////////////////////////////////
+
+OA_DECLARE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactoryAct360Test,
+	// day count tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 31},
+	std::tuple{std::tuple{2007, 3, 31}, std::tuple{2007, 2, 28}, -31},
+	// year fraction tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 31 / 360.}
+);
+
+OA_DEFINE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactoryAct360Test,
+	oa::time::DayCountRule::kACT_360
+);
+
+////////////////////////////////////////////////////////////////////////////////
+// kACT_365_FIXED tests                                                       //
+////////////////////////////////////////////////////////////////////////////////
+
+OA_DECLARE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactoryAct365Test,
+	// day count tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 31},
+	std::tuple{std::tuple{2007, 3, 31}, std::tuple{2007, 2, 28}, -31},
+	// year fraction tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 31 / 365.}
+);
+
+OA_DEFINE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactoryAct365Test,
+	oa::time::DayCountRule::kACT_365_FIXED
+);
+
+////////////////////////////////////////////////////////////////////////////////
+// k30_360_BOND_BASIS tests                                                   //
+////////////////////////////////////////////////////////////////////////////////
+
+OA_DECLARE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactory30360Test,
+	// day count tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 33},
+	std::tuple{std::tuple{2007, 3, 31}, std::tuple{2007, 2, 28}, -33},
+	// year fraction tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 33 / 360.}
+);
+
+OA_DEFINE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactory30360Test,
+	oa::time::DayCountRule::k30_360_BOND_BASIS
+);
+
+////////////////////////////////////////////////////////////////////////////////
+// k30_360_E_EUROBOND tests                                                   //
+////////////////////////////////////////////////////////////////////////////////
+
+OA_DECLARE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactory30360ETest,
+	// day count tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 32},
+	std::tuple{std::tuple{2007, 3, 31}, std::tuple{2007, 2, 28}, -32},
+	// year fraction tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 32 / 360.}
+);
+
+OA_DEFINE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactory30360ETest,
+	oa::time::DayCountRule::k30_360_E_EUROBOND
+);
+
+////////////////////////////////////////////////////////////////////////////////
+// k30_E_360_ISDA tests                                                       //
+////////////////////////////////////////////////////////////////////////////////
+
+OA_DECLARE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactory30E360Test,
+	// day count tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 30},
+	std::tuple{std::tuple{2007, 3, 31}, std::tuple{2007, 2, 28}, -30},
+	// year fraction tests
+	std::tuple{std::tuple{2007, 2, 28}, std::tuple{2007, 3, 31}, 30 / 360.}
+);
+
+OA_DEFINE_DAY_COUNT_FACTORY_TEST(
+	DayCountFactory30E360Test,
+	oa::time::DayCountRule::k30_E_360_ISDA
+);
+
+}  // namespace
