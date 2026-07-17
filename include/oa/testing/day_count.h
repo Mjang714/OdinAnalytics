@@ -9,6 +9,7 @@
 #define OA_TESTING_DAY_COUNT_H_
 
 #include <cstddef>
+#include <iterator>
 #include <tuple>
 #include <type_traits>
 
@@ -86,7 +87,8 @@ namespace testing {
  *
  * Note that the two required members of the derived test type are:
  *
- *  - `dc`, a `DayCounterBase` derived type
+ *  - `dc`, a `DayCounterBase` derived type object or an indirectly readable
+ *    object to a `DayCounterBase`, e.g. a `std::unique_ptr<DayCounterBase>`
  *  - `input`, a copy or const reference to the test input `I`
  *
  * Both `dc` and `input` can be static or non-static members, but it is
@@ -139,7 +141,10 @@ private:
    */
   auto day_count(const date_type& d1, const date_type& d2) const
   {
-    return self().dc.DayCount(d1, d2);
+    if constexpr (std::indirectly_readable<decltype(self().dc)>)
+      return (*self().dc).DayCount(d1, d2);
+    else
+      return self().dc.DayCount(d1, d2);
   }
 
   /**
@@ -150,7 +155,10 @@ private:
    */
   auto year_fraction(const date_type& d1, const date_type& d2) const
   {
-    return self().dc.YearFraction(d1, d2);
+    if constexpr (std::indirectly_readable<decltype(self().dc)>)
+      return (*self().dc).YearFraction(d1, d2);
+    else
+      return self().dc.YearFraction(d1, d2);
   }
 
   /**
