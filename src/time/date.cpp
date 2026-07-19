@@ -277,7 +277,8 @@ Date::AddMonths(int months) const
 	{
 		new_year = year + (month + months) / 12;
 		new_month = (month + months) % 12;
-		//added this for when you are in june add 6M then land in decmebr but the year counter increments :S
+		// added this for when you are in June, add 6M, then land in December,
+		// as the year count ends up being incremented
 		if (new_month <= 0)
 		{
 			new_month = new_month + 12;
