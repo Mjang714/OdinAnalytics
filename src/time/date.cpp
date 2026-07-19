@@ -19,6 +19,7 @@
 #include <utility>
 
 #include "helpers/utils.h"
+#include "oa/scope_exit.h"
 #include "oa/string.h"
 #include "oa/to.h"
 #include "oa/time/tenor.h"
@@ -401,22 +402,19 @@ Date::operator-(const Tenor& tenor) const
 
 std::ostream& operator<<(std::ostream& out, const Date& date)
 {
-	// save current stream fill character and set to '0'
-	// note: if an exception were thrown in this function the fill character
-	// would not be reset. for exception safety a scope guard is necessary
-	auto fill_char = out.fill();
+	// ensure fill character is reset on scope exit
+	// note: this ensures the fill character is reset even on exception throw
+	scope_exit _{[&out, c = out.fill()] { out.fill(c); }};
+	// set fill to '0' to enable zero-padding of fields
 	out.fill('0');
 	// get Gregorian date components
 	auto [y, m, d] = date.gregorian();
 	// print in YYYY-MM-DD
 	// note: std::setw resets each after operator<< on an integral value
-	out <<
+	return out <<
 		std::setw(4) << y << "-" <<
 		std::setw(2) << m << "-" <<
 		std::setw(2) << d;
-	// fill character needs to be manually reset
-	out.fill(fill_char);
-	return out;
 }
 
 Date operator+(const Date& date, int days) /*noexcept*/
