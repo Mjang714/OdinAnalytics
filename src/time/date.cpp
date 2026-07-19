@@ -402,11 +402,9 @@ Date::operator-(const Tenor& tenor) const
 
 std::ostream& operator<<(std::ostream& out, const Date& date)
 {
-	// save current stream fill character + ensure reset on scope exit
-	// note: scope_exit is used to ensure that even on exception the fill
-	// character can be reset to the previous fill character
-	auto fc = out.fill();
-	scope_exit _{[&out, fc] { out.fill(fc); }};
+	// ensure fill character is reset on scope exit
+	// note: this ensures the fill character is reset even on exception throw
+	scope_exit _{[&out, c = out.fill()] { out.fill(c); }};
 	// set fill to '0' to enable zero-padding of fields
 	out.fill('0');
 	// get Gregorian date components
