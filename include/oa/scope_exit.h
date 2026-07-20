@@ -98,6 +98,11 @@ public:
   scope_exit(const scope_exit&) = delete;
 
   /**
+   * Deleted move ctor.
+   */
+  scope_exit(scope_exit&&) = delete;
+
+  /**
    * Dtor.
    *
    * Invokes and deletes the contained callable, swallowing any exceptions.
