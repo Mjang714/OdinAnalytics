@@ -5,8 +5,8 @@ add_library(
     oa_time
     calendar.cpp
     date.cpp
+    enums.cpp
     tenor.cpp
-    time_enums.cpp
     time_enum_mappers.cpp
     date_adjust/adjustment_factory.cpp
     date_adjust/date_adjust_following.cpp

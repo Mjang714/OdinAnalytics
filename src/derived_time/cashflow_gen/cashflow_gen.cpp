@@ -77,15 +77,30 @@ CashflowGen::Options::reset_direction(ResetDirection dir) noexcept
 }
 
 StubType
-CashflowGen::Options::stub_type() const noexcept
+CashflowGen::Options::front_stub_type() const noexcept
 {
-	return stub_type_;
+
+	return front_stub_type_;
 }
 
 CashflowGen::Options&
-CashflowGen::Options::stub_type(StubType type) noexcept
+CashflowGen::Options::front_stub_type(StubType type) noexcept
 {
-	stub_type_ = type;
+	front_stub_type_ = type;
+	return *this;
+}
+
+StubType
+CashflowGen::Options::back_stub_type() const noexcept
+{
+
+	return back_stub_type_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::back_stub_type(StubType type) noexcept
+{
+	back_stub_type_ = type;
 	return *this;
 }
 
@@ -142,15 +157,28 @@ CashflowGen::Options::fix_adjustment(BusinessDateFormula adj)
 }
 
 time::Date
-CashflowGen::Options::stub_date() const
+CashflowGen::Options::front_stub_date() const
 {
-	return stub_date_;
+	return front_stub_date_;
 }
 
 CashflowGen::Options&
-CashflowGen::Options::stub_date(time::Date date)
+CashflowGen::Options::front_stub_date(time::Date date)
 {
-	stub_date_ = date;
+	front_stub_date_ = date;
+	return *this;
+}
+
+time::Date
+CashflowGen::Options::back_stub_date() const
+{
+	return back_stub_date_;
+}
+
+CashflowGen::Options&
+CashflowGen::Options::back_stub_date(time::Date date)
+{
+	back_stub_date_ = date;
 	return *this;
 }
 
@@ -224,7 +252,7 @@ CashflowGen::Options::calc_type(CalcType type)
 			std::reverse(unadjusted_end_dates.begin(), unadjusted_end_dates.end());
 		}
 
-		if(opts.stub_type() != StubType::kNone) 
+		if(opts.front_stub_type() != StubType::kNone || opts.back_stub_type() != StubType::kNone)
 		{
 			StubDateAdjustments(start_date, mat_date, unadjusted_start_dates, unadjusted_end_dates, opts);
 		}
@@ -299,13 +327,13 @@ CashflowGen::Options::calc_type(CalcType type)
 		switch (opts.date_direction()) {
 			// backwards date direction
 		case DateDirection::kBackward:
-			switch (opts.stub_type()) {
+			switch (opts.front_stub_type()) {
 			case StubType::kLongFirst:
 				unadjusted_start_dates.erase(unadjusted_start_dates.begin());
 				unadjusted_end_dates.erase(unadjusted_end_dates.begin());
 				[[fallthrough]];
 			case StubType::kShortFirst:
-				unadjusted_start_dates.front() = opts.stub_date().value_or(start_date);
+				unadjusted_start_dates.front() = opts.front_stub_date().value_or(start_date);
 				break;
 			default:
 				break;
@@ -313,13 +341,13 @@ CashflowGen::Options::calc_type(CalcType type)
 			break;
 			// forward date direction
 		case DateDirection::kForward:
-			switch (opts.stub_type()) {
+			switch (opts.back_stub_type()) {
 			case StubType::kLongLast:
 				unadjusted_end_dates.pop_back();
 				unadjusted_start_dates.pop_back();
 				[[fallthrough]];
 			case StubType::kShortLast:
-				unadjusted_end_dates.back() = opts.stub_date().value_or(mat_date);
+				unadjusted_end_dates.back() = opts.back_stub_date().value_or(mat_date);
 				break;
 			default:
 				break;

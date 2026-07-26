@@ -12,6 +12,7 @@
 #define OA_TESTING_GTEST_H_
 
 #include <concepts>
+#include <cstddef>
 #include <cstdlib>  // for OA_GTEST_ENSURE_BASE_DIR
 #include <functional>
 #include <iomanip>
@@ -27,8 +28,6 @@
 #include <gtest/gtest.h>
 
 #include "oa/warnings.h"
-// TODO: refactor include path when namespacing is implemented
-#include "time/date.h"
 
 // GTEST_SKIP compatibility macro for pre-1.10 Google Test versions
 #ifdef GTEST_SKIP
@@ -59,34 +58,6 @@
 #ifndef INSTANTIATE_TYPED_TEST_SUITE_P
 #define INSTANTIATE_TYPED_TEST_SUITE_P INSTANTIATE_TYPED_TEST_CASE_P
 #endif  // INSTANTIATE_TYPED_TEST_SUITE_P
-
-namespace oa {
-namespace time {
-
-/**
- * Custom Google Test printer for `oa::time::Date`.
- *
- * The print format is `YYYY/MM/DD ([0-9]+)`, where the integer portion in
- * parentheses is the Julian date integer value of the date object.
- *
- * @param date Date to print
- * @param stream Stream to write to
- */
-inline void PrintTo(const Date& date, std::ostream* stream)
-{
-  // save current stream fill character and set to '0'
-  auto fill_char = stream->fill();
-  stream->fill('0');
-  // print in YYYY/MM/DD ([0-9]+), note std::setw resets after each expression
-  *stream << std::setw(4) << date.m_years() << "/" <<
-    std::setw(2) << date.m_months() << "/" <<
-    std::setw(2) << date.m_days() << " (" << date.GetJulian() << ")";
-  // fill character needs to be manually reset
-  stream->fill(fill_char);
-}
-
-}  // namespace time
-}  // namespace oa
 
 namespace oa {
 namespace testing {
@@ -131,19 +102,19 @@ namespace oa {
 namespace testing {
 
 /**
- * Format traits for binary comparators.
+ * Format traits for binary comparators or operators.
  *
- * Eligible binary invocables, e.g. `std::equal_to<>`, can specialize this type
- * with a `static constexpr const char[]` member named `op_string` that
- * represents how the operator should be represented textually.
+ * Eligible binary invocables, e.g. `std::equal_to<>`, `std::plus<>`, can
+ * specialize this type with a `static constexpr const char[]` member named
+ * `op_string` that provides a textual representation for the operator.
  *
- * @tparam T Binary comparator
+ * @tparam T Binary invocable
  */
 template <typename T>
 struct binary_format_traits {};
 
 /**
- * Traits to check if a binary comparator has a valid traits specialization.
+ * Traits to check if a binary invocable has a valid traits specialization.
  *
  * @tparam T type
  */
@@ -151,7 +122,7 @@ template <typename T, typename = void>
 struct has_binary_format_traits : std::false_type {};
 
 /**
- * True specialization for a binary comparator with the `op_string` member.
+ * True specialization for a binary invocable with the `op_string` member.
  *
  * @note We could be more detailed in checking `op_string` traits.
  *
@@ -163,7 +134,7 @@ struct has_binary_format_traits<
   : std::true_type {};
 
 /**
- * Indicate if a binary comparator has a valid traits specialization.
+ * Indicate if a binary invocable has a valid traits specialization.
  *
  * @tparam T type
  */
@@ -200,7 +171,77 @@ struct binary_format_traits<std::less<T>> {
   static constexpr const char op_string[] = "<";
 };
 
-// TODO: add more binary_format_traits specializations as appropriate
+/**
+ * Format specialization for `std::less_equal`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::less_equal<T>> {
+  static constexpr const char op_string[] = "<=";
+};
+
+/**
+ * Format specialization for `std::greater`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::greater<T>> {
+  static constexpr const char op_string[] = ">";
+};
+
+/**
+ * Format specialization for `std::greater_equal`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::greater_equal<T>> {
+  static constexpr const char op_string[] = ">=";
+};
+
+/**
+ * Format specialization for `std::plus`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::plus<T>> {
+  static constexpr const char op_string[] = "+";
+};
+
+/**
+ * Format specialization for `std::minus`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::minus<T>> {
+  static constexpr const char op_string[] = "-";
+};
+
+/**
+ * Format specialization for `std::multiplies`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::multiplies<T>> {
+  static constexpr const char op_string[] = "*";
+};
+
+/**
+ * Format specialization for `std::divides`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct binary_format_traits<std::divides<T>> {
+  static constexpr const char op_string[] = "/";
+};
+
+// note: can add more specializations, e.g. for std::logical_and, etc.
 
 /**
  * Format multiple values into an output stream using a delimiter.
@@ -451,6 +492,80 @@ auto eq(const T& x, const U& y)
   else
     return ::testing::AssertionFailure() << x << " != " << y;
 }
+
+/**
+ * Compile-time index type.
+ *
+ * This is useful for specializing `::testing::Test<T>` where `T` is a type
+ * that holds an integral value. The reason we don't use the standard library
+ * `std::integral_constantstd::size_t, I>` or `std::index_sequence<I>` is due
+ * to both of these options having longer, more verbose type names.
+ *
+ * @tparam I Index value
+ */
+template <std::size_t I>
+class index {
+public:
+  static constexpr auto value = I;
+
+  /**
+   * Implicitly convert to the non-type type parameter value.
+   */
+  constexpr operator std::size_t() const noexcept
+  {
+    return I;
+  }
+
+  /**
+   * Return the non-type type parameter value.
+   */
+  constexpr auto operator()() const noexcept
+  {
+    return I;
+  }
+};
+
+/**
+ * Traits type to construct a `::testing::Types<...>` from another type.
+ *
+ * Typically the `T` is a `std::index_sequence<Is...>` where each `Is` indexes
+ * into an input array and each test template input type is
+ * `std::index_sequence<Is>` to index the input array.
+ *
+ * @tparam T `std::index_sequence<...>`
+ */
+template <typename T>
+struct test_types {};
+
+/**
+ * Partial specialization for a `std::index_sequence<Is...>`.
+ *
+ * This is commonly used in the aforementioned scenario where each GoogleTest
+ * test template is instantiated with an `oa::testing::index<Is>`, where each
+ * `Is` is in index into an array of inputs.
+ *
+ * @tparam Is Indices 0 through the size of the input range
+ */
+template <std::size_t... Is>
+struct test_types<std::index_sequence<Is...>> {
+  using type = ::testing::Types<index<Is>...>;
+};
+
+/**
+ * SFINAE helper to get the `::testing::Types<...>` from `test_types<T>`.
+ *
+ * @tparam T type
+ */
+template <typename T>
+using test_types_t = typename test_types<T>::type;
+
+/**
+ * Traits type for a `::testing::Types<...>` of `oa::testing::index<Is>`.
+ *
+ * @tparam N Number of test inputs
+ */
+template <std::size_t N>
+using index_types = test_types_t<std::make_index_sequence<N>>;
 
 }  // namespace testing
 }  // namespace oa

@@ -89,14 +89,24 @@ namespace oa::derived_time {
 			Options& reset_direction(ResetDirection dir) noexcept;
 
 			/**
-			 * Return the stub type.
+			 * Return the front stub type.
 			 */
-			StubType stub_type() const noexcept;
+			StubType front_stub_type() const noexcept;
 
 			/**
-			 * Update the stub type.
+			 * Update the front stub type.
 			 */
-			Options& stub_type(StubType type) noexcept;
+			Options& front_stub_type(StubType type) noexcept;
+
+			/**
+			 * Return the back stub type.
+			 */
+			StubType back_stub_type() const noexcept;
+
+			/**
+			 * Update the back stub type.
+			 */
+			Options& back_stub_type(StubType type) noexcept;
 
 			/**
 			 * Return the start date adjustment.
@@ -139,14 +149,24 @@ namespace oa::derived_time {
 			Options& fix_adjustment(BusinessDateFormula adj);
 
 			/**
-			 * Return the optional cash flow stub date.
+			 * Update the cash flow front stub date.
 			 */
-			time::Date stub_date() const;
+			Options& front_stub_date(time::Date date);
 
 			/**
-			 * Update the cash flow stub date.
+			 * Return the optional cash flow back stub date.
 			 */
-			Options& stub_date(time::Date date);
+			time::Date front_stub_date() const;
+
+			/**
+			 * Return the optional cash flow back stub date.
+			 */
+			time::Date back_stub_date() const;
+
+			/**
+			 * Update the cash flow back stub date.
+			 */
+			Options& back_stub_date(time::Date date);
 
 			/**
 			 * Return the calculation type for the cash flow amount.
@@ -164,8 +184,10 @@ namespace oa::derived_time {
 			DateDirection date_dir_{DateDirection::kBackward};    // date direction
 			CashflowType cashflow_type_{CashflowType::kFixed};    // cashflow type
 			ResetDirection reset_dir_{ResetDirection::kAdvance};  // reset direction
-			StubType stub_type_{StubType::kNone};                 // stub type
-			time::Date stub_date_;                                // stub date
+			StubType front_stub_type_{StubType::kNone};               // front_stub type
+			time::Date front_stub_date_;                              // front_stub date
+			StubType back_stub_type_{StubType::kNone};                // back_stub type
+			time::Date back_stub_date_;                               // back_stub date
 			BusinessDateFormula start_adj_;                       // start date adjustment
 			BusinessDateFormula end_adj_;                         // end date adjustment
 			BusinessDateFormula pay_adj_;                         // payment date adjustment

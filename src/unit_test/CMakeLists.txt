@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 # oa_unit_test: Odin master unit test runner
 add_executable(
     oa_unit_test
-    # FIXME: should put this test file in unit_test
-    ../time/day_count/day_count_act_365_fixed_test.cpp
     # broken, probably because bond math stuff is in solutions, not src
     # bond_math_test.cpp
     calendar_test.cpp
@@ -29,6 +27,7 @@ add_executable(
     time/day_count/day_count_30_360_e_isda_test.cpp
     time/day_count/day_count_30_e_360_eurobond_basis_test.cpp
     time/day_count/day_count_act_360_test.cpp
+    time/day_count/day_count_act_365_fixed_test.cpp
     time/day_count/day_count_act_act_test.cpp
     time/day_count/day_count_factory_test.cpp
     time_enum_mappers_test.cpp

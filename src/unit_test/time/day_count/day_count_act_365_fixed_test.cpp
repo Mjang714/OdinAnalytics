@@ -26,7 +26,7 @@ namespace
 	{
 		oa::time::Date day1, day2;
 
-		// first test 
+		// first test
 		day1 = oa::time::Date(2007, 1, 15);
 		day2 = oa::time::Date(2007, 1, 30);
 		EXPECT_EQ(15, day_counter_act_365_fixed.DayCount(day1, day2));
@@ -36,57 +36,57 @@ namespace
 		day2 = oa::time::Date(2007, 2, 15);
 		EXPECT_EQ(31, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//third test 
+		//third test
 		day1 = oa::time::Date(2007, 1, 15);
 		day2 = oa::time::Date(2007, 7, 15);
 		EXPECT_EQ(181, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//fourth test 
+		//fourth test
 		day1 = oa::time::Date(2007, 9, 30);
 		day2 = oa::time::Date(2008, 3, 31);
 		EXPECT_EQ(183, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//fifth test 
+		//fifth test
 		day1 = oa::time::Date(2007, 9, 30);
 		day2 = oa::time::Date(2007, 10, 31);
 		EXPECT_EQ(31, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//sixth test 
+		//sixth test
 		day1 = oa::time::Date(2007, 9, 30);
 		day2 = oa::time::Date(2008, 9, 30);
 		EXPECT_EQ(366, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//seventh test 
+		//seventh test
 		day1 = oa::time::Date(2007, 1, 15);
 		day2 = oa::time::Date(2007, 1, 31);
 		EXPECT_EQ(16, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//eigth test 
+		//eigth test
 		day1 = oa::time::Date(2007, 1, 31);
 		day2 = oa::time::Date(2007, 2, 28);
 		EXPECT_EQ(28, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//ninth test 
+		//ninth test
 		day1 = oa::time::Date(2007, 2, 28);
 		day2 = oa::time::Date(2007, 3, 31);
 		EXPECT_EQ(31, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//tenth test 
+		//tenth test
 		day1 = oa::time::Date(2006, 8, 31);
 		day2 = oa::time::Date(2007, 2, 28);
 		EXPECT_EQ(181, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//evenlth test 
+		//evenlth test
 		day1 = oa::time::Date(2007, 2, 28);
 		day2 = oa::time::Date(2007, 8, 31);
 		EXPECT_EQ(184, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//twelfth test 
+		//twelfth test
 		day1 = oa::time::Date(2007, 2, 14);
 		day2 = oa::time::Date(2007, 2, 28);
 		EXPECT_EQ(14, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//thirteen test 
+		//thirteen test
 		day1 = oa::time::Date(2007, 2, 26);
 		day2 = oa::time::Date(2008, 2, 29);
 		EXPECT_EQ(368, day_counter_act_365_fixed.DayCount(day1, day2));
@@ -96,42 +96,42 @@ namespace
 		day2 = oa::time::Date(2009, 2, 28);
 		EXPECT_EQ(365, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//fifteenth test 
+		//fifteenth test
 		day1 = oa::time::Date(2008, 2, 29);
 		day2 = oa::time::Date(2008, 3, 30);
 		EXPECT_EQ(30, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//sixteenth test 
+		//sixteenth test
 		day1 = oa::time::Date(2008, 2, 29);
 		day2 = oa::time::Date(2008, 3, 31);
 		EXPECT_EQ(31, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//seventeenth test 
+		//seventeenth test
 		day1 = oa::time::Date(2007, 2, 28);
 		day2 = oa::time::Date(2007, 3, 5);
 		EXPECT_EQ(5, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//eighteenth test 
+		//eighteenth test
 		day1 = oa::time::Date(2007, 10, 31);
 		day2 = oa::time::Date(2007, 11, 28);
 		EXPECT_EQ(28, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//nineteenth test 
+		//nineteenth test
 		day1 = oa::time::Date(2007, 8, 31);
 		day2 = oa::time::Date(2008, 2, 29);
 		EXPECT_EQ(182, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//twentieth test 
+		//twentieth test
 		day1 = oa::time::Date(2008, 2, 29);
 		day2 = oa::time::Date(2008, 8, 31);
 		EXPECT_EQ(184, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//twenty first test (check this) 
+		//twenty first test (check this)
 		day1 = oa::time::Date(2008, 8, 31);
 		day2 = oa::time::Date(2009, 2, 28);
 		EXPECT_EQ(181, day_counter_act_365_fixed.DayCount(day1, day2));
 
-		//twenty second test 
+		//twenty second test
 		day1 = oa::time::Date(2009, 2, 28);
 		day2 = oa::time::Date(2009, 8, 31);
 		EXPECT_EQ(184, day_counter_act_365_fixed.DayCount(day1, day2));
@@ -141,7 +141,7 @@ namespace
 	{
 		oa::time::Date day1, day2;
 
-		// first test 
+		// first test
 		day1 = oa::time::Date(2007, 1, 15);
 		day2 = oa::time::Date(2007, 1, 30);
 		EXPECT_DOUBLE_EQ(15/365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
@@ -151,57 +151,57 @@ namespace
 		day2 = oa::time::Date(2007, 2, 15);
 		EXPECT_DOUBLE_EQ(31 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//third test 
+		//third test
 		day1 = oa::time::Date(2007, 1, 15);
 		day2 = oa::time::Date(2007, 7, 15);
 		EXPECT_DOUBLE_EQ(181 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//fourth test 
+		//fourth test
 		day1 = oa::time::Date(2007, 9, 30);
 		day2 = oa::time::Date(2008, 3, 31);
 		EXPECT_DOUBLE_EQ(183 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//fifth test 
+		//fifth test
 		day1 = oa::time::Date(2007, 9, 30);
 		day2 = oa::time::Date(2007, 10, 31);
 		EXPECT_DOUBLE_EQ(31 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//sixth test 
+		//sixth test
 		day1 = oa::time::Date(2007, 9, 30);
 		day2 = oa::time::Date(2008, 9, 30);
 		EXPECT_DOUBLE_EQ(366 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//seventh test 
+		//seventh test
 		day1 = oa::time::Date(2007, 1, 15);
 		day2 = oa::time::Date(2007, 1, 31);
 		EXPECT_DOUBLE_EQ(16 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//eigth test 
+		//eigth test
 		day1 = oa::time::Date(2007, 1, 31);
 		day2 = oa::time::Date(2007, 2, 28);
 		EXPECT_DOUBLE_EQ(28 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//ninth test 
+		//ninth test
 		day1 = oa::time::Date(2007, 2, 28);
 		day2 = oa::time::Date(2007, 3, 31);
 		EXPECT_DOUBLE_EQ(31 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//tenth test 
+		//tenth test
 		day1 = oa::time::Date(2006, 8, 31);
 		day2 = oa::time::Date(2007, 2, 28);
 		EXPECT_DOUBLE_EQ(181 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//evenlth test 
+		//evenlth test
 		day1 = oa::time::Date(2007, 2, 28);
 		day2 = oa::time::Date(2007, 8, 31);
 		EXPECT_DOUBLE_EQ(184 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//twelfth test 
+		//twelfth test
 		day1 = oa::time::Date(2007, 2, 14);
 		day2 = oa::time::Date(2007, 2, 28);
 		EXPECT_DOUBLE_EQ(14 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//thirteen test 
+		//thirteen test
 		day1 = oa::time::Date(2007, 2, 26);
 		day2 = oa::time::Date(2008, 2, 29);
 		EXPECT_DOUBLE_EQ(368 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
@@ -211,42 +211,42 @@ namespace
 		day2 = oa::time::Date(2009, 2, 28);
 		EXPECT_DOUBLE_EQ(365 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//fifteenth test 
+		//fifteenth test
 		day1 = oa::time::Date(2008, 2, 29);
 		day2 = oa::time::Date(2008, 3, 30);
 		EXPECT_DOUBLE_EQ(30 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//sixteenth test 
+		//sixteenth test
 		day1 = oa::time::Date(2008, 2, 29);
 		day2 = oa::time::Date(2008, 3, 31);
 		EXPECT_DOUBLE_EQ(31 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//seventeenth test 
+		//seventeenth test
 		day1 = oa::time::Date(2007, 2, 28);
 		day2 = oa::time::Date(2007, 3, 5);
 		EXPECT_DOUBLE_EQ(5 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//eighteenth test 
+		//eighteenth test
 		day1 = oa::time::Date(2007, 10, 31);
 		day2 = oa::time::Date(2007, 11, 28);
 		EXPECT_DOUBLE_EQ(28 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//nineteenth test 
+		//nineteenth test
 		day1 = oa::time::Date(2007, 8, 31);
 		day2 = oa::time::Date(2008, 2, 29);
 		EXPECT_DOUBLE_EQ(182 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//twentieth test 
+		//twentieth test
 		day1 = oa::time::Date(2008, 2, 29);
 		day2 = oa::time::Date(2008, 8, 31);
 		EXPECT_DOUBLE_EQ(184 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//twenty first test (check this) 
+		//twenty first test (check this)
 		day1 = oa::time::Date(2008, 8, 31);
 		day2 = oa::time::Date(2009, 2, 28);
 		EXPECT_DOUBLE_EQ(181 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));
 
-		//twenty second test 
+		//twenty second test
 		day1 = oa::time::Date(2009, 2, 28);
 		day2 = oa::time::Date(2009, 8, 31);
 		EXPECT_DOUBLE_EQ(184 / 365.0, day_counter_act_365_fixed.YearFraction(day1, day2));

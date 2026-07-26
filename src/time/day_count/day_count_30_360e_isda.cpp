@@ -9,29 +9,21 @@ namespace oa::time
 
 	int DayCount30360EISDA::ComputeDayCount30360EISDA(const Date& date1, const Date& date2)
 	{
-		
-		int day1 = date1.m_days();
-		int day2 = date2.m_days();
+		// Gregorian dates
+		auto [y1, m1, d1] = date1.gregorian();
+		auto [y2, m2, d2] = date2.gregorian();
 
-		int month1 = date1.m_months();
-		int month2 = date2.m_months();
-
-		int year1 = date1.m_years();
-		int year2 = date2.m_years();
-
-		if (day1 == 31 || ((month1 == 2) && 
-			(day1 == oa::time::Date::DaysInMonth(month1, year1))))
+		if (d1 == 31 || ((m1 == 2) && (d1 == Date::DaysInMonth(y1, m1))))
 		{
-			day1 = 30;
+			d1 = 30;
 		}
 
-		if ((day2 == 31)||((month2 == 2) && 
-			(day2 == oa::time::Date::DaysInMonth(month2, year2))))
+		if ((d2 == 31) || ((m2 == 2) && (d2 == Date::DaysInMonth(y2, m2))))
 		{
-			day2 = 30;
+			d2 = 30;
 		}
 
-		return 360*(year2 -year1) + 30*(month2- month1) + (day2 - day1);
+		return 360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1);
 	}
 
 	double DayCount30360EISDA::YearFraction(const Date& date1, const Date& date2) const

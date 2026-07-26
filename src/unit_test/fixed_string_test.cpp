@@ -444,7 +444,7 @@ using fixed_string_skipped_test_cases = std::index_sequence<
 /**
  * `fixed_string` template test fixture.
  *
- * @tparam T `std::index_sequence<I>` to index into `fixed_string_test_cases`
+ * @tparam T `oa::testing::index<I>` to index into `fixed_string_test_cases`
  */
 template <typename T>
 class FixedStringTest : public ::testing::Test {
@@ -455,7 +455,7 @@ private:
    * @tparam I Index of test case in `fixed_string_test_cases`
    */
   template <std::size_t I>
-  static constexpr auto& input(std::index_sequence<I>) noexcept
+  static constexpr auto& input(oa::testing::index<I>) noexcept
   {
     static_assert(I < std::tuple_size_v<decltype(fixed_string_test_cases)>);
     return std::get<I>(fixed_string_test_cases);
@@ -467,7 +467,7 @@ private:
    * @tparam I Index of test case in `fixed_string_runtime_test_cases`
    */
   template <std::size_t I>
-  static constexpr bool is_compile_time(std::index_sequence<I>) noexcept
+  static constexpr bool is_compile_time(oa::testing::index<I>) noexcept
   {
     for (decltype(I) i = 0u; i < std::size(fixed_string_runtime_test_cases); i++)
       if (I == fixed_string_runtime_test_cases[i])
@@ -483,7 +483,7 @@ private:
    */
   template <std::size_t I, std::size_t... Is>
   static constexpr bool is_skipped_test(
-    std::index_sequence<I>,
+    oa::testing::index<I>,
     std::index_sequence<Is...>) noexcept
   {
     // note: could short-circuit but would be more verbose
@@ -540,36 +540,9 @@ protected:
   }
 };
 
-/**
- * Traits type used to construct a `::testing::Types` for `FixedStringTest`.
- *
- * @tparam T `std::index_sequence<Is...>`
- */
-template <typename T>
-struct fixed_string_input_types_impl {};
-
-/**
- * Traits type used to construct a `::testing::Types` for `FixedStringTest`.
- *
- * @tparam Is Indices 0 through the size of `fixed_string_test_cases` - 1
- */
-template <std::size_t... Is>
-struct fixed_string_input_types_impl<std::index_sequence<Is...>> {
-  using type = ::testing::Types<std::index_sequence<Is>...>;
-};
-
-/**
- * Traits type providing the `::testing::Types` for `FixedStringTest`.
- *
- * @tparam N Number of test cases
- */
-template <std::size_t N>
-using fixed_string_input_types =
-  typename fixed_string_input_types_impl<std::make_index_sequence<N>>::type;
-
 TYPED_TEST_SUITE(
   FixedStringTest,
-  fixed_string_input_types<std::tuple_size_v<decltype(fixed_string_test_cases)>>
+  oa::testing::index_types<std::tuple_size_v<decltype(fixed_string_test_cases)>>
 );
 
 /**

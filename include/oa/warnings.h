@@ -61,4 +61,50 @@
 #define OA_GNU_WARNING_POP()
 #endif  // __GNUC__
 
+// internal macro for emitting a preprocessing message with file, line number,
+// and a message prefix. this implements OA_MESSAGE(), OA_WARNING() for MSVC
+#define OA_CUSTOM_MESSAGE_(pre, msg) \
+  _Pragma(OA_STRINGIFY(message( \
+    __FILE__ ":" OA_STRINGIFY(__LINE__) ": " pre ": " msg \
+  )))
+
+#if defined(_MSC_VER)
+/**
+ * Emit an informational message during preprocessing.
+ *
+ * To better emulate the GCC `#pragma message` output the file, line number,
+ * and a `message: ` prefix are all prepended to the message.
+ *
+ * @param msg Message string literal
+ */
+#define OA_MESSAGE(msg) OA_CUSTOM_MESSAGE_("message", msg)
+
+/**
+ * Emit a warning message during preprocessing.
+ *
+ * To better emulate the GCC `#pragma GCC warning` output the file, line number,
+ * and a `warning: ` prefix are all prepended to the message.
+ *
+ * @param msg Message string literal
+ */
+#define OA_WARNING(msg) OA_CUSTOM_MESSAGE_("warning", msg)
+#elif defined(__GNUC__)
+/**
+ * Emit an informational message during preprocessing.
+ *
+ * @param msg Message string literal
+ */
+#define OA_MESSAGE(msg) _Pragma(OA_STRINGIFY(message msg))
+
+/**
+ * Emit a warning message during preprocessing.
+ *
+ * @param msg Message string literal
+ */
+#define OA_WARNING(msg) _Pragma(OA_STRINGIFY(GCC warning msg))
+#else
+#define OA_MESSAGE(msg)
+#define OA_WARNING(msg)
+#endif  // !defined(_MSC_VER) && !defined(__GNUC__)
+
 #endif  // OA_WARNINGS_H_

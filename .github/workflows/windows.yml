@@ -36,6 +36,8 @@ env:
   MAGIC_ENUM_VERSION: 0.9.7
   # GoogleTest version
   GTEST_VERSION: 1.14.0
+  # Benchmark version
+  BENCHMARK_VERSION: 1.9.5
   # Excel 2013 XLL SDK MSI name + download link
   XLLSDK_MSI_LINK: "https://download.microsoft.com/download/d/a/c/\
     dac9c321-279c-4625-b381-bcb044eef7b2/excelxllsdk.msi"
@@ -136,6 +138,20 @@ jobs:
           git checkout v${{ env.GTEST_VERSION }}
           # note: gtest_force_shared_crt needed otherwise uses static C runtime
           cmake -S . -B build -A ${{ matrix.arch }} -Dgtest_force_shared_crt=ON
+          cmake --build build --config Release -j
+          cmake --install build `
+            --prefix ${{ env.ODIN_VENDOR_ROOT }} `
+            --config Release
+      # note: we don't build tests to reduce overall runtime
+      - name: Install Benchmark
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/google/benchmark.git
+          cd benchmark
+          git checkout v${{ env.BENCHMARK_VERSION }}
+          # note: unlike GoogleTest, the Google benchmark library uses CMake
+          # defaults for the MSVC C runtime library so no fiddling required
+          cmake -S . -B build -A ${{ matrix.arch }} -DBENCHMARK_ENABLE_TESTING=OFF
           cmake --build build --config Release -j
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
