@@ -87,7 +87,7 @@ Run `./build.sh --help` for a brief usage summary.
 If C++ unit tests were built they can be run in parallel using [CTest] with
 
 ```bash
-ctest --test-dir build -j$(nproc)
+ctest --test-dir build -j$(nproc) --progress
 ```
 
 To install Odin into a given install root, e.g. `/opt/OdinAnalytics`, use
@@ -137,7 +137,7 @@ If C++ unit tests were built, e.g. for x64 Release libraries, they can be run in
 parallel using CTest with
 
 ```shell
-ctest --test-dir build_windows_x64 -C Release -j%NUMBER_OF_PROCESSORS%
+ctest --test-dir build_windows_x64 -C Release -j%NUMBER_OF_PROCESSORS% --progress
 ```
 
 To install the Odin x64 Release build to a given install root, e.g.

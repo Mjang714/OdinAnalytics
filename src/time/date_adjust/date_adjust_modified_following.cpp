@@ -2,7 +2,7 @@
 
 namespace oa::time
 {
-	DateAdjustModFollowing::DateAdjustModFollowing(const Calendar& given_calendar) 
+	DateAdjustModFollowing::DateAdjustModFollowing(const Calendar& given_calendar)
 		: m_holidays_(given_calendar)
 	{
 
@@ -15,11 +15,11 @@ namespace oa::time
 
 	Date DateAdjustModFollowing::AdjustModFollowing(const Date& given_date, const Calendar& given_calendar)
 	{
-		
+
 		if (given_calendar.IsHoliday(given_date))
 		{
 			Date next_business_day = given_calendar.GetNextBusinessDay(given_date);
-			if (given_date.m_months() != next_business_day.m_months())
+			if (given_date.month() != next_business_day.month())
 			{
 				return given_calendar.GetPrevBusinessDay(given_date);
 			}

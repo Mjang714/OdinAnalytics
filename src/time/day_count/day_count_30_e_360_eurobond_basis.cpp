@@ -10,20 +10,21 @@ namespace oa::time
 
 	int DayCount30E360EuroBondBasis::ComputeDayCount30E360(const Date& date1, const Date& date2)
 	{
-		int day1 = date1.m_days();
-		int day2 = date2.m_days();
+		// Gregorian dates
+		auto [y1, m1, d1] = date1.gregorian();
+		auto [y2, m2, d2] = date2.gregorian();
 
-		if (day1 == 31)
+		if (d1 == 31)
 		{
-			day1 = 30;
+			d1 = 30;
 		}
 
-		if (day2 == 31)
+		if (d2 == 31)
 		{
-			day2 = 30;
+			d2 = 30;
 		}
 
-		return (360 * (date2.m_years() - date1.m_years())) + 30 * (date2.m_months() - date1.m_months()) + (day2 - day1);
+		return (360 * (y2 - y1)) + 30 * (m2 - m1) + (d2 - d1);
 	}
 
 	double DayCount30E360EuroBondBasis::YearFraction(const Date& date1, const Date& date2) const

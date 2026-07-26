@@ -1,14 +1,16 @@
-#include <gtest/gtest.h>
-#include "helpers/utils.h"
-
-#include "time/time_enum_mappers.h"
-#include "derived_time/derived_time_enums.h"
 #include "derived_time/derived_time_enum_mappers.h"
 
-namespace {
+#include <tuple>
 
-template <typename T>
-class EnumMappersTest : public ::testing::Test{};
+#include <gtest/gtest.h>
+
+// TODO: clean up includes
+#include "derived_time/derived_time_enums.h"
+#include "helpers/utils.h"
+#include "oa/testing/gtest.h"
+#include "time/time_enum_mappers.h"
+
+namespace {
 
 template<typename T>
 struct enum_name_mapper_test{};
@@ -230,13 +232,29 @@ constexpr auto enum_mapping_test_inputs = std::make_tuple(
     enum_name_mapper_invalid_argument<oa::derived_time::CalcType>{}
 );
 
-// partial specialization for the mapping tests that does the real work
-// note: index_sequence used for compile-time index value in a type
+/**
+ * Enum mappers template test case fixture.
+ *
+ * @tparam T `oa::testing::index<I>` to index into the input cases
+ */
+template <typename T = void>
+class EnumMappersTest : public ::testing::Test {
+public:
+    // number of test case inputs
+    static constexpr auto inputs_size =
+        std::tuple_size_v<decltype(enum_mapping_test_inputs)>;
+};
+
+/**
+ * Partial specialization for the actual `EnumMappersTest` instantiations.
+ *
+ * @tparam I Input index
+ */
 template <std::size_t I>
-class EnumMappersTest<std::index_sequence<I>> : public ::testing::Test {
+class EnumMappersTest<oa::testing::index<I>> : public ::testing::Test {
 protected:
     // ensure you can't compile a test that is out-of-bounds
-    static_assert(I <= std::tuple_size_v<decltype(enum_mapping_test_inputs)>);
+    static_assert(I <= EnumMappersTest<>::inputs_size);
     // test
     void operator()() const
     {
@@ -254,30 +272,18 @@ protected:
             // get type of input.first (use decay for convenience)
             using enum_type = std::decay_t<decltype(input.first)>;
             // perform check using enum_name_mapper
-            EXPECT_EQ(input.first, enum_name_mapper_test<enum_type>{}(input.second));
+            EXPECT_EQ(
+                input.first,
+                enum_name_mapper_test<enum_type>{}(input.second)
+            );
         }
     }
 };
 
-// helper template to construct ::testing::Types<...> of index_sequence
-template <typename T>
-struct enum_name_mapper_types_impl {};
-
-// partial specialization to turn index_sequence<Is...> -> index_sequence<Is>...
-template <std::size_t... Is>
-struct enum_name_mapper_types_impl<std::index_sequence<Is...>> {
-    using type = ::testing::Types<std::index_sequence<Is>...>;
-};
-
-// typed test types template
-template <std::size_t N>
-using enum_name_mapper_types =
-    typename enum_name_mapper_types_impl<std::make_index_sequence<N>>::type;
-
 // instantiate test types
 TYPED_TEST_SUITE(
     EnumMappersTest,
-    enum_name_mapper_types<std::tuple_size_v<decltype(enum_mapping_test_inputs)>>
+    oa::testing::index_types<EnumMappersTest<>::inputs_size>
 );
 
 // instantiate single test

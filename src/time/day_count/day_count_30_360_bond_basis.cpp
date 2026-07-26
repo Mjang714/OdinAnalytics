@@ -13,21 +13,22 @@ namespace oa::time
 		{
 			return -ComputeDayCount30360(date2, date1);
 		}
-		
-		int day1 = date1.m_days();
-		int	day2 = date2.m_days();
 
-		if (day1 == 31)
+		// get Gregorian dates
+		auto [y1, m1, d1] = date1.gregorian();
+		auto [y2, m2, d2] = date2.gregorian();
+
+		if (d1 == 31)
 		{
-			day1 = 30;
+			d1 = 30;
 		}
 
-		if (day2 == 31 && (day1 > 29))
+		if (d2 == 31 && (d1 > 29))
 		{
-			day2 = 30;
+			d2 = 30;
 		}
 
-		return (date2.m_years() - date1.m_years()) * 360 + (date2.m_months() - date1.m_months())*30 + (day2 - day1);
+		return (y2 - y1) * 360 + (m2 - m1) * 30 + (d2 - d1);
 	}
 
 	double DayCount30360BondBasis::YearFraction(const Date& date1, const Date& date2) const

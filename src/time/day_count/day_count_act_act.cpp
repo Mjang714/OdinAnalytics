@@ -7,7 +7,7 @@ namespace oa::time
 	{
 		return ComputeDayCountActAct(start_date, end_date);
 	}
-	
+
 	int DayCountActAct::ComputeDayCountActAct(const Date& start_date, const Date& end_date)
 	{
 		return end_date.GetJulian() - start_date.GetJulian();
@@ -25,8 +25,8 @@ namespace oa::time
 			return -ComputeDayCountFractionActAct(end_date, start_date);
 		}
 
-		int start_year = start_date.m_years();
-		int end_year = end_date.m_years();
+		int start_year = start_date.year();
+		int end_year = end_date.year();
 
 		double days_in_start_year = Date::IsLeap(start_year) ? 366.0 : 365.0;
 		double days_in_end_year = Date::IsLeap(end_year) ? 366.0 : 365.0;
@@ -37,7 +37,7 @@ namespace oa::time
 			year_fraction += ComputeDayCountActAct(start_date, end_date) / days_in_start_year;
 		}
 
-		else 
+		else
 		{
 			auto curr_year = start_year;
 			auto prior_date = oa::time::Date(start_date.GetJulian() - 1);
@@ -52,10 +52,10 @@ namespace oa::time
 				}
 				curr_year++;
 			}
-			year_fraction +=ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year;	
+			year_fraction +=ComputeDayCountActAct(Date(end_year, 1, 1), end_date) / days_in_end_year;
 		}
 
 		return year_fraction;
 
 	}
-}	
+}
