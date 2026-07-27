@@ -40,7 +40,7 @@ public:
  * Declare a day count factory test with the given name and inputs.
  *
  * This defines the base GoogleTest test class template to hold the tuple of
- * inputs as well as help members and member functions.
+ * inputs as well as helper members and member functions.
  *
  * @note `test_name` cannot be a macro due to a shortcoming in GoogleTest's
  *  implementation of `TYPED_TEST_SUITE()` and `TYPED_TEST()`.
