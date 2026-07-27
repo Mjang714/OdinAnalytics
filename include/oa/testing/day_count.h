@@ -240,7 +240,75 @@ protected:
   }
 };
 
+/**
+ * Declare a day count test template with the given name and inputs.
+ *
+ * This defines the base GoogleTest test class to hold the input value tuple
+ * under the assumption that a `constexpr` invocation of `std::make_tuple(...)`
+ * is used to create the test case input values.
+ *
+ * @param test_name GoogleTest test class name
+ * @param ... Test inputs of type
+ *  `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, int>` or
+ *  `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, double>`
+ */
+#define OA_DECLARE_DAY_COUNT_TEST(test_name, ...) \
+  /* base template for managing test inputs and other data */ \
+  template <typename T = void> \
+  class test_name { \
+  public: \
+    /* base type template for input I */ \
+    template <std::size_t I> \
+    using base_type = oa::testing::DayCountTestBase< \
+      test_name<oa::testing::index<I>> \
+    >; \
+    /* test inputs + number of test inputs */ \
+    static constexpr auto inputs = std::make_tuple(__VA_ARGS__); \
+    static constexpr auto inputs_size = std::tuple_size_v<decltype(inputs)>; \
+    /* helper to get a reference to input I */ \
+    template <std::size_t I> \
+    static constexpr auto& input() noexcept \
+    { \
+      return std::get<I>(inputs); \
+    } \
+  }
+
+/**
+ * Define the day count test template with the given name and day counter type.
+ *
+ * This defines the `oa::testing::index<I>` partial specialization for the test
+ * clas template, instantiates the types for `TYPED_TEST_SUITE()`, and defines
+ * a test named `Test` using `TYPED_TEST()` for the test class template.
+ */
+#define OA_DEFINE_DAY_COUNT_TEST(test_name, day_count_type) \
+  /* partial specialization for test case input I */ \
+  template <std::size_t I> \
+  class test_name<oa::testing::index<I>> : public test_name<>::base_type<I> { \
+  public: \
+    /* day counter member + test input I reference */ \
+    day_count_type dc; \
+    static constexpr auto& input = test_name<>::input<I>(); \
+  }; \
+  \
+  /* instantiate index<I> types */ \
+  TYPED_TEST_SUITE( \
+    test_name, \
+    oa::testing::index_types<test_name<>::inputs_size> \
+  ); \
+  \
+  /* instantiate the test */ \
+  TYPED_TEST(test_name, Test) \
+  { \
+    (*this)(); \
+  } \
+  /* enforce terminating semicolon */ \
+  static_assert(true)
+
 #if 0
+// helper macros to get the first and second values of an (a, b) tuple
+#define OA_PP_GET_2_0(a, b) a
+#define OA_PP_GET_2_1(a, b) b
+
 /**
  * Instantiate the types and `TYPED_TEST()` for a `DayCountTestBase<T>` test.
  *
@@ -254,15 +322,16 @@ protected:
  * @note This macro cannot be used until GoogleTest changes their typed test
  *  macros to first properly expand their arguments.
  *
- * @param day_count_type `oa::time::` day counter type name
+ * @param name_and_type `(name, type)` tuple where `name` if the name of the
+ *  GoogleTest test class and `type` is the `oa::time::` day counter type
  * @param ... Test inputs of type
  *  `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, int>` or
  *  `std::tuple<std::tuple<int, int, int>, std::tuple<int, int, int>, double>`
  */
-#define OA_DAY_COUNT_TEST(day_count_type, ...) \
+#define OA_DAY_COUNT_TEST(name_and_type, ...) \
   /* base template for managing test inputs and other data */ \
   template <typename T = void> \
-  class OA_CONCAT(day_count_type, Test) { \
+  class OA_PP_GET_2_0 name_and_type { \
   public: \
     /* test inputs + number of test inputs */ \
     static constexpr auto inputs = std::make_tuple(__VA_ARGS__); \
@@ -274,24 +343,24 @@ protected:
   \
   /* partial specialization for test case input I */ \
   template <std::size_t I> \
-  class OA_CONCAT(day_count_type, Test)<oa::testing::index<I>> \
+  class OA_PP_GET_2_0 name_and_type <oa::testing::index<I>> \
     : public oa::testing::DayCountTestBase< \
-        OA_CONCAT(day_count_type, Test)<oa::testing::index<I>> > { \
+        OA_PP_GET_2_0 name_and_type <oa::testing::index<I>> > { \
   public: \
     /* day counter member + test input */ \
-    oa::time::day_count_type dc; \
+    OA_PP_GET_2_1 name_and_type dc; \
     /* reference to input I */ \
-    static constexpr auto& input = OA_CONCAT(day_count_type, Test)<>::input<I>(); \
+    static constexpr auto& input = OA_PP_GET_2_0 name_and_type <>::input<I>(); \
   }; \
   \
   /* instantiate index<I> types */ \
   TYPED_TEST_SUITE( \
-    OA_CONCAT(day_count_type, Test), \
-    oa::testing::index_types<OA_CONCAT(day_count_type, Test)<>::inputs_size> \
+    OA_PP_GET_2_0 name_and_type, \
+    oa::testing::index_types<OA_PP_GET_2_0 name_and_type <>::inputs_size> \
   ); \
   \
   /* instantiate the test for test_type*/ \
-  TYPED_TEST(OA_CONCAT(day_count_type, Test), Test) \
+  TYPED_TEST(OA_PP_GET_2_0 name_and_type, Test) \
   { \
     (*this)(); \
   } \
