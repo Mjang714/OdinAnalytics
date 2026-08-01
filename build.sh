@@ -54,64 +54,66 @@ parse_args() {
     for ARG in $@
     do
         case $ARG in
-            # break early to print usage
-            -h | --help)
-                BUILD_ACTION=print_usage
-                return 0
-                ;;
-            # set build output directory
-            -o | --output-dir)
-                PARSE_ACTION=output_dir
+        # break early to print usage
+        -h | --help)
+            BUILD_ACTION=print_usage
+            return 0
+            ;;
+        # set build output directory
+        -o | --output-dir)
+            PARSE_ACTION=output_dir
+            ;;
+        # set build configuration
+        -c | --config)
+            PARSE_ACTION=build_config
+            ;;
+        # collect CMake configure args
+        -Ca | --cmake-args)
+            PARSE_ACTION=cmake_args
+            ;;
+        # collect CMake build args
+        -Cb | --cmake-build-args)
+            PARSE_ACTION=cmake_build_args
+            ;;
+        # operate according to PARSE_ACTION
+        *)
+            case $PARSE_ACTION in
+            # set build output dir
+            output_dir)
+                BUILD_OUTPUT_DIR=$ARG
                 ;;
             # set build configuration
-            -c | --config)
-                PARSE_ACTION=build_config
+            build_config)
+                BUILD_CONFIG=$ARG
                 ;;
-            # collect CMake configure args
-            -Ca | --cmake-args)
-                PARSE_ACTION=cmake_args
-                ;;
-            # collect CMake build args
-            -Cb | --cmake-build-args)
-                PARSE_ACTION=cmake_build_args
-                ;;
-            # operate according to PARSE_ACTION
-            *)
-                # set build output dir
-                if [ "$PARSE_ACTION" = output_dir ]
+            # update CMake configure args
+            cmake_args)
+                # assign directly if empty to prevent adding extra space
+                if [ -z "$CMAKE_ARGS" ]
                 then
-                    BUILD_OUTPUT_DIR=$ARG
-                # set build configuration
-                elif [ "$PARSE_ACTION" = build_config ]
-                then
-                    BUILD_CONFIG=$ARG
-                # update CMake configure args
-                elif [ "$PARSE_ACTION" = cmake_args ]
-                then
-                    # assign directly if empty to prevent adding extra space
-                    if [ -z "$CMAKE_ARGS" ]
-                    then
-                        CMAKE_ARGS=$ARG
-                    else
-                        CMAKE_ARGS="$CMAKE_ARGS $ARG"
-                    fi
-                # update CMake build args
-                elif [ "$PARSE_ACTION" = cmake_build_args ]
-                then
-                    # assign directly if empty to prevent adding extra space
-                    if [ -z "$CMAKE_BUILD_ARGS" ]
-                    then
-                        CMAKE_BUILD_ARGS=$ARG
-                    else
-                        CMAKE_BUILD_ARGS="$CMAKE_BUILD_ARGS $ARG"
-                    fi
-                # error otherwise
+                    CMAKE_ARGS=$ARG
                 else
-                    echo "Error: Unknown option '$ARG'." \
-                        "Try $PROGNAME --help for usage."
-                    return 1
+                    CMAKE_ARGS="$CMAKE_ARGS $ARG"
                 fi
                 ;;
+            # update CMake build args
+            cmake_build_args)
+                # assign directly if empty to prevent adding extra space
+                if [ -z "$CMAKE_BUILD_ARGS" ]
+                then
+                    CMAKE_BUILD_ARGS=$ARG
+                else
+                    CMAKE_BUILD_ARGS="$CMAKE_BUILD_ARGS $ARG"
+                fi
+                ;;
+            # error otherwise
+            *)
+                echo "Error: Unknown option '$ARG'." \
+                    "Try $PROGNAME --help for usage."
+                return 1
+                ;;
+            esac
+            ;;
         esac
     done
     return 0
