@@ -172,6 +172,9 @@ std::ostream& operator<<(std::ostream& out, const Tenor& tenor);
 
 namespace std {
 
+// note: although SWIG supports template specializations, "auto" is only
+// supported as a function return type since SWIG 4.1
+#if !defined(SWIG) || (defined(SWIG_VERSION) && SWIG_VERSION >= 0x040100)
 /**
  * `std::hash` specialization for the `Tenor`.
  */
@@ -185,6 +188,7 @@ struct hash<oa::time::Tenor> {
 		return tenor.hash();
 	}
 };
+#endif  // !defined(SWIG) || (defined(SWIG_VERSION) && SWIG_VERSION >= 0x040100)
 
 }  // namespace std
 
