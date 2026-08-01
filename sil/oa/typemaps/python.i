@@ -27,6 +27,20 @@
 %include "oa/common.i"  // for OA_OBJECT_TYPECHECK()
 
 /**
+ * Typemap to convert a `Py_ssize_t` into a Python long.
+ */
+%typemap(out) Py_ssize_t {
+  $result = PyLong_FromSsize_t($1);
+}
+
+/**
+ * Typemap to convert a `std::size_t` into a Python long.
+ */
+%typemap(out) std::size_t {
+  $result = PyLong_FromSize_t($1);
+}
+
+/**
  * Typemap to convert a `std::uint64_t` into a Python long.
  */
 %typemap(out) std::uint64_t {
@@ -34,10 +48,40 @@
 }
 
 /**
+ * Typemap to convert a Python string into a `const std::string&`.
+ *
+ * This form takes a const reference so a temporary is required.
+ *
+ * @note `buf` is managed by Python and must not be freed manually.
+ */
+%typemap(in) const std::string& (std::string str) {
+  Py_ssize_t len;
+  auto buf = PyUnicode_AsUTF8AndSize($input, &len);
+  if (!buf)
+    SWIG_fail;
+  str = {buf, static_cast<std::size_t>(len)};
+  // note: reference typemaps always bind to pointers
+  $1 = &str;
+}
+
+/**
  * Typemap to convert a `std::string` into a Python string.
  */
 %typemap(out) std::string {
   $result = PyUnicode_FromStringAndSize($1.data(), $1.size());
+}
+
+/**
+ * Typemap to convert a Python string into a `std::string_view`.
+ *
+ * @note `buf` is managed by Python and must not be freed manually.
+ */
+%typemap(in) std::string_view {
+  Py_ssize_t len;
+  auto buf = PyUnicode_AsUTF8AndSize($input, &len);
+  if (!buf)
+    SWIG_fail;
+  $1 = {buf, static_cast<std::size_t>(len)};
 }
 
 /**
@@ -49,6 +93,26 @@
 %typemap(out) std::string_view {
   $result = PyUnicode_FromStringAndSize($1.data(), $1.size());
 }
+
+/**
+ * Macro for a `std::string` or `std::string_view` typecheck.
+ *
+ * This succeeds if the Python object is a `str`.
+ *
+ * @note Typechecks are only used to disambiguate overloads.
+ *
+ * @param type cvref-qualified `std::string` or `std::string_view`
+ */
+%define OA_STRING_CHECK(type)
+OA_OBJECT_TYPECHECK(type) {
+  $1 = PyUnicode_Check($input);
+}
+%enddef  // OA_STRING_CHECK(type)
+
+OA_STRING_CHECK(std::string)
+OA_STRING_CHECK(const std::string&)
+OA_STRING_CHECK(std::string_view)
+OA_STRING_CHECK(const std::string_view&)
 
 // helper code for the std::filesystem::path typemap conversion
 %{
