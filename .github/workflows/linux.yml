@@ -113,7 +113,9 @@ jobs:
             -DODIN_GITHUB_ACTIONS_ARCH=$(echo ${{ runner.arch }} | tr A-Z a-z)
       # note: test parallelism level is -j$(nproc) by default
       - name: Test
-        run: ./check.sh -Ct --output-on-failure
+        run: |
+          chmod +x check.sh
+          ./check.sh -Ct --output-on-failure
       # install Runtime and Development components separately
       # note: only good as a smoke test. need sudo due to /usr/local install
       - name: Install Runtime
