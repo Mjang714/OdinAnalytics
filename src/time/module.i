@@ -38,8 +38,9 @@ This module provides wrappers for oa_time library functions and types."
 
 OA_HANDLE_EXCEPTIONS
 
-// ensure all class types are in PascalCase
+// ensure all class + enum types are in PascalCase
 %rename("%(camelcase)s", %$isclass) "";
+%rename("%(camelcase)s", %$isenum) "";
 
 // process oa/dllexport.h for OA_TIME_API
 %import "oa/dllexport.h"
@@ -56,37 +57,37 @@ namespace oa::time {
 // Python member functions for the Tenor class
 // note: auto supported as return type in SWIG 4.1
 %extend Tenor {
-    /**
-     * Return the hash value of the `Tenor` object.
-     *
-     * This returns the value from `hash()` cast to a `Py_ssize_t`, which is
-     * necessary to prevent the Python `hash()` built-in from truncating the
-     * return value. Therefore, `tenor.hash()` will return a different value
-     * from `tenor.__hash__()` and `hash(tenor)`.
-     *
-     * It is more important for `tenor.__hash__()` and `hash(tenor)` to be
-     * consistent; if we returned a `std::size_t` directly back to Python, then
-     * `tenor.__hash__()` and `tenor.hash()` would be the same, but
-     * `hash(tenor)` would yield a different value.
-     */
-    Py_ssize_t __hash__()
-    {
-        return static_cast<Py_ssize_t>($self->hash());
-    }
+  /**
+   * Return the hash value of the `Tenor` object.
+   *
+   * This returns the value from `hash()` cast to a `Py_ssize_t`, which is
+   * necessary to prevent the Python `hash()` built-in from truncating the
+   * return value. Therefore, `tenor.hash()` will return a different value
+   * from `tenor.__hash__()` and `hash(tenor)`.
+   *
+   * It is more important for `tenor.__hash__()` and `hash(tenor)` to be
+   * consistent; if we returned a `std::size_t` directly back to Python, then
+   * `tenor.__hash__()` and `tenor.hash()` would be the same, but
+   * `hash(tenor)` would yield a different value.
+   */
+  Py_ssize_t __hash__()
+  {
+    return static_cast<Py_ssize_t>($self->hash());
+  }
 
-    /**
-     * Return the string representation of the `Tenor`.
-     *
-     * This is implemented using the `operator<<` overload for `Tenor`.
-     */
-    std::string __repr__()
-    {
-        std::stringstream ss;
-        ss << *$self;
-        // note: in C++20 this saves a string copy by using the ref-qualified
-        // overload of str() that move-constructs from the internal string
-        return std::move(ss).str();
-    }
+  /**
+   * Return the string representation of the `Tenor`.
+   *
+   * This is implemented using the `operator<<` overload for `Tenor`.
+   */
+  std::string __repr__()
+  {
+    std::stringstream ss;
+    ss << *$self;
+    // note: in C++20 this saves a string copy by using the ref-qualified
+    // overload of str() that move-constructs from the internal string
+    return std::move(ss).str();
+  }
 }
 
 }  // namespace oa::time
