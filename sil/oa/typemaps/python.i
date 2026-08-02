@@ -16,12 +16,14 @@
 %{
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <string_view>
 
 #include "oa/ctti.h"
 #include "oa/fixed_string.h"
 #include "oa/python.h"
+#include "oa/warnings.h"
 %}
 
 %include "oa/common.i"  // for OA_OBJECT_TYPECHECK()
@@ -47,6 +49,64 @@
   $result = PyLong_FromUnsignedLongLong($1);
 }
 
+// std::string + std::string_view conversion helpers
+%{
+namespace oa {
+namespace {
+
+OA_GNU_WARNING_PUSH()
+OA_GNU_WARNING_DISABLE(unused-function)
+/**
+ * Convert a Python `str` into a UTF-8 `std::string_view`.
+ *
+ * On error a Python exception is set and the returned optional is empty.
+ *
+ * @note The char data is Python managed and must not be freed manually.
+ *
+ * @param obj Python `str` object
+ */
+std::optional<std::string_view> to_utf8_view(PyObject* obj) noexcept
+{
+  // get buffer and size
+  Py_ssize_t len;
+  auto buf = PyUnicode_AsUTF8AndSize(obj, &len);
+  if (!buf)
+    return {};
+  // return view of buffer
+  return std::string_view{buf, static_cast<std::size_t>(len)};
+}
+
+/**
+ * Convert a Python `str` into a UTF-8 `std::string`.
+ *
+ * On error a Python exception is set and the returned optional is empty.
+ *
+ * @param obj Python `str` object
+ */
+std::optional<std::string> to_utf8(PyObject* obj)
+{
+  auto view = to_utf8_view(obj);
+  if (!view)
+    return {};
+  // note: string view ctor is explicit
+  return std::string{*view};
+}
+OA_GNU_WARNING_POP()
+
+}  // namespace
+}  // namespace oa
+%}
+
+/**
+ * Typemap to convert a Python string into a `std::string`.
+ */
+%typemap(in) std::string {
+  auto str = oa::to_utf8($input);
+  if (!str)
+    SWIG_fail;
+  $1 = std::move(*str);
+}
+
 /**
  * Typemap to convert a Python string into a `const std::string&`.
  *
@@ -54,14 +114,12 @@
  *
  * @note `buf` is managed by Python and must not be freed manually.
  */
-%typemap(in) const std::string& (std::string str) {
-  Py_ssize_t len;
-  auto buf = PyUnicode_AsUTF8AndSize($input, &len);
-  if (!buf)
+%typemap(in) const std::string& (std::optional<std::string> str) {
+  str = oa::to_utf8($input);
+  if (!str)
     SWIG_fail;
-  str = {buf, static_cast<std::size_t>(len)};
   // note: reference typemaps always bind to pointers
-  $1 = &str;
+  $1 = &*str;
 }
 
 /**
@@ -77,11 +135,10 @@
  * @note `buf` is managed by Python and must not be freed manually.
  */
 %typemap(in) std::string_view {
-  Py_ssize_t len;
-  auto buf = PyUnicode_AsUTF8AndSize($input, &len);
-  if (!buf)
+  auto view = oa::to_utf8_view($input);
+  if (!view)
     SWIG_fail;
-  $1 = {buf, static_cast<std::size_t>(len)};
+  $1 = *view;
 }
 
 /**
@@ -112,18 +169,20 @@ OA_OBJECT_TYPECHECK(type) {
 OA_STRING_CHECK(std::string)
 OA_STRING_CHECK(const std::string&)
 OA_STRING_CHECK(std::string_view)
-OA_STRING_CHECK(const std::string_view&)
 
 // helper code for the std::filesystem::path typemap conversion
 %{
 namespace oa {
+
 namespace pathlib {
 namespace {
 
+OA_GNU_WARNING_PUSH()
+OA_GNU_WARNING_DISABLE(unused-function)
 /**
  * Ensure that the `pathlib` module is imported and obtain a reference.
  *
- * On error the returned Python object pointer is `nullptr`.
+ * On error a Python exception is set and the returned object is empty.
  *
  * @note Requires Python 3.4+.
  *
@@ -139,7 +198,7 @@ auto module_() noexcept
 /**
  * Get the `pathlib.Path` class object.
  *
- * On error the returned Python object pointer is `nullptr`.
+ * On error a Python exception is set and the returned object is empty.
  *
  * @note Requires Python 3.4+.
  */
@@ -160,18 +219,55 @@ bool IsPath(PyObject* obj) noexcept
 }
 
 /**
+ * Convert a `std::filesystem::path` into a `pathlib.Path`.
+ *
+ * On error a Python exception is set and the returned `PyObject*` is `nullptr`.
+ *
+ * @param path Path object to convert
+ */
+py_object ToPath(const std::filesystem::path& path) noexcept
+{
+  // create Python string from path (use native encoding)
+  py_object str{path.c_str()};
+  if (!str)
+    return {};
+  // import pathlib.Path
+  auto path_class = Path();
+  if (!path_class)
+    return {};
+  // invoke string as argument to pathlib.Path
+#if OA_PY_VERSION_IS(>=, 3, 9)
+  return py_object{PyObject_CallOneArg(path_class, str)};
+#else
+  // without PyObject_CallOneArg() we have to use Py_BuildValue()
+  py_object tup{Py_BuildValue("(O)", str.get())};
+  if (!tup)
+    return {};
+  return py_object{PyObject_CallObject(path_class, tup)};
+#endif  // !OA_PY_VERSION_IS(>=, 3, 9)
+}
+OA_GNU_WARNING_POP()
+
+}  // namespace
+}  // namespace pathlib
+
+namespace {
+
+OA_GNU_WARNING_PUSH()
+OA_GNU_WARNING_DISABLE(unused-function)
+/**
  * Convert a `pathlib.Path` or `str` into a `std::filesystem::path`.
  *
- * On error the returned `path` is empty, i.e. `empty()` returns `true`.
+ * On error a Python exception is set and the returned optional is empty.
  *
  * @param obj Python object
  */
-std::filesystem::path ToPath(PyObject* obj)
+std::optional<std::filesystem::path> to_path(PyObject* obj)
 {
   // Python string object
   py_object str;
   // if pathlib.Path subclass manage its string representation
-  if (IsPath(obj))
+  if (pathlib::IsPath(obj))
     str = py_object{PyObject_Str(obj)};
   // if a Python string itself increment the reference
   else if (PyUnicode_Check(obj))
@@ -187,17 +283,17 @@ std::filesystem::path ToPath(PyObject* obj)
   // handle error
   if (!str)
     return {};
-  // get pointer + size of UTF-8 string
-  Py_ssize_t size;
-  auto utf8 = PyUnicode_AsUTF8AndSize(str, &size);
-  if (!utf8)
+  // get view of UTF-8 string
+  auto view = to_utf8_view(str);
+  if (!view)
     return {};
   // otherwise, create path
-  return {utf8, utf8 + size};
+  return *view;
 }
+OA_GNU_WARNING_POP()
 
 }  // namespace
-}  // namespace pathlib
+
 }  // namespace oa
 %}
 
@@ -205,9 +301,11 @@ std::filesystem::path ToPath(PyObject* obj)
  * Typemap to convert a `pathlib.Path` or `str` into a `std::filesystem::path`.
  */
 %typemap(in) std::filesystem::path {
-  $1 = oa::pathlib::ToPath($input);
-  if ($1.empty())
+  auto path = oa::to_path($input);
+  if (!path)
     SWIG_fail;
+  // note: std::move(*path) results in an optional with a moved-from path
+  $1 = *std::move(path);
 }
 
 /**
@@ -215,12 +313,15 @@ std::filesystem::path ToPath(PyObject* obj)
  *
  * This form takes a const reference so a temporary is required.
  */
-%typemap(in) const std::filesystem::path& (std::filesystem::path path) {
-  path = oa::pathlib::ToPath($input);
-  if (path.empty())
+%typemap(in)
+  const std::filesystem::path&
+  (std::optional<std::filesystem::path> path)
+{
+  path = oa::to_path($input);
+  if (!path)
     SWIG_fail;
   // note: reference typemaps always bind to pointers
-  $1 = &path;
+  $1 = &*path;
 }
 
 /**
@@ -245,22 +346,5 @@ OA_FILESYSTEM_PATH_CHECK(const std::filesystem::path&)
  * Typemap to convert a `std::filesystem::path` into a `pathlib.Path`.
  */
 %typemap(out) std::filesystem::path {
-  // create Python string from path (use native encoding)
-  oa::py_object str{$1.c_str()};
-  if (!str)
-    SWIG_fail;
-  // import pathlib.Path
-  auto path_class = oa::pathlib::Path();
-  if (!path_class)
-    SWIG_fail;
-  // invoke string as argument to pathlib.Path
-%#if OA_PY_VERSION_IS(>=, 3, 9)
-  $result = PyObject_CallOneArg(path_class, str);
-%#else
-  // without PyObject_CallOneArg() we have to use Py_BuildValue()
-  oa::py_object tup{Py_BuildValue("(O)", str.get())};
-  if (!tup)
-    SWIG_fail;
-  $result = PyObject_CallObject(path_class, tup);
-%#endif  // !OA_PY_VERSION_IS(>=, 3, 9)
+  $result = oa::pathlib::ToPath($1).release();
 }
