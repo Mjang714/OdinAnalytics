@@ -82,6 +82,16 @@ namespace oa {
 class py_object {
 public:
   /**
+   * Tag type to select reference increment overloads.
+   */
+  struct inc_tag {};
+
+  /**
+   * Tag global to select reference increment overloads.
+   */
+  static constexpr inc_tag inc{};
+
+  /**
    * Default ctor.
    *
    * This represents an unowned/invalid Python object.
@@ -107,16 +117,6 @@ public:
   explicit py_object(PyObject* obj) noexcept : obj_{obj} {}
 
   /**
-   * Tag type to select reference increment overloads.
-   */
-  struct inc_tag {};
-
-  /**
-   * Tag global to select reference increment overloads.
-   */
-  static constexpr inc_tag inc{};
-
-  /**
    * Ctor.
    *
    * Takes ownership of a new strong reference to the `PyObject*`.
@@ -127,6 +127,62 @@ public:
   {
     Py_XINCREF(obj_);
   }
+
+  /**
+   * Ctor.
+   *
+   * Creates a new UTF-8 Python string from a copy of the given range.
+   *
+   * On error the data pointer will be `nullptr`.
+   *
+   * @param data Character data pointer
+   * @param size Number of characters
+   */
+  py_object(const char* data, std::size_t size) noexcept
+  {
+    obj_ = PyUnicode_FromStringAndSize(data, size);
+  }
+
+  /**
+   * Ctor.
+   *
+   * Creates a new UTF-8 Python string from a copy of the given string view.
+   *
+   * On error the data pointer will be `nullptr`.
+   *
+   * @param view String view
+   */
+  explicit py_object(std::string_view view) noexcept
+    : py_object{view.data(), view.size()}
+  {}
+
+  /**
+   * Ctor.
+   *
+   * Creates a new Python Unicode string from a wide character range.
+   *
+   * On error the data pointer will be `nullptr`.
+   *
+   * @param data Character data pointer
+   * @param size Number of characters
+   */
+  py_object(const wchar_t* data, std::size_t size) noexcept
+  {
+    obj_ = PyUnicode_FromWideChar(data, size);
+  }
+
+  /**
+   * Ctor.
+   *
+   * Creates a new Python Unicode string from a wide character string view.
+   *
+   * On error the data pointer will be `nullptr`.
+   *
+   * @param view String view
+   */
+  explicit py_object(std::wstring_view view) noexcept
+    : py_object{view.data(), view.size()}
+  {}
 
   /**
    * Copy ctor.
@@ -191,70 +247,30 @@ public:
   }
 
   /**
+   * Release ownership of the `PyObject*`.
+   *
+   * The owned `PyObject*` will be set to `nullptr`. If the `py_object` does
+   * not own a Python reference, i.e. the `PyObject*` is already `nullptr`,
+   * calling `release()` simply returns `nullptr`.
+   */
+  auto release() noexcept
+  {
+    auto obj = obj_;
+    obj_ = nullptr;
+    return obj;
+  }
+
+  /**
    * Implicitly convert to `PyObject*`.
    *
    * This is useful for interop with Python C API functions.
+   *
+   * @todo Consider removing in favor of `operator*` instead.
    */
   operator PyObject*() const noexcept
   {
     return obj_;
   }
-
-  /**
-   * Ctor.
-   *
-   * Creates a new UTF-8 Python string from a copy of the given range.
-   *
-   * On error the data pointer will be `nullptr`.
-   *
-   * @param data Character data pointer
-   * @param size Number of characters
-   */
-  py_object(const char* data, std::size_t size) noexcept
-  {
-    obj_ = PyUnicode_FromStringAndSize(data, size);
-  }
-
-  /**
-   * Ctor.
-   *
-   * Creates a new UTF-8 Python string from a copy of the given string view.
-   *
-   * On error the data pointer will be `nullptr`.
-   *
-   * @param view String view
-   */
-  explicit py_object(std::string_view view) noexcept
-    : py_object{view.data(), view.size()}
-  {}
-
-  /**
-   * Ctor.
-   *
-   * Creates a new Python Unicode string from a wide character range.
-   *
-   * On error the data pointer will be `nullptr`.
-   *
-   * @param data Character data pointer
-   * @param size Number of characters
-   */
-  py_object(const wchar_t* data, std::size_t size) noexcept
-  {
-    obj_ = PyUnicode_FromWideChar(data, size);
-  }
-
-  /**
-   * Ctor.
-   *
-   * Creates a new Python Unicode string from a wide character string view.
-   *
-   * On error the data pointer will be `nullptr`.
-   *
-   * @param view String view
-   */
-  explicit py_object(std::wstring_view view) noexcept
-    : py_object{view.data(), view.size()}
-  {}
 
 private:
   PyObject* obj_;
