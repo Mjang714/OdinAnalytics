@@ -170,6 +170,74 @@ OA_STRING_CHECK(std::string)
 OA_STRING_CHECK(const std::string&)
 OA_STRING_CHECK(std::string_view)
 
+// helper Python code to convert SWIG-wrapped scoped enum members to enum.Enum
+// note: inline definition of the _make_enum_class() confused SWIG due to the
+// use of %{ and %} in the _make_enum_class() docstring
+%pythoncode "oa/typemaps/scoped_enums.py"
+
+// helper code for scoped enum and enum.Enum interop
+%{
+namespace oa {
+
+namespace enum_ {
+namespace {
+
+OA_GNU_WARNING_PUSH()
+OA_GNU_WARNING_DISABLE(unused-function)
+/**
+ * Ensure that the `enum` module is imported and obtain a reference.
+ *
+ * On error a Python exception is set and the returned object is empty.
+ *
+ * @note Requires Python 3.4+.
+ *
+ * @par
+ *
+ * @note In C++20 `module` is a keyword so we avoid conflict with `module_`.
+ */
+auto module_() noexcept
+{
+  return py_object{PyImport_ImportModule("enum")};
+}
+
+/**
+ * Get the `enum.Enum` class object.
+ *
+ * On error a Python exception is set and the returned object is empty.
+ *
+ * @note Requires Python 3.4+.
+ */
+auto Enum() noexcept
+{
+  auto mod = module_();
+  return py_object{(!mod) ? nullptr : PyObject_GetAttrString(mod, "Enum")};
+}
+
+/**
+ * Check if a Python object is an `enum.Enum` instance.
+ *
+ * @param obj Python object
+ */
+bool IsEnum(PyObject* obj) noexcept
+{
+  return !!PyObject_IsInstance(obj, Enum());
+}
+OA_GNU_WARNING_POP()
+
+// TODO: add ToEnum() template to convert back to appropriate enum.Enum
+
+}  // namespace
+}  // namespace enum_
+
+namespace {
+
+// TODO: add to_scoped_enum<E>() template to convert to C++ scoped enum
+
+}  // namespace
+
+}  // namespace oa
+%}
+
 // helper code for the std::filesystem::path typemap conversion
 %{
 namespace oa {
