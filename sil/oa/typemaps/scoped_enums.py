@@ -5,11 +5,12 @@ This module should only be used via ``%pythoncode`` directive in SWIG.
 .. codeauthor:: Derek Huang <djh458@stern.nyu.edu>
 """
 
-from enum import Enum
-import sys
 
-
-def _make_enum_class(name: str, strip_prefix: str = "") -> None:
+def _make_enum_class(
+    name: str,
+    doc: str = "Enum class created from SWIG-wrapped scoped enum members.",
+    strip_prefix: str = ""
+) -> None:
     """Convert SWIG-wrapped scoped enum members into an enum class.
 
     When SWIG wraps C++ scoped enums for Python members with the format
@@ -38,7 +39,7 @@ def _make_enum_class(name: str, strip_prefix: str = "") -> None:
        // use _make_enum_class() to replace Tenors_* members with an enum.Enum
        // named "Tenors" in the current SWIG wrapper module
        %pythoncode %{
-       _make_enum_class("Tenors", strip_prefix="k_")
+       _make_enum_class("Tenors", strip_prefix="k_", doc="Tenors enum.")
        %}
 
     .. note::
@@ -50,29 +51,31 @@ def _make_enum_class(name: str, strip_prefix: str = "") -> None:
     ----------
     name : str
         Enum class name + ``<enum>`` prefix for each ``<enum>_<member>``
+    doc : str, default="Enum class created from SWIG-wrapped scoped enum members."
+        Enum class docstring
     strip_prefix : str, default=""
         Prefix to remove from each C++ scoped enum member after ``%rename``
     """
+    import enum
+    import sys
     # module reference
     mod = sys.modules[__name__]
     # get all SWIG-wrapped members
     enum_mems = [x for x in dir(mod) if x.startswith(f"{name}_")]
-    # create enum class as a module attribute
-    setattr(
-        mod,
+    # create enum class + set docstring
+    enum_class = enum.Enum(
         name,
-        Enum(
-            name,
-            [
-                # keep only the stripped <member> portion of <enum>_<member>
-                (
-                    mem.replace(f"{name}_{strip_prefix}", "", 1).upper(),
-                    getattr(mod, mem)
-                )
-                for mem in enum_mems
-            ]
-        )
+        [
+            # keep only the stripped <member> portion of <enum>_<member>
+            (
+                mem.replace(f"{name}_{strip_prefix}", "", 1).upper(),
+                getattr(mod, mem)
+            )
+            for mem in enum_mems
+        ]
     )
-    # remove SWIG-wrapped members + return
+    enum_class.__doc__ = doc
+    # create enum class as a module attribute + remove SWIG-wrapped members
+    setattr(mod, name, enum_class)
     for mem in enum_mems:
         delattr(mod, mem)
