@@ -430,8 +430,8 @@ OA_GNU_WARNING_POP()
  *
  * Use of this typemap requires that the Python `enum.Enum` in question will be
  * exported in this SWIG module or from another SWIG module using the
- * `OA_EXPORT_ENUM_CLASS()` macro. This type map only defines the in and out
- * typemaps mapping C++ scoped enum to Python enum class and vice versa.
+ * `OA_EXPORT_ENUM_CLASS()` macro. This type map also provides a typecheck
+ * typemap for supporting C++ overloading.
  *
  * @param cxx_type C++ fully-qualified scoped enum type
  * @param py_type Python fully-qualified `enum.Enum` subclass
@@ -454,6 +454,12 @@ OA_GNU_WARNING_POP()
     .substr<oa::fixed_string{#py_type}.rfind('.') + 1u>();
   // convert into corresponding enum.Enum
   $result = oa::enum_::Enum($1, #cxx_type, mod_name, type_name).release();
+}
+
+OA_OBJECT_TYPECHECK(cxx_type) {
+  // FIXME: check_cxx_type_name() always sets exception if false. may want a
+  // pure checking method that only sets Python exception on errors
+  $1 = oa::enum_::IsEnum($input) && oa::check_cxx_type_name($input, #cxx_type);
 }
 %enddef  // OA_TYPEMAP_ENUM_CLASS(cxx_type, py_type)
 
