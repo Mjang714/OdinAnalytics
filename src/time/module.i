@@ -38,10 +38,6 @@ This module provides wrappers for oa_time library functions and types."
 
 OA_HANDLE_EXCEPTIONS
 
-// ensure all class + enum types are in PascalCase
-%rename("%(camelcase)s", %$isclass) "";
-%rename("%(camelcase)s", %$isenum) "";
-
 // process oa/dllexport.h for OA_TIME_API
 %import "oa/dllexport.h"
 
@@ -92,7 +88,31 @@ namespace oa::time {
 
 }  // namespace oa::time
 
+// ensure all class + enum types are in PascalCase
+%rename("%(camelcase)s", %$isclass) "";
+%rename("%(camelcase)s", %$isenum) "";
+// ensure all enum members are in snake_case for Python (will be made uppercase)
+%rename("%(undercase)s", %$isenumitem) "";
+
 %include "oa/time/enums.h"
+
+// ensure enums are wrapped as enum classes in Python
+//
+// note:
+//
+// to ensure _make_enum_class() calls are made after SWIG has wrapped the scoped
+// enum members, the %pythoncode block must come *after* all %include directives
+// which define the enums being targeted by _make_enum_class(). we also have
+// strip_prefix="k_" because of the previous enum item %rename directive
+//
+%pythoncode %{
+_make_enum_class("Weekdays", strip_prefix="k_")
+_make_enum_class("Months", strip_prefix="k_")
+_make_enum_class("Tenors", strip_prefix="k_")
+_make_enum_class("AdjRule", strip_prefix="k_")
+_make_enum_class("DayCountRule", strip_prefix="k_")
+%}
+
 // TODO: add wrapping for the Date class after the Tenor class is done
 // TODO: need to provide typemaps for oa::time::Tenors for Tenor(int, Tenors)
 // and so getters can return the correct enum string value
