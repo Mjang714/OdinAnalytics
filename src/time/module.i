@@ -96,24 +96,28 @@ namespace oa::time {
 
 %include "oa/time/enums.h"
 
-// ensure enums are wrapped as enum classes in Python
+// define typemaps for C++ scoped enums to Python enum.Enum
+OA_TYPEMAP_ENUM_CLASS(oa::time::Weekdays, oa_time.Weekdays)
+OA_TYPEMAP_ENUM_CLASS(oa::time::Months, oa_time.Months)
+OA_TYPEMAP_ENUM_CLASS(oa::time::Tenors, oa_time.Tenors)
+OA_TYPEMAP_ENUM_CLASS(oa::time::AdjRule, oa_time.AdjRule)
+OA_TYPEMAP_ENUM_CLASS(oa::time::DayCountRule, oa_time.DayCountRule)
+
+// export C++ scoped enums as Python enum.Enum
 //
 // note:
 //
-// to ensure _make_enum_class() calls are made after SWIG has wrapped the scoped
-// enum members, the %pythoncode block must come *after* all %include directives
-// which define the enums being targeted by _make_enum_class(). we also have
-// strip_prefix="k_" because of the previous enum item %rename directive
+// OA_EXPORT_ENUM_CLASS() must be called *after* all %include directives
+// defining the scoped enums whose members have been wrapped into module-level
+// members by SWIG. we also have strip_prefix="k_" because of the previous enum
+// item %rename directive changing e.g. kWeeks into k_weeks
 //
-%pythoncode %{
-_make_enum_class("Weekdays", strip_prefix="k_")
-_make_enum_class("Months", strip_prefix="k_")
-_make_enum_class("Tenors", strip_prefix="k_")
-_make_enum_class("AdjRule", strip_prefix="k_")
-_make_enum_class("DayCountRule", strip_prefix="k_")
-%}
+OA_EXPORT_ENUM_CLASS(oa::time::Weekdays, strip_prefix="k_")
+OA_EXPORT_ENUM_CLASS(oa::time::Months, strip_prefix="k_")
+OA_EXPORT_ENUM_CLASS(oa::time::Tenors, strip_prefix="k_")
+OA_EXPORT_ENUM_CLASS(oa::time::AdjRule, strip_prefix="k_")
+OA_EXPORT_ENUM_CLASS(oa::time::DayCountRule, strip_prefix="k_")
 
 // TODO: add wrapping for the Date class after the Tenor class is done
-// TODO: need to provide typemaps for oa::time::Tenors for Tenor(int, Tenors)
-// and so getters can return the correct enum string value
+// TODO: need to provide typechecks for oa::time::Tenors for Tenor(int, Tenors)
 %include "oa/time/tenor.h"
