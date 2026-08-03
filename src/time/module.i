@@ -116,16 +116,29 @@ namespace oa::time {
   }
 
   /**
-   * Return the string representation of the `Tenor`.
+   * Return the expression representation of the `Tenor`.
    *
-   * This is implemented using the `operator<<` overload for `Tenor`.
+   * This is implemented using the `operator<<` overload for `Tenor` and yields
+   * a valid Python expression, e.g. `Tenor("7w")`.
    */
   std::string __repr__()
   {
     std::stringstream ss;
-    ss << *$self;
+    ss << "Tenor(\"" << *$self << "\")";
     // note: in C++20 this saves a string copy by using the ref-qualified
     // overload of str() that move-constructs from the internal string
+    return std::move(ss).str();
+  }
+
+  /**
+   * Return the print representation of the `Tenor`.
+   *
+   * This is implemented using the `operator<<` overload for `Tenor`.
+   */
+  std::string __str__()
+  {
+    std::stringstream ss;
+    ss << *$self;
     return std::move(ss).str();
   }
 }
@@ -198,16 +211,27 @@ namespace oa::time {
   }
 
   /**
-   * Return the string representation of the `Date`.
+   * Return the expression representation of the `Date`.
    *
-   * This is implemented using the `operator<<` overload for `Date`.
+   * This is implemented using the `operator<<` overload for `Date` and yields
+   * a valid Python expression, e.g. `Date("2020-04-05")`.
    */
   std::string __repr__()
   {
     std::stringstream ss;
+    ss << "Date(\"" << *$self << "\")";
+    return std::move(ss).str();
+  }
+
+  /**
+   * Return the print representation of the `Date`.
+   *
+   * This is implemented using the `operator<<` overload for `Date`.
+   */
+  std::string __str__()
+  {
+    std::stringstream ss;
     ss << *$self;
-    // note: in C++20 this saves a string copy by using the ref-qualified
-    // overload of str() that move-constructs from the internal string
     return std::move(ss).str();
   }
 }
