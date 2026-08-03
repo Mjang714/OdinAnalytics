@@ -7,7 +7,6 @@ mostly useful for test harness integration, e.g. for CTest discovery.
 .. codeauthor:: Derek Huang <djh458@stern.nyu.edu>
 """
 
-from pathlib import Path
 import unittest
 
 from oa_testutils import test_main
@@ -63,6 +62,11 @@ class TestTenor(unittest.TestCase):
         """Test that the ``Tenor`` representaton works as expected."""
         ten = Tenor(7, Tenors.DAYS)
         self.assertEqual(repr(ten), "7d")
+
+    def test_str(self):
+        """Test that the ``Tenor`` string representation works as expected."""
+        ten = Tenor(10, Tenors.YEARS)
+        self.assertEqual(str(ten), "10y")
 
     def test_hash(self):
         """Test that the ``Tenor`` is hashable.
