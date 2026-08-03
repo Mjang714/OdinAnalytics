@@ -41,13 +41,51 @@ OA_HANDLE_EXCEPTIONS
 // process oa/dllexport.h for OA_TIME_API
 %import "oa/dllexport.h"
 
+// ensure all class + enum types are in PascalCase
+%rename("%(camelcase)s", %$isclass) "";
+%rename("%(camelcase)s", %$isenum) "";
+// ensure all function + enum members are snake_case for Python
+// note: the enum members will be made uppercase later when exported
+%rename("%(undercase)s", %$isfunction) "";
+%rename("%(undercase)s", %$isenumitem) "";
+
+// ignore unwrappable operators
 namespace oa::time {
 
 // note: explicitly ignored using %ignore to suppress the emitted SWIG warning
 %ignore operator<<;
 %ignore operator+;
-// note: we don't have a typecheck + typemap to disambiguate the overloads
-%ignore Date::Date(const std::chrono::system_clock::time_point&);
+%ignore operator-;
+
+}  // namespace oa::time
+
+%include "oa/time/enums.h"
+
+// define typemaps for C++ scoped enums to Python enum.Enum
+OA_TYPEMAP_ENUM_CLASS(oa::time::Weekdays, oa_time.Weekdays)
+OA_TYPEMAP_ENUM_CLASS(oa::time::Months, oa_time.Months)
+OA_TYPEMAP_ENUM_CLASS(oa::time::Tenors, oa_time.Tenors)
+OA_TYPEMAP_ENUM_CLASS(oa::time::AdjRule, oa_time.AdjRule)
+OA_TYPEMAP_ENUM_CLASS(oa::time::DayCountRule, oa_time.DayCountRule)
+
+// export C++ scoped enums as Python enum.Enum
+//
+// note:
+//
+// OA_EXPORT_ENUM_CLASS() must be called *after* all %include directives
+// defining the scoped enums whose members have been wrapped into module-level
+// members by SWIG. we also have strip_prefix="k_" because of the previous enum
+// item %rename directive changing e.g. kWeeks into k_weeks
+//
+OA_EXPORT_ENUM_CLASS(oa::time::Weekdays, strip_prefix="k_")
+OA_EXPORT_ENUM_CLASS(oa::time::Months, strip_prefix="k_")
+OA_EXPORT_ENUM_CLASS(oa::time::Tenors, strip_prefix="k_")
+OA_EXPORT_ENUM_CLASS(oa::time::AdjRule, strip_prefix="k_")
+OA_EXPORT_ENUM_CLASS(oa::time::DayCountRule, strip_prefix="k_")
+
+// oa::time::Tenor %ignore and %extend directives
+namespace oa::time {
+
 // note: SWIG doesn't support nested structs
 %ignore Tenor::GroupLess;
 // ignore deprecated members
@@ -94,35 +132,88 @@ namespace oa::time {
 
 }  // namespace oa::time
 
-// ensure all class + enum types are in PascalCase
-%rename("%(camelcase)s", %$isclass) "";
-%rename("%(camelcase)s", %$isenum) "";
-// ensure all enum members are in snake_case for Python (will be made uppercase)
-%rename("%(undercase)s", %$isenumitem) "";
+%include "oa/time/tenor.h"
 
-%include "oa/time/enums.h"
+// oa::time::Date %ignore and %extend directives
+namespace oa::time {
 
-// define typemaps for C++ scoped enums to Python enum.Enum
-OA_TYPEMAP_ENUM_CLASS(oa::time::Weekdays, oa_time.Weekdays)
-OA_TYPEMAP_ENUM_CLASS(oa::time::Months, oa_time.Months)
-OA_TYPEMAP_ENUM_CLASS(oa::time::Tenors, oa_time.Tenors)
-OA_TYPEMAP_ENUM_CLASS(oa::time::AdjRule, oa_time.AdjRule)
-OA_TYPEMAP_ENUM_CLASS(oa::time::DayCountRule, oa_time.DayCountRule)
-
-// export C++ scoped enums as Python enum.Enum
+// no typecheck + typemap for std::chrono::system_clock::time_point
 //
 // note:
 //
-// OA_EXPORT_ENUM_CLASS() must be called *after* all %include directives
-// defining the scoped enums whose members have been wrapped into module-level
-// members by SWIG. we also have strip_prefix="k_" because of the previous enum
-// item %rename directive changing e.g. kWeeks into k_weeks
+// SWIG is not intelligent enough to realize that Date::time_point is an alias
+// to std::chrono::system_clock::time_point. we must use the time_point type
+// alias directly, otherwise SWIG generates a wrapper regardless
 //
-OA_EXPORT_ENUM_CLASS(oa::time::Weekdays, strip_prefix="k_")
-OA_EXPORT_ENUM_CLASS(oa::time::Months, strip_prefix="k_")
-OA_EXPORT_ENUM_CLASS(oa::time::Tenors, strip_prefix="k_")
-OA_EXPORT_ENUM_CLASS(oa::time::AdjRule, strip_prefix="k_")
-OA_EXPORT_ENUM_CLASS(oa::time::DayCountRule, strip_prefix="k_")
+%ignore Date::Date(const time_point&);
+// avoid static IsLeap(int) clobbering IsLeap() member in wrapper
+%rename(is_leap_year) Date::IsLeap(int);
+// avoid static GetDOWInt(int) clobbering GetDOWInt() member in wrapper + use a
+// nice shorter name for GetDOWInt() member function
+%rename(dow_int) Date::GetDOWInt(int);
+%rename(dow) Date::GetDOWInt() const;
+// member function shadows static function of different call signature + we
+// don't have any typecheck + typemaps for std::chrono:: types
+%ignore Date::ConvertToTimePt;
+// ignore deprecated functions
+%ignore Date::ToString;
+%ignore Date::GetJulian;
+%ignore Date::AddTenor;
+%ignore Date::SubTenor;
+// ignore gregorian() as we don't have a std::tuple<int, int, int> typemap
+// TODO: consider adding tuple typemaps based
+%ignore Date::gregorian;
 
-// TODO: add wrapping for the Date class after the Tenor class is done
-%include "oa/time/tenor.h"
+// Python member functions for the Date class
+%extend Date {
+  /**
+   * Add the given number of days to the `Date`.
+   *
+   * This replaces the unwrappable non-member `operator+(const Date&, int)`.
+   */
+  Date __add__(int days)
+  {
+    return *$self + days;
+  }
+
+  /**
+   * Subtract the give number of days from the `Date`.
+   *
+   * This replaces the unwrappable non-member `operator-(const Date&, int)`.
+   */
+  Date __sub__(int days)
+  {
+    return *$self - days;
+  }
+
+  /**
+   * Return the hash value of the `Date`.
+   *
+   * Since each date is based on a Julian day number we can just return the
+   * Julian day number itself as the hash value to let `Date` be hashable.
+   */
+  Py_ssize_t __hash__()
+  {
+    return $self->julian();
+  }
+
+  /**
+   * Return the string representation of the `Date`.
+   *
+   * This is implemented using the `operator<<` overload for `Date`.
+   */
+  std::string __repr__()
+  {
+    std::stringstream ss;
+    ss << *$self;
+    // note: in C++20 this saves a string copy by using the ref-qualified
+    // overload of str() that move-constructs from the internal string
+    return std::move(ss).str();
+  }
+}
+
+}  // namespace oa::time
+
+// note: date.h must be processed after tenor.h since we need SWIG to first
+// recognize Tenor in order to correctly process Date interfaces using Tenor
+%include "oa/time/date.h"
