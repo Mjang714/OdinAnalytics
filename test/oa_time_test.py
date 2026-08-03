@@ -97,6 +97,41 @@ class TestTenor(unittest.TestCase):
         ten = Tenor("7d")
         self.assertEqual(Tenor(7, Tenors.DAYS), ten)
 
+    def test_neq(self):
+        """Test ``Tenor`` negation."""
+        t1 = Tenor(7, Tenors.DAYS)
+        t2 = Tenor(-7, Tenors.DAYS)
+        self.assertEqual(t2, -t1)
+
+    def test_eq(self):
+        """Test ``Tenor`` equality.
+
+        This particularly tests "1w" != "7d" since comparison is done on the
+        count and units, not the "actual" calendar time.
+        """
+        t1 = Tenor(1, Tenors.WEEKS)
+        t2 = Tenor(7, Tenors.DAYS)
+        self.assertNotEqual(t1, t2)
+
+    def test_add(self):
+        """Test ``Tenor`` addition.
+
+        .. note::
+
+           Unlike in C++ the ``Tenor`` addition in Python is not symmetric as
+           it's not possible to define an unbound user-defined + overload. We
+           would need some kind of integral wrapper type for that.
+        """
+        t1 = Tenor(16, Tenors.MONTHS)
+        t2 = Tenor(24, Tenors.MONTHS)
+        self.assertEqual(t2, t1 + 8)
+
+    def test_sub(self):
+        """Test ``Tenor`` subtraction."""
+        t1 = Tenor(19, Tenors.DAYS)
+        t2 = Tenor(8, Tenors.DAYS)
+        self.assertEqual(t2, t1 - 11)
+
 
 if __name__ == "__main__":
     test_main(__name__)
