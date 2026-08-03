@@ -45,6 +45,7 @@ namespace oa::time {
 
 // note: explicitly ignored using %ignore to suppress the emitted SWIG warning
 %ignore operator<<;
+%ignore operator+;
 // note: we don't have a typecheck + typemap to disambiguate the overloads
 %ignore Date::Date(const std::chrono::system_clock::time_point&);
 // note: SWIG doesn't support nested structs
