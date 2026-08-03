@@ -23,7 +23,6 @@
 #include <string_view>
 #include <utility>
 
-#include "oa/ctti.h"
 #include "oa/fixed_string.h"
 #include "oa/python.h"
 #include "oa/warnings.h"
@@ -206,8 +205,7 @@ bool check_cxx_type_name(PyObject* obj, std::string_view type_name) noexcept
   if (*view != type_name) {
     // note: techically not noexcept
     std::stringstream ss;
-    ss << OA_PRETTY_FUNCTION_NAME << ": _cxx_type_name value " << *view <<
-      " != expected C++ type name " << type_name;
+    ss << "_cxx_type_name " << *view << " != expected " << type_name;
     // note: std::move() to move instead of copy + temporarily materialize
     PyErr_SetString(PyExc_TypeError, std::move(ss).str().c_str());
     return false;
@@ -372,13 +370,7 @@ std::optional<E> to_scoped_enum(PyObject* obj, std::string_view type) noexcept
 {
   // if not enum.Enum, error
   if (!enum_::IsEnum(obj)) {
-    PyErr_SetString(
-      PyExc_TypeError,
-      fixed_string{
-        OA_PRETTY_FUNCTION_NAME,
-        ": incorrect type: input must be an enum.Enum instance"
-      }
-    );
+    PyErr_SetString(PyExc_TypeError, "input must be an enum.Enum instance");
     return {};
   }
   // if _cxx_type_name doesn't match, error
@@ -398,10 +390,7 @@ std::optional<E> to_scoped_enum(PyObject* obj, std::string_view type) noexcept
     if (enum_value->size() != 1u) {
       PyErr_SetString(
         PyExc_ValueError,
-        fixed_string{
-          OA_PRETTY_FUNCTION_NAME,
-          ": string enum values must have length 1 to map back to C++ char"
-        }
+        "string enum values must have length 1 to map back to C++ char"
       );
       return {};
     }
@@ -594,13 +583,7 @@ std::optional<std::filesystem::path> to_path(PyObject* obj)
     str = {py_object::inc, obj};
   // otherwise, set a Python exception
   else
-    PyErr_SetString(
-      PyExc_TypeError,
-      fixed_string{
-        OA_PRETTY_FUNCTION_NAME,
-        ": incorrect type: input must be str or pathlib.Path"
-      }
-    );
+    PyErr_SetString(PyExc_TypeError, "input must be str or pathlib.Path");
   // handle error
   if (!str)
     return {};
