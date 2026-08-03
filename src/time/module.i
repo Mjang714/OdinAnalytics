@@ -49,6 +49,11 @@ namespace oa::time {
 %ignore Date::Date(const std::chrono::system_clock::time_point&);
 // note: SWIG doesn't support nested structs
 %ignore Tenor::GroupLess;
+// ignore deprecated members
+// note: in particular, GetValues() has no corresponding typemap for its return
+// type, so we end up leaking a std::pair<int, Tenors> on every call
+%ignore Tenor::FlipSign;
+%ignore Tenor::GetValues;
 
 // Python member functions for the Tenor class
 // note: auto supported as return type in SWIG 4.1
@@ -119,5 +124,4 @@ OA_EXPORT_ENUM_CLASS(oa::time::AdjRule, strip_prefix="k_")
 OA_EXPORT_ENUM_CLASS(oa::time::DayCountRule, strip_prefix="k_")
 
 // TODO: add wrapping for the Date class after the Tenor class is done
-// TODO: need to provide typechecks for oa::time::Tenors for Tenor(int, Tenors)
 %include "oa/time/tenor.h"
