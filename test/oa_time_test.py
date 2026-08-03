@@ -61,7 +61,7 @@ class TestTenor(unittest.TestCase):
     def test_repr(self):
         """Test that the ``Tenor`` representaton works as expected."""
         ten = Tenor(7, Tenors.DAYS)
-        self.assertEqual(repr(ten), "7d")
+        self.assertEqual(repr(ten), 'Tenor("7d")')
 
     def test_str(self):
         """Test that the ``Tenor`` string representation works as expected."""
