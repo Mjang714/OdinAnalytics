@@ -407,6 +407,39 @@ std::optional<E> to_scoped_enum(PyObject* obj, std::string_view type) noexcept
     return E{static_cast<std::underlying_type_t<E>>(enum_value)};
   }
 }
+
+/**
+ * Indicate if the Python object is an `enum.Enum` mapping to a C++ enum class.
+ *
+ * This function differs from `check_cxx_type_name()` in that it is more suited
+ * for simply checking whether a particular Python object is such an `enum.Enum`
+ * instance. Exceptions are only set by any intermediate Python C API calls
+ * when they error as this function is intended for implementing typechecks.
+ *
+ * On error a Python exception is set and the returned optional is empty.
+ *
+ * @param obj Python object to check
+ * @param type_name C++ fully-qualified type name to check against
+ */
+std::optional<bool> is_exported_enum_class(
+  PyObject* obj,
+  std::string_view type_name) noexcept
+{
+  // check if enum.Enum instance
+  if (!enum_::IsEnum(obj))
+    return false;
+  // get _cxx_type_name attribute
+  py_object attr{PyObject_GetAttrString(obj, "_cxx_type_name")};
+  if (!attr)
+    return {};
+  // get view of string value
+  auto view = to_utf8_view(attr);
+  if (!view)
+    return {};
+  // return result of check
+  return *view == type_name;
+}
+
 OA_GNU_WARNING_POP()
 
 }  // namespace
@@ -445,10 +478,12 @@ OA_GNU_WARNING_POP()
   $result = oa::enum_::Enum($1, #cxx_type, mod_name, type_name).release();
 }
 
+// typecheck typemap to support overloading
 OA_OBJECT_TYPECHECK(cxx_type) {
-  // FIXME: check_cxx_type_name() always sets exception if false. may want a
-  // pure checking method that only sets Python exception on errors
-  $1 = oa::enum_::IsEnum($input) && oa::check_cxx_type_name($input, #cxx_type);
+  auto res = oa::is_exported_enum_class($input, #cxx_type);
+  if (!res)
+    SWIG_fail;
+  $1 = *res;
 }
 %enddef  // OA_TYPEMAP_ENUM_CLASS(cxx_type, py_type)
 
