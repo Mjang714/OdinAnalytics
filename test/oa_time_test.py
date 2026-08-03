@@ -10,7 +10,7 @@ mostly useful for test harness integration, e.g. for CTest discovery.
 import unittest
 
 from oa_testutils import test_main
-from oa_time import Months, Tenor, Tenors
+from oa_time import Date, Months, Tenor, Tenors
 
 
 class TestMonths(unittest.TestCase):
@@ -42,17 +42,60 @@ class TestMonths(unittest.TestCase):
                 self.assertEqual(i + 1, Months[month.upper()].value)
 
 
+def enable_param_test(cls: unittest.TestCase) -> unittest.TestCase:
+    """unittest ``TestCase`` decorator to enable parametrized tests.
+
+    TODO: finsh documenting
+    """
+    # get current attributes in cls (need actual copy)
+    mems = [mem for mem in cls.__dict__]
+    # for each attribute
+    for mem in mems:
+        attr = getattr(cls, mem)
+        # param test function has the _param_list member
+        if mem.startswith("test_") and hasattr(attr, "_param_list"):
+            for i, args in enumerate(getattr(attr, "_param_list")):
+
+                # note: using kwarg capture trick to avoid late binding, which
+                # makes it appear as if the last value of each name is used
+                def _test(self, test=attr, args=args):
+                    # if args is a tuple, unpack
+                    if isinstance(args, tuple):
+                        test(self, *args)
+                    # otherwise pass as a single argument for convenience
+                    else:
+                        test(self, args)
+
+                setattr(cls, f"{mem}_{i}", _test)
+            # remove original test function
+            delattr(cls, mem)
+    return cls
+
+
+def parameters(*args):
+    # TODO: add docstring + type hints
+
+    def wrapper(f):
+        f._param_list = args
+        return f
+
+    return wrapper
+
+
+@enable_param_test
 class TestTenors(unittest.TestCase):
     """Test suite for ``oa::time::Tenors`` enum tests."""
 
-    def test_values(self):
-        """Test that the enum members have the appropriate values."""
-        # member names
-        units = ["DAYS", "WEEKS", "MONTHS", "YEARS"]
-        # subtest for each
-        for unit in units:
-            with self.subTest(unit=unit):
-                self.assertEqual(unit[0], Tenors[unit].value)
+    @parameters("DAYS", "WEEKS", "MONTHS", "YEARS")
+    def test_value(self, unit: str):
+        """Test that the enum members have the appropriate values.
+
+        Parameters
+        ----------
+        unit : str
+            ``Tenors`` enum member name in Python
+        """
+        self.assertEqual(unit[0], Tenors[unit].value)
 
 
 class TestTenor(unittest.TestCase):
@@ -131,6 +174,51 @@ class TestTenor(unittest.TestCase):
         t1 = Tenor(19, Tenors.DAYS)
         t2 = Tenor(8, Tenors.DAYS)
         self.assertEqual(t2, t1 - 11)
+
+
+@enable_param_test
+class TestDate(unittest.TestCase):
+    """Test suite for ``oa::time::Date`` tests."""
+
+    def test_default_init(self):
+        """Test initialization with no arguments (default init)."""
+        date = Date()
+        self.assertEqual(0, date.julian())
+
+    def test_ymd_init(self):
+        """Test initialization with year, month, day."""
+        ymd = (2020, 4, 5)
+        date = Date(*ymd)
+        # note: when gregorian() is wrapped we can use that instead
+        self.assertEqual(ymd, (date.year(), date.month(), date.day()))
+
+    @parameters(
+        ("2020-04-05", (2020, 4, 5)),
+        ("2030-1-3", (2030, 1, 3)),
+        ("2032/5/4", (2032, 5, 4)),
+        ("2000/09/14", (2000, 9, 14)),
+        ("2345:1:1", (2345, 1, 1)),
+        ("1908:11:2", (1908, 11, 2))
+    )
+    def test_string_init(self, ds: str, ymd: tuple[int, int, int]):
+        """Test initialiation from a date string.
+
+        This tests a few different valid year, month, day representations.
+
+        Parameters
+        ----------
+        ds : str
+            Date string, e.g. "2020-05-06", for initialization
+        ymd : tuple[int, int, int]
+            Expected year, month, and day values
+        """
+        date = Date(ds)
+        self.assertEqual(ymd, (date.year(), date.month(), date.day()))
+
+    def test_julian_init(self):
+        """Test initialization from a Julian day number."""
+        date = Date(2458913)  # 2020-03-04
+        self.assertEqual(2458913, date.julian())
 
 
 if __name__ == "__main__":
