@@ -9,7 +9,7 @@ mostly useful for test harness integration, e.g. for CTest discovery.
 
 import unittest
 
-from oa_testutils import test_main
+from oa_testutils import enable_param_test, parameters, test_main
 from oa_time import Date, Months, Tenor, Tenors
 
 
@@ -40,46 +40,6 @@ class TestMonths(unittest.TestCase):
         for i, month in enumerate(months):
             with self.subTest(value=i + 1, month=month):
                 self.assertEqual(i + 1, Months[month.upper()].value)
-
-
-def enable_param_test(cls: unittest.TestCase) -> unittest.TestCase:
-    """unittest ``TestCase`` decorator to enable parametrized tests.
-
-    TODO: finsh documenting
-    """
-    # get current attributes in cls (need actual copy)
-    mems = [mem for mem in cls.__dict__]
-    # for each attribute
-    for mem in mems:
-        attr = getattr(cls, mem)
-        # param test function has the _param_list member
-        if mem.startswith("test_") and hasattr(attr, "_param_list"):
-            for i, args in enumerate(getattr(attr, "_param_list")):
-
-                # note: using kwarg capture trick to avoid late binding, which
-                # makes it appear as if the last value of each name is used
-                def _test(self, test=attr, args=args):
-                    # if args is a tuple, unpack
-                    if isinstance(args, tuple):
-                        test(self, *args)
-                    # otherwise pass as a single argument for convenience
-                    else:
-                        test(self, args)
-
-                setattr(cls, f"{mem}_{i}", _test)
-            # remove original test function
-            delattr(cls, mem)
-    return cls
-
-
-def parameters(*args):
-    # TODO: add docstring + type hints
-
-    def wrapper(f):
-        f._param_list = args
-        return f
-
-    return wrapper
 
 
 @enable_param_test
