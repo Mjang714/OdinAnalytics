@@ -16,6 +16,7 @@
 
 #include <cstddef>
 #include <string_view>
+#include <tuple>
 #include <utility>
 
 namespace oa {
@@ -131,28 +132,82 @@ public:
   /**
    * Ctor.
    *
+   * Creates a new Python `bool` object from a C/C++ `bool`.
+   *
+   * On error the data pointer is `nullptr` and a Python exception is set.
+   *
+   * @param v Value to construct from
+   */
+  py_object(bool v) noexcept : obj_{PyBool_FromLong(v)} {}
+
+  /**
+   * Ctor.
+   *
+   * Creates a new Python `int` object from C/C++ `long`.
+   *
+   * On error the data pointer is `nullptr` and a Python exception is set.
+   *
+   * @param v Value to construct from
+   */
+  py_object(int v) noexcept : obj_{PyLong_FromLong(v)} {}
+
+  /**
+   * Ctor.
+   *
+   * Creates a new Python `int` object from a C/C++ `unsigned int`.
+   *
+   * On error the data pointer is `nullptr` and a Python exception is set.
+   *
+   * @param v Value to construct from
+   */
+  py_object(unsigned v) noexcept : obj_{PyLong_FromUnsignedLong(v)} {}
+
+  /**
+   * Ctor.
+   *
+   * Creates a new Python `int` object from C/C++ `long`.
+   *
+   * On error the data pointer is `nullptr` and a Python exception is set.
+   *
+   * @param v Value to construct from
+   */
+  py_object(long v) noexcept : obj_{PyLong_FromLongLong(v)} {}
+
+  /**
+   * Ctor.
+   *
+   * Creates a new Python `int` object from C/C++ `unsigned long`.
+   *
+   * On error the data pointer is `nullptr` and a Python exception is set.
+   *
+   * @param v Value to construct from
+   */
+  py_object(unsigned long v) noexcept : obj_{PyLong_FromUnsignedLongLong(v)} {}
+
+  /**
+   * Ctor.
+   *
    * Creates a new UTF-8 Python string from a copy of the given range.
    *
-   * On error the data pointer will be `nullptr`.
+   * On error the data pointer is `nullptr` and a Python exception is set.
    *
    * @param data Character data pointer
    * @param size Number of characters
    */
   py_object(const char* data, std::size_t size) noexcept
-  {
-    obj_ = PyUnicode_FromStringAndSize(data, size);
-  }
+    : obj_{PyUnicode_FromStringAndSize(data, size)}
+  {}
 
   /**
    * Ctor.
    *
    * Creates a new UTF-8 Python string from a copy of the given string view.
    *
-   * On error the data pointer will be `nullptr`.
+   * On error the data pointer is `nullptr` and a Python exception is set.
    *
    * @param view String view
    */
-  explicit py_object(std::string_view view) noexcept
+  py_object(std::string_view view) noexcept
     : py_object{view.data(), view.size()}
   {}
 
@@ -161,27 +216,101 @@ public:
    *
    * Creates a new Python Unicode string from a wide character range.
    *
-   * On error the data pointer will be `nullptr`.
+   * On error the data pointer is `nullptr` and a Python exception is set.
    *
    * @param data Character data pointer
    * @param size Number of characters
    */
   py_object(const wchar_t* data, std::size_t size) noexcept
-  {
-    obj_ = PyUnicode_FromWideChar(data, size);
-  }
+    : obj_{PyUnicode_FromWideChar(data, size)}
+  {}
 
   /**
    * Ctor.
    *
    * Creates a new Python Unicode string from a wide character string view.
    *
-   * On error the data pointer will be `nullptr`.
+   * On error the data pointer is `nullptr` and a Python exception is set.
    *
    * @param view String view
    */
-  explicit py_object(std::wstring_view view) noexcept
+  py_object(std::wstring_view view) noexcept
     : py_object{view.data(), view.size()}
+  {}
+
+private:
+  /**
+   * Helper to map a `std::size_t` index to the Python 'O' format spec.
+   */
+  template <std::size_t>
+  static constexpr auto obj_fmt = 'O';
+
+  /**
+   * Create a new Python tuple from a parameter pack.
+   *
+   * On error the `py_object` is empty and a Python exception is set.
+   *
+   * @note Passing a `std::tuple<Ts...>` for `vs` results in a Python tuple
+   *  that contains another Python tuple which is sometimes desirable.
+   *
+   * @tparam Is Indices 0 through `sizeof...(Ts)` - 1
+   * @tparam Ts types
+   *
+   * @param vs Values to construct from
+   */
+  template <std::size_t... Is, typename... Ts>
+  static auto tuple(std::index_sequence<Is...>, Ts&&... vs) noexcept
+  {
+    static_assert(sizeof...(Is) == sizeof...(Ts));
+    // format string for Py_BuildValue()
+    const char fmt[] = {'(', obj_fmt<Is>..., ')', '\0'};
+    // py_object array for each Ts
+    py_object objs[sizeof...(Ts)];
+    // fold over types. on error, we break early
+    // note: need extra parentheses to indicate use of fold expression
+    if ((!(objs[Is] = py_object{std::forward<Ts>(vs)}) || ...))
+      return py_object{};
+    // otherwise, use Py_BuildValue() to construct a tuple
+    return py_object{Py_BuildValue(fmt, objs[Is].get()...)};
+  }
+
+  /**
+   * Creat a new Python tuple from a `std::tuple<Ts...>`.
+   *
+   * On error the `py_object` is empty and a Python exception is set.
+   *
+   * @note The parameter order is reversed to avoid overload ambiguity and to
+   *  preserve the ability to create nested tuples in Python.
+   *
+   * @tparam Is Indices 0 through `sizeof...(Ts)` - 1
+   * @tparam Ts types
+   *
+   * @param tup Tuple to construct from
+   * @param seq
+   */
+  template <std::size_t... Is, typename... Ts>
+  static auto tuple(
+    const std::tuple<Ts...>& tup,
+    std::index_sequence<Is...> seq) noexcept
+  {
+    return tuple(seq, std::get<Is>(tup)...);
+  }
+
+public:
+  /**
+   * Ctor.
+   *
+   * Create a new Python tuple from a `std::tuple<Ts...>`.
+   *
+   * On error the data pointer is `nullptr` and a Python exception is set.
+   *
+   * @tparam Ts types
+   *
+   * @param tup Tuple of values convertible to `py_object`
+   */
+  template <typename... Ts>
+  py_object(const std::tuple<Ts...>& tup) noexcept
+    : obj_{tuple(tup, std::index_sequence_for<Ts...>{}).release()}
   {}
 
   /**
