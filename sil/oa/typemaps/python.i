@@ -21,6 +21,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 
 #include "oa/fixed_string.h"
@@ -572,7 +573,8 @@ bool IsPath(PyObject* obj) noexcept
 py_object Path(const std::filesystem::path& path) noexcept
 {
   // create Python string from path (use native encoding)
-  py_object str{path.c_str()};
+  // note: no extra copy is created unlike if we used string()
+  py_object str{path.native()};
   if (!str)
     return {};
   // import pathlib.Path
@@ -687,3 +689,38 @@ OA_FILESYSTEM_PATH_CHECK(const std::filesystem::path&)
 %typemap(out) std::filesystem::path {
   $result = oa::pathlib::Path($1).release();
 }
+
+// TODO: add %typemap(in) for std::tuple<...> which requires some templated
+// conversion of PyObject* to std::optional<T>
+
+/**
+ * Macro for a typemap converting a `std::tuple<Ts...>` to a Python tuple.
+ *
+ * Since `std::tuple<Ts...>` is a template types must be manually specified.
+ *
+ * @param ... C++ types
+ */
+%define OA_TUPLE_OUT_TYPEMAP(...)
+%typemap(out) std::tuple<__VA_ARGS__> {
+  $result = oa::py_object{$1}.release();
+}
+%enddef  // OA_TUPLE_OUT_TYPEMAP(...)
+
+/**
+ * Macro for a `std::tuple<Ts...>` typecheck.
+ *
+ * This succeeds if the Python object is a `tuple` of the correct size.
+ *
+ * @note Typechecks are only used to disambiguate overloads.
+ *
+ * @param ... C++ types
+ */
+%define OA_TUPLE_TYPECHECK(...)
+OA_OBJECT_TYPECHECK(std::tuple<__VA_ARGS__>) {
+  // note: PyTuple_Size() should not fail, i.e. return -1, on a tuple
+  $1 = (
+    PyTuple_Check($input) &&
+    PyTuple_Size($input) == std::tuple_size_v<std::tuple<__VA_ARGS__>
+  );
+}
+%enddef  // OA_TUPLE_TYPECHECK(...)
