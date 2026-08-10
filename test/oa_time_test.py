@@ -145,12 +145,22 @@ class TestDate(unittest.TestCase):
         date = Date()
         self.assertEqual(0, date.julian())
 
-    def test_ymd_init(self):
-        """Test initialization with year, month, day."""
-        ymd = (2020, 4, 5)
-        date = Date(*ymd)
-        # note: when gregorian() is wrapped we can use that instead
-        self.assertEqual(ymd, (date.year(), date.month(), date.day()))
+    @parameters((2025, 4, 5), (2014, 2, 15), (2034, 12, 14), (2022, 7, 22))
+    def test_ymd_init(self, y: int, m: int, d: int):
+        """Test initialization with year, month, day.
+
+        Parameters
+        ----------
+        y : int
+            Expected year value
+        m : int
+            Expected month value
+        d : int
+            Expected day value
+        """
+        date = Date(y, m, d)
+        # note: gregorian() tested in test_string_init()
+        self.assertEqual((y, m, d), (date.year(), date.month(), date.day()))
 
     @parameters(
         ("2020-04-05", (2020, 4, 5)),
@@ -173,7 +183,8 @@ class TestDate(unittest.TestCase):
             Expected year, month, and day values
         """
         date = Date(ds)
-        self.assertEqual(ymd, (date.year(), date.month(), date.day()))
+        # note: individual getters tested in test_ymd_init()
+        self.assertEqual(ymd, date.gregorian())
 
     def test_julian_init(self):
         """Test initialization from a Julian day number."""
