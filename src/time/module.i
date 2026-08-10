@@ -147,6 +147,9 @@ namespace oa::time {
 
 %include "oa/time/tenor.h"
 
+// output typemap for Date::year_month_day (std::tuple<int, int, int>)
+OA_TUPLE_OUT_TYPEMAP(int, int, int)
+
 // oa::time::Date %ignore and %extend directives
 namespace oa::time {
 
@@ -173,9 +176,6 @@ namespace oa::time {
 %ignore Date::GetJulian;
 %ignore Date::AddTenor;
 %ignore Date::SubTenor;
-// ignore gregorian() as we don't have a std::tuple<int, int, int> typemap
-// TODO: consider adding tuple typemaps based
-%ignore Date::gregorian;
 
 // Python member functions for the Date class
 %extend Date {
