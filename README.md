@@ -47,8 +47,8 @@ To build the Odin Python or R bindings the following are needed:
 If SWIG is available, only the bindings that correspond to available target
 language development headers + libraries will be built, e.g. if only Python
 development headers are available, only Python SWIG bindings are generated. On
-Windows, owing to the different ABI requirements of the [R Windows toolchain],
-no SWIG R extensions will be generated.
+Windows, owing to the different ABI of the [R Windows toolchain], no SWIG R
+extensions are generated.
 
 [CMake]: https://cmake.org/cmake/help/latest/
 [Boost]: https://www.boost.org/
