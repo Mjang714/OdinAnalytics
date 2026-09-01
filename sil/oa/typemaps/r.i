@@ -38,7 +38,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <string>
 #include <string_view>
+
+#include "oa/r.h"
 
 namespace oa {
 namespace {
@@ -69,10 +72,12 @@ constexpr auto word(std::uint64_t v) noexcept
  */
 auto to_sexp(std::string_view str) noexcept
 {
+  // note: technically no need to Rf_protect() R_BlankScalarString
   if (str.empty())
-    return R_BlankScalarString;
+    return sexp{R_BlankScalarString};
   // construct STRSXP with only one CHARSXP (scalar string)
-  return Rf_ScalarString(Rf_mkCharLen(str.data(), static_cast<int>(str.size())));
+  // note: can't use Rf_mkString() because view may not be null-terminated
+  return sexp{Rf_ScalarString(Rf_mkCharLen(str.data(), str.size()))};
 }
 
 /**
@@ -168,6 +173,42 @@ namespace filesystem { using path = const char*; }  // namespace filesystem
 }  // namespace std
 
 /**
+ * Typemap to convert an R string into a `std::string`.
+ *
+ * @note Every R object is a vector so a string is actually a length-1 vector.
+ *  At the C level, the R string is a `STRSXP` with one `CHARSXP`.
+ */
+%typemap(in) std::string {
+  // if not an atomic R string, die
+  // note: will call Rf_error() to longjmp
+  if (!oa::is_scalar_string($input))
+    SWIG_exception(SWIG_RuntimeError, "$input is not a scalar R string");
+  // create from underlying null-terminated string
+  $1 = R_CHAR(STRING_ELT($input, 0));
+}
+
+/**
+ * Typemap to convert an R string into a `const std::string&`.
+ *
+ * This form takes a const reference so a temporary is required.
+ *
+ * @note Every R object is a vector so a string is actually a length-1 vector.
+ *  At the C level, the R string is a `STRSXP` with one `CHARSXP`.
+ */
+%typemap(in) const std::string& (std::string str) {
+  // if not an atomic R string, die
+  // note: will call Rf_error() to longjmp so we explicitly destroy
+  if (!oa::is_scalar_string($input)) {
+    str.~string();
+    SWIG_exception(SWIG_RuntimeError, "$input is not a scalar R string");
+  }
+  // create from underlying null-terminated string
+  str = R_CHAR(STRING_ELT($input, 0));
+  // note: reference typemaps always bind to pointers
+  $1 = &str;
+}
+
+/**
  * Typemap to convert a `std::string` into an R string.
  *
  * This copies the contents of the string into a new R character vector.
@@ -175,8 +216,21 @@ namespace filesystem { using path = const char*; }  // namespace filesystem
  * @note Every R object is a vector so a string is actually a length-1 vector.
  *  At the C level, the R string is a `STRSXP` with one `CHARSXP`.
  */
-%typemap(out) std::string {
-  $result = oa::to_sexp($1);
+%typemap(out) std::string (oa::sexp res) {
+  res = oa::to_sexp($1);
+  $result = res;
+}
+
+/**
+ * Typemap to convert an R string into a `std::string_view`.
+ */
+%typemap(in) std::string_view {
+  // if not an atomic R string, die
+  // note: will call Rf_error() to longjmp
+  if (!oa::is_scalar_string($input))
+    SWIG_exception(SWIG_RuntimeError, "$input is not a scalar R string");
+  // create from underlying null-terminated string
+  $1 = R_CHAR(STRING_ELT($input, 0));
 }
 
 /**
@@ -189,16 +243,36 @@ namespace filesystem { using path = const char*; }  // namespace filesystem
  * @note Every R object is a vector so a string is actually a length-1 vector.
  *  At the C level, the R string is a `STRSXP` with one `CHARSXP`.
  */
-%typemap(out) std::string_view {
-  $result = oa::to_sexp($1);
+%typemap(out) std::string_view (oa::sexp res) {
+  res = oa::to_sexp($1);
+  $result = res;
 }
+
+/**
+ * Macro for a `std::string` or `std::string_view` typecheck.
+ *
+ * This succeeds if the input is an R string, i.e. atomic `CHARSXP` vector.
+ *
+ * @note Typechecks are only used to disambiguate overloads.
+ *
+ * @param type cvref-qualified `std::string` or `std::string_view`
+ */
+%define OA_STRING_CHECK(type)
+OA_OBJECT_TYPECHECK(type) {
+  $1 = oa::is_scalar_string($input);
+}
+%enddef  // OA_STRING_CHECK(type)
+
+OA_STRING_CHECK(std::string)
+OA_STRING_CHECK(const std::string&)
+OA_STRING_CHECK(std::string_view)
 
 /**
  * Typemap to convert an R string into a `std::filesystem::path`.
  */
 %typemap(in) std::filesystem::path {
   // if not an atomic R string, die
-  // TODO: unsure yet how to propagate errors
+  // note: will call Rf_error() to longjmp
   if (!oa::is_scalar_string($input))
     SWIG_exception(SWIG_RuntimeError, "$input is not a scalar R string");
   // create from underlying null-terminated string
@@ -230,28 +304,29 @@ namespace filesystem { using path = const char*; }  // namespace filesystem
 }
 
 /**
+ * Typemap to convert a `std::filesystem::path` into an R string.
+ *
+ * If the path is empty we return an empty `STRSXP`.
+ */
+%typemap(out) std::filesystem::path (oa::sexp res) {
+  res = oa::to_sexp($1.string());
+  $result = res;
+}
+
+/**
  * Macro for a `std::filesystem::path` typecheck.
  *
- * This succeeds if the R object is an atomic string.
+ * This succeeds if the input is an R string, i.e. atomic `CHARSXP` vector and
+ * is implemented using `OA_STRING_CHECK()` since we allow conversion between
+ * `std::filesystem::path` and the R string type.
  *
  * @note Typechecks are only used to disambiguate overloads.
  *
  * @param type cvref-qualified `std::filesystem::path`
  */
 %define OA_FILESYSTEM_PATH_CHECK(type)
-OA_OBJECT_TYPECHECK(type) {
-  $1 = oa::is_scalar_string($input);
-}
+OA_STRING_CHECK(type)
 %enddef  // OA_FILESYSTEM_PATH_CHECK(type)
 
 OA_FILESYSTEM_PATH_CHECK(std::filesystem::path)
 OA_FILESYSTEM_PATH_CHECK(const std::filesystem::path&)
-
-/**
- * Typemap to convert a `std::filesystem::path` into an R string.
- *
- * If the path is empty we return an empty `STRSXP`.
- */
-%typemap(out) std::filesystem::path {
-  $result = oa::to_sexp($1.string());
-}
