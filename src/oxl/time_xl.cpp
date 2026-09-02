@@ -135,7 +135,16 @@ namespace oxl {
 			auto freq_tenor_str = std::get<std::string>(dictionary["Frequency"]);
 			auto freq = (oa::utils::CheckTenorStr(freq_tenor_str)) ? oa::time::Tenor(freq_tenor_str) : CFGen::MapResetFreqEnumToTenor(oa::derived_time::MapInputToFreq(freq_tenor_str));
 			opt.date_direction(oa::derived_time::MapInputToDateDir(std::get<std::string>(dictionary["Date_Dir"])));
-			opt.stub_type(oa::derived_time::MapInputToStub(std::get<std::string>(dictionary["Stub_Type"])));
+
+			if(dictionary.Contains("Front_Stub_Type"))
+			{
+				opt.front_stub_type(oa::derived_time::MapInputToStub(std::get<std::string>(dictionary["Front_Stub_Type"])));
+			}
+
+			if(dictionary.Contains("Back_Stub_Type"))
+			{
+				opt.back_stub_type(oa::derived_time::MapInputToStub(std::get<std::string>(dictionary["Back_Stub_Type"])));
+			}
 
 			if(dictionary.Contains("Fixing_Date_Rule"))
 			{
@@ -179,7 +188,7 @@ namespace oxl {
 
 		else
 		{ 
-			return {{"Invalid Dictionary. Required: Start_Date, Mat_Date, Notional, Rate, Day_Count_Frac, Date_Dir, Stub_Type, and Frequency!"}};
+			return {{"Invalid Dictionary. Required: Start_Date, Mat_Date, Notional, Rate, Day_Count_Frac, Date_Dir, Front/Back_Stub_Type, and Frequency!"}};
 			
 		}
 	}
