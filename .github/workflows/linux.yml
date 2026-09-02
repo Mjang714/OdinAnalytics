@@ -111,9 +111,11 @@ jobs:
             -DCMAKE_UNITY_BUILD=$(echo ${{ matrix.unity }} | tr a-z A-Z) \
             -DODIN_GITHUB_ACTIONS_RUNNER=${{ matrix.os }} \
             -DODIN_GITHUB_ACTIONS_ARCH=$(echo ${{ runner.arch }} | tr A-Z a-z)
-      # note: we don't have a nice wrapper script for this yet
+      # note: test parallelism level is -j$(nproc) by default
       - name: Test
-        run: ctest --test-dir build -j$(nproc) --output-on-failure
+        run: |
+          chmod +x check.sh
+          ./check.sh -Ct --output-on-failure
       # install Runtime and Development components separately
       # note: only good as a smoke test. need sudo due to /usr/local install
       - name: Install Runtime
