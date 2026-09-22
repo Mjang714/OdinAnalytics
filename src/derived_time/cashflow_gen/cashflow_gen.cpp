@@ -163,7 +163,7 @@ CashflowGen::Options::front_stub_date() const
 }
 
 CashflowGen::Options&
-CashflowGen::Options::front_stub_date(time::Date date)
+CashflowGen::Options::front_stub_date(const time::Date& date)
 {
 	front_stub_date_ = date;
 	return *this;
@@ -176,7 +176,7 @@ CashflowGen::Options::back_stub_date() const
 }
 
 CashflowGen::Options&
-CashflowGen::Options::back_stub_date(time::Date date)
+CashflowGen::Options::back_stub_date(const time::Date& date)
 {
 	back_stub_date_ = date;
 	return *this;
