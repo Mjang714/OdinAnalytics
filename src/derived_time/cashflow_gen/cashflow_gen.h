@@ -151,7 +151,7 @@ namespace oa::derived_time {
 			/**
 			 * Update the cash flow front stub date.
 			 */
-			Options& front_stub_date(time::Date date);
+			Options& front_stub_date(const time::Date& date);
 
 			/**
 			 * Return the optional cash flow back stub date.
@@ -166,7 +166,7 @@ namespace oa::derived_time {
 			/**
 			 * Update the cash flow back stub date.
 			 */
-			Options& back_stub_date(time::Date date);
+			Options& back_stub_date(const time::Date& date);
 
 			/**
 			 * Return the calculation type for the cash flow amount.
