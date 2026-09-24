@@ -28,6 +28,10 @@ on:
 env:
   # Magic Enum version
   MAGIC_ENUM_VERSION: 0.9.7
+  # OpenBLAS version
+  OPENBLAS_VERSION: 0.3.33
+  # Eigen3 version
+  EIGEN3_VERSION: 3.4.1
 
 jobs:
   # only one job which is the build job
@@ -92,6 +96,33 @@ jobs:
           sudo apt install libbenchmark-dev
           echo -n "Benchmark version: "
           apt-cache show libbenchmark-dev | grep Version | sed -E 's/Version:\s+//g'
+      # note: although available through apt we want a more recent version.
+      # the CMake build will also build a static OpenBLAS library by default
+      # note: do build in temp dir so we don't clutter up the workspace dir
+      - name: Install OpenBLAS
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/OpenMathLib/OpenBLAS.git
+          cd OpenBLAS
+          git checkout v${{ env.OPENBLAS_VERSION }}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+          cmake --build build -j
+          sudo cmake --install build
+      # note: although available through apt we want a more recent version
+      # since we may want to upgrade to Eigen 5.0 later on
+      # note: we want to use OpenBLAS to provide the BLAS/LAPACK implementation
+      - name: Install Eigen3
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://gitlab.com/libeigen/eigen.git
+          cd eigen
+          git checkout ${{ env.EIGEN3_VERSION }}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DEIGEN_BUILD_TESTING=OFF \
+            -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF \
+            -DEIGEN_BUILD_DOC=OFF -DEIGEN_BUILD_DEMOS=OFF
+          cmake --build build -j
+          sudo cmake --install build
       # note: oddly, the ubuntu-22.04 runner already has R installed, and
       # although it reports the correct 4.1.2-ubuntu2 version, it actually has
       # R 4.6.0 installed, which seems like an error on GitHub's part
