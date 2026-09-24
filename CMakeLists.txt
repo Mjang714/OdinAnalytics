@@ -184,6 +184,7 @@ if(Eigen3_FOUND)
     # EIGEN_USE_LAPACKE to enable use of OpenBLAS or another external BLAS +
     # LAPACK implementations, e.g. Intel MKL, etc.
     add_library(oa_eigen3 INTERFACE)
+    target_link_libraries(oa_eigen3 INTERFACE Eigen3::Eigen)
     # if OpenBLAS found use it as the BLAS/LAPACK implementation provider
     if(OpenBLAS_FOUND)
         message(STATUS "Eigen3 BLAS: OpenBLAS")
