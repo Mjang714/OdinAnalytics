@@ -179,9 +179,9 @@ jobs:
           git clone https://gitlab.com/libeigen/eigen.git
           cd eigen
           git checkout ${{ env.EIGEN3_VERSION }}
-          cmake -S . -B build -A ${{ matrix.arch }} \
-            -DEIGEN_BUILD_TESTING=OFF \
-            -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF \
+          cmake -S . -B build -A ${{ matrix.arch }} `
+            -DEIGEN_BUILD_TESTING=OFF `
+            -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF `
             -DEIGEN_BUILD_DOC=OFF -DEIGEN_BUILD_DEMOS=OFF
           cmake --build build --config Release -j
           cmake --install build `
