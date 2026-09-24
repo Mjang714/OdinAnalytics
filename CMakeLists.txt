@@ -151,8 +151,13 @@ if(OpenBLAS_FOUND)
     # threading
     if(OpenBLAS_serial_FOUND)
         message(STATUS "OpenBLAS threads: serial")
+    # note: generic build on Windows has pthread component
     elseif(OpenBLAS_pthread_FOUND)
-        message(STATUS "OpenBLAS threads: pthreads")
+        if(WIN32)
+            message(STATUS "OpenBLAS threads: native")
+        else()
+            message(STATUS "OpenBLAS threads: pthreads")
+        endif()
     elseif(OpenBLAS_openmp_FOUND)
         message(STATUS "OpenBLAS threads: OpenMP")
     endif()
@@ -160,6 +165,7 @@ if(OpenBLAS_FOUND)
     # note: OpenBLAS has as bug where OpenBLAS_INCLUDE_DIR is empty because it
     # uses the OpenBLAS::OpenBLAS INCLUDE_DIRECTORIES property, not the
     # INTERFACE_INCLUDE_DIRECTORIES property that it should be using
+    # note: empty for generic build on Windows
     file(
         STRINGS "${OpenBLAS_INCLUDE_DIRS}/openblas_config.h" openblas_haves
         REGEX "#define[ \t]+OPENBLAS_HAVE_[A-Z0-9_]+"
