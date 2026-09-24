@@ -38,6 +38,10 @@ env:
   GTEST_VERSION: 1.14.0
   # Benchmark version
   BENCHMARK_VERSION: 1.9.5
+  # OpenBLAS version
+  OPENBLAS_VERSION: 0.3.33
+  # Eigen3 version
+  EIGEN3_VERSION: 3.4.1
   # Excel 2013 XLL SDK MSI name + download link
   XLLSDK_MSI_LINK: "https://download.microsoft.com/download/d/a/c/\
     dac9c321-279c-4625-b381-bcb044eef7b2/excelxllsdk.msi"
@@ -114,8 +118,7 @@ jobs:
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
-      # note: don't need to build examples and tests for this. installs into
-      # /usr/local by default which is why we need sudo
+      # note: don't need to build examples and tests for this
       - name: Install Magic Enum
         run: |
           cd ${{ runner.temp }}
@@ -152,6 +155,34 @@ jobs:
           # note: unlike GoogleTest, the Google benchmark library uses CMake
           # defaults for the MSVC C runtime library so no fiddling required
           cmake -S . -B build -A ${{ matrix.arch }} -DBENCHMARK_ENABLE_TESTING=OFF
+          cmake --build build --config Release -j
+          cmake --install build `
+            --prefix ${{ env.ODIN_VENDOR_ROOT }} `
+            --config Release
+      # note: don't build full test suite
+      - name: Install OpenBLAS
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/OpenMathLib/OpenBLAS.git
+          cd OpenBLAS
+          git checkout v${{ env.OPENBLAS_VERSION }}
+          cmake -S . -B build -A ${{ matrix.arch }} -DBUILD_TESTING=OFF
+          cmake --build build --config Release -j
+          cmake --install build `
+            --prefix ${{ env.ODIN_VENDOR_ROOT }} `
+            --config Release
+      # note: may want to upgrade to Eigen 5.0 later on
+      # note: we want to use OpenBLAS to provide the BLAS/LAPACK implementation
+      - name: Install Eigen3
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://gitlab.com/libeigen/eigen.git
+          cd eigen
+          git checkout ${{ env.EIGEN3_VERSION }}
+          cmake -S . -B build -A ${{ matrix.arch }} \
+            -DEIGEN_BUILD_TESTING=OFF \
+            -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF \
+            -DEIGEN_BUILD_DOC=OFF -DEIGEN_BUILD_DEMOS=OFF
           cmake --build build --config Release -j
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
