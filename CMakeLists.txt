@@ -135,6 +135,55 @@ else()
     message(STATUS "Benchmark version: None")
 endif()
 
+# find OpenBLAS
+# note: this is the preferred [C]BLAS/LAPACK[E] implementation due to the
+# permissive licensing + portability compared to e.g. Intel MKL
+find_package(OpenBLAS 0.3.33)
+if(OpenBLAS_FOUND)
+    message(STATUS "OpenBLAS version: ${OpenBLAS_VERSION}")
+    # print config for more details
+    # library type, either static *or* shared
+    if(OpenBLAS_static_FOUND)
+        message(STATUS "OpenBLAS library: static")
+    elseif(OpenBLAS_shared_FOUND)
+        message(STATUS "OpenBLAS library: shared")
+    endif()
+    # threading
+    if(OpenBLAS_serial_FOUND)
+        message(STATUS "OpenBLAS threads: serial")
+    elseif(OpenBLAS_pthread_FOUND)
+        message(STATUS "OpenBLAS threads: pthreads")
+    elseif(OpenBLAS_openmp_FOUND)
+        message(STATUS "OpenBLAS threads: OpenMP")
+    endif()
+    # print all OpenBLAS CPU features from the config header
+    # note: OpenBLAS has as bug where OpenBLAS_INCLUDE_DIR is empty because it
+    # uses the OpenBLAS::OpenBLAS INCLUDE_DIRECTORIES property, not the
+    # INTERFACE_INCLUDE_DIRECTORIES property that it should be using
+    file(
+        STRINGS "${OpenBLAS_INCLUDE_DIRS}/openblas_config.h" openblas_haves
+        REGEX "#define[ \t]+OPENBLAS_HAVE_[A-Z0-9_]+"
+    )
+    # strip #define OPENBLAS_HAVE_ prefixes + join with spaces
+    list(TRANSFORM openblas_haves REPLACE "#define[ \t]+OPENBLAS_HAVE_" "")
+    list(JOIN openblas_haves " " openblas_haves)
+    # print + clean up
+    message(STATUS "OpenBLAS features: ${openblas_haves}")
+    unset(openblas_haves)
+else()
+    message(STATUS "OpenBLAS version: None")
+endif()
+
+# find Eigen3
+# note: although 5.0 has been released, the 3.x series is better known, and the
+# CMake package name is still "Eigen3", amusingly
+find_package(Eigen3 3.4)
+if(Eigen3_FOUND)
+    message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
+else()
+    message(STATUS "Eigen3 version: None")
+endif()
+
 # look for Excel 2013 XLL SDK
 # note: we don't actually need the GENERIC sample XLL but it is a nice example
 if(WIN32)
