@@ -174,12 +174,31 @@ else()
     message(STATUS "OpenBLAS version: None")
 endif()
 
-# find Eigen3
-# note: although 5.0 has been released, the 3.x series is better known, and the
-# CMake package name is still "Eigen3", amusingly
+# find Eigen 3 and above
+# note: although 5.0 has been released, the 3.x series is better known. prior
+# naming conventions use the "Eigen3" moniker, including the CMake package name
 find_package(Eigen3 3.4)
 if(Eigen3_FOUND)
     message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
+    # if OpenBLAS is found we will compile with EIGEN_USE_BLAS and
+    # EIGEN_USE_LAPACKE to enable use of OpenBLAS or another external BLAS +
+    # LAPACK implementations, e.g. Intel MKL, etc.
+    add_library(oa_eigen3 INTERFACE)
+    # if OpenBLAS found use it as the BLAS/LAPACK implementation provider
+    if(OpenBLAS_FOUND)
+        message(STATUS "Eigen3 BLAS: OpenBLAS")
+        message(STATUS "Eigen3 LAPACK: OpenBLAS")
+        # update usage requirements
+        target_compile_definitions(
+            oa_eigen3 INTERFACE
+            EIGEN_USE_BLAS EIGEN_USE_LAPACKE
+        )
+        target_link_libraries(oa_eigen3 INTERFACE OpenBLAS::OpenBLAS)
+    # otherwise Eigen should fall back on its vendored BLAS/LAPACK
+    else()
+        message(STATUS "Eigen3 BLAS: Eigen3")
+        message(STATUS "Eigen3 LAPACK: Eigen3")
+    endif()
 else()
     message(STATUS "Eigen3 version: None")
 endif()
