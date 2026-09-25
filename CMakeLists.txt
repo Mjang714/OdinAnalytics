@@ -147,8 +147,10 @@ if(OpenBLAS_FOUND)
     get_target_property(openblas_libtype OpenBLAS::OpenBLAS TYPE)
     if(openblas_libtype STREQUAL "STATIC_LIBRARY")
         message(STATUS "OpenBLAS static: Yes")
+        set(OA_OPENBLAS_STATIC TRUE)
     elseif(openblas_libtype STREQUAL "SHARED_LIBRARY")
         message(STATUS "OpenBLAS static: No")
+        set(OA_OPENBLAS_STATIC FALSE)
     endif()
     unset(openblas_libtype)
     # threading
@@ -179,6 +181,42 @@ if(OpenBLAS_FOUND)
     # print + clean up
     message(STATUS "OpenBLAS features: ${openblas_haves}")
     unset(openblas_haves)
+    # add interface target to encapsulate OpenBLAS usage requirements
+    add_library(OA::OpenBLAS INTERFACE IMPORTED)
+    target_link_libraries(OA::OpenBLAS INTERFACE OpenBLAS::OpenBLAS)
+    # when static and on Linux we may need to link against libgfortran
+    # TODO: by default this is a dynamic link + libquadmath is also dynamically
+    # linked. may need to consider how to static link these two
+    if(OA_OPENBLAS_STATIC AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_link_libraries(OA::OpenBLAS INTERFACE gfortran)
+    endif()
+    # for MSVC, in C++ mode, the C99 _Complex is not available, and _FComplex
+    # and _DComplex were removed in Windows 10 SDK. so we when use custom
+    # complex types we use std::complex for native C++ functionality
+    #
+    # note: we could define _CRT_USE_C_COMPLEX_H to get _FComplex and _DComplex
+    # back, but we won't be using them in C++ code (for now?)
+    #
+    if(MSVC)
+        target_compile_definitions(
+            OA::OpenBLAS INTERFACE
+            # indicate using custom complex types with LAPACK
+            LAPACK_COMPLEX_CUSTOM
+            # standard std::complex replacements
+            lapack_complex_float=std::complex<float>
+            lapack_complex_double=std::complex<double>
+            # define lapack_complex_(float|double)_(real|imag) macros since
+            # these are lost when defining LAPACK_COMPLEX_CUSTOM
+            "lapack_complex_float_real(z)=(z).real()"
+            "lapack_complex_float_imag(z)=(z).imag()"
+            "lapack_complex_double_real(z)=(z).real()"
+            "lapack_complex_double_imag(z)=(z).imag()"
+        )
+        # force include <complex> since LAPACK_COMPLEX_CUSTOM gets rid of the
+        # <complex> includes when compiling in C++ mode
+        # note: /FI actually includes <complex> as "complex"
+        target_compile_options(OA::OpenBLAS INTERFACE /FIcomplex)
+    endif()
 else()
     message(STATUS "OpenBLAS version: None")
 endif()
@@ -192,18 +230,27 @@ if(Eigen3_FOUND)
     # if OpenBLAS is found we will compile with EIGEN_USE_BLAS and
     # EIGEN_USE_LAPACKE to enable use of OpenBLAS or another external BLAS +
     # LAPACK implementations, e.g. Intel MKL, etc.
-    add_library(oa_eigen3 INTERFACE)
-    target_link_libraries(oa_eigen3 INTERFACE Eigen3::Eigen)
+    add_library(OA::Eigen3 INTERFACE IMPORTED)
+    target_link_libraries(OA::Eigen3 INTERFACE Eigen3::Eigen)
     # if OpenBLAS found use it as the BLAS/LAPACK implementation provider
     if(OpenBLAS_FOUND)
         message(STATUS "Eigen3 BLAS: OpenBLAS")
         message(STATUS "Eigen3 LAPACK: OpenBLAS")
         # update usage requirements
         target_compile_definitions(
-            oa_eigen3 INTERFACE
+            OA::Eigen3 INTERFACE
             EIGEN_USE_BLAS EIGEN_USE_LAPACKE
         )
-        target_link_libraries(oa_eigen3 INTERFACE OpenBLAS::OpenBLAS)
+        # note: in Eigen/src/misc/blas.h BLASLONG is a typedef of long long
+        # only when __WIN64__ is defined. MSVC no longer seems to define this
+        # when compiling in 64-bit mode (_WIN64 is the correct macro) so we
+        # have to manually define __WIN64__ when using Visual Studio
+        if(MSVC AND CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
+            target_compile_definitions(OA::Eigen3 INTERFACE __WIN64__)
+        endif()
+        # note: ensure we use OA::OpenBLAS to consume any changes made to
+        # OpenBLAS usage requirements, e.g. for MSVC the new complex defines
+        target_link_libraries(OA::Eigen3 INTERFACE OA::OpenBLAS)
     # otherwise Eigen should fall back on its vendored BLAS/LAPACK
     else()
         message(STATUS "Eigen3 BLAS: Eigen3")

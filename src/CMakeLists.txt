@@ -72,10 +72,10 @@ endif()
 #
 if(OpenBLAS_FOUND)
     add_executable(ols_demo ols_demo.cpp)
-    target_link_libraries(ols_demo PRIVATE oa_core OpenBLAS::OpenBLAS)
+    target_link_libraries(ols_demo PRIVATE oa_core OA::OpenBLAS)
     # link against Eigen3 + Armadillo if available
     if(Eigen3_FOUND)
-        target_link_libraries(ols_demo PRIVATE Eigen3::Eigen)
+        target_link_libraries(ols_demo PRIVATE OA::Eigen3)
     endif()
     # TODO: Armadillo
 else()
