@@ -26,8 +26,8 @@
 
 #include <lapacke.h>
 
-#include "oa/common.h"    // for OA_STRINGIFY()
 #include "oa/features.h"  // for OA_HAS_EIGEN3, OA_HAS_ARMADILLO
+#include "oa/warnings.h"
 
 #if OA_HAS_ARMADILLO
 #include <armadillo>
@@ -575,9 +575,12 @@ int ols_eigen3(
   using eigen3_matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
   using eigen3_colvec = Eigen::Matrix<T, Eigen::Dynamic, 1>;
   // create read-only views of xsv, ysv, wsv
+OA_GNU_WARNING_PUSH()
+OA_GNU_WARNING_DISABLE(narrowing)
   Eigen::Map<const eigen3_matrix> xs{xsv.data(), ysv.size(), wsv.size()};
   Eigen::Map<const eigen3_colvec> ys{ysv.data(), ysv.size(), 1};
   Eigen::Map<const eigen3_colvec> ws{wsv.data(), wsv.size(), 1};
+OA_GNU_WARNING_POP()
   // compute solution vector
   auto whs = [m, &xs, &ys]
   {
@@ -594,6 +597,7 @@ int ols_eigen3(
     }
   }();
   // print comparison of the original and solved vectors
+  // note: displaying vector transpose so values are in a row, not column
   std::cout <<
     "ws: " << ws.transpose() << "\n" <<
     "wh: " << whs.transpose() << "\n" <<
@@ -620,9 +624,9 @@ int ols_main(const cli_options& opts)
     "input shape: (" << opts.samples << ", " << opts.dims << ")\n" <<
     "OLS backend: " << opts.backend <<
 #if OA_HAS_OPENBLAS
-      " (" OPENBLAS_VERSION ")" <<
+      ", " OPENBLAS_VERSION <<
 #endif  // OA_HAS_OPENBLAS
-    "\n" <<
+      "\n" <<
     "OLS method: " << opts.method << "\n" <<
     "using " << opts.ffmt << " floating-point representation\n" <<
     std::flush;
