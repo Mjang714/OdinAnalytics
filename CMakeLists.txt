@@ -265,6 +265,29 @@ else()
     message(STATUS "Eigen3 version: None")
 endif()
 
+# find Armadillo
+# note: this uses our custom find module to work around CMake's FindArmadillo
+# and the actual Armadillo project's CMake config script
+find_package(Armadillo 15.6)
+if(Armadillo_FOUND)
+    message(STATUS "Armadillo version: ${Armadillo_VERSION}")
+    # we create our own INTERFACE target for better control
+    add_library(OA::Armadillo INTERFACE IMPORTED)
+    target_link_libraries(OA::Armadillo INTERFACE Armadillo::Armadillo)
+    # if OpenBLAS found add to the link interface
+    if(OpenBLAS_FOUND)
+        message(STATUS "Armadillo BLAS: OpenBLAS")
+        message(STATUS "Armadillo LAPACK: OpenBLAS")
+        target_link_libraries(OA::Armadillo INTERFACE OA::OpenBLAS)
+    # note: no other LAPACK alternative yet
+    else()
+        message(STATUS "Armadillo BLAS: None")
+        message(STATUS "Armadillo LAPACK: None")
+    endif()
+else()
+    message(STATUS "Armadillo version: None")
+endif()
+
 # look for Excel 2013 XLL SDK
 # note: we don't actually need the GENERIC sample XLL but it is a nice example
 if(WIN32)
