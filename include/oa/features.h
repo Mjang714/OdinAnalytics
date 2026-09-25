@@ -34,4 +34,37 @@
 #define OA_HAS_CXX20_FORMAT 0
 #endif  // OA_HAS_CXX20_FORMAT
 
+// check if OpenBLAS is available
+#ifdef __has_include
+#if __has_include(<openblas_config.h>)
+#define OA_HAS_OPENBLAS 1
+#endif  // __has_include(<openblas_config.h>)
+#endif  // __has_include
+
+#ifndef OA_HAS_OPENBLAS
+#define OA_HAS_OPENBLAS 0
+#endif // OA_HAS_OPENBLAS
+
+// check if Eigen3 is available
+#ifdef __has_include
+#if __has_include(<Eigen/Core>)
+#define OA_HAS_EIGEN3 1
+#endif  // __has_include(<Eigen/Core>)
+#endif  // __has_include
+
+#ifndef OA_HAS_EIGEN3
+#define OA_HAS_EIGEN3 0
+#endif  // OA_HAS_EIGEN3
+
+// check if Armadillo is available
+#ifdef __has_include
+#if __has_include(<armadillo>)
+#define OA_HAS_ARMADILLO 1
+#endif  // __has_include(<armadillo>)
+#endif  // __has_include
+
+#ifndef OA_HAS_ARMADILLO
+#define OA_HAS_ARMADILLO 0
+#endif  // OA_HAS_ARMADILLO
+
 #endif  // OA_FEATURES_H_
