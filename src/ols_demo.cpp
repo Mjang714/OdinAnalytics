@@ -27,7 +27,6 @@
 #include <lapacke.h>
 
 #include "oa/features.h"  // for OA_HAS_EIGEN3, OA_HAS_ARMADILLO
-#include "oa/warnings.h"
 
 #if OA_HAS_ARMADILLO
 #include <armadillo>
@@ -575,12 +574,10 @@ int ols_eigen3(
   using eigen3_matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
   using eigen3_colvec = Eigen::Matrix<T, Eigen::Dynamic, 1>;
   // create read-only views of xsv, ysv, wsv
-OA_GNU_WARNING_PUSH()
-OA_GNU_WARNING_DISABLE(narrowing)
-  Eigen::Map<const eigen3_matrix> xs{xsv.data(), ysv.size(), wsv.size()};
-  Eigen::Map<const eigen3_colvec> ys{ysv.data(), ysv.size(), 1};
-  Eigen::Map<const eigen3_colvec> ws{wsv.data(), wsv.size(), 1};
-OA_GNU_WARNING_POP()
+  // note: no list-init as MSVC emits C2398 error
+  Eigen::Map<const eigen3_matrix> xs(xsv.data(), ysv.size(), wsv.size());
+  Eigen::Map<const eigen3_colvec> ys(ysv.data(), ysv.size(), 1);
+  Eigen::Map<const eigen3_colvec> ws(wsv.data(), wsv.size(), 1);
   // compute solution vector
   auto whs = [m, &xs, &ys]
   {
@@ -615,7 +612,7 @@ int ols_main(const cli_options& opts)
   std::vector<T> ws(opts.dims);
   std::span<const T> wsv{ws};
   // initialize weights
-  std::normal_distribution<T> wdist{0, std::sqrt(2)};
+  std::normal_distribution<T> wdist{0, std::sqrt(2.f)};
   for (auto& w : ws)
     w = wdist(rng);
   // create input matrix + noisy outputs + print summary
