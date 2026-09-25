@@ -232,6 +232,11 @@ if(Eigen3_FOUND)
     # LAPACK implementations, e.g. Intel MKL, etc.
     add_library(OA::Eigen3 INTERFACE IMPORTED)
     target_link_libraries(OA::Eigen3 INTERFACE Eigen3::Eigen)
+    # prefer to use /bigobj with MSVC due to template code bloat
+    # TODO: maybe enable globally for the project or just for ols_demo
+    if(MSVC)
+        target_compile_options(OA::Eigen3 INTERFACE /bigobj)
+    endif()
     # if OpenBLAS found use it as the BLAS/LAPACK implementation provider
     if(OpenBLAS_FOUND)
         message(STATUS "Eigen3 BLAS: OpenBLAS")
