@@ -64,3 +64,20 @@ if(benchmark_FOUND)
 else()
     message(STATUS "Skipping isdigit_bench (requires Benchmark)")
 endif()
+
+# ols_demo: OLS regression demo program
+#
+# this showcases the use of different linear algebra libraries and matrix
+# factorizations to solve a noisy linear least-squares problem.
+#
+if(OpenBLAS_FOUND)
+    add_executable(ols_demo ols_demo.cpp)
+    target_link_libraries(ols_demo PRIVATE oa_core OpenBLAS::OpenBLAS)
+    # link against Eigen3 + Armadillo if available
+    if(Eigen3_FOUND)
+        target_link_libraries(ols_demo PRIVATE Eigen3::Eigen)
+    endif()
+    # TODO: Armadillo
+else()
+    message(STATUS "Skipping ols_demo (requires OpenBLAS)")
+endif()
