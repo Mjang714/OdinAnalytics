@@ -585,9 +585,24 @@ int ols_eigen3(
     // switch based on method
     // note: must assign and then return due to how expression templates work
     switch (m) {
-    case ols_method::svd:
-      w = xs.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(ys);
+    case ols_method::svd: {
+    // SVD options
+    constexpr auto svd_opts = Eigen::ComputeThinU | Eigen::ComputeThinV;
+// in Eigen 5.0 passing the flags as parameters instead of as template
+// parameters is deprecated so we have a version check here
+//
+// note: the definition of EIGEN_VERSION_AT_LEAST() has changed in Eigen 5.0 as
+// Eigen has moved to using semantic versioning. the world version is 3 but the
+// major version is 5 compared to Eigen 3.4 where the major version is *4*
+//
+#if EIGEN_VERSION_AT_LEAST(5, 0, 0)
+      // note: template keyword required since xs is type-dependent
+      w = xs.template bdcSvd<svd_opts>().solve(ys);
+#else
+      w = xs.bdcSvd(svd_opts).solve(ys);
+#endif  // !EIGEN_VERSION_AT_LEAST(5, 0, 0)
       return w;
+    }
     default:
       w = xs.colPivHouseholderQr().solve(ys);
       return w;
