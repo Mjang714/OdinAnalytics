@@ -41,7 +41,7 @@ env:
   # OpenBLAS version
   OPENBLAS_VERSION: 0.3.33
   # Eigen3 version
-  EIGEN3_VERSION: 3.4.1
+  EIGEN3_VERSION: 5.0.0
   # Excel 2013 XLL SDK MSI name + download link
   XLLSDK_MSI_LINK: "https://download.microsoft.com/download/d/a/c/\
     dac9c321-279c-4625-b381-bcb044eef7b2/excelxllsdk.msi"
