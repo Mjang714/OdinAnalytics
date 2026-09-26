@@ -70,6 +70,9 @@ endif()
 # this showcases the use of different linear algebra libraries and matrix
 # factorizations to solve a noisy linear least-squares problem.
 #
+# TODO: update to enable standalone use of Eigen3 as a separate BLAS/LAPACKE
+# implementation is not required for Eigen3 to be used
+#
 if(OpenBLAS_FOUND)
     add_executable(ols_demo ols_demo.cpp)
     target_link_libraries(ols_demo PRIVATE oa_core OA::OpenBLAS)
@@ -77,7 +80,9 @@ if(OpenBLAS_FOUND)
     if(Eigen3_FOUND)
         target_link_libraries(ols_demo PRIVATE OA::Eigen3)
     endif()
-    # TODO: Armadillo
+    if(Armadillo_FOUND)
+        target_link_libraries(ols_demo PRIVATE OA::Armadillo)
+    endif()
 else()
     message(STATUS "Skipping ols_demo (requires OpenBLAS)")
 endif()
