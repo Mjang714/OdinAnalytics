@@ -76,13 +76,43 @@ endif()
 if(OpenBLAS_FOUND)
     add_executable(ols_demo ols_demo.cpp)
     target_link_libraries(ols_demo PRIVATE oa_core OA::OpenBLAS)
-    # link against Eigen3 + Armadillo if available
+    # link against Eigen3 + Armadillo if available + update available backends
     if(Eigen3_FOUND)
         target_link_libraries(ols_demo PRIVATE OA::Eigen3)
+        list(APPEND ols_backends Eigen3)
     endif()
     if(Armadillo_FOUND)
         target_link_libraries(ols_demo PRIVATE OA::Armadillo)
+        list(APPEND ols_backends Armadillo)
     endif()
+    # -h, --help test
+    add_test(NAME ols_demo_h COMMAND ols_demo -h)
+    add_test(NAME ols_demo_help COMMAND ols_demo --help)
+    set_tests_properties(
+        ols_demo_h ols_demo_help PROPERTIES
+        PASS_REGULAR_EXPRESSION "Usage: ols_demo"
+    )
+    # grid of tests
+    # backends
+    foreach(backend ${ols_backends})
+        string(TOLOWER ${backend} lower_backend)
+        # methods
+        foreach(method QR SVD)
+            string(TOLOWER ${method} lower_method)
+            # float formats
+            foreach(ffmt f32 f64)
+                add_test(
+                    NAME ols_demo_${lower_backend}_${lower_method}_${ffmt}
+                    COMMAND ols_demo -f ${ffmt} -b ${backend} -m ${method}
+                )
+                set_tests_properties(
+                    ols_demo_${lower_backend}_${lower_method}_${ffmt} PROPERTIES
+                    PASS_REGULAR_EXPRESSION
+"OLS backend: ${backend}[^\r\n]*\r?\nOLS method: ${method}\r?\nusing ${ffmt}"
+                )
+            endforeach()
+        endforeach()
+    endforeach()
 else()
     message(STATUS "Skipping ols_demo (requires OpenBLAS)")
 endif()
