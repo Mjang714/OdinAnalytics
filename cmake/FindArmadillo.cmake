@@ -62,10 +62,14 @@ target_include_directories(
     Armadillo::Armadillo INTERFACE
     ${Armadillo_INCLUDE_DIRS}
 )
-# add wrapper if found
-if(Armadillo_LIBRARY)
+# add wrapper if found and desired
+list(FIND Armadillo_FIND_COMPONENTS "libarmadillo" libarma_pos)
+if(NOT libarma_pos EQUAL -1 AND Armadillo_LIBRARY)
+    # note: ensures that ARMA_USE_WRAPPER defined even if the
+    # armadillo_bits/config.hpp header doesn't define it
     target_compile_definitions(Armadillo::Armadillo INTERFACE ARMA_USE_WRAPPER)
     target_link_libraries(Armadillo::Armadillo INTERFACE ${Armadillo_LIBRARY})
+    unset(libarma_pos)
 # otherwise defaults to no wrapper
 else()
     target_compile_definitions(
