@@ -324,8 +324,6 @@ if(Eigen3_FOUND)
     # we cannot use EIGEN_USE_LAPACKE when used together with Armadillo or even
     # when including the lapacke.h provided by OpenBLAS.
     #
-    message(STATUS "Eigen3 BLAS: Eigen3")
-    message(STATUS "Eigen3 LAPACKE: Eigen3")
 else()
     message(STATUS "Eigen3 version: None")
 endif()
