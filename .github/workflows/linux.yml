@@ -32,6 +32,8 @@ env:
   OPENBLAS_VERSION: 0.3.33
   # Eigen3 version
   EIGEN3_VERSION: 5.0.0
+  # Armadillo version
+  ARMADILLO_VERSION: 15.6.0
 
 jobs:
   # only one job which is the build job
@@ -108,9 +110,8 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
           cmake --build build -j
           sudo cmake --install build
-      # note: although available through apt we want a more recent version
-      # since we may want to upgrade to Eigen 5.0 later on
-      # note: we want to use OpenBLAS to provide the BLAS/LAPACK implementation
+      # note: although available through apt we need a specific minimum version
+      # note: we skip as much of the build as possible
       - name: Install Eigen3
         run: |
           cd ${{ runner.temp }}
@@ -121,6 +122,17 @@ jobs:
             -DEIGEN_BUILD_TESTING=OFF \
             -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF \
             -DEIGEN_BUILD_DOC=OFF -DEIGEN_BUILD_DEMOS=OFF
+          cmake --build build -j
+          sudo cmake --install build
+      # note: although available through apt we want a more recent version
+      # note: HEADER_ONLY disables libarmadillo wrapper compilation
+      - name: Install Armadillo
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://gitlab.com/armadillo-lib/armadillo-code.git
+          cd armadillo-code
+          git checkout ${{ env.ARMADILLO_VERSION }}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DHEADER_ONLY=ON
           cmake --build build -j
           sudo cmake --install build
       # note: oddly, the ubuntu-22.04 runner already has R installed, and

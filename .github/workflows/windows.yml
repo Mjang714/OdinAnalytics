@@ -42,6 +42,8 @@ env:
   OPENBLAS_VERSION: 0.3.33
   # Eigen3 version
   EIGEN3_VERSION: 5.0.0
+  # Armadillo version
+  ARMADILLO_VERSION: 15.6.0
   # Excel 2013 XLL SDK MSI name + download link
   XLLSDK_MSI_LINK: "https://download.microsoft.com/download/d/a/c/\
     dac9c321-279c-4625-b381-bcb044eef7b2/excelxllsdk.msi"
@@ -171,8 +173,7 @@ jobs:
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
-      # note: may want to upgrade to Eigen 5.0 later on
-      # note: we want to use OpenBLAS to provide the BLAS/LAPACK implementation
+      # note: we skip as much of the build as possible
       - name: Install Eigen3
         run: |
           cd ${{ runner.temp }}
@@ -183,6 +184,18 @@ jobs:
             -DEIGEN_BUILD_TESTING=OFF `
             -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF `
             -DEIGEN_BUILD_DOC=OFF -DEIGEN_BUILD_DEMOS=OFF
+          cmake --build build --config Release -j
+          cmake --install build `
+            --prefix ${{ env.ODIN_VENDOR_ROOT }} `
+            --config Release
+      # note: HEADER_ONLY disables libarmadillo wrapper compilation
+      - name: Install Armadillo
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://gitlab.com/armadillo-lib/armadillo-code.git
+          cd armadillo-code
+          git checkout ${{ env.ARMADILLO_VERSION }}
+          cmake -S . -B build -A ${{ matrix.arch }} -DHEADER_ONLY=ON
           cmake --build build --config Release -j
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
