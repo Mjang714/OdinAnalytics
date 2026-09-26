@@ -188,14 +188,18 @@ jobs:
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
-      # note: HEADER_ONLY disables libarmadillo wrapper compilation
+      # note: HEADER_ONLY disables libarmadillo wrapper compilation + we use
+      # CMAKE_PREFIX_PATH so Armadillo's find_library() calls work correctly
+      # note: need to explicitly indicate OpenBLAS provides LAPACK functions
       - name: Install Armadillo
         run: |
           cd ${{ runner.temp }}
           git clone https://gitlab.com/armadillo-lib/armadillo-code.git
           cd armadillo-code
           git checkout ${{ env.ARMADILLO_VERSION }}
-          cmake -S . -B build -A ${{ matrix.arch }} -DHEADER_ONLY=ON
+          cmake -S . -B build -A ${{ matrix.arch }} -DHEADER_ONLY=ON `
+            -DCMAKE_PREFIX_PATH=${{ env.ODIN_VENDOR_ROOT }} `
+            -DOPENBLAS_PROVIDES_LAPACK=ON
           cmake --build build --config Release -j
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `

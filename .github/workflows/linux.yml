@@ -126,13 +126,15 @@ jobs:
           sudo cmake --install build
       # note: although available through apt we want a more recent version
       # note: HEADER_ONLY disables libarmadillo wrapper compilation
+      # note: need to explicitly indicate OpenBLAS provides LAPACK functions
       - name: Install Armadillo
         run: |
           cd ${{ runner.temp }}
           git clone https://gitlab.com/armadillo-lib/armadillo-code.git
           cd armadillo-code
           git checkout ${{ env.ARMADILLO_VERSION }}
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DHEADER_ONLY=ON
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DHEADER_ONLY=ON -DOPENBLAS_PROVIDES_LAPACK=ON
           cmake --build build -j
           sudo cmake --install build
       # note: oddly, the ubuntu-22.04 runner already has R installed, and
