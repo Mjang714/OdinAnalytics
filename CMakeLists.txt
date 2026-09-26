@@ -279,9 +279,19 @@ endif()
 
 # find Eigen 3 and above
 #
-# note: for correct LAPACK function prototypes we need Eigen 5.0 or above.
-# previous versions had LAPACK functions return int instead of void which is
-# inconsistent with the expected translations of Fortran subroutines to C
+# note: Eigen cannot be used with external BLAS or LAPACKE that have correct
+# function prototypes because the declarations Eigen internally provides are
+# either broken (BLAS) or incorrectly const-qualified (LAPACKE)
+#
+# note: Eigen versions before 5.0 had LAPACK functions return int instead of
+# void which is inconsistent with the expected translations of Fortran to C
+#
+# note: in Eigen/src/misc/blas.h for Eigen < 5.0.0, BLASLONG is a typedef of
+# long long only when __WIN64__ is defined. MSVC no longer seems to define this
+# when compiling in 64-bit mode (_WIN64 is the correct macro) so we would have
+# to manually define __WIN64__ when compiling with MSVC. fortunately, Eigen
+# 5.0.0 removes this problematic typedef so one doesn't need to explicitly
+# define __WIN64__ ourselves during compilation.
 #
 find_package(Eigen3 5.0)
 if(Eigen3_FOUND)
@@ -294,47 +304,28 @@ if(Eigen3_FOUND)
     if(MSVC)
         target_compile_options(OA::Eigen3 INTERFACE /bigobj)
     endif()
-    # if OpenBLAS found use it as the LAPACKE implementation provider
     #
-    # note: in Eigen/src/misc/blas.h for Eigen < 5.0.0, BLASLONG is a typedef
-    # of long long only when __WIN64__ is defined. MSVC no longer seems to
-    # define this when compiling in 64-bit mode (_WIN64 is the correct macro)
-    # so we have to manually define __WIN64__ when compiling with MSVC.
-    # fortunately, Eigen 5.0.0 removes this problematic typedef so we don't
-    # need to explicitly define __WIN64__ ourselves during compilation
+    # note:
+    #
+    # no use of external BLAS or LAPACKE with Eigen for several reasons.
+    #
+    # first, Eigen/src/misc/blas.h has incorrect prototypes for complex-valued
+    # BLAS functions like cherk as all complex-valued types are reduced to
+    # their real-valued types. also, unlike with Armadillo, we don't have any
+    # backdoor macros to use to redefine the complex types, so it's best to
+    # avoid EIGEN_USE_BLAS usage. in either way, Eigen's own performance is
+    # comparable in benchmarks, so not big loss.
+    #
+    # we have a similar issue with EIGEN_USE_LAPACKE, as the provided
+    # Eigen/src/misc/lapacke.h is the Intel LAPACKE header which allows the
+    # correct use of custom complex types, but has incorrect const qualifiers
+    # for char*, double*, etc. in some areas, and doesn't support the "hidden"
+    # LAPACK arguments like the actual LAPACK lapack.h header does. so again,
+    # we cannot use EIGEN_USE_LAPACKE when used together with Armadillo or even
+    # when including the lapacke.h provided by OpenBLAS.
     #
     message(STATUS "Eigen3 BLAS: Eigen3")
-    if(OpenBLAS_FOUND)
-        message(STATUS "Eigen3 LAPACKE: OpenBLAS")
-        # update usage requirements
-        target_compile_definitions(
-            OA::Eigen3 INTERFACE
-            #
-            # FIXME:
-            #
-            # Eigen/src/misc/blas.h has incorrect prototypes for complex-valued
-            # BLAS functions like cherk as all complex-valued types are reduced
-            # to their real-valued types. also, unlike with Armadillo, we don't
-            # have any backdoor macros to use to redefine the complex types, so
-            # it's best to just avoid EIGEN_USE_BLAS usage. in either way,
-            # Eigen's own performance is comparable, so not big loss.
-            #
-            # interestingly, we do not have this issue with EIGEN_USE_LAPACKE,
-            # as Eigen/src/misc/lapacke.h is the Intel LAPACKE header which has
-            # correct prototypes, but doesn't support the "hidden" arguments
-            # like the actual LAPACKE lapacke.h header does. however, due to
-            # the previously mentioned bug in Armadillo's def_lapack.hpp this
-            # works out in our favor since we are defining __EMSCRIPTEN__.
-            #
-            EIGEN_USE_LAPACKE
-        )
-        # note: ensure we use OA::OpenBLAS to consume any changes made to
-        # OpenBLAS usage requirements, e.g. for MSVC the new complex defines
-        target_link_libraries(OA::Eigen3 INTERFACE OA::OpenBLAS)
-    # otherwise Eigen should fall back on its own implementations
-    else()
-        message(STATUS "Eigen3 LAPACKE: Eigen3")
-    endif()
+    message(STATUS "Eigen3 LAPACKE: Eigen3")
 else()
     message(STATUS "Eigen3 version: None")
 endif()
