@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "oa/features.h"  // OA_HAS_OPENBLAS, OA_HAS_EIGEN3, OA_HAS_ARMADILLO
+#include "oa/warnings.h"
 
 // either Eigen or OpenBLAS is required
 #if !OA_HAS_OPENBLAS && !OA_HAS_EIGEN3
@@ -156,7 +157,12 @@ constexpr std::size_t def_samples = 800u;
 constexpr std::size_t def_dims = 8u;
 constexpr std::uint32_t def_seed = 8888u;
 constexpr auto def_ffmt = float_type::f64;
-constexpr auto def_backend = ols_backend::lapacke;
+constexpr auto def_backend =
+#if OA_HAS_EIGEN3
+  ols_backend::eigen3;
+#else
+  ols_backend::lapacke;
+#endif  // !OA_HAS_EIGEN3
 constexpr auto def_method = ols_method::qr;
 
 // program name + usage
@@ -176,8 +182,8 @@ const auto program_usage = "Usage: " + progname + " [-h] [OPTIONS...]\n"
   "noise is also normal, but with a variance of 0.0001 instead.\n"
   "\n"
   "The available solving methods depend on which linear algebra libraries the\n"
-  "program was linked against. Typically, these libraries will also require\n"
-  "linking against a BLAS/LAPACK implementation as well.\n"
+  "program was linked against. Some libraries, e.g. Armadillo, may also require\n"
+  "linking against a BLAS/LAPACK[E] implementation regardless."
   "\n"
   "Options:\n"
   "  -h, --help             Print this usage\n"
@@ -196,7 +202,9 @@ const auto program_usage = "Usage: " + progname + " [-h] [OPTIONS...]\n"
     to_string(float_type::f64) + ")\n"
   "\n"
   "  -b, --backend (" +
+#if OA_HAS_OPENBLAS
     to_string(ols_backend::lapacke) +
+#endif  // OA_HAS_OPENBLAS
 #if OA_HAS_EIGEN3
     "|" + to_string(ols_backend::eigen3) +
 #endif  // OA_HAS_EIGEN3
@@ -205,7 +213,12 @@ const auto program_usage = "Usage: " + progname + " [-h] [OPTIONS...]\n"
 #endif  // OA_HAS_ARMADILLO
     ")\n"
   "                         OLS backend implementation (default " +
-    to_string(ols_backend::lapacke) + ")\n"
+#if OA_HAS_EIGEN3
+    to_string(ols_backend::eigen3) +
+#else
+    to_string(ols_backend::lapacke) +
+#endif  // !OA_HAS_EIGEN3
+    ")\n"
   "\n"
   "  -m, --method (" +
     to_string(ols_method::qr) + "|" +
@@ -565,6 +578,66 @@ auto make_ols(G& rng, std::size_t samples, std::span<const T> sol)
   return std::pair{std::move(xs), std::move(ys)};
 }
 
+#if OA_HAS_ARMADILLO
+// TODO: document
+template <std::floating_point T>
+int ols_armadillo(
+  ols_method m,
+  std::span<const T> xsv,
+  std::span<const T> ysv,
+  std::span<const T> wsv)
+{
+  // create dense objects
+  // note: writable memory is required for copy-free borrowing
+  arma::Mat<T> xs{xsv.data(), ysv.size(), wsv.size()};
+  arma::Col<T> ys{ysv.data(), ysv.size()};
+  arma::Col<T> ws{wsv.data(), wsv.size()};
+  // compute solution vector
+  auto whs = [m, &xs, &ys]
+  {
+    arma::Col<T> w;
+    // switch based on method
+    switch (m) {
+    case ols_method::svd:
+      {
+        // perform SVD econ factorization
+        arma::Mat<T> us;
+        arma::Col<T> ss;
+        arma::Mat<T> vs;
+        arma::svd_econ(us, ss, vs, xs);
+        // solve weghted orthogonal system
+        arma::solve(w, arma::diagmat(ss) * vs.t(), us.t() * ys);
+      }
+    default:
+      {
+        // perform QR econ decomposition
+        arma::Mat<T> qs;
+        arma::Mat<T> rs;
+        arma::qr_econ(qs, rs, xs);
+        // solve triangular system
+        arma::solve(w, rs, qs.t() * ys);
+      }
+    }
+    // return solution
+    return w;
+  }();
+  // print comparison of the original and solved vectors
+  // note: displaying vector transpose so values are in a row, not column
+  // note: Armadillo outputs an extra newline when writing objects to stream
+  std::cout <<
+    "ws: " << ws.t() <<
+    "wh: " << whs.t() <<
+    // suppress MSVC C4244 from size_t float interop
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4244)
+    // note: 1x1 matrices need explicit conversion to scalar
+    "MSE: " << arma::as_scalar((ws - whs).t() * (ws - whs) / ysv.size()) <<
+OA_MSVC_WARNING_POP()
+      "\n" << std::flush;
+  return EXIT_SUCCESS;
+}
+#endif  // OA_HAS_ARMADILLO
+
 #if OA_HAS_EIGEN3
 // TODO: document
 template <std::floating_point T>
@@ -589,9 +662,10 @@ int ols_eigen3(
     // switch based on method
     // note: must assign and then return due to how expression templates work
     switch (m) {
-    case ols_method::svd: {
-    // SVD options
-    constexpr auto svd_opts = Eigen::ComputeThinU | Eigen::ComputeThinV;
+    case ols_method::svd:
+      {
+      // SVD options
+      constexpr auto svd_opts = Eigen::ComputeThinU | Eigen::ComputeThinV;
 // in Eigen 5.0 passing the flags as parameters instead of as template
 // parameters is deprecated so we have a version check here
 //
@@ -600,17 +674,17 @@ int ols_eigen3(
 // major version is 5 compared to Eigen 3.4 where the major version is *4*
 //
 #if EIGEN_VERSION_AT_LEAST(5, 0, 0)
-      // note: template keyword required since xs is type-dependent
-      w = xs.template bdcSvd<svd_opts>().solve(ys);
+        // note: template keyword required since xs is type-dependent
+        w = xs.template bdcSvd<svd_opts>().solve(ys);
 #else
-      w = xs.bdcSvd(svd_opts).solve(ys);
+        w = xs.bdcSvd(svd_opts).solve(ys);
 #endif  // !EIGEN_VERSION_AT_LEAST(5, 0, 0)
-      return w;
-    }
+      }
     default:
       w = xs.colPivHouseholderQr().solve(ys);
-      return w;
     }
+    // return solution
+    return w;
   }();
   // print comparison of the original and solved vectors
   // note: displaying vector transpose so values are in a row, not column
@@ -623,6 +697,7 @@ int ols_eigen3(
 }
 #endif  // OA_HAS_EIGEN3
 
+// TODO: document
 template <std::floating_point T>
 int ols_main(const cli_options& opts)
 {
@@ -672,8 +747,7 @@ int ols_main(const cli_options& opts)
 #endif  // OA_HAS_EIGEN3
 #if OA_HAS_ARMADILLO
   case ols_backend::armadillo:
-    // TODO: not implemented
-    break;
+    return ols_armadillo(opts.method, xsv, ysv, wsv);
 #endif  // OA_HAS_ARMADILLO
   default:
     // TODO: not implemented (LAPACKE)
