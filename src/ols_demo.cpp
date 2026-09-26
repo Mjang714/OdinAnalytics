@@ -24,9 +24,12 @@
 #include <type_traits>
 #include <vector>
 
-#include <lapacke.h>
+#include "oa/features.h"  // OA_HAS_OPENBLAS, OA_HAS_EIGEN3, OA_HAS_ARMADILLO
 
-#include "oa/features.h"  // for OA_HAS_EIGEN3, OA_HAS_ARMADILLO
+// either Eigen or OpenBLAS is required
+#if !OA_HAS_OPENBLAS && !OA_HAS_EIGEN3
+#error "ols_demo.cpp: either OpenBLAS or Eigen3 are required for compilation"
+#endif  // !OA_HAS_OPENBLAS && !OA_HAS_EIGEN3
 
 #if OA_HAS_ARMADILLO
 #include <armadillo>
@@ -37,6 +40,7 @@
 #include <Eigen/SVD>
 #endif  // OA_HAS_EIGEN3
 #if OA_HAS_OPENBLAS
+#include <lapacke.h>
 #include <openblas_config.h>
 #endif  // OA_HAS_OPENBLAS
 
@@ -635,13 +639,28 @@ int ols_main(const cli_options& opts)
   std::cout <<
     "input shape: (" << opts.samples << ", " << opts.dims << ")\n" <<
     "OLS backend: " << opts.backend <<
+// extra info about BLAS/LAPACK[E] provider if available
 #if OA_HAS_OPENBLAS
-      ", " OPENBLAS_VERSION <<
+      [b = opts.backend] {
+        switch (b) {
+#if defined(ARMA_USE_BLAS) || defined(ARMA_USE_LAPACK)
+        case ols_backend::armadillo:
+#endif  // defined(ARMA_USE_BLAS) || defined(ARMA_USE_LAPACK)
+#if defined(EIGEN_USE_BLAS) || defined(EIGEN_USE_LAPACKE)
+        case ols_backend::eigen3:
+#endif  // defined(EIGEN_USE_BLAS) || defined(EIGEN_USE_LAPACKE)
+        case ols_backend::lapacke:
+          return ", " OPENBLAS_VERSION;
+        // no external BLAS/LAPACK[E]
+        default:
+          return "";
+        }
+      }() <<
 #endif  // OA_HAS_OPENBLAS
+        // defined(EIGEN_USE_BLAS) || defined(EIGEN_USE_LAPACKE)
       "\n" <<
     "OLS method: " << opts.method << "\n" <<
-    "using " << opts.ffmt << " floating-point representation\n" <<
-    std::flush;
+    "using " << opts.ffmt << " floating-point representation\n" << std::flush;
   // create views for inputs + outputs
   std::span<const T> xsv{xs};
   std::span<const T> ysv{ys};
