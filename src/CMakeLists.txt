@@ -76,6 +76,8 @@ endif()
 if(OpenBLAS_FOUND)
     add_executable(ols_demo ols_demo.cpp)
     target_link_libraries(ols_demo PRIVATE oa_core OA::OpenBLAS)
+    # list of supported ols_demo backends
+    list(APPEND ols_backends LAPACKE)
     # link against Eigen3 + Armadillo if available + update available backends
     if(Eigen3_FOUND)
         target_link_libraries(ols_demo PRIVATE OA::Eigen3)
