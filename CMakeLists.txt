@@ -187,7 +187,9 @@ if(OpenBLAS_FOUND)
     list(TRANSFORM openblas_haves REPLACE "#define[ \t]+OPENBLAS_HAVE_" "")
     list(JOIN openblas_haves " " openblas_haves)
     # print + clean up
-    message(STATUS "OpenBLAS features: ${openblas_haves}")
+    if(openblas_haves)
+        message(STATUS "OpenBLAS features: ${openblas_haves}")
+    endif()
     unset(openblas_haves)
     # add interface target to encapsulate OpenBLAS usage requirements
     add_library(OA::OpenBLAS INTERFACE IMPORTED)
