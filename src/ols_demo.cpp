@@ -693,6 +693,8 @@ int ols_lapacke(
         std::vector<T> ss(ws.size());
         int rank;
         // solve, overwiting xs and ys
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4267)
         return svd_solve(
           LAPACK_COL_MAJOR,  // column major
           ys.size(),         // number of rows
@@ -706,6 +708,7 @@ int ols_lapacke(
           0.f,               // scale factor for determining effective rank
           &rank              // effective rank of xs
         );
+OA_MSVC_WARNING_POP()
       }
     default:
       {
@@ -718,6 +721,8 @@ int ols_lapacke(
             return LAPACKE_dgels;
         }();
         // solve, overwriting xs and ys
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4267)
         return qr_solve(
           LAPACK_COL_MAJOR,  // column major
           'N',               // no transpose
@@ -729,6 +734,7 @@ int ols_lapacke(
           ys.data(),         // RHS vector (partially overwritten w/ solution)
           ys.size()          // leading dimension
         );
+OA_MSVC_WARNING_POP()
       }
     }
   }();
