@@ -756,10 +756,12 @@ OA_MSVC_WARNING_POP()
   // note: not necessary to use CBLAS but it's provided by OpenBLAS
   auto [axpy, dot] = []
   {
+    // note: need explicit & to get pointer-to-function type as GCC 13+ CTAD
+    // directly deduces the function type since there is no pointer decay
     if constexpr (single_prec)
-      return std::pair{cblas_saxpy, cblas_sdot};
+      return std::pair{&cblas_saxpy, &cblas_sdot};
     else
-      return std::pair{cblas_daxpy, cblas_ddot};
+      return std::pair{&cblas_daxpy, &cblas_ddot};
   }();
   // compute SSE of the actual and estimated weights using CBLAS
   auto sse = [&]
