@@ -17,7 +17,9 @@
 #include <iostream>
 #include <limits>
 #include <random>
+#include <ranges>
 #include <span>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -41,7 +43,8 @@
 #include <Eigen/SVD>
 #endif  // OA_HAS_EIGEN3
 #if OA_HAS_OPENBLAS
-#include <lapacke.h>
+#include <cblas.h>            // cblas_[ds]dot()
+#include <lapacke.h>          // LAPACKE_[ds]gels(), LAPACKE_[ds]gelsd()
 #include <openblas_config.h>
 #endif  // OA_HAS_OPENBLAS
 
@@ -183,7 +186,10 @@ const auto program_usage = "Usage: " + progname + " [-h] [OPTIONS...]\n"
   "\n"
   "The available solving methods depend on which linear algebra libraries the\n"
   "program was linked against. Some libraries, e.g. Armadillo, may also require\n"
-  "linking against a BLAS/LAPACK[E] implementation regardless.\n"
+  "linking against a BLAS/LAPACK[E] implementation regardless. The program will\n"
+  "print some information about the problem, the solving method and backend,\n"
+  "and print \"ws\", the true linear model weights, \"wh\", the estimated linear\n"
+  "model weights, and the mean of the vector norm ||wh - ws||.\n"
   "\n"
   "Options:\n"
   "  -h, --help             Print this usage\n"
@@ -578,6 +584,200 @@ auto make_ols(G& rng, std::size_t samples, std::span<const T> sol)
   return std::pair{std::move(xs), std::move(ys)};
 }
 
+/**
+ * Floating-point range formatting wrapper.
+ *
+ * The trivially-copyable wrapper takes a reference to a forward range with
+ * floating-point values and itself models a forward range.
+ *
+ * @tparam R Forward range with floating-point values
+ */
+template <std::ranges::forward_range R>
+requires (std::floating_point<std::ranges::range_value_t<R>>)
+class fp_range {
+public:
+  /**
+   * Ctor.
+   *
+   * @param r Forward range with floating-point values
+   */
+  fp_range(R& r) noexcept : r_{&r} {}
+
+  /**
+   * Return an iterator to the first element in the range.
+   */
+  auto begin() const noexcept
+  {
+    return std::ranges::begin(*r_);
+  }
+
+  /**
+   * Return a sentinel indicating the end of the range.
+   */
+  auto end() const noexcept
+  {
+    return std::ranges::end(*r_);
+  }
+
+private:
+  R* r_;  // pointer to range to enable const member functions
+};
+
+/**
+ * Stream the elements of the range wrapped by `fp_range`.
+ *
+ * Values are printed to 6 significant digits, 10 columns per value for a print
+ * field, which each field separated by a single space. The format therefore is
+ * therefore similar to that used by Eigen to format row vectors, although the
+ * Eigen field size for a print varies based on the widest display size.
+ *
+ * @tparam R Forward range with floating-point values
+ *
+ * @param out Output stream
+ * @param vs Forward range with floating-point values
+ */
+template <typename R>
+auto& operator<<(std::ostream& out, const fp_range<R>& vs)
+{
+  // note: forward_iterator doesn't require copyability
+  auto begin = std::ranges::begin(vs);
+  auto it = std::ranges::begin(vs);
+  auto end = std::ranges::end(vs);
+  // string stream to hold intermediate results
+  std::ostringstream ss;
+  // iterate
+  while (it != end) {
+    if (it != begin)
+      ss << " ";
+    ss << std::setw(10) << *it++;
+  }
+  // write to output stream
+  return out << ss.view();
+}
+
+#if OA_HAS_OPENBLAS
+// TODO: document
+template <std::floating_point T>
+int ols_lapacke(
+  ols_method m,
+  std::span<const T> xsv,
+  std::span<const T> ysv,
+  std::span<const T> ws)
+{
+  // indicate if single or double precision
+  constexpr bool single_prec = std::is_same_v<T, float>;
+  // copy inputs and output
+  // note: LAPACKE routines will modify the memory here
+  std::vector<T> xs(xsv.begin(), xsv.end());
+  std::vector<T> ys(ysv.begin(), ysv.end());
+  // compute solution vector by modifying ys
+  // note: LAPACKE routine return value is the info status parameter
+  auto info = [m, &xs, &ys, ws]
+  {
+    switch (m) {
+    case ols_method::svd:
+      {
+        // select LAPACKE SVD solving routine
+        auto svd_solve = []
+        {
+          if constexpr (single_prec)
+            return LAPACKE_sgelsd;
+          else
+            return LAPACKE_dgelsd;
+        }();
+        // singular values + effective rank
+        // note: effective rank affected by the rcond parameter, where if s[0]
+        // is the largest singular value, any singular value <= rcond * s[0] is
+        // excluded when computing the effective rank of the matrix, where the
+        // effective rank is the number of non-zero singular values
+        std::vector<T> ss(ws.size());
+        int rank;
+        // solve, overwiting xs and ys
+        return svd_solve(
+          LAPACK_COL_MAJOR,  // column major
+          ys.size(),         // number of rows
+          ws.size(),         // number of columns
+          1,                 // number of RHS columns
+          xs.data(),         // LHS matrix (overwritten)
+          ys.size(),         // leading dimension (number of rows here)
+          ys.data(),         // RHS vector (partially overwritten w/ solution)
+          ys.size(),         // leading dimension
+          ss.data(),         // singular values
+          0.f,               // scale factor for determining effective rank
+          &rank              // effective rank of xs
+        );
+      }
+    default:
+      {
+        // select LAPACKE QR solving routine
+        auto qr_solve = []
+        {
+          if constexpr (single_prec)
+            return LAPACKE_sgels;
+          else
+            return LAPACKE_dgels;
+        }();
+        // solve, overwriting xs and ys
+        return qr_solve(
+          LAPACK_COL_MAJOR,  // column major
+          'N',               // no transpose
+          ys.size(),         // number of rows
+          ws.size(),         // number of columns
+          1,                 // number of RHS columns
+          xs.data(),         // LHS matrix (overwritten)
+          ys.size(),         // leading dimension (number of rows here)
+          ys.data(),         // RHS vector (partially overwritten w/ solution)
+          ys.size()          // leading dimension
+        );
+      }
+    }
+  }();
+  // indicate if there was a LAPACKE error
+  if (info < 0) {
+    std::cerr << "Error: LAPACKE " << m <<
+      " routine has illegal argument at index " << (info + 1) << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (info > 0) {
+    std::cerr << "Error: LAPACKE " << m <<
+      " routine could not compute the least squares solution" << std::endl;
+    return EXIT_FAILURE;
+  }
+  // create view of modified ys to represent solution
+  // note: (iterator, size) ctor new in C++20
+  std::span<const T> whs{ys.begin(), ws.size()};
+  // select CBLAS scaled vector add + inner product routines
+  // note: not necessary to use CBLAS but it's provided by OpenBLAS
+  auto [axpy, dot] = []
+  {
+    if constexpr (single_prec)
+      return std::pair{cblas_saxpy, cblas_sdot};
+    else
+      return std::pair{cblas_daxpy, cblas_ddot};
+  }();
+  // compute SSE of the actual and estimated weights using CBLAS
+  auto sse = [&]
+  {
+    // intermediate work vector for axpy set to estimated values
+    std::vector<T> wds(whs.begin(), whs.end());
+    // subtract ws from whs by computing -ws + whs
+    axpy(static_cast<int>(wds.size()), -1.f, ws.data(), 1, wds.data(), 1);
+    // compute squared errors using whs - ws differences
+    return dot(static_cast<int>(wds.size()), wds.data(), 1, wds.data(), 1);
+  }();
+  // print comparison of the original and solved vectors
+  std::cout <<
+    "ws: " << fp_range{ws} << "\n" <<
+    "wh: " << fp_range{whs} << "\n" <<
+// suppress MSVC C4244 from size_t float interop
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4244)
+    "MSE: " << (sse / ws.size()) << "\n" << std::flush;
+OA_MSVC_WARNING_POP()
+  return EXIT_SUCCESS;
+}
+#endif  // OA_HAS_OPENBLAS
+
 #if OA_HAS_ARMADILLO
 // TODO: document
 template <std::floating_point T>
@@ -605,9 +805,10 @@ int ols_armadillo(
         arma::Col<T> ss;
         arma::Mat<T> vs;
         arma::svd_econ(us, ss, vs, xs);
-        // solve weghted orthogonal system
+        // solve weighted orthogonal system
         arma::solve(w, arma::diagmat(ss) * vs.t(), us.t() * ys);
       }
+      return w;
     default:
       {
         // perform QR econ decomposition
@@ -617,9 +818,8 @@ int ols_armadillo(
         // solve triangular system
         arma::solve(w, rs, qs.t() * ys);
       }
+      return w;
     }
-    // return solution
-    return w;
   }();
   // print comparison of the original and solved vectors
   // note: displaying vector transpose so values are in a row, not column
@@ -631,7 +831,7 @@ int ols_armadillo(
 OA_MSVC_WARNING_PUSH()
 OA_MSVC_WARNING_DISABLE(4244)
     // note: 1x1 matrices need explicit conversion to scalar
-    "MSE: " << arma::as_scalar((ws - whs).t() * (ws - whs) / ysv.size()) <<
+    "MSE: " << arma::as_scalar((ws - whs).t() * (ws - whs) / ws.size()) <<
 OA_MSVC_WARNING_POP()
       "\n" << std::flush;
   return EXIT_SUCCESS;
@@ -679,19 +879,19 @@ int ols_eigen3(
 #else
         w = xs.bdcSvd(svd_opts).solve(ys);
 #endif  // !EIGEN_VERSION_AT_LEAST(5, 0, 0)
+        return w;
       }
     default:
       w = xs.colPivHouseholderQr().solve(ys);
+      return w;
     }
-    // return solution
-    return w;
   }();
   // print comparison of the original and solved vectors
   // note: displaying vector transpose so values are in a row, not column
   std::cout <<
     "ws: " << ws.transpose() << "\n" <<
     "wh: " << whs.transpose() << "\n" <<
-    "MSE: " << ((ws - whs).transpose() * (ws - whs) / ysv.size()) << "\n" <<
+    "MSE: " << ((ws - whs).transpose() * (ws - whs) / ws.size()) << "\n" <<
     std::flush;
   return EXIT_SUCCESS;
 }
@@ -750,7 +950,7 @@ int ols_main(const cli_options& opts)
     return ols_armadillo(opts.method, xsv, ysv, wsv);
 #endif  // OA_HAS_ARMADILLO
   default:
-    // TODO: not implemented (LAPACKE)
+    return ols_lapacke(opts.method, xsv, ysv, wsv);
     break;
   }
   return EXIT_SUCCESS;
