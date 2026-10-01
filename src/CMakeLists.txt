@@ -70,22 +70,26 @@ endif()
 # this showcases the use of different linear algebra libraries and matrix
 # factorizations to solve a noisy linear least-squares problem.
 #
-# TODO: update to enable standalone use of Eigen3 as a separate BLAS/LAPACKE
-# implementation is not required for Eigen3 to be used
+# note: Eigen3 is very heavy on the compiler and its use in this program can
+# cause compilation to take several minutes. with GCC the time is longer, and
+# in particular, the BDCSVD Eigen3 module can cause ld to hang
 #
-if(OpenBLAS_FOUND)
+if(OpenBLAS_FOUND OR Eigen3_FOUND)
     add_executable(ols_demo ols_demo.cpp)
-    target_link_libraries(ols_demo PRIVATE oa_core OA::OpenBLAS)
-    # list of supported ols_demo backends
-    list(APPEND ols_backends LAPACKE)
-    # link against Eigen3 + Armadillo if available + update available backends
+    target_link_libraries(ols_demo PRIVATE oa_core)
+    # link against OpenBLAS, Eigen3, Armadillo if available + update backends
+    # note: link OpenBLAS last for best chance of resolving symbols
+    if(Armadillo_FOUND)
+        target_link_libraries(ols_demo PRIVATE OA::Armadillo)
+        list(APPEND ols_backends Armadillo)
+    endif()
     if(Eigen3_FOUND)
         target_link_libraries(ols_demo PRIVATE OA::Eigen3)
         list(APPEND ols_backends Eigen3)
     endif()
-    if(Armadillo_FOUND)
-        target_link_libraries(ols_demo PRIVATE OA::Armadillo)
-        list(APPEND ols_backends Armadillo)
+    if(OpenBLAS_FOUND)
+        target_link_libraries(ols_demo PRIVATE OA::OpenBLAS)
+        list(APPEND ols_backends LAPACKE)
     endif()
     # -h, --help test
     add_test(NAME ols_demo_h COMMAND ols_demo -h)
@@ -116,5 +120,5 @@ if(OpenBLAS_FOUND)
         endforeach()
     endforeach()
 else()
-    message(STATUS "Skipping ols_demo (requires OpenBLAS)")
+    message(STATUS "Skipping ols_demo (requires OpenBLAS or Eigen3)")
 endif()

@@ -212,7 +212,10 @@ const auto program_usage = "Usage: " + progname + " [-h] [OPTIONS...]\n"
     to_string(ols_backend::lapacke) +
 #endif  // OA_HAS_OPENBLAS
 #if OA_HAS_EIGEN3
-    "|" + to_string(ols_backend::eigen3) +
+#if OA_HAS_OPENBLAS
+    "|" +
+#endif  // OA_HAS_OPENBLAS
+    to_string(ols_backend::eigen3) +
 #endif  // OA_HAS_EIGEN3
 #if OA_HAS_ARMADILLO
     "|" + to_string(ols_backend::armadillo) +
@@ -377,9 +380,14 @@ struct from_string<ols_backend> {
       ols_backend::armadillo,
 #endif  // OA_HAS_ARMADILLO
 #if OA_HAS_EIGEN3
-      ols_backend::eigen3,
+      ols_backend::eigen3
+#if OA_HAS_OPENBLAS
+        ,
+#endif  // OA_HAS_OPENBLAS
 #endif  // OA_HAS_EIGEN3
+#if OA_HAS_OPENBLAS
       ols_backend::lapacke
+#endif  // OA_HAS_OPENBLAS
     };
     for (auto v : values)
       if (s == to_string(v))
@@ -957,9 +965,15 @@ int ols_main(const cli_options& opts)
   case ols_backend::armadillo:
     return ols_armadillo(opts.method, xsv, ysv, wsv);
 #endif  // OA_HAS_ARMADILLO
-  default:
+#if OA_HAS_OPENBLAS
+  case ols_backend::lapacke:
     return ols_lapacke(opts.method, xsv, ysv, wsv);
-    break;
+#endif  // OA_HAS_OPENBLAS
+  // note: should not be hit under normal circumstances
+  default:
+    std::cerr << "Error: Invalid backend value " << opts.backend <<
+      " provided" << std::endl;
+    return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
