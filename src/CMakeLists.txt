@@ -122,3 +122,16 @@ if(OpenBLAS_FOUND OR Eigen3_FOUND)
 else()
     message(STATUS "Skipping ols_demo (requires OpenBLAS or Eigen3)")
 endif()
+
+# spline_demo: natural cubic spline demo program
+#
+# this showcases the use of different linear algebra libraries applied to
+# solving the tridiagonal linear system required to compute the coefficients
+# (second derivatives) required for a natural cubic spline.
+#
+if(Eigen3_FOUND)
+    add_executable(spline_demo spline_demo.cpp)
+    target_link_libraries(spline_demo PRIVATE oa_core OA::Eigen3)
+else()
+    message(STATUS "Skipping spline_demo (requires Eigen3)")
+endif()
