@@ -664,7 +664,20 @@ auto& operator<<(std::ostream& out, const fp_range<R>& vs)
 }
 
 #if OA_HAS_OPENBLAS
-// TODO: document
+/**
+ * Compute the OLS solution weights using the LAPACKE interface.
+ *
+ * Although this program uses the OpenBLAS implementation other implementations
+ * with a LAPACKE interface could be used, e.g. MKL, ATLAS, etc.
+ *
+ * @tparam T Floating-point type
+ *
+ * @param m Solution method
+ * @param xsv Input values, total `ysv.size() * ws.size()`, column-major order
+ * @param ysv Output values
+ * @param ws Expected weights
+ * @returns `EXIT_SUCCESS` on success, `EXIT_FAILURE` on error
+ */
 template <std::floating_point T>
 int ols_lapacke(
   ols_method m,
@@ -795,7 +808,20 @@ OA_MSVC_WARNING_POP()
 #endif  // OA_HAS_OPENBLAS
 
 #if OA_HAS_ARMADILLO
-// TODO: document
+/**
+ * Compute the OLS solution weights using Armadillo.
+ *
+ * The actual computation is still delegated to an external BLAS/LAPACK
+ * implementation as Armadillo itself does not implement the decompositions.
+ *
+ * @tparam T Floating-point type
+ *
+ * @param m Solution method
+ * @param xsv Input values, total `ysv.size() * wsv.size()`, column-major order
+ * @param ysv Output values
+ * @param wsv Expected weights
+ * @returns `EXIT_SUCCESS` on success, `EXIT_FAILURE` on error
+ */
 template <std::floating_point T>
 int ols_armadillo(
   ols_method m,
@@ -855,7 +881,23 @@ OA_MSVC_WARNING_POP()
 #endif  // OA_HAS_ARMADILLO
 
 #if OA_HAS_EIGEN3
-// TODO: document
+/**
+ * Compute the OLS solution weights using Eigen3.
+ *
+ * Eigen3 itself provides QR/SVD implementations without external BLAS/LAPACK.
+ *
+ * @note The Eigen3 `bdcSvd()` decomposition is extremely template-heavy, even
+ *  relative to Eigen3's own template-heavy nature, and can cause GNU ld to
+ *  hang (version 2.38 on WSL1 Ubuntu 22.04.2).
+ *
+ * @tparam T Floating-point type
+ *
+ * @param m Solution method
+ * @param xsv Input values, total `ysv.size() * ws.size()`, column-major order
+ * @param ysv Output values
+ * @param ws Expected weights
+ * @returns `EXIT_SUCCESS` on success, `EXIT_FAILURE` on error
+ */
 template <std::floating_point T>
 int ols_eigen3(
   ols_method m,
@@ -913,7 +955,18 @@ int ols_eigen3(
 }
 #endif  // OA_HAS_EIGEN3
 
-// TODO: document
+/**
+ * Compute the OLS solution weights with a given decomposition + backend.
+ *
+ * This is the real "main" function of the program as `main()` itself cannot be
+ * overloaded as a function template and generates the inputs, noisy outputs,
+ * and the expected solution weights, before dispatching based on backend.
+ *
+ * @tparam T Floating-point type
+ *
+ * @param opts Command-line options
+ * @returns `EXIT_SUCCESS` on success, `EXIT_FAILURE` on error
+ */
 template <std::floating_point T>
 int ols_main(const cli_options& opts)
 {
