@@ -205,10 +205,20 @@ private:
   std::vector<T> ms_;  // spline second derivatives
 };
 
-// TODO: add CTAD
-
-using natural_spline_f64 = natural_spline<double>;
-using natural_spline_f32 = natural_spline<float>;
+/**
+ * User-defined deduction guide for the `natural_spline<T>`.
+ *
+ * This deduces to the wider of the two floating range types.
+ *
+ * @tparam R1 Range of floating values
+ * @tparam R2 Range of floating values
+ */
+template <std::ranges::forward_range R1, std::ranges::forward_range R2>
+natural_spline(R1&&, R2&&) -> natural_spline<
+  std::common_type_t<
+    std::ranges::range_value_t<R1>,
+    std::ranges::range_value_t<R2>
+  > >;
 
 }  // namespace
 
@@ -217,7 +227,7 @@ int main()
   // TODO: parse command-line arguments
   std::vector xs{1., 2., 3., 4., 5.};
   std::vector ys{2., 4., 6., 5., 7.};
-  natural_spline_f64 f{xs, ys};
+  natural_spline f{xs, ys};
   // note: same values as SciPy's CubicSpline with bc_type="natural"
   std::cout <<
     "f(0.5) = " << f(0.5) << "\n" <<
