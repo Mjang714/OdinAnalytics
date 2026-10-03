@@ -29,6 +29,26 @@
 #include "oa/features.h"  // OA_HAS_OPENBLAS, OA_HAS_EIGEN3, OA_HAS_ARMADILLO
 #include "oa/warnings.h"
 
+// enable VS Code to define feature macros
+// note: __has_include standard since C++17
+#ifdef __INTELLISENSE__
+// OpenBLAS
+#if __has_include(<openblas_config.h>)
+#undef OA_HAS_OPENBLAS
+#define OA_HAS_OPENBLAS 1
+#endif  // __has_include(<openblas_config.h>)
+// Eigen3
+#if __has_include(<Eigen/Core>)
+#undef OA_HAS_EIGEN3
+#define OA_HAS_EIGEN3 1
+#endif  // __has_include(<Eigen/Core>)
+// Armadillo
+#if __has_include(<armadillo>)
+#undef OA_HAS_ARMADILLO
+#define OA_HAS_ARMADILLO 1
+#endif  // __has_include(<armadillo>)
+#endif  // __INTELLISENSE__
+
 // either Eigen or OpenBLAS is required
 #if !OA_HAS_OPENBLAS && !OA_HAS_EIGEN3
 #error "ols_demo.cpp: either OpenBLAS or Eigen3 are required for compilation"

@@ -194,6 +194,8 @@ if(OpenBLAS_FOUND)
     # add interface target to encapsulate OpenBLAS usage requirements
     add_library(OA::OpenBLAS INTERFACE IMPORTED)
     target_link_libraries(OA::OpenBLAS INTERFACE OpenBLAS::OpenBLAS)
+    # enable integration with oa/features.h library feature macros
+    target_compile_definitions(OA::OpenBLAS INTERFACE OA_USE_OPENBLAS)
     # when static and on Linux we may need to link against libgfortran
     # TODO: by default this is a dynamic link + libquadmath is also dynamically
     # linked. may need to consider how to static link these two
@@ -301,6 +303,8 @@ if(Eigen3_FOUND)
     # add interface library to collect our own usage requirements
     add_library(OA::Eigen3 INTERFACE IMPORTED)
     target_link_libraries(OA::Eigen3 INTERFACE Eigen3::Eigen)
+    # enable integration with oa/features.h library feature macros
+    target_compile_definitions(OA::Eigen3 INTERFACE OA_USE_EIGEN3)
     # prefer to use /bigobj with MSVC due to template code bloat
     # TODO: maybe enable globally for the project or just for ols_demo
     if(MSVC)
@@ -339,6 +343,8 @@ if(Armadillo_FOUND)
     # we create our own INTERFACE target for better control
     add_library(OA::Armadillo INTERFACE IMPORTED)
     target_link_libraries(OA::Armadillo INTERFACE Armadillo::Armadillo)
+    # enable integration with oa/features.h library feature macros
+    target_compile_definitions(OA::Armadillo INTERFACE OA_USE_ARMADILLO)
     # if OpenBLAS found add to the link interface
     if(OpenBLAS_FOUND)
         message(STATUS "Armadillo BLAS: OpenBLAS")
