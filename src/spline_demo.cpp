@@ -17,7 +17,17 @@
 #include <type_traits>
 #include <vector>
 
-#include "oa/features.h"
+#include "oa/features.h"  // OA_HAS_EIGEN3
+
+// enable VS Code to define feature macros
+// note: __has_include standard since C++17
+#ifdef __INTELLISENSE__
+// Eigen3
+#if __has_include(<Eigen/Core>)
+#undef OA_HAS_EIGEN3
+#define OA_HAS_EIGEN3 1
+#endif  // __has_include(<Eigen/Core>)
+#endif  // __INTELLISENSE__
 
 #if OA_HAS_EIGEN3
 #include <Eigen/Core>
