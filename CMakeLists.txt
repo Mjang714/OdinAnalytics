@@ -232,9 +232,9 @@ if(OpenBLAS_FOUND)
             # LAPACK_FORTRAN_STRLEN_END, i.e. using the LAPACK function
             # prototypes that don't have the "hidden" length arguments at the
             # end of the functions with const char* arguments. this is required
-            # for correct interop with Armadillo incorrectly const-qualifies
-            # the cgeevx, zgeevx info params in armadillo_bits/def_lapack.hpp,
-            # but only for the signatures where ARMA_USE_FORTRAN_HIDDEN_ARGS is
+            # for Armadillo interop as Armadillo wrongly const-qualifies the
+            # cgeevx, zgeevx info params in armadillo_bits/def_lapack.hpp, but
+            # only for the signatures where ARMA_USE_FORTRAN_HIDDEN_ARGS is
             # defined, i.e. the signatures without the "hidden" length args.
             #
             # it is, of course, a hack to pretend that we are the Emscripten
