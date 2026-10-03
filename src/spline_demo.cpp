@@ -34,6 +34,8 @@ const auto program_usage = "Usage: " + progname + " [-h]\n"
   "  -h, --help             Print this usage";
 
 // solve spline 2nd derivs
+// TODO: document. implementation from the Wikiversity page referenced in SciPy
+// CubicSpline docs: https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation
 // note: no checking
 template <std::floating_point T>
 auto natural_spline_d2s(std::span<const T> xs, std::span<const T> ys)
