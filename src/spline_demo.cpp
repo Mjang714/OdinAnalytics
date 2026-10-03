@@ -51,7 +51,7 @@ auto natural_spline_d2s(std::span<const T> xs, std::span<const T> ys)
   // vector of n - 1 differences for ys
   // note: needed later so compute once and keep results
   std::vector<T> dys(n - 1);
-  for (auto i = 0u; i < n - i; i++)
+  for (auto i = 0u; i < n - 1; i++)
     dys[i] = ys[i + 1] - ys[i];
   // vector of n - 2 differences for xs
   // note: needed later so compute once and keep results
@@ -61,34 +61,42 @@ auto natural_spline_d2s(std::span<const T> xs, std::span<const T> ys)
   // coefficient vector of divided differences (linear system RHS)
   eigen3_colvec bs(n);
   // bs[0] required 0 by natural spline
-  bs[0] = 0;
+  bs(0) = 0;
   // bs[1] through bs[n - 2] are 6 * [i - 1, i, i + 1] divided differences
-  for (auto i = 1u; i < n - 1; i++) {
-    auto h = dx2s[i - 1];
-    bs(i) = 6 * (dys[i] / dxs[i] / h - dys[i - 1] / dxs[i - 1] / h);
-  }
+  for (auto i = 1u; i < n - 1; i++)
+    bs(i) = 6 * (dys[i] / dxs[i] - dys[i - 1] / dxs[i - 1]) / dx2s[i - 1];
   // bs[n - 1] required 0 by natural spline
-  bs[n - 1] = 0;
-  // tridiagonal matrix of coefficients
-  eigen3_matrix ms(n, n);
+  bs(n - 1) = 0;
+  // tridiagonal matrix of coefficients (zeroed)
+  // TODO: maybe use a sparse solver to reduce memory consumption
+  eigen3_matrix ms = eigen3_matrix::Zero(n, n);
   // fill in diagonal
   ms.diagonal().fill(2);
   // ms(0, 1) required 0 by natural spline
   // natural boundary conditions
   ms(0, 1) = 0;
   // fill in lower + upper diagonals
-  for (auto i = 1u; i < n - 2; i++) {
+  for (auto i = 1u; i < n - 1; i++) {
     // note: computed to local first for friendlier memory access
     auto u = dxs[i - 1] / dx2s[i - 1];
     // lower + upper diagonal values
     ms(i, i - 1) = u;
-    ms(i - 1, i) = 1 - u;
+    ms(i, i + 1) = 1 - u;
   }
   // ms(n - 1, n - 2) required 0 by natural spline
   ms(n - 1, n - 2) = 0;
+  // TODO: enable logging option for debugging?
+#if 0
+  std::cout << ms << std::endl;
+  std::cout << bs << std::endl;
+#endif  // 0
   // solve tridiagonal system
   // note: no auto return due to use of expression templates
   eigen3_colvec ws = ms.colPivHouseholderQr().solve(bs);
+  // TODO: enable logging option for debugging?
+#if 0
+  std::cout << ws << std::endl;
+#endif  // 0
   return ws;
 }
 
@@ -148,7 +156,7 @@ public:
     // note: no list-init as MSVC emits C2398 error
     using eigen3_colvector = Eigen::Matrix<T, Eigen::Dynamic, 1>;
     Eigen::Map<eigen3_colvector> msv(ms_.data(), ms_.size(), 1);
-    // perform solve for
+    // solve for spline second derivatives
     // note: explicit template parameter to enable conversion from range
     msv = natural_spline_d2s<T>(x, y);
   }
@@ -157,13 +165,14 @@ public:
   auto operator()(T v) const noexcept
   {
     // determine bucket. i will be in {0u, ... xs_.size() - 2}
+    // note: xs_ are monotone increasing so no need to check xs_[i]. we need to
+    // check the endpoint of each interval at i + 1 and cannot increment more
+    // then xs_.size() - 2 as otherwise the right endpoint is out of bounds
     auto i = 0u;
-    for (; i + 1u < xs_.size(); i++)
-      if (v < xs_[i])
-        break;
-    // compute xs_[i + 1] - xs_[i] difference + square + 6 * difference
-    auto dx = xs_[i + 1u] - xs_[i];
-    auto dx2 = dx * dx;
+    while ((i + 2u < xs_.size()) && (v > xs_[i + 1u]))
+      i++;
+    // compute xs_[i + 1] - xs_[i] difference + 6 * difference
+    auto dx = xs_[i + 1] - xs_[i];
     auto d6x = 6 * dx;
     // evaluate xs_[i + 1] - v and v - xs_[i] + cubes
     auto dxu = xs_[i + 1] - v;
@@ -172,9 +181,9 @@ public:
     auto dxd3 = dxd * dxd * dxd;
     // evaluate polynomial
     return (
-      ms_[i] * dxu3 / d6x + ms_[i + 1u] * dxd3 / d6x +
-      (ys_[i] - ms_[i] * dx2 / 6) * dxu / dx +
-      (ys_[i + 1u] - ms_[i + 1u] * dx2 / 6) * dxd / dx
+      (ms_[i] * dxu3 / d6x) + (ms_[i + 1u] * dxd3 / d6x) +
+      (ys_[i] / dx - ms_[i] * dx / 6) * dxu +
+      (ys_[i + 1u] / dx - ms_[i + 1u] * dx / 6) * dxd
     );
   }
 
@@ -194,13 +203,16 @@ using natural_spline_f32 = natural_spline<float>;
 int main()
 {
   // TODO: parse command-line arguments
-  std::vector xs{1., 2., 3., 4.};
-  std::vector ys{2., 4., 6., 4.};
+  std::vector xs{1., 2., 3., 4., 5.};
+  std::vector ys{2., 4., 6., 5., 7.};
   natural_spline_f64 f{xs, ys};
-  // TODO: not the same output as SciPy's CubicSpline with bc_type="natural"
+  // note: same values as SciPy's CubicSpline with bc_type="natural"
   std::cout <<
+    "f(0.5) = " << f(0.5) << "\n" <<
     "f(1.5) = " << f(1.5) << "\n" <<
     "f(2.5) = " << f(2.5) << "\n" <<
-    "f(3.5) = " << f(3.5) << "\n" << std::flush;
+    "f(3.5) = " << f(3.5) << "\n" <<
+    "f(4.5) = " << f(4.5) << "\n" <<
+    "f(5.5) = " << f(5.5) << "\n" << std::flush;
   return EXIT_SUCCESS;
 }
