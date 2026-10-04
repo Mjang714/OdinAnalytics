@@ -62,6 +62,43 @@ const auto program_usage = "Usage: " + progname + " [-h]\n"
   "  -h, --help             Print this usage";
 
 /**
+ * Command-line options structure.
+ *
+ * @param help `true` to print program usage
+ */
+struct cli_options {
+  bool help = false;
+};
+
+/**
+ * Parse incoming command-line options.
+ *
+ * @param opts Command-line options to fill
+ * @param argc Argument count from `main()`
+ * @param argv Argument vector from `main()`
+ * @returns `true` on success, `false` on error
+ */
+bool parse_args(cli_options& opts, int argc, char** argv)
+{
+  for (int i = 1; i < argc; i++) {
+    // argument view
+    std::string_view arg{argv[i]};
+    // -h, --help
+    if (arg == "-h" || arg == "--help") {
+      opts.help = true;
+      return true;
+    }
+    // unknown option
+    else {
+      std::cerr << "Error: Unknown option " << arg << std::endl;
+      return false;
+    }
+  }
+  // done
+  return true;
+}
+
+/**
  * Compute the knot point second derivatives given the knots and their values.
  *
  * The Eigen3 partial-pivoting Householder QR decomposition solver is used to
@@ -776,9 +813,17 @@ auto& operator<<(std::ostream& out, const table& data)
 
 }  // namespace
 
-int main()
+int main(int argc, char** argv)
 {
-  // TODO: parse command-line arguments
+  // parse command-line arguments
+  cli_options opts;
+  if (!parse_args(opts, argc, argv))
+    return EXIT_FAILURE;
+  // print program usage
+  if (opts.help) {
+    std::cout << program_usage << std::endl;
+    return EXIT_SUCCESS;
+  }
   // knot points and values
   std::vector xs{1., 2., 3., 4., 5.};
   std::vector ys{2., 4., 6., 5., 7.};
@@ -796,7 +841,7 @@ int main()
   // fourth derivative
   // note: f.d().d().d().d() or f1.d().d().d() or f2.d().d() or f3.d() work too
   auto f4 = f.d<4>();
-  // evalute + organize values in table
+  // evaluate + organize values in table
   //
   // note: expected values correspond to those from SciPy's CubicSpline with
   // bc_type="natural" for natural cubic spline. SciPy values:
