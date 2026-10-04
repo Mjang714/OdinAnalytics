@@ -151,7 +151,7 @@ private:
     auto operator()(T v) const noexcept
     {
       // higher derivatives are zero
-      if constexpr (I > 2)
+      if constexpr (I > 3)
         return T{};
       // nonzero derivatives
       else {
@@ -169,8 +169,11 @@ private:
         // evaluate xs[i + 1] - v and v - xs[i]
         auto dxu = xs[i + 1] - v;
         auto dxd = v - xs[i];
+        // third derivative
+        if constexpr (I == 3)
+          return (ms[i + 1] - ms[i]) / dx;
         // second derivative
-        if constexpr (I == 2)
+        else if constexpr (I == 2)
           return ms[i] * dxu / dx + ms[i + 1] * dxd / dx;
         // first derivative
         else
@@ -359,23 +362,45 @@ int main()
   // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
   // 1.93303571, 1.93303571, 2.33482143, -1.52232143, 2.25446429, 2.25446429
   std::cout <<
-    "f1(0.5) = " << f1(0.5) << "\n" <<
-    "f1(1.5) = " << f1(1.5) << "\n" <<
-    "f1(2.5) = " << f1(2.5) << "\n" <<
-    "f1(3.5) = " << f1(3.5) << "\n" <<
-    "f1(4.5) = " << f1(4.5) << "\n" <<
-    "f1(5.5) = " << f1(5.5) << "\n" << std::flush;
+    "f'(0.5) = " << f1(0.5) << "\n" <<
+    "f'(1.5) = " << f1(1.5) << "\n" <<
+    "f'(2.5) = " << f1(2.5) << "\n" <<
+    "f'(3.5) = " << f1(3.5) << "\n" <<
+    "f'(4.5) = " << f1(4.5) << "\n" <<
+    "f'(5.5) = " << f1(5.5) << "\n" << std::flush;
   // second derivatives
-  // note: f1.d() or f.d().d() produces the same result
+  // note: f.d().d() or f1.d() produces the same result
   auto f2 = f.d<2>();
   // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
   // -0.80357143, 0.80357143, -2.41071429, -0.16071429, 3.05357143, -3.05357143
   std::cout <<
-    "f2(0.5) = " << f2(0.5) << "\n" <<
-    "f2(1.5) = " << f2(1.5) << "\n" <<
-    "f2(2.5) = " << f2(2.5) << "\n" <<
-    "f2(3.5) = " << f2(3.5) << "\n" <<
-    "f2(4.5) = " << f2(4.5) << "\n" <<
-    "f2(5.5) = " << f2(5.5) << "\n" << std::flush;
+    "f''(0.5) = " << f2(0.5) << "\n" <<
+    "f''(1.5) = " << f2(1.5) << "\n" <<
+    "f''(2.5) = " << f2(2.5) << "\n" <<
+    "f''(3.5) = " << f2(3.5) << "\n" <<
+    "f''(4.5) = " << f2(4.5) << "\n" <<
+    "f''(5.5) = " << f2(5.5) << "\n" << std::flush;
+  // third derivatives
+  // note: f.d().d().d() or f1.d().d() or f2.d() produces the same result
+  auto f3 = f.d<3>();
+  // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
+  // 1.60714286, 1.60714286, -8.03571429, 12.53571429, -6.10714286, -6.10714286
+  std::cout <<
+    "f'''(0.5) = " << f3(0.5) << "\n" <<
+    "f'''(1.5) = " << f3(1.5) << "\n" <<
+    "f'''(2.5) = " << f3(2.5) << "\n" <<
+    "f'''(3.5) = " << f3(3.5) << "\n" <<
+    "f'''(4.5) = " << f3(4.5) << "\n" <<
+    "f'''(5.5) = " << f3(5.5) << "\n" << std::flush;
+  // fourth derivatives
+  // note: f.d().d().d().d() or f1.d().d().d() or f2.d().d() or f3.d() work too
+  auto f4 = f.d<4>();
+  std::cout <<
+    "f''''(0.5) = " << f4(0.5) << "\n" <<
+    "f''''(1.5) = " << f4(1.5) << "\n" <<
+    "f''''(2.5) = " << f4(2.5) << "\n" <<
+    "f''''(3.5) = " << f4(3.5) << "\n" <<
+    "f''''(4.5) = " << f4(4.5) << "\n" <<
+    "f''''(5.5) = " << f4(5.5) << "\n" << std::flush;
   return EXIT_SUCCESS;
 }
