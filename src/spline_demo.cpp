@@ -117,17 +117,91 @@ template <std::floating_point T>
 class natural_spline {
 private:
   /**
-   * Traits helper ensuring the forward range type matches `T`.
+   * Traits helper ensuring the forward range type converts to `T`.
    *
    * @tparam R Forward range
    */
   template <typename R>
   static constexpr bool is_valid_range =
-    std::is_same_v<std::ranges::range_value_t<R>, T>;
+    std::convertible_to<std::ranges::range_value_t<R>, T>;
+
+  /**
+   * Proxy class representing the spline's derivative.
+   *
+   * The scope of the derivative type is tied to the scope of spline.
+   *
+   * @tparam I Order of the derivative
+   */
+  template <int I>
+  requires (I > 0)
+  class derivative {
+  public:
+    /**
+     * Ctor.
+     *
+     * @param f Natural spline
+     */
+    derivative(const natural_spline& f) noexcept : f_{&f} {}
+
+    /**
+     * Evaluate the spline's derivative at the given point.
+     *
+     * @param v Point to evaluate at
+     */
+    auto operator()(T v) const noexcept
+    {
+      // higher derivatives are zero
+      if constexpr (I > 2)
+        return T{};
+      // nonzero derivatives
+      else {
+        // reference to knot points, knot values, knot point second derivatives
+        auto& xs = f_->xs_;
+        auto& ys = f_->ys_;
+        auto& ms = f_->ms_;
+        // determine bucket. i will be in {0u, ... xs.size() - 2}
+        auto i = 0u;
+        while ((i + 2u < xs.size()) && (v > xs[i + 1u]))
+          i++;
+        // compute xs[i + 1] - xs[i] difference + 2 * difference
+        auto dx = xs[i + 1] - xs[i];
+        auto d2x = 2 * dx;
+        // evaluate xs[i + 1] - v and v - xs[i]
+        auto dxu = xs[i + 1] - v;
+        auto dxd = v - xs[i];
+        // second derivative
+        if constexpr (I == 2)
+          return ms[i] * dxu / dx + ms[i + 1] * dxd / dx;
+        // first derivative
+        else
+          return (
+            -ms[i] * dxu * dxu / d2x + ms[i + 1] * dxd * dxd / d2x +
+            (ys[i + 1] - ys[i]) / dx - (ms[i + 1] - ms[i]) * dx / 6
+          );
+      }
+    }
+
+    /**
+     * Return the proxy object representing a higher-order spline derivative.
+     *
+     * @tparam I_ Order of the derivative
+     */
+    template <int I_ = 1>
+    requires (I_ > 0)
+    auto d() const noexcept
+    {
+      return derivative<I + I_>{*f_};
+    }
+
+  private:
+    const natural_spline* f_;
+  };
 
 public:
   /**
    * Default ctor.
+   *
+   * Attempting to invoke `operator()` on a default-constructed instance is UB.
    */
   natural_spline() = default;
 
@@ -173,7 +247,14 @@ public:
     msv = natural_spline_d2s<T>(x, y);
   }
 
-  // return ith value
+  /**
+   * Evaluate the spline at the given point.
+   *
+   * If the value is outside the interpolation interval the corresponding
+   * endpoint cubic polynomial will be evaluated for extrapolation.
+   *
+   * @param v Point to evaluate at
+   */
   auto operator()(T v) const noexcept
   {
     // determine bucket. i will be in {0u, ... xs_.size() - 2}
@@ -199,10 +280,42 @@ public:
     );
   }
 
+  /**
+   * Evaluate the spline at the given points.
+   *
+   * This calls the unary `operator()` for each input and returns a tuple.
+   *
+   * @tparam T1 First type
+   * @tparam T2 Second type
+   * @tparam Ts Subsequent types
+   *
+   * @param v1 First evaluation point
+   * @param v2 Second evaluation point
+   * @param vs Subsequent evaluation points
+   */
+  template <std::convertible_to<T> T1, std::convertible_to<T> T2, typename... Ts>
+  requires (std::convertible_to<Ts, T> && ...)
+  auto operator()(T1 v1, T2 v2, Ts... vs) const noexcept
+  {
+    return std::tuple{(*this)(v1), (*this)(v2), (*this)(vs)...};
+  }
+
+  /**
+   * Return the proxy object representing the spline's derivative.
+   *
+   * @tparam I Derivative order
+   */
+  template <int I = 1>
+  requires (I > 0)
+  auto d() const noexcept
+  {
+    return derivative<I>{*this};
+  }
+
 private:
   std::vector<T> xs_;  // knot points
   std::vector<T> ys_;  // knot values
-  std::vector<T> ms_;  // spline second derivatives
+  std::vector<T> ms_;  // knot point second derivatives
 };
 
 /**
@@ -225,10 +338,14 @@ natural_spline(R1&&, R2&&) -> natural_spline<
 int main()
 {
   // TODO: parse command-line arguments
+  // knot points and values
   std::vector xs{1., 2., 3., 4., 5.};
   std::vector ys{2., 4., 6., 5., 7.};
+  // fit natural cubic spline
   natural_spline f{xs, ys};
-  // note: same values as SciPy's CubicSpline with bc_type="natural"
+  // interpolated + extrapolated points
+  // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
+  // 1.10044643, 2.89955357, 5.30133929, 5.52008929, 5.61830357, 8.38169643
   std::cout <<
     "f(0.5) = " << f(0.5) << "\n" <<
     "f(1.5) = " << f(1.5) << "\n" <<
@@ -236,5 +353,29 @@ int main()
     "f(3.5) = " << f(3.5) << "\n" <<
     "f(4.5) = " << f(4.5) << "\n" <<
     "f(5.5) = " << f(5.5) << "\n" << std::flush;
+  // first derivatives
+  // note: f.d() produces the same result
+  auto f1 = f.d<1>();
+  // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
+  // 1.93303571, 1.93303571, 2.33482143, -1.52232143, 2.25446429, 2.25446429
+  std::cout <<
+    "f1(0.5) = " << f1(0.5) << "\n" <<
+    "f1(1.5) = " << f1(1.5) << "\n" <<
+    "f1(2.5) = " << f1(2.5) << "\n" <<
+    "f1(3.5) = " << f1(3.5) << "\n" <<
+    "f1(4.5) = " << f1(4.5) << "\n" <<
+    "f1(5.5) = " << f1(5.5) << "\n" << std::flush;
+  // second derivatives
+  // note: f1.d() or f.d().d() produces the same result
+  auto f2 = f.d<2>();
+  // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
+  // -0.80357143, 0.80357143, -2.41071429, -0.16071429, 3.05357143, -3.05357143
+  std::cout <<
+    "f2(0.5) = " << f2(0.5) << "\n" <<
+    "f2(1.5) = " << f2(1.5) << "\n" <<
+    "f2(2.5) = " << f2(2.5) << "\n" <<
+    "f2(3.5) = " << f2(3.5) << "\n" <<
+    "f2(4.5) = " << f2(4.5) << "\n" <<
+    "f2(5.5) = " << f2(5.5) << "\n" << std::flush;
   return EXIT_SUCCESS;
 }
