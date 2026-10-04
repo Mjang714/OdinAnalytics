@@ -7,14 +7,19 @@
 
 #include <algorithm>
 #include <concepts>
+#include <cstddef>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <initializer_list>
+#include <map>
 #include <ranges>
 #include <span>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <utility>
+#include <variant>
 #include <vector>
 
 #include "oa/features.h"  // OA_HAS_EIGEN3
@@ -40,13 +45,36 @@ namespace {
 const auto progname = std::filesystem::path{__FILE__}.stem().string();
 const auto program_usage = "Usage: " + progname + " [-h]\n"
   "\n"
+  "Fits a cubic spline to data pairs and prints its values and derivatives.\n"
+  "\n"
+  "The fitted spline is a natural cubic spline, i.e. the second derivatives at\n"
+  "the left endpoint of the first and and right endpoint of the last cubic\n"
+  "polynomials are equal and zero. A dense matrix decomposition is used to solve\n"
+  "the tridiagonal linear system to compute the spline second derivatives at\n"
+  "each of the knot points. Spline values and derivatives up to 4th order are\n"
+  "evaluated and displayed in comparison to the values computed by SciPy's own\n"
+  "natural cubic spline implementation (values match).\n"
+  "\n"
+  "All spline and derivative evaluations are organized in a DataFrame-like table\n"
+  "using a simple implementation provided within this program.\n"
+  "\n"
   "Options:\n"
   "  -h, --help             Print this usage";
 
-// solve spline 2nd derivs
-// TODO: document. implementation from the Wikiversity page referenced in SciPy
-// CubicSpline docs: https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation
-// note: no checking
+/**
+ * Compute the knot point second derivatives given the knots and their values.
+ *
+ * The Eigen3 partial-pivoting Householder QR decomposition solver is used to
+ * solve the linear system and no extra error-checking is performed.
+ *
+ * This function implements the scheme described on the Wikiversity page here:
+ * https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation
+ *
+ * @tparam T Floating-point type
+ *
+ * @param xs Knot points
+ * @param ys Knot values
+ */
 template <std::floating_point T>
 auto natural_spline_d2s(std::span<const T> xs, std::span<const T> ys)
 {
@@ -112,7 +140,19 @@ auto natural_spline_d2s(std::span<const T> xs, std::span<const T> ys)
   return ws;
 }
 
-// TODO: document
+/**
+ * Invocable class representing a natural cubic spline.
+ *
+ * This class models a natural cubic spline and maintains ownership of the knot
+ * points, knot values, and computed knot second derivatives necessary to
+ * evaluate the spline or its derivatives at an interpolated or extrapolated
+ * point. Derivatives are implemented via invocable proxy objects.
+ *
+ * A user-defined deduction guide is provided to eliminate in most cases the
+ * need to explicitly specify the template type parameter.
+ *
+ * @tparam T Floating-point type
+ */
 template <std::floating_point T>
 class natural_spline {
 private:
@@ -336,6 +376,404 @@ natural_spline(R1&&, R2&&) -> natural_spline<
     std::ranges::range_value_t<R2>
   > >;
 
+// simple table type
+// TODO: document
+class table {
+public:
+  using value_type = std::variant<std::monostate, float, double, std::string>;
+  using key_map = std::map<std::string_view, std::size_t>;
+  using key_storage = std::vector<std::string>;
+
+  /**
+   * Stream formatting visitor for the table value type.
+   */
+  class stream_formatter {
+  public:
+    /**
+     * Ctor.
+     *
+     * @param out Output stream
+     */
+    stream_formatter(std::ostream& out) noexcept : out_{&out} {}
+
+    /**
+     * Return a reference to the output stream.
+     */
+    auto& out() const noexcept { return *out_; }
+
+    /**
+     * Format the contained value.
+     *
+     * This provides flexibility for additional types we might want to support.
+     * We print `std::monostate` as `"NA"` to represent a missing value.
+     *
+     * @tparam T type
+     */
+    template <typename T>
+    auto& operator()(const T& v) const
+    {
+      if constexpr (std::is_same_v<T, std::monostate>)
+        return out() << "NA";
+      else
+        return out() << v;
+    }
+
+  private:
+    std::ostream* out_;
+  };
+
+  /**
+   * String formatting visitor for the table value type.
+   */
+  class string_formatter {
+  public:
+    /**
+     * Format the contained value.
+     *
+     * For consistency with the `stream_formatter` this simply delegates.
+     *
+     * @tparam T type
+     */
+    template <typename T>
+    auto operator()(const T& v) const
+    {
+      std::stringstream ss;
+      stream_formatter{ss}(v);
+      // note: since C++20 copy can be replaced with move
+      return std::move(ss).str();
+    }
+  };
+
+private:
+  /**
+   * Helper traits to constrain the input data range.
+   *
+   * @tparam R Forward range
+   */
+  template <typename R>
+  static constexpr bool value_range =
+    std::convertible_to<std::ranges::range_value_t<R>, value_type>;
+
+  /**
+   * Helper traits to constrain row and column key types.
+   *
+   * @tparam R Forward range
+   */
+  template <typename R>
+  static constexpr bool key_range =
+    std::convertible_to<std::ranges::range_value_t<R>, std::string>;
+
+public:
+  /**
+   * Default ctor.
+   */
+  table() = default;
+
+  /**
+   * Ctor.
+   *
+   * This constructs from initializer lists with string literal labels.
+   *
+   * @note Initializer lists cannot be used to deduce C++ template ctor types.
+   *
+   * @param row_keys Row keys string literals
+   * @param col_keys Col keys string literals
+   * @param data Data values in row-major order
+   */
+  table(
+    std::initializer_list<const char*> row_keys,
+    std::initializer_list<const char*> col_keys,
+    std::initializer_list<value_type> data)
+    : table{row_keys, col_keys, data, std::monostate{}}
+  {}
+
+  /**
+   * Ctor.
+   *
+   * This constructs from nested initializer lists with string literal labels.
+   *
+   * @note Initializer lists cannot be used to deduce C++ template ctor types.
+   *
+   * @param row_keys Row keys string literals
+   * @param col_keys Col keys string literals
+   * @param data Data value rows
+   */
+  table(
+    std::initializer_list<const char*> row_keys,
+    std::initializer_list<const char*> col_keys,
+    std::initializer_list<std::initializer_list<value_type>> data)
+  {
+    // data cannot be empty
+    // note: empty() was added retroactively so we still need !size()
+    if (!data.size())
+      throw std::runtime_error{"empty data is not allowed"};
+    // number of rows must match
+    if (data.size() != row_keys.size())
+      throw std::runtime_error{"mismatch in number of rows"};
+    // row sizes must be consistent
+    for (const auto& row : data)
+      if (row.size() != col_keys.size())
+        throw std::runtime_error{
+          "ragged data row of size " + std::to_string(row.size()) +
+          " != expected size " + std::to_string(col_keys.size())
+        };
+    // initialize row and column keys + mappings
+    init(row_keys, row_map_, row_keys_);
+    init(col_keys, col_map_, col_keys_);
+    // allocate data buffer
+    data_ = decltype(data_)(row_keys_.size() * col_keys_.size());
+    auto it = data_.begin();
+    // iterate to copy rows
+    for (const auto& row : data)
+      it = std::ranges::copy(row, it).out;
+  }
+
+  // TODO: can add ctors for template ranges + initializer list row/col keys
+
+  /**
+   * Ctor.
+   *
+   * This constructs from appropriate C++ ranges of uniform type.
+   *
+   * @note The extra `std::monostate` parameter is for overload disambiguation.
+   *
+   * @todo Row and column key ranges need not be random-access.
+   *
+   * @tparam R Range type with values convertible to `value_type`
+   * @tparam RK Range type with values convertible to `std::string`
+   * @tparam CK Range type with values convertible to `std::string`
+   *
+   * @param row_keys Row keys
+   * @param col_keys Col keys
+   * @param data Data values in row-major order
+   */
+  template <
+    std::ranges::forward_range RK,
+    std::ranges::forward_range CK,
+    std::ranges::forward_range R >
+  requires (key_range<RK> && key_range<CK> && value_range<R>)
+  table(RK&& row_keys, CK&& col_keys, R&& data, std::monostate = {})
+  {
+    // data must match row and column key sizes
+    auto n_rows = std::ranges::size(row_keys);
+    auto n_cols = std::ranges::size(col_keys);
+    auto n_elem = std::ranges::size(data);
+    if (n_elem != (n_rows * n_cols))
+      throw std::runtime_error{
+        "number of data values " + std::to_string(n_elem) +
+        " != number of rows " + std::to_string(n_rows) +
+        " * number of columns " + std::to_string(n_cols)
+      };
+    // insert keys + mappings row rows and columns
+    init(row_keys, row_map_, row_keys_);
+    init(col_keys, col_map_, col_keys_);
+    // copy values to data buffer
+    data_ = decltype(data_)(n_elem);
+    std::ranges::copy(data, data_.begin());
+  }
+
+  /**
+   * Return a const reference to the row keys.
+   */
+  auto& row_keys() const noexcept { return row_keys_; }
+
+  /**
+   * Return a const reference to the specified row key.
+   *
+   * @param i Row index
+   */
+  auto& row_keys(std::size_t i) const noexcept
+  {
+    return row_keys_[i];
+  }
+
+  /**
+   * Return a const reference to the column keys.
+   */
+  auto& col_keys() const noexcept { return col_keys_; }
+
+  /**
+   * Return a const refrence to the specified column key.
+   *
+   * @param i Column index
+   */
+  auto& col_keys(std::size_t i) const noexcept
+  {
+    return col_keys_[i];
+  }
+
+  /**
+   * Return a reference to the value at the given row and column index.
+   *
+   * @param i Row index
+   * @param j Col index
+   */
+  auto& operator()(std::size_t i, std::size_t j) noexcept
+  {
+    return data_[i * col_keys_.size() + j];
+  }
+
+  /**
+   * Return a const reference to the value at the given row and column index.
+   *
+   * @param i Row index
+   * @param j Col index
+   */
+  auto& operator()(std::size_t i, std::size_t j) const noexcept
+  {
+    return data_[i * col_keys_.size() + j];
+  }
+
+  /**
+   * Return the number of rows and columns as an `std::pair`.
+   */
+  auto shape() const noexcept
+  {
+    return std::pair{row_keys_.size(), col_keys_.size()};
+  }
+
+  /**
+   * Return the number of data elements in the table.
+   */
+  auto size() const noexcept
+  {
+    return data_.size();
+  }
+
+  /**
+   * Return the number of rows in the table.
+   */
+  auto rows() const noexcept
+  {
+    return row_keys_.size();
+  }
+
+  /**
+   * Return the number of columns in the table.
+   */
+  auto cols() const noexcept
+  {
+    return col_keys_.size();
+  }
+
+private:
+  key_map row_map_;               // row keys -> row index
+  key_storage row_keys_;          // row index -> row keys
+  key_map col_map_;               // col keys -> col index
+  key_storage col_keys_;          // col index -> col keys
+  std::vector<value_type> data_;  // data buffer
+
+  /**
+   * Initialize the row or column keys from a forward range.
+   *
+   * This resizes `keys` to the size of `in` before assigning values.
+   *
+   * @tparam RK Range type with values convertible to `std::string`
+   *
+   * @param in Row or column keys
+   * @param map Key -> index map
+   * @param keys Key storage
+   */
+  template <std::ranges::forward_range RK>
+  requires (key_range<RK>)
+  void init(RK&& in, key_map& map, key_storage& keys)
+  {
+    keys = key_storage(std::ranges::size(in));
+    // iterate
+    auto i = 0u;
+    for (const auto& key : in) {
+      keys[i] = std::string{key};
+      map[keys[i]] = i;
+      i++;
+    }
+  }
+};
+
+/**
+ * Stream the `table` to an output stream.
+ *
+ * All values are formatted according to their default `operator<<` formatting
+ * and values are aligned appropriately to produce a textual table format, e.g.
+ *
+ * @code
+ *      c    d
+ * a  1.0  2.0
+ * b  3.0  4.0
+ * @endcode
+ *
+ * No trailing newline is appending so `std::endl` can be used as usual.
+ *
+ * @param out Output stream
+ * @param data Table to write to stream
+ */
+auto& operator<<(std::ostream& out, const table& data)
+{
+  // get the row key column print width
+  std::size_t row_col_width = 0u;
+  for (auto& key : data.row_keys())
+    if (key.size() > row_col_width)
+      row_col_width = key.size();
+  // number of rows and columns
+  auto [n_rows, n_cols] = data.shape();
+  // get the col key column print widths
+  std::vector<std::size_t> col_widths(n_cols);
+  // first compare against column keys
+  for (std::size_t i = 0u; i < n_cols; i++)
+    if (data.col_keys(i).size() > col_widths[i])
+      col_widths[i] = data.col_keys(i).size();
+  // string formatter + string values to stream later
+  table::string_formatter fmt;
+  std::vector strs(n_rows, std::vector<std::string>(n_cols));
+  // iterate for data values in each column
+  for (std::size_t i = 0u; i < n_rows; i++) {
+    for (std::size_t j = 0u; j < n_cols; j++) {
+      // compute string representation
+      strs[i][j] = std::visit(fmt, data(i, j));
+      // update col width as necessary
+      if (strs[i][j].size() > col_widths[j])
+        col_widths[j] = strs[i][j].size();
+    }
+  }
+  // output padding helper
+  auto pad_field = [&out](std::size_t n)
+  {
+    for (std::size_t i = 0u; i < n; i++)
+      out.put(' ');
+  };
+  // write column headers
+  // first: padding for row keys w/ +1 for extra spacing
+  pad_field(row_col_width + 1u);
+  // print each column key
+  for (std::size_t i = 0u; i < n_cols; i++) {
+    // column key
+    auto& key = data.col_keys(i);
+    // compute + write padding + write key
+    // note: extra +1 to separate from previous fields
+    pad_field(1u + col_widths[i] - key.size());
+    out.write(key.data(), key.size());
+  }
+  // iterate for row keys + data values
+  for (std::size_t i = 0u; i < n_rows; i++) {
+    // row key
+    auto& key = data.row_keys(i);
+    // newline + print row key + padding for row keys w/ +1 for extra spacing
+    out.put('\n');
+    out.write(key.data(), key.size());
+    pad_field(1u + row_col_width - key.size());
+    // iterate for row values
+    for (std::size_t j = 0u; j < n_cols; j++) {
+      // string value
+      auto& str = strs[i][j];
+      // compute + write padding + write value
+      // note: extra +1 to separate from previous fields
+      pad_field(1u + col_widths[j] - str.size());
+      out.write(str.data(), str.size());
+    }
+  }
+  // done
+  return out;
+}
+
 }  // namespace
 
 int main()
@@ -346,61 +784,54 @@ int main()
   std::vector ys{2., 4., 6., 5., 7.};
   // fit natural cubic spline
   natural_spline f{xs, ys};
-  // interpolated + extrapolated points
-  // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
-  // 1.10044643, 2.89955357, 5.30133929, 5.52008929, 5.61830357, 8.38169643
-  std::cout <<
-    "f(0.5) = " << f(0.5) << "\n" <<
-    "f(1.5) = " << f(1.5) << "\n" <<
-    "f(2.5) = " << f(2.5) << "\n" <<
-    "f(3.5) = " << f(3.5) << "\n" <<
-    "f(4.5) = " << f(4.5) << "\n" <<
-    "f(5.5) = " << f(5.5) << "\n" << std::flush;
-  // first derivatives
+  // first derivative
   // note: f.d() produces the same result
   auto f1 = f.d<1>();
-  // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
-  // 1.93303571, 1.93303571, 2.33482143, -1.52232143, 2.25446429, 2.25446429
-  std::cout <<
-    "f'(0.5) = " << f1(0.5) << "\n" <<
-    "f'(1.5) = " << f1(1.5) << "\n" <<
-    "f'(2.5) = " << f1(2.5) << "\n" <<
-    "f'(3.5) = " << f1(3.5) << "\n" <<
-    "f'(4.5) = " << f1(4.5) << "\n" <<
-    "f'(5.5) = " << f1(5.5) << "\n" << std::flush;
-  // second derivatives
+  // second derivative
   // note: f.d().d() or f1.d() produces the same result
   auto f2 = f.d<2>();
-  // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
-  // -0.80357143, 0.80357143, -2.41071429, -0.16071429, 3.05357143, -3.05357143
-  std::cout <<
-    "f''(0.5) = " << f2(0.5) << "\n" <<
-    "f''(1.5) = " << f2(1.5) << "\n" <<
-    "f''(2.5) = " << f2(2.5) << "\n" <<
-    "f''(3.5) = " << f2(3.5) << "\n" <<
-    "f''(4.5) = " << f2(4.5) << "\n" <<
-    "f''(5.5) = " << f2(5.5) << "\n" << std::flush;
-  // third derivatives
+  // third derivative
   // note: f.d().d().d() or f1.d().d() or f2.d() produces the same result
   auto f3 = f.d<3>();
-  // note: same values as SciPy's CubicSpline with bc_type="natural", i.e.
-  // 1.60714286, 1.60714286, -8.03571429, 12.53571429, -6.10714286, -6.10714286
-  std::cout <<
-    "f'''(0.5) = " << f3(0.5) << "\n" <<
-    "f'''(1.5) = " << f3(1.5) << "\n" <<
-    "f'''(2.5) = " << f3(2.5) << "\n" <<
-    "f'''(3.5) = " << f3(3.5) << "\n" <<
-    "f'''(4.5) = " << f3(4.5) << "\n" <<
-    "f'''(5.5) = " << f3(5.5) << "\n" << std::flush;
-  // fourth derivatives
+  // fourth derivative
   // note: f.d().d().d().d() or f1.d().d().d() or f2.d().d() or f3.d() work too
   auto f4 = f.d<4>();
-  std::cout <<
-    "f''''(0.5) = " << f4(0.5) << "\n" <<
-    "f''''(1.5) = " << f4(1.5) << "\n" <<
-    "f''''(2.5) = " << f4(2.5) << "\n" <<
-    "f''''(3.5) = " << f4(3.5) << "\n" <<
-    "f''''(4.5) = " << f4(4.5) << "\n" <<
-    "f''''(5.5) = " << f4(5.5) << "\n" << std::flush;
+  // evalute + organize values in table
+  //
+  // note: expected values correspond to those from SciPy's CubicSpline with
+  // bc_type="natural" for natural cubic spline. SciPy values:
+  //
+  // f(x):
+  // 1.10044643, 2.89955357, 5.30133929, 5.52008929, 5.61830357, 8.38169643
+  //
+  // f'(x):
+  // 1.93303571, 1.93303571, 2.33482143, -1.52232143, 2.25446429, 2.25446429
+  //
+  // f''(x):
+  // -0.80357143, 0.80357143, -2.41071429, -0.16071429, 3.05357143, -3.05357143
+  //
+  // f'''(x):
+  // 1.60714286, 1.60714286, -8.03571429, 12.53571429, -6.10714286, -6.10714286
+  //
+  // f''''(x):
+  // 0, 0, 0, 0, 0, 0
+  //
+  table t{
+    // row labels
+    {"x = 0.5", "x = 1.5", "x = 2.5", "x = 3.5", "x = 4.5", "x = 5.5"},
+    // column labels
+    {"f(x)", "f'(x)", "f''(x)", "f'''(x)", "f''''(x)"},
+    // values
+    {
+      {f(0.5), f1(0.5), f2(0.5), f3(0.5), f4(0.5)},
+      {f(1.5), f1(1.5), f2(1.5), f3(1.5), f4(1.5)},
+      {f(2.5), f1(2.5), f2(2.5), f3(2.5), f4(2.5)},
+      {f(3.5), f1(3.5), f2(3.5), f3(3.5), f4(3.5)},
+      {f(4.5), f1(4.5), f2(4.5), f3(4.5), f4(4.5)},
+      {f(5.5), f1(5.5), f2(5.5), f3(5.5), f4(5.5)}
+    }
+  };
+  // write table
+  std::cout << t << std::endl;
   return EXIT_SUCCESS;
 }
