@@ -192,7 +192,7 @@ constexpr auto def_method = ols_method::qr;
 const auto progname = std::filesystem::path{__FILE__}.stem().string();
 const auto program_usage = "Usage: " + progname + " [-h] [OPTIONS...]\n"
   "\n"
-  "Generates sample data and fits and estimator for an OLS regression problem.\n"
+  "Generates sample data and fits an estimator for an OLS regression problem.\n"
   "\n"
   "Given its inputs, this program first generates independent, identity\n"
   "covariance matrix multivariate normal input samples. Outputs are generated\n"
