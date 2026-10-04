@@ -415,7 +415,7 @@ natural_spline(R1&&, R2&&) -> natural_spline<
 
 // simple table type
 // TODO: document
-class table {
+class data_frame {
 public:
   using value_type = std::variant<std::monostate, float, double, std::string>;
   using key_map = std::map<std::string_view, std::size_t>;
@@ -504,7 +504,7 @@ public:
   /**
    * Default ctor.
    */
-  table() = default;
+  data_frame() = default;
 
   /**
    * Ctor.
@@ -517,11 +517,11 @@ public:
    * @param col_keys Col keys string literals
    * @param data Data values in row-major order
    */
-  table(
+  data_frame(
     std::initializer_list<const char*> row_keys,
     std::initializer_list<const char*> col_keys,
     std::initializer_list<value_type> data)
-    : table{row_keys, col_keys, data, std::monostate{}}
+    : data_frame{row_keys, col_keys, data, std::monostate{}}
   {}
 
   /**
@@ -535,7 +535,7 @@ public:
    * @param col_keys Col keys string literals
    * @param data Data value rows
    */
-  table(
+  data_frame(
     std::initializer_list<const char*> row_keys,
     std::initializer_list<const char*> col_keys,
     std::initializer_list<std::initializer_list<value_type>> data)
@@ -589,7 +589,7 @@ public:
     std::ranges::forward_range CK,
     std::ranges::forward_range R >
   requires (key_range<RK> && key_range<CK> && value_range<R>)
-  table(RK&& row_keys, CK&& col_keys, R&& data, std::monostate = {})
+  data_frame(RK&& row_keys, CK&& col_keys, R&& data, std::monostate = {})
   {
     // data must match row and column key sizes
     auto n_rows = std::ranges::size(row_keys);
@@ -727,7 +727,7 @@ private:
 };
 
 /**
- * Stream the `table` to an output stream.
+ * Stream the `data_frame` to an output stream.
  *
  * All values are formatted according to their default `operator<<` formatting
  * and values are aligned appropriately to produce a textual table format, e.g.
@@ -741,9 +741,9 @@ private:
  * No trailing newline is appending so `std::endl` can be used as usual.
  *
  * @param out Output stream
- * @param data Table to write to stream
+ * @param data table to write to stream
  */
-auto& operator<<(std::ostream& out, const table& data)
+auto& operator<<(std::ostream& out, const data_frame& data)
 {
   // get the row key column print width
   std::size_t row_col_width = 0u;
@@ -759,7 +759,7 @@ auto& operator<<(std::ostream& out, const table& data)
     if (data.col_keys(i).size() > col_widths[i])
       col_widths[i] = data.col_keys(i).size();
   // string formatter + string values to stream later
-  table::string_formatter fmt;
+  data_frame::string_formatter fmt;
   std::vector strs(n_rows, std::vector<std::string>(n_cols));
   // iterate for data values in each column
   for (std::size_t i = 0u; i < n_rows; i++) {
@@ -861,7 +861,7 @@ int main(int argc, char** argv)
   // f''''(x):
   // 0, 0, 0, 0, 0, 0
   //
-  table t{
+  data_frame df{
     // row labels
     {"x = 0.5", "x = 1.5", "x = 2.5", "x = 3.5", "x = 4.5", "x = 5.5"},
     // column labels
@@ -877,6 +877,6 @@ int main(int argc, char** argv)
     }
   };
   // write table
-  std::cout << t << std::endl;
+  std::cout << df << std::endl;
   return EXIT_SUCCESS;
 }
