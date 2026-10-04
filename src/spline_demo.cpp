@@ -122,7 +122,7 @@ private:
    * @tparam R Forward range
    */
   template <typename R>
-  static constexpr bool is_valid_range =
+  static constexpr bool valid_range =
     std::convertible_to<std::ranges::range_value_t<R>, T>;
 
   /**
@@ -215,7 +215,7 @@ public:
    * @param y Data points
    */
   template <std::ranges::forward_range R1, std::ranges::forward_range R2>
-  requires (is_valid_range<R1> && is_valid_range<R2>)
+  requires (valid_range<R1> && valid_range<R2>)
   natural_spline(R1&& x, R2&& y)
   {
     // number of knot points (>=2)
