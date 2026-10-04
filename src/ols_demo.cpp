@@ -63,7 +63,7 @@
 #include <Eigen/SVD>
 #endif  // OA_HAS_EIGEN3
 #if OA_HAS_OPENBLAS
-#include <cblas.h>            // cblas_[ds]dot()
+#include <cblas.h>            // cblas_[ds]dot(), openblas_set_num_threads()
 #include <lapacke.h>          // LAPACKE_[ds]gels(), LAPACKE_[ds]gelsd()
 #include <openblas_config.h>
 #endif  // OA_HAS_OPENBLAS
@@ -1064,6 +1064,14 @@ int main(int argc, char** argv)
     std::cout << program_usage << std::endl;
     return EXIT_SUCCESS;
   }
+// if using OpenBLAS on Windows ensure only one thread is used since deadlocks
+// between the Windows loader and OpenBLAS thread pool sporadically occur. on
+// GitHub Actions CI, this issue typically only shows up in the 32-bit Windows
+// Server 2025 no-unity job and could be triggered by the fact that CTest tests
+// are being run in parallel, putting some extra load on the VM
+#if OA_HAS_OPENBLAS && defined(_WIN32)
+  openblas_set_num_threads(1);
+#endif  // OA_HAS_OPENBLAS && defined(_WIN32)
   // delegate to template main
   if (opts.ffmt == float_type::f32)
     return ols_main<float>(opts);
