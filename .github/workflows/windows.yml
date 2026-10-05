@@ -162,13 +162,17 @@ jobs:
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
       # note: don't build full test suite
+      # note: attempting to work around issues on 32-bit GitHub Actions Windows
+      # builds on windows-2025 runner (for some reason, windows-2022 doesn't
+      # seem to have this issue), by building w/o threading, w/ locking
       - name: Install OpenBLAS
         run: |
           cd ${{ runner.temp }}
           git clone https://github.com/OpenMathLib/OpenBLAS.git
           cd OpenBLAS
           git checkout v${{ env.OPENBLAS_VERSION }}
-          cmake -S . -B build -A ${{ matrix.arch }} -DBUILD_TESTING=OFF
+          cmake -S . -B build -A ${{ matrix.arch }} -DBUILD_TESTING=OFF `
+            -DUSE_THREAD=0 -DUSE_LOCKING=1
           cmake --build build --config Release -j
           cmake --install build `
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
