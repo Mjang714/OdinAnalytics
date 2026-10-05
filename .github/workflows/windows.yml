@@ -162,9 +162,9 @@ jobs:
             --prefix ${{ env.ODIN_VENDOR_ROOT }} `
             --config Release
       # note: don't build full test suite
-      # note: attempting to work around issues on 32-bit GitHub Actions Windows
-      # builds on windows-2025 runner (for some reason, windows-2022 doesn't
-      # seem to have this issue), by building w/o threading, w/ locking
+      # note: we attempt to work around issues on 32-bit GitHub Actions Windows
+      # builds on the windows-2025 runner by building without threading, with
+      # locking. interestingly, windows-2022 doesn't have these issues
       - name: Install OpenBLAS
         run: |
           cd ${{ runner.temp }}
