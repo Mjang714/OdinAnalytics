@@ -91,16 +91,6 @@ if(OpenBLAS_FOUND OR Eigen3_FOUND)
         target_link_libraries(ols_demo PRIVATE OA::OpenBLAS)
         list(APPEND ols_backends LAPACKE)
     endif()
-    # indicate if build is 32-bit Windows on GitHub Actions
-    if(
-        DEFINED ENV{GITHUB_ACTIONS} AND
-        ENV{RUNNER_OS} STREQUAL "Windows" AND
-        ENV{RUNNER_ARCH} STREQUAL "X86"
-    )
-        set(github_actions_win32 TRUE)
-    else()
-        set(github_actions_win32 FALSE)
-    endif()
     # -h, --help test
     add_test(NAME ols_demo_h COMMAND ols_demo -h)
     add_test(NAME ols_demo_help COMMAND ols_demo --help)
@@ -108,18 +98,6 @@ if(OpenBLAS_FOUND OR Eigen3_FOUND)
         ols_demo_h ols_demo_help PROPERTIES
         PASS_REGULAR_EXPRESSION "Usage: ols_demo"
     )
-    # on GitHub Actions, for the 32-bit Windows builds, for some reason
-    # seemingly specifically on windows-2025, one or a few of the ols_demo
-    # tests will hang on process unload. this may be tied to known issues with
-    # OpenBLAS and threading on Windows, in particular on library unload when
-    # there is thread contention, so we ensure that ols_demo tests run serial
-    # as a workaround. there doesn't seem to be anything wrong with ols_demo
-    # code itself and this is not reproducible using local 64-bit builds; it
-    # could be that windows-2025 machines have more VM traffic in general, and
-    # so this is why we keep seeing this problem for 32-bit Windows builds.
-    if(github_actions_win32)
-        set_tests_properties(ols_demo_h ols_demo_help PROPERTIES RUN_SERIAL TRUE)
-    endif()
     # grid of tests
     foreach(backend ${ols_backends})
         string(TOLOWER ${backend} lower_backend)
@@ -141,14 +119,6 @@ if(OpenBLAS_FOUND OR Eigen3_FOUND)
                     PASS_REGULAR_EXPRESSION
 "OLS backend: ${backend}[^\r\n]*\r?\nOLS method: ${method}\r?\nusing ${ffmt}"
                 )
-                # again, if running on GitHub Actions Windows for 32-bit build,
-                # ensure the ols_demo tests always run in isolation
-                if(github_actions_win32)
-                    set_tests_properties(
-                        ${ols_test_name} PROPERTIES
-                        RUN_SERIAL TRUE
-                    )
-                endif()
             endforeach()
         endforeach()
     endforeach()
