@@ -49,7 +49,7 @@
  * @param wname Warning name, e.g. maybe-unitialized, without quotes
  */
 #define OA_GNU_WARNING_DISABLE(wname) \
-  _Pragma(OA_STRINGIFY(GCC diagnostic warning OA_STRINGIFY(OA_CONCAT(-W, wname))))
+  _Pragma(OA_STRINGIFY(GCC diagnostic ignored OA_STRINGIFY(OA_CONCAT(-W, wname))))
 
 /**
  * Pop GNU warning state.
