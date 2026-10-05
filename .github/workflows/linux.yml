@@ -22,6 +22,8 @@ on:
       - "solutions/**"
       # README.md doesn't affect CMake build either
       - README.md
+      # windows.yml doesn't affect Linux workflow
+      - .github/workflows/windows.yml
   # run on manual request
   workflow_dispatch:
 
