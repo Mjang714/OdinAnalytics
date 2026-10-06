@@ -706,7 +706,7 @@ public:
   auto& col_keys() const noexcept { return col_keys_; }
 
   /**
-   * Return a const refrence to the specified column key.
+   * Return a const reference to the specified column key.
    *
    * @param i Column index
    */
@@ -719,7 +719,7 @@ public:
    * Return a reference to the value at the given row and column index.
    *
    * @param i Row index
-   * @param j Col index
+   * @param j Column index
    */
   auto& operator()(std::size_t i, std::size_t j) noexcept
   {
@@ -730,12 +730,36 @@ public:
    * Return a const reference to the value at the given row and column index.
    *
    * @param i Row index
-   * @param j Col index
+   * @param j Column index
    */
   auto& operator()(std::size_t i, std::size_t j) const noexcept
   {
     return data_[i * col_keys_.size() + j];
   }
+
+  /**
+   * Return a reference to the value at the row index and column key.
+   *
+   * @param i Row index
+   * @param j Column key
+   */
+  auto& operator()(std::size_t i, std::string_view j)
+  {
+    return data_[i * col_keys_.size() + col_map_.at(j)];
+  }
+
+  /**
+   * Return a const reference to the value at the row index and column key.
+   *
+   * @param i Row index
+   * @param j Column key
+   */
+  auto& operator()(std::size_t i, std::string_view j) const
+  {
+    return data_[i * col_keys_.size() + col_map_.at(j)];
+  }
+
+  // TODO: add operator[] to obtain a view over a column
 
   /**
    * Return the number of rows in the table.
@@ -814,9 +838,16 @@ namespace detail {
 /**
  * Compute the print width for the row key column.
  *
+ * The print width is the maximum of:
+ *
+ * 1. The row key lengths, if the data frame has row keys
+ * 2. The row index name, if the data frame has a name for the row index
+ * 3. The column index name, if the data frame has a name for the column index
+ * 4. The print width needed to fit `data.rows() - 1`
+ *
  * @param data Data frame
  */
-auto row_keys_print_width(const data_frame& data)
+auto row_key_print_width(const data_frame& data)
 {
   std::size_t width = 0u;
   for (auto& key : data.row_keys())
@@ -832,6 +863,152 @@ auto row_keys_print_width(const data_frame& data)
     width = std::to_string(data.rows() - 1u).size();
   // done
   return width;
+}
+
+/**
+ * Write the given number of whitespace characters to the output stream.
+ *
+ * @param out Output stream
+ * @param n Number of spaces to write
+ */
+void pad(std::ostream& out, std::size_t n)
+{
+  for (decltype(n) i = 0u; i < n; i++)
+    out.put(' ');
+}
+
+/**
+ * Compute the string representation for each element as well as column widths.
+ *
+ * This function returns a pair of `std::vector<std::size_t>` with the data
+ * column print widths and the `std::vector<std::vector<std::string>>` of each
+ * data element formatted using `data_frame::string_formatter` to string.
+ *
+ * @param data Data frame
+ */
+auto compute_strings(const data_frame& data)
+{
+  // number of rows + columns
+  auto [n_rows, n_cols] = data.shape();
+  // get the data column print widths
+  std::vector<std::size_t> col_widths(n_cols);
+  // first compare against column keys
+  for (std::size_t i = 0u; i < n_cols; i++)
+    if (auto new_width = data.col_keys(i).size(); new_width > col_widths[i])
+      col_widths[i] = new_width;
+  // string formatter + string values to stream later
+  data_frame::string_formatter fmt;
+  std::vector strs(n_rows, std::vector<std::string>(n_cols));
+  // iterate for data values in each column
+  for (std::size_t i = 0u; i < n_rows; i++) {
+    for (std::size_t j = 0u; j < n_cols; j++) {
+      // compute string representation
+      strs[i][j] = std::visit(fmt, data(i, j));
+      // update col width as necessary
+      if (auto new_width = strs[i][j].size(); new_width > col_widths[j])
+        col_widths[j] = new_width;
+    }
+  }
+  // move-construct to elide copy
+  return std::pair{std::move(col_widths), std::move(strs)};
+}
+
+/**
+ * Write the data frame column labels and name if given to the output stream.
+ *
+ * This function prints the column labels, and the name of the column index if
+ * available, based on the provided row key and data column widths. Each field
+ * is separated by two spaces, and no trailing newline is included.
+ *
+ * @param out Output stream
+ * @param data Data frame
+ * @param row_col_width Print width for the row key column
+ * @param col_widths Print widths for the data columns
+ */
+void write_column_keys(
+  std::ostream& out,
+  const data_frame& data,
+  std::size_t row_col_width,
+  std::span<const std::size_t> col_widths)
+{
+  // if col keys have a name, print
+  if (auto& name = data.col_keys_name(); !name.empty()) {
+    out.write(name.data(), name.size());
+    pad(out, row_col_width - name.size());
+  }
+  // otherwise only pad
+  else
+    pad(out, row_col_width);
+  // print each column key
+  for (std::size_t i = 0u; i < data.cols(); i++) {
+    // column key
+    auto& key = data.col_keys(i);
+    // compute + write padding + write key
+    // note: extra +2 to separate from previous fields
+    pad(out, 2u + col_widths[i] - key.size());
+    out.write(key.data(), key.size());
+  }
+}
+
+/**
+ * Write the data frame row keys/indices and data values to the output stream.
+ *
+ * This function prints the row key or integral index if no row key and string
+ * representations of the data frame data values for each row. Each field is
+ * separated by two spaces, with data fields right-justified, and no trailing
+ * newline is included. If the row index has a name, it is printed on a
+ * separate line by itself for visual distinction.
+ *
+ * @param out Output stream
+ * @param data Data frame
+ * @param row_col_width Print width for the row key column
+ * @param col_widths Print widths for the data columns
+ * @param strs String representations for each data frame value
+ */
+void write_rows(
+  std::ostream& out,
+  const data_frame& data,
+  std::size_t row_col_width,
+  std::span<const std::size_t> col_widths,
+  std::span<const std::vector<std::string>> strs)
+{
+  // if row keys have a name, print
+  if (auto& name = data.row_keys_name(); !name.empty()) {
+    out.put('\n');
+    out.write(name.data(), name.size());
+  }
+  // vector for zero-indexed integral index if no row keys
+  std::vector<std::string> ikeys;
+  // determine row keys
+  const auto& row_keys = [&ikeys, &data]
+  {
+    // row keys available so use them
+    if (!data.row_keys().empty())
+      return data.row_keys();
+    // otherwise resize + populate + use ikeys
+    ikeys = decltype(ikeys)(data.rows());
+    for (std::size_t i = 0u; i < ikeys.size(); i++)
+      ikeys[i] = std::to_string(i);
+    return ikeys;
+  }();
+  // iterate for row keys + data values
+  for (std::size_t i = 0u; i < data.rows(); i++) {
+    // row key
+    auto& key = row_keys[i];
+    // newline + print row key + padding for row keys
+    out.put('\n');
+    out.write(key.data(), key.size());
+    pad(out, row_col_width - key.size());
+    // iterate for row values
+    for (std::size_t j = 0u; j < data.cols(); j++) {
+      // string value
+      auto& str = strs[i][j];
+      // compute + write padding + write value
+      // note: extra +2 to separate from previous fields
+      pad(out, 2u + col_widths[j] - str.size());
+      out.write(str.data(), str.size());
+    }
+  }
 }
 
 }  // namespace detail
@@ -873,89 +1050,13 @@ auto row_keys_print_width(const data_frame& data)
 auto& operator<<(std::ostream& out, const data_frame& data)
 {
   // get the row key column print width
-  auto row_col_width = detail::row_keys_print_width(data);
-  // number of rows and columns
-  auto [n_rows, n_cols] = data.shape();
-  // get the col key column print widths
-  std::vector<std::size_t> col_widths(n_cols);
-  // first compare against column keys
-  for (std::size_t i = 0u; i < n_cols; i++)
-    if (auto new_width = data.col_keys(i).size(); new_width > col_widths[i])
-      col_widths[i] = new_width;
-  // string formatter + string values to stream later
-  data_frame::string_formatter fmt;
-  std::vector strs(n_rows, std::vector<std::string>(n_cols));
-  // iterate for data values in each column
-  for (std::size_t i = 0u; i < n_rows; i++) {
-    for (std::size_t j = 0u; j < n_cols; j++) {
-      // compute string representation
-      strs[i][j] = std::visit(fmt, data(i, j));
-      // update col width as necessary
-      if (auto new_width = strs[i][j].size(); new_width > col_widths[j])
-        col_widths[j] = new_width;
-    }
-  }
-  // output padding helper
-  auto pad_field = [&out](std::size_t n)
-  {
-    for (std::size_t i = 0u; i < n; i++)
-      out.put(' ');
-  };
-  // write column headers
-  // if col keys have a name, print
-  if (auto& name = data.col_keys_name(); !name.empty()) {
-    out.write(name.data(), name.size());
-    pad_field(row_col_width - name.size());
-  }
-  // otherwise only pad
-  else
-    pad_field(row_col_width);
-  // print each column key
-  for (std::size_t i = 0u; i < n_cols; i++) {
-    // column key
-    auto& key = data.col_keys(i);
-    // compute + write padding + write key
-    // note: extra +2 to separate from previous fields
-    pad_field(2u + col_widths[i] - key.size());
-    out.write(key.data(), key.size());
-  }
-  // if row keys have a name, print
-  if (auto& name = data.row_keys_name(); !name.empty()) {
-    out.put('\n');
-    out.write(name.data(), name.size());
-  }
-  // vector for zero-indexed integral index if no row keys
-  std::vector<std::string> ikeys;
-  // determine row keys
-  const auto& row_keys = [&ikeys, &data]
-  {
-    // row keys available so use them
-    if (!data.row_keys().empty())
-      return data.row_keys();
-    // otherwise resize + populate + use ikeys
-    ikeys = decltype(ikeys)(data.rows());
-    for (std::size_t i = 0u; i < ikeys.size(); i++)
-      ikeys[i] = std::to_string(i);
-    return ikeys;
-  }();
-  // iterate for row keys + data values
-  for (std::size_t i = 0u; i < n_rows; i++) {
-    // row key
-    auto& key = row_keys[i];
-    // newline + print row key + padding for row keys
-    out.put('\n');
-    out.write(key.data(), key.size());
-    pad_field(row_col_width - key.size());
-    // iterate for row values
-    for (std::size_t j = 0u; j < n_cols; j++) {
-      // string value
-      auto& str = strs[i][j];
-      // compute + write padding + write value
-      // note: extra +2 to separate from previous fields
-      pad_field(2u + col_widths[j] - str.size());
-      out.write(str.data(), str.size());
-    }
-  }
+  auto row_col_width = detail::row_key_print_width(data);
+  // compute data column widths + the string values for each element
+  auto [col_widths, strs] = detail::compute_strings(data);
+  // write column keys + column index name if any
+  detail::write_column_keys(out, data, row_col_width, col_widths);
+  // write row keys/indices + row index name if any + data values
+  detail::write_rows(out, data, row_col_width, col_widths, strs);
   // done
   return out;
 }
