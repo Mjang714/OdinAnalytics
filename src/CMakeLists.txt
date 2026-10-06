@@ -135,6 +135,15 @@ endif()
 if(Eigen3_FOUND)
     add_executable(spline_demo spline_demo.cpp)
     target_link_libraries(spline_demo PRIVATE oa_core OA::Eigen3)
+    # -h, --help test
+    add_test(NAME spline_demo_h COMMAND spline_demo -h)
+    add_test(NAME spline_demo_help COMMAND spline_demo --help)
+    set_tests_properties(
+        spline_demo_h spline_demo_help PROPERTIES
+        PASS_REGULAR_EXPRESSION "Usage: spline_demo"
+    )
+    # smoke test
+    add_test(NAME spline_demo COMMAND spline_demo)
 else()
     message(STATUS "Skipping spline_demo (requires Eigen3)")
 endif()
