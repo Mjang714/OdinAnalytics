@@ -413,8 +413,13 @@ natural_spline(R1&&, R2&&) -> natural_spline<
     std::ranges::range_value_t<R2>
   > >;
 
-// simple table type
-// TODO: document
+/**
+ * Simple 2D label-indexed tabular data frame.
+ *
+ * This class is a simplified analogue to the Python `pandas.DataFrame` and is
+ * capable of holding values of multiple types in the same column. Rows and
+ * columns can be indexed using labels and/or indices.
+ */
 class data_frame {
 public:
   using value_type = std::variant<std::monostate, float, double, std::string>;
@@ -509,17 +514,20 @@ public:
   /**
    * Ctor.
    *
-   * This constructs from initializer lists with string literal labels.
+   * This constructs from initializer lists with row + column labels.
    *
    * @note Initializer lists cannot be used to deduce C++ template ctor types.
    *
-   * @param row_keys Row keys string literals
-   * @param col_keys Col keys string literals
+   * @param row_keys Row keys
+   * @param col_keys Column keys
    * @param data Data values in row-major order
    */
+  template <
+    std::convertible_to<std::string> RK,
+    std::convertible_to<std::string> CK >
   data_frame(
-    std::initializer_list<const char*> row_keys,
-    std::initializer_list<const char*> col_keys,
+    std::initializer_list<RK> row_keys,
+    std::initializer_list<CK> col_keys,
     std::initializer_list<value_type> data)
     : data_frame{row_keys, col_keys, data, std::monostate{}}
   {}
@@ -527,17 +535,75 @@ public:
   /**
    * Ctor.
    *
-   * This constructs from nested initializer lists with string literal labels.
+   * This constructs from nested initializer lists with named column labels.
    *
-   * @note Initializer lists cannot be used to deduce C++ template ctor types.
+   * @note Non-template ctor to enable conversion from braced-list-init.
    *
-   * @param row_keys Row keys string literals
-   * @param col_keys Col keys string literals
+   * @param col_name_keys Column name and column keys
    * @param data Data value rows
    */
   data_frame(
-    std::initializer_list<const char*> row_keys,
-    std::initializer_list<const char*> col_keys,
+    std::pair<std::string, std::initializer_list<std::string>> col_name_keys,
+    std::initializer_list<std::initializer_list<value_type>> data)
+    : data_frame{col_name_keys.second, data}
+  {
+    col_keys_name_ = col_name_keys.first;
+  }
+
+  /**
+   * Ctor.
+   *
+   * This constructs from nested initializer lists with column labels only.
+   *
+   * @tparam K Key type convertible to `std::string`
+   *
+   * @param col_keys Columns keys
+   * @param data Data value rows
+   */
+  template <std::convertible_to<std::string> K>
+  data_frame(
+    std::initializer_list<K> col_keys,
+    std::initializer_list<std::initializer_list<value_type>> data)
+  {
+    // data cannot be empty
+    // note: empty() was added retroactively so we still need !size()
+    if (!data.size())
+      throw std::runtime_error{"empty data is not allowed"};
+    // row sizes must be consistent
+    for (const auto& row : data)
+      if (row.size() != col_keys.size())
+        throw std::runtime_error{
+          "ragged data row of size " + std::to_string(row.size()) +
+          " != expected size " + std::to_string(col_keys.size())
+        };
+    // initialize column keys + mappings
+    init(col_keys, col_map_, col_keys_);
+    // allocate data buffer
+    data_ = decltype(data_)(data.size() * col_keys_.size());
+    auto it = data_.begin();
+    // iterate to copy rows
+    for (const auto& row : data)
+      it = std::ranges::copy(row, it).out;
+  }
+
+  /**
+   * Ctor.
+   *
+   * This constructs from nested initializer lists with row + column labels.
+   *
+   * @tparam RK Key type convertible to `std::string`
+   * @tparam CK Key type convertible to `std::string`
+   *
+   * @param row_keys Row keys
+   * @param col_keys Column keys
+   * @param data Data value rows
+   */
+  template <
+    std::convertible_to<std::string> RK,
+    std::convertible_to<std::string> CK >
+  data_frame(
+    std::initializer_list<RK> row_keys,
+    std::initializer_list<CK> col_keys,
     std::initializer_list<std::initializer_list<value_type>> data)
   {
     // data cannot be empty
@@ -581,7 +647,7 @@ public:
    * @tparam CK Range type with values convertible to `std::string`
    *
    * @param row_keys Row keys
-   * @param col_keys Col keys
+   * @param col_keys Column keys
    * @param data Data values in row-major order
    */
   template <
@@ -610,12 +676,17 @@ public:
   }
 
   /**
+   * Return a const reference to the row index name.
+   */
+  auto& row_keys_name() const noexcept { return row_keys_name_; }
+
+  /**
    * Return a const reference to the row keys.
    */
   auto& row_keys() const noexcept { return row_keys_; }
 
   /**
-   * Return a const reference to the specified row key.
+   * Return a const reference to the specified row key (if it exists).
    *
    * @param i Row index
    */
@@ -623,6 +694,11 @@ public:
   {
     return row_keys_[i];
   }
+
+  /**
+   * Return a const reference to the column index name.
+   */
+  auto& col_keys_name() const noexcept { return col_keys_name_; }
 
   /**
    * Return a const reference to the column keys.
@@ -662,27 +738,16 @@ public:
   }
 
   /**
-   * Return the number of rows and columns as an `std::pair`.
-   */
-  auto shape() const noexcept
-  {
-    return std::pair{row_keys_.size(), col_keys_.size()};
-  }
-
-  /**
-   * Return the number of data elements in the table.
-   */
-  auto size() const noexcept
-  {
-    return data_.size();
-  }
-
-  /**
    * Return the number of rows in the table.
    */
   auto rows() const noexcept
   {
-    return row_keys_.size();
+    // no row keys
+    if (row_keys_.empty())
+      return data_.size() / col_keys_.size();
+    // use size of keys
+    else
+      return row_keys_.size();
   }
 
   /**
@@ -693,9 +758,27 @@ public:
     return col_keys_.size();
   }
 
+  /**
+   * Return the number of rows and columns as an `std::pair`.
+   */
+  auto shape() const noexcept
+  {
+    return std::pair{rows(), cols()};
+  }
+
+  /**
+   * Return the number of data elements in the table.
+   */
+  auto size() const noexcept
+  {
+    return data_.size();
+  }
+
 private:
-  key_map row_map_;               // row keys -> row index
-  key_storage row_keys_;          // row index -> row keys
+  std::string row_keys_name_;     // optional name for row keys
+  key_map row_map_;               // row keys -> row index (optional)
+  key_storage row_keys_;          // row index -> row keys (optional)
+  std::string col_keys_name_;     // optional name for col keys
   key_map col_map_;               // col keys -> col index
   key_storage col_keys_;          // col index -> col keys
   std::vector<value_type> data_;  // data buffer
@@ -726,6 +809,33 @@ private:
   }
 };
 
+namespace detail {
+
+/**
+ * Compute the print width for the row key column.
+ *
+ * @param data Data frame
+ */
+auto row_keys_print_width(const data_frame& data)
+{
+  std::size_t width = 0u;
+  for (auto& key : data.row_keys())
+    if (auto new_width = key.size(); new_width > width)
+      width = new_width;
+  // compare against row keys + column keys names too
+  if (auto new_width = data.row_keys_name().size(); new_width > width)
+    width = new_width;
+  if (auto new_width = data.col_keys_name().size(); new_width > width)
+    width = new_width;
+  // if no row keys or name for the index we use an zero-indexed row index
+  if (!width)
+    width = std::to_string(data.rows() - 1u).size();
+  // done
+  return width;
+}
+
+}  // namespace detail
+
 /**
  * Stream the `data_frame` to an output stream.
  *
@@ -738,26 +848,40 @@ private:
  * b  3.0  4.0
  * @endcode
  *
+ * If there are no named row labels then the output would look like:
+ *
+ * @code
+ *      c    d
+ * 0  1.0  2.0
+ * 1  3.0  4.0
+ * @endcode
+ *
+ * With a row or column index name the output would look like:
+ *
+ * @code
+ * col_index  c    d
+ * row_index
+ * a          1.0  2.0
+ * b          3.0  4.0
+ * @endcode
+ *
  * No trailing newline is appending so `std::endl` can be used as usual.
  *
  * @param out Output stream
- * @param data table to write to stream
+ * @param data Data frame to write
  */
 auto& operator<<(std::ostream& out, const data_frame& data)
 {
   // get the row key column print width
-  std::size_t row_col_width = 0u;
-  for (auto& key : data.row_keys())
-    if (key.size() > row_col_width)
-      row_col_width = key.size();
+  auto row_col_width = detail::row_keys_print_width(data);
   // number of rows and columns
   auto [n_rows, n_cols] = data.shape();
   // get the col key column print widths
   std::vector<std::size_t> col_widths(n_cols);
   // first compare against column keys
   for (std::size_t i = 0u; i < n_cols; i++)
-    if (data.col_keys(i).size() > col_widths[i])
-      col_widths[i] = data.col_keys(i).size();
+    if (auto new_width = data.col_keys(i).size(); new_width > col_widths[i])
+      col_widths[i] = new_width;
   // string formatter + string values to stream later
   data_frame::string_formatter fmt;
   std::vector strs(n_rows, std::vector<std::string>(n_cols));
@@ -767,8 +891,8 @@ auto& operator<<(std::ostream& out, const data_frame& data)
       // compute string representation
       strs[i][j] = std::visit(fmt, data(i, j));
       // update col width as necessary
-      if (strs[i][j].size() > col_widths[j])
-        col_widths[j] = strs[i][j].size();
+      if (auto new_width = strs[i][j].size(); new_width > col_widths[j])
+        col_widths[j] = new_width;
     }
   }
   // output padding helper
@@ -778,32 +902,57 @@ auto& operator<<(std::ostream& out, const data_frame& data)
       out.put(' ');
   };
   // write column headers
-  // first: padding for row keys w/ +1 for extra spacing
-  pad_field(row_col_width + 1u);
+  // if col keys have a name, print
+  if (auto& name = data.col_keys_name(); !name.empty()) {
+    out.write(name.data(), name.size());
+    pad_field(row_col_width - name.size());
+  }
+  // otherwise only pad
+  else
+    pad_field(row_col_width);
   // print each column key
   for (std::size_t i = 0u; i < n_cols; i++) {
     // column key
     auto& key = data.col_keys(i);
     // compute + write padding + write key
-    // note: extra +1 to separate from previous fields
-    pad_field(1u + col_widths[i] - key.size());
+    // note: extra +2 to separate from previous fields
+    pad_field(2u + col_widths[i] - key.size());
     out.write(key.data(), key.size());
   }
+  // if row keys have a name, print
+  if (auto& name = data.row_keys_name(); !name.empty()) {
+    out.put('\n');
+    out.write(name.data(), name.size());
+  }
+  // vector for zero-indexed integral index if no row keys
+  std::vector<std::string> ikeys;
+  // determine row keys
+  const auto& row_keys = [&ikeys, &data]
+  {
+    // row keys available so use them
+    if (!data.row_keys().empty())
+      return data.row_keys();
+    // otherwise resize + populate + use ikeys
+    ikeys = decltype(ikeys)(data.rows());
+    for (std::size_t i = 0u; i < ikeys.size(); i++)
+      ikeys[i] = std::to_string(i);
+    return ikeys;
+  }();
   // iterate for row keys + data values
   for (std::size_t i = 0u; i < n_rows; i++) {
     // row key
-    auto& key = data.row_keys(i);
-    // newline + print row key + padding for row keys w/ +1 for extra spacing
+    auto& key = row_keys[i];
+    // newline + print row key + padding for row keys
     out.put('\n');
     out.write(key.data(), key.size());
-    pad_field(1u + row_col_width - key.size());
+    pad_field(row_col_width - key.size());
     // iterate for row values
     for (std::size_t j = 0u; j < n_cols; j++) {
       // string value
       auto& str = strs[i][j];
       // compute + write padding + write value
-      // note: extra +1 to separate from previous fields
-      pad_field(1u + col_widths[j] - str.size());
+      // note: extra +2 to separate from previous fields
+      pad_field(2u + col_widths[j] - str.size());
       out.write(str.data(), str.size());
     }
   }
@@ -862,18 +1011,16 @@ int main(int argc, char** argv)
   // 0, 0, 0, 0, 0, 0
   //
   data_frame df{
-    // row labels
-    {"x = 0.5", "x = 1.5", "x = 2.5", "x = 3.5", "x = 4.5", "x = 5.5"},
     // column labels
-    {"f(x)", "f'(x)", "f''(x)", "f'''(x)", "f''''(x)"},
+    {"x", "f(x)", "f'(x)", "f''(x)", "f'''(x)", "f''''(x)"},
     // values
     {
-      {f(0.5), f1(0.5), f2(0.5), f3(0.5), f4(0.5)},
-      {f(1.5), f1(1.5), f2(1.5), f3(1.5), f4(1.5)},
-      {f(2.5), f1(2.5), f2(2.5), f3(2.5), f4(2.5)},
-      {f(3.5), f1(3.5), f2(3.5), f3(3.5), f4(3.5)},
-      {f(4.5), f1(4.5), f2(4.5), f3(4.5), f4(4.5)},
-      {f(5.5), f1(5.5), f2(5.5), f3(5.5), f4(5.5)}
+      {0.5, f(0.5), f1(0.5), f2(0.5), f3(0.5), f4(0.5)},
+      {1.5, f(1.5), f1(1.5), f2(1.5), f3(1.5), f4(1.5)},
+      {2.5, f(2.5), f1(2.5), f2(2.5), f3(2.5), f4(2.5)},
+      {3.5, f(3.5), f1(3.5), f2(3.5), f3(3.5), f4(3.5)},
+      {4.5, f(4.5), f1(4.5), f2(4.5), f3(4.5), f4(4.5)},
+      {5.5, f(5.5), f1(5.5), f2(5.5), f3(5.5), f4(5.5)}
     }
   };
   // write table
