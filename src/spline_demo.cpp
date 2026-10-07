@@ -425,6 +425,7 @@ public:
   using value_type = std::variant<std::monostate, float, double, std::string>;
   using key_map = std::map<std::string_view, std::size_t>;
   using key_storage = std::vector<std::string>;
+  using key_init_list = std::initializer_list<std::string>;
 
   /**
    * Stream formatting visitor for the table value type.
@@ -518,6 +519,9 @@ public:
    *
    * @note Initializer lists cannot be used to deduce C++ template ctor types.
    *
+   * @tparam RK Key type convertible to `std::string`
+   * @tparam CK Key type convertible to `std::string`
+   *
    * @param row_keys Row keys
    * @param col_keys Column keys
    * @param data Data values in row-major order
@@ -535,6 +539,27 @@ public:
   /**
    * Ctor.
    *
+   * This constructs from nested initializer lists with named row labels.
+   *
+   * @tparam K Key type convertible to `std::string`
+   *
+   * @param row_name_keys Row name and row keys
+   * @param col_keys Column keys
+   * @param data Data value rows
+   */
+  template <std::convertible_to<std::string> K>
+  data_frame(
+    std::pair<std::string, key_init_list> row_name_keys,
+    std::initializer_list<K> col_keys,
+    std::initializer_list<std::initializer_list<value_type>> data)
+    : data_frame{row_name_keys.second, col_keys, data}
+  {
+    row_keys_name_ = row_name_keys.first;
+  }
+
+  /**
+   * Ctor.
+   *
    * This constructs from nested initializer lists with named column labels.
    *
    * @note Non-template ctor to enable conversion from braced-list-init.
@@ -543,7 +568,7 @@ public:
    * @param data Data value rows
    */
   data_frame(
-    std::pair<std::string, std::initializer_list<std::string>> col_name_keys,
+    std::pair<std::string, key_init_list> col_name_keys,
     std::initializer_list<std::initializer_list<value_type>> data)
     : data_frame{col_name_keys.second, data}
   {
