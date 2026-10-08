@@ -184,10 +184,10 @@ namespace oa::derived_time {
 			DateDirection date_dir_{DateDirection::kBackward};    // date direction
 			CashflowType cashflow_type_{CashflowType::kFixed};    // cashflow type
 			ResetDirection reset_dir_{ResetDirection::kAdvance};  // reset direction
-			StubType front_stub_type_{StubType::kNone};               // front_stub type
-			time::Date front_stub_date_;                              // front_stub date
-			StubType back_stub_type_{StubType::kNone};                // back_stub type
-			time::Date back_stub_date_;                               // back_stub date
+			StubType front_stub_type_{StubType::kNone};           // front_stub type
+			time::Date front_stub_date_;                          // front_stub date
+			StubType back_stub_type_{StubType::kNone};            // back_stub type
+			time::Date back_stub_date_;                           // back_stub date
 			BusinessDateFormula start_adj_;                       // start date adjustment
 			BusinessDateFormula end_adj_;                         // end date adjustment
 			BusinessDateFormula pay_adj_;                         // payment date adjustment
