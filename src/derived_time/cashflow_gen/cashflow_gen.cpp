@@ -79,7 +79,6 @@ CashflowGen::Options::reset_direction(ResetDirection dir) noexcept
 StubType
 CashflowGen::Options::front_stub_type() const noexcept
 {
-
 	return front_stub_type_;
 }
 
@@ -93,7 +92,6 @@ CashflowGen::Options::front_stub_type(StubType type) noexcept
 StubType
 CashflowGen::Options::back_stub_type() const noexcept
 {
-
 	return back_stub_type_;
 }
 
