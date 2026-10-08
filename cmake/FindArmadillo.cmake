@@ -11,6 +11,27 @@ cmake_minimum_required(VERSION 3.22)
 # functionality can be configured by the consuming project; this find module
 # is concerned only with locating headers and if specified the wrapper.
 #
+# When Armadillo_FOUND is TRUE the following variables are defined:
+#
+#   Armadillo_INCLUDE_DIRS      Armadillo include directory
+#   Armadilo_VERSION            Armadillo major.minor.patch version string
+#
+# If the libarmadillo wrapper library is located, the following is defined:
+#
+#   Armadillo_LIBRARY           Armadillo wrapper library path
+#
+# The following INTERFACE imported target will also be defined:
+#
+#   Armadillo::Armadillo        Armadillo IMPORTED target encapsulating all
+#                               usage requirements for the located Armadillo
+#
+# The find module supports specific location of the libarmadillo component, and
+# if requested and found, will result in Armadillo being used through the
+# libarmadillo wrapper library, i.e. with ARMA_USE_WRAPPER defined as part of
+# the usage requirements. Otherwise, Armadillo is configured for use in header-
+# only mode, i.e. with ARMA_DONT_USE_WRAPPER defined as part of the usage
+# requirements to override any armadillo_bits/config.hpp setting.
+#
 
 include(FindPackageHandleStandardArgs)
 
