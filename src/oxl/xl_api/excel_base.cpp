@@ -98,7 +98,19 @@ namespace oxl::xl_api
 		return oa::derived_time::BusinessDateFormula(num_of_days, calendar);
 	}
 
+	/*
+	* This function checks if the given dictionary contains all the required keys for cashflow generation.
+	* The required keys are: "Start_Date", "Mat_Date", "Notional", "Rate", "Day_Count_Frac", "Frequency", "Date_Dir", and at least one of "Front_Stub_Type" or "Back_Stub_Type".
+	* @param dictionary: The XlDictionary to be validated.
+	*/
 	bool ValidCashflowGenDictionary(const XlDictionary& dictionary) {
-		return dictionary.Contains("Start_Date") && dictionary.Contains("Mat_Date") && dictionary.Contains("Notional") && dictionary.Contains("Rate") && dictionary.Contains("Day_Count_Frac") && dictionary.Contains("Frequency") && dictionary.Contains("Date_Dir") && dictionary.Contains("Stub_Type");
+		return  dictionary.Contains("Start_Date") &&
+				dictionary.Contains("Mat_Date") &&
+				dictionary.Contains("Notional") &&
+				dictionary.Contains("Rate") &&
+				dictionary.Contains("Day_Count_Frac") &&
+				dictionary.Contains("Frequency") &&
+				dictionary.Contains("Date_Dir") &&
+				(dictionary.Contains("Front_Stub_Type") || dictionary.Contains("Back_Stub_Type"));
 	}
 }

@@ -259,7 +259,7 @@ namespace
 			day_cnt_rule,
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kBackward)
-				.stub_type(oa::derived_time::StubType::kShortFirst)
+				.front_stub_type(oa::derived_time::StubType::kShortFirst)
 				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_short_first));
@@ -277,7 +277,7 @@ namespace
 			day_cnt_rule,
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kBackward)
-				.stub_type(oa::derived_time::StubType::kLongFirst)
+				.front_stub_type(oa::derived_time::StubType::kLongFirst)
 				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_long_first));
@@ -296,7 +296,7 @@ namespace
 			day_cnt_rule,
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kForward)
-				.stub_type(oa::derived_time::StubType::kShortLast)
+				.back_stub_type(oa::derived_time::StubType::kShortLast)
 				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_short_last));
@@ -315,7 +315,7 @@ namespace
 			day_cnt_rule,
 			oa::derived_time::CashflowGen::Options{}
 				.date_direction(oa::derived_time::DateDirection::kForward)
-				.stub_type(oa::derived_time::StubType::kLongLast)
+				.back_stub_type(oa::derived_time::StubType::kLongLast)
 				.calc_type(oa::derived_time::CalcType::kFlat)
 		);
 		EXPECT_THAT(cashflows, ::testing::Pointwise(::testing::Eq(), fixed_cf_base_long_last));
@@ -399,7 +399,7 @@ namespace
 				day_cnt_rule,
 				oa::derived_time::CashflowGen::Options{}
 					.date_direction(oa::derived_time::DateDirection::kForward)
-					.stub_type(oa::derived_time::StubType::kShortFirst)
+					.front_stub_type(oa::derived_time::StubType::kShortFirst)
 					.pay_adjustment({biz_pay_days, pay_calendar})
 					.fix_adjustment({biz_fix_days, fix_calendar})
 					.calc_type(oa::derived_time::CalcType::kFlat)
