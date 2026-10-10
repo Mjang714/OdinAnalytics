@@ -248,6 +248,9 @@ public:
 	 */
 	Date value_or(Date other) const noexcept;
 
+// ensure SWIG ignores three-way comparison operator
+// note: although SWIG 4.1 can recognize the operator no wrapping is done
+#ifndef SWIG
 	/**
 	 * Defaulted three-way comparison operator.
 	 *
@@ -257,6 +260,7 @@ public:
 	 * @note Only non-member declarations can take the target object by value.
 	 */
 	constexpr auto operator<=>(const Date&) const noexcept = default;
+#endif  // SWIG
 
 	/**
 	 * Add a given `Tenor` to the date.
