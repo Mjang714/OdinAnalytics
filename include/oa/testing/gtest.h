@@ -498,7 +498,7 @@ auto eq(const T& x, const U& y)
  *
  * This is useful for specializing `::testing::Test<T>` where `T` is a type
  * that holds an integral value. The reason we don't use the standard library
- * `std::integral_constantstd::size_t, I>` or `std::index_sequence<I>` is due
+ * `std::integral_constant<std::size_t, I>` or `std::index_sequence<I>` is due
  * to both of these options having longer, more verbose type names.
  *
  * @tparam I Index value
@@ -544,7 +544,7 @@ struct test_types {};
  * test template is instantiated with an `oa::testing::index<Is>`, where each
  * `Is` is in index into an array of inputs.
  *
- * @tparam Is Indices 0 through the size of the input range
+ * @tparam Is Indices 0 through the size of the input range - 1
  */
 template <std::size_t... Is>
 struct test_types<std::index_sequence<Is...>> {
@@ -566,6 +566,57 @@ using test_types_t = typename test_types<T>::type;
  */
 template <std::size_t N>
 using index_types = test_types_t<std::make_index_sequence<N>>;
+
+/**
+ * Traits type to merge multiple `::testing::Types<...>` types into one.
+ *
+ * This is helpful separate `index_types<N>` or `test_types_t<T>` need to be
+ * combined into the same `::testing::Types<...>` instance for GoogleTest.
+ *
+ * @tparam Ts `::testing::Types<...>`
+ */
+template <typename... Ts>
+struct merge_test_types {};
+
+/**
+ * SFINAE helper to get the merged `::testing::Types<...>`.
+ *
+ * @tparam Ts `::testing::Types<...>`
+ */
+template <typename... Ts>
+using merge_test_types_t = typename merge_test_types<Ts...>::type;
+
+/**
+ * Specialization for an empty parameter list.
+ *
+ * An empty `::testing::Types<>` is valid but not very useful.
+ */
+template <>
+struct merge_test_types<> {
+  using type = ::testing::Types<>;
+};
+
+/**
+ * Partial specialization for a single `::testing::Types<...>`.
+ *
+ * @tparam Ts types
+ */
+template <typename... Ts>
+struct merge_test_types<::testing::Types<Ts...>> {
+  using type = ::testing::Types<Ts...>;
+};
+
+/**
+ * Partial specialization for multiple `::testing::Types<...>`.
+ *
+ * @tparam Ts First types
+ * @tparam Us Second types
+ * @tparam Vs Subsequent `::testing::Types<...>`
+ */
+template <typename... Ts, typename... Us, typename... Vs>
+struct merge_test_types<::testing::Types<Ts...>, ::testing::Types<Us...>, Vs...> {
+  using type = merge_test_types_t<::testing::Types<Ts..., Us...>, Vs...>;
+};
 
 }  // namespace testing
 }  // namespace oa
