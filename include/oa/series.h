@@ -14,9 +14,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <optional>
 #include <ostream>
 #include <ranges>
 #include <span>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -1315,6 +1317,281 @@ private:
   std::string name_;
   storage_type data_;
 };
+
+/**
+ * Return a string representation for the `value_proxy`.
+ *
+ * This uses the `operator<<` overload for consistent formatting.
+ *
+ * @tparam T `series` or `const series`
+ *
+ * @param vp `series` value proxy
+ */
+template <typename T>
+requires (std::is_same_v<std::remove_const_t<T>, series>)
+auto to_string(const series::value_proxy<T>& vp)
+{
+  std::stringstream ss;
+  ss << vp;
+  // note: since C++20 using the rvalue ref-qualified overload enables move
+  return std::move(ss).str();
+}
+
+// TODO: formatting options should move to st_format.h
+
+// TODO: document
+class st_format {
+public:
+  /**
+   * Default ctor.
+   */
+  st_format() noexcept = default;
+
+  /**
+   * Return the thread-local `st_format` instance.
+   */
+  static auto& instance() noexcept
+  {
+    thread_local st_format fmt;
+    return fmt;
+  }
+
+  /**
+   * Set the max number of rows to print.
+   */
+  static auto& max_rows(std::optional<std::size_t> v) noexcept
+  {
+    instance().max_rows_ = std::move(v);
+    return instance();
+  }
+
+  /**
+   * Get the max number of rows to print.
+   *
+   * If unset then there is no limit to the number of printed rows.
+   */
+  static auto& max_rows() noexcept
+  {
+    return instance().max_rows_;
+  }
+
+  /**
+   * Set the max number of columns to print.
+   */
+  static auto& max_cols(std::optional<std::size_t> v) noexcept
+  {
+    instance().max_cols_ = std::move(v);
+    return instance();
+  }
+
+  /**
+   * Get the max number of columns to print.
+   *
+   * If unset, a truncated view of the columns is printed.
+   *
+   * @todo Consider if we should detect the terminal width for this.
+   */
+  static auto& max_cols() noexcept
+  {
+    return instance().max_cols_;
+  }
+
+  /**
+   * Indicate if truncation is needed given the number of rows to print.
+   *
+   * Returns `true` if `n` exceeds the greater of 10 or `max_rows()`.
+   *
+   * @param n Number of rows to print
+   */
+  static bool truncate_rows(std::size_t n) noexcept
+  {
+    // no limit, so no truncation
+    if (!max_rows())
+      return false;
+    // otherwise, return result of comparison
+    return n > (std::max)(std::size_t{10u}, *max_rows());
+  }
+
+private:
+  std::optional<std::size_t> max_rows_{50u};
+  std::optional<std::size_t> max_cols_;
+};
+
+/**
+ * RAII `st_format` context class.
+ *
+ * This class can have its members set to modify the thread-local `st_format`
+ * settings, restoring the original formatting settings on destruction.
+ */
+class st_format_context {
+public:
+  /**
+   * Default ctor.
+   *
+   * The formatting settings are populated using `st_format::instance()`.
+   */
+  st_format_context() noexcept : fmt_{st_format::instance()} {}
+
+  /**
+   * Dtor.
+   *
+   * Reset the formatting settings to the previously captured settings.
+   */
+  ~st_format_context()
+  {
+    st_format::instance() = fmt_;
+  }
+
+  /**
+   * Set the max number of rows to print.
+   */
+  auto& max_rows(std::optional<std::size_t> v) noexcept
+  {
+    st_format::max_rows(std::move(v));
+    return *this;
+  }
+
+  /**
+   * Get the max number of rows to print.
+   */
+  auto& max_rows() const noexcept
+  {
+    return st_format::max_rows();
+  }
+
+  /**
+   * Set the max number of columns to print.
+   */
+  auto& max_cols(std::optional<std::size_t> v) noexcept
+  {
+    st_format::max_cols(std::move(v));
+    return *this;
+  }
+
+  /**
+   * Get the max number of columns to print.
+   */
+  auto& max_cols() const noexcept
+  {
+    return st_format::max_cols();
+  }
+
+private:
+  st_format fmt_;
+};
+
+/**
+ * Write the `series` to the output stream.
+ *
+ * The `series` is formatted similar to a `pandas.Series` with a `RangeIndex`.
+ * For example, `oa::series{1, 2, 3}` would be printed as:
+ *
+ * @code
+ * 0    1
+ * 1    2
+ * 2    3
+ * dtype: int32
+ * @endcode
+ *
+ * The named series `oa::series{"test", {2., 4., 6.}}` would be printed as:
+ *
+ * @code
+ * 0    2
+ * 1    4
+ * 2    6
+ * Name: test, dtype: float64
+ * @endcode
+ *
+ * Under default formatting settings a truncated view is printed. For example,
+ * given a `float` range `r` with 10000 elements, `oa::series{"big_test", r}`
+ * would have only the first 5 and last 5 lines printed, i.e. as:
+ *
+ * @code
+ * 0          0
+ * 1          1
+ * 2          2
+ * 3          3
+ *         ...
+ * 9995    9995
+ * 9996    9996
+ * 9997    9997
+ * 9998    9998
+ * 9999    9999
+ * Name: big_test, Length: 10000, dtype: float32
+ * @endcode
+ *
+ * @param out Output stream
+ * @param ser Series to write
+ */
+inline auto& operator<<(std::ostream& out, const series& ser)
+{
+  // indicate if truncated representation is printed
+  bool truncate = st_format::truncate_rows(ser.size());
+  // print width of index column + string representations
+  // note: truncated size has 5 begin, 5 end rows, with ... separating
+  std::size_t index_width = 0u;
+  std::vector<std::string> index_strs(truncate ? 11u : ser.size());
+  // print width of index values + string representations
+  // note: if truncating, "... " is printed as a value, which has width 4
+  std::size_t col_width = (truncate) ? 4u : 0u;
+  std::vector<std::string> col_strs(truncate ? 11u : ser.size());
+  // first ending and second starting offsets for index/values
+  std::size_t i1 = truncate ? 5u : ser.size();
+  std::size_t i2 = truncate ? ser.size() - 5u : ser.size();
+  // determine widths + compute string representations
+  // first loop
+  for (std::size_t i = 0u; i < i1; i++) {
+    // compute string representations
+    index_strs[i] = std::to_string(i);
+    // note: cannot implicitly convert due to std::string::operator=. this also
+    // would give us a slightly different result for arithmetic values
+    col_strs[i] = to_string(ser[i]);
+    // update index + col widths
+    index_width = (std::max)(index_width, index_strs[i].size());
+    col_width = (std::max)(col_width, col_strs[i].size());
+  }
+  // second loop (truncation only)
+  // note: write from i1 + 1 since i1 is used for the blank space
+  for (std::size_t i = i2; i < ser.size(); i++) {
+    // offset into index_strs, col_strs
+    auto j = i - i2 + i1 + 1;
+    // compute string representations
+    index_strs[j] = std::to_string(i);
+    col_strs[j] = to_string(ser[i]);
+    // update indes + col widths
+    index_width = (std::max)(index_width, index_strs[j].size());
+    col_width = (std::max)(col_width, col_strs[j].size());
+  }
+  // if truncating, fill in index i1 with the appropriate filler value
+  if (truncate) {
+    index_strs[i1] = "";
+    col_strs[i1] = "... ";
+  }
+  // helper for whitespace padding
+  auto pad = [&out](std::size_t n)
+  {
+    for (std::size_t i = 0u; i < n; i++)
+      out.put(' ');
+  };
+  // write values to stream with padding
+  // note: use the lengths of index_strs and col_strs
+  for (std::size_t i = 0u; i < index_strs.size(); i++) {
+    // index + padding + separating 4 spaces
+    out << index_strs[i];
+    pad(4u + index_width - index_strs[i].size());
+    // padding + value + newline
+    pad(col_width - col_strs[i].size());
+    out << col_strs[i] << '\n';
+  }
+  // if series has name, print name
+  if (!ser.name().empty())
+    out << "Name: " << ser.name() << ", ";
+  // if truncated, length also needs to be printed
+  if (truncate)
+    out << "Length: " << ser.size() << ", ";
+  // print data type + finish
+  return out << "dtype: " << ser.type();
+}
 
 }  // namespace oa
 
