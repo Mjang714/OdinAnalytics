@@ -10,11 +10,13 @@
 #include <concepts>
 #include <cstdint>
 #include <span>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -32,6 +34,8 @@ namespace {
  */
 template <typename T = void>
 class SeriesTest : public ::testing::Test {};
+
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Template type for `closest_series_type` tests.
@@ -59,6 +63,8 @@ protected:
     EXPECT_TRUE((std::is_same_v<U, oa::closest_series_type_t<T>>));
   }
 };
+
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Template type for `series` initializer list tests.
@@ -204,6 +210,8 @@ struct series_init_test_types<void> : series_init_test_types<
  */
 using series_init_test_types_t = typename series_init_test_types<void>::type;
 
+////////////////////////////////////////////////////////////////////////////////
+
 /**
  * Template type for `series` iterator traits tests.
  *
@@ -288,12 +296,16 @@ struct series_iter_traits_test_types<void> : series_iter_traits_test_types<
   std::make_index_sequence<std::size(series_iter_traits_test_inputs)> > {};
 
 /**
- * Types alias for `::testing::Types<series_iter_traits_test_types<Is>...>`.
+ * Types alias for `::testing::Types<series_iter_traits_test<Is>...>`.
  */
 using series_iter_traits_test_types_t =
   typename series_iter_traits_test_types<void>::type;
 
+////////////////////////////////////////////////////////////////////////////////
+
 // TODO: add iteration tests here
+
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Template type for `series` value proxy tests.
@@ -450,10 +462,204 @@ struct series_value_proxy_test_types<void> : series_value_proxy_test_types<
     > > {};
 
 /**
- * Types alias for `::testing::Types<series_value_proxy_test_types<Is>...>`.
+ * Types alias for `::testing::Types<series_value_proxy_test<Is>...>`.
  */
 using series_value_proxy_test_types_t =
   typename series_value_proxy_test_types<void>::type;
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Template type for `series` `operator<<` tests.
+ *
+ * This is used only to disambiguate test case indexing.
+ *
+ * @tparam I Input index
+ */
+template <std::size_t I>
+struct series_stream_test {};
+
+/**
+ * `series` `operator<<` input type.
+ *
+ * Just like the `series_init_test_input` this enables flexible initialization
+ * of the `series` via function pointer which is convertible from a lambda.
+ */
+class series_stream_test_input {
+public:
+  /**
+   * Ctor.
+   *
+   * @param f `series` creation function
+   * @param s Expected `operator<<` output
+   */
+  constexpr series_stream_test_input(
+    oa::series (*f)(),
+    std::string_view expected) noexcept
+    : f_{f}, expected_{expected}
+  {}
+
+  /**
+   * Create the input `series`.
+   */
+  auto operator()() const
+  {
+    return f_();
+  }
+
+  /**
+   * Return the expected `operator<<` output.
+   */
+  auto expected() const noexcept { return expected_; }
+
+private:
+  oa::series (*f_)();
+  std::string_view expected_;
+};
+
+// series_stream_test inputs
+constexpr series_stream_test_input series_stream_test_inputs[] = {
+  {
+    [] { return oa::series{2, 4, 6, 8, 10}; },
+    "0     2\n"
+    "1     4\n"
+    "2     6\n"
+    "3     8\n"
+    "4    10\n"
+    "dtype: int32"
+  },
+  {
+    [] { return oa::series{1., 33., 555., 7777., 99999.}; },
+    "0        1\n"
+    "1       33\n"
+    "2      555\n"
+    "3     7777\n"
+    "4    99999\n"
+    "dtype: float64"
+  },
+  {
+    [] { return oa::series{1.f, 23.4f, 3.14159f, 2.781f}; },
+    "0          1\n"
+    "1       23.4\n"
+    "2    3.14159\n"
+    "3      2.781\n"
+    "dtype: float32"
+  },
+  {
+    [] { return oa::series{"f1", {3., 4., 5., 6., 7.}}; },
+    "0    3\n"
+    "1    4\n"
+    "2    5\n"
+    "3    6\n"
+    "4    7\n"
+    "Name: f1, dtype: float64"
+  },
+  {
+    [] { return oa::series{"the", "quick", "brown", "fox", "jumped"}; },
+    "0       the\n"
+    "1     quick\n"
+    "2     brown\n"
+    "3       fox\n"
+    "4    jumped\n"
+    "dtype: string"
+  },
+  {
+    [] { return oa::series{1, 4., 4.35, 123ll}; },
+    "0       1\n"
+    "1       4\n"
+    "2    4.35\n"
+    "3     123\n"
+    "dtype: object"
+  },
+  {
+    [] { return oa::series{"lls", {1ll, 22ll, 333ll, 44ll, 5ll}}; },
+    "0      1\n"
+    "1     22\n"
+    "2    333\n"
+    "3     44\n"
+    "4      5\n"
+    "Name: lls, dtype: int64"
+  },
+  // truncation + convertible storage test
+  {
+    []
+    {
+      // fill vector exceeding max print rows
+      std::vector<float> vs(100u);
+      for (auto i = 0u; i < vs.size(); i++)
+        vs[i] = 2.141f * (i + 1);
+      // move into storage
+      return oa::series{"movef", std::move(vs)};
+    },
+    "0       2.141\n"
+    "1       4.282\n"
+    "2       6.423\n"
+    "3       8.564\n"
+    "4      10.705\n"
+    "         ... \n"
+    "95    205.536\n"
+    "96    207.677\n"
+    "97    209.818\n"
+    "98    211.959\n"
+    "99      214.1\n"
+    "Name: movef, Length: 100, dtype: float32"
+  }
+};
+
+/**
+ * Partial specialization for `series` `operator<<` tests.
+ *
+ * @tparam I Input index
+ */
+template <std::size_t I>
+class SeriesTest<series_stream_test<I>> : public SeriesTest<> {
+protected:
+  static_assert(I < std::size(series_stream_test_inputs));
+
+  /**
+   * Stream the `series` to a `std::stringstream` and check the output.
+   */
+  void operator()() const
+  {
+    constexpr auto& input = series_stream_test_inputs[I];
+    std::stringstream ss;
+    ss << input();
+    // note: view() new in C++20
+    EXPECT_EQ(input.expected(), ss.view());
+  }
+};
+
+/**
+ * Traits type to create the `series_stream_test` test types.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct series_stream_test_types {};
+
+/**
+ * Partial specialization for a `std::index_sequence<Is...>`.
+ *
+ * @tparam Is Indices 0 through `std::size(series_stream_test_inputs)` - 1
+ */
+template <std::size_t... Is>
+struct series_stream_test_types<std::index_sequence<Is...>> {
+  using type = ::testing::Types<series_stream_test<Is>...>;
+};
+
+/**
+ * `void` specialization using the size of `series_stream_test_inputs`.
+ */
+template <>
+struct series_stream_test_types<void> : series_stream_test_types<
+  std::make_index_sequence<std::size(series_stream_test_inputs)> > {};
+
+/**
+ * Types alias for `::testing::Types<series_stream_test<Is>...>`.
+ */
+using series_stream_test_types_t = typename series_stream_test_types<void>::type;
+
+////////////////////////////////////////////////////////////////////////////////
 
 // input types
 TYPED_TEST_SUITE(
@@ -488,7 +694,8 @@ TYPED_TEST_SUITE(
       >,
       series_init_test_types_t,
       series_iter_traits_test_types_t,
-      series_value_proxy_test_types_t
+      series_value_proxy_test_types_t,
+      series_stream_test_types_t
     >
   )
 );
