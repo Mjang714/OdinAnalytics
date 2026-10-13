@@ -10,8 +10,10 @@
 #include <FRAMEWRK.H>  // include after XLCALL.H
 
 #include <string>
+#include "helpers/utils.h"
 #include "time/date.h"
 #include "xloper_converter.h"
+#include "xl_dictionary.h"
 #include "oa/ctti.h"
 
 // FIXME: register/unregister functions take fixed-size arrays and don't allow
@@ -119,6 +121,7 @@ namespace oxl::xl_api
 		}
 		
 	}
+
 	/// @brief This function takes in and excel date and converts it to julian integer date representation
 	/// @param date 
 	/// @return 
@@ -141,14 +144,26 @@ namespace oxl::xl_api
 		return julian_date;
 	}
 
-	
-
 	/// @brief converts an excel date double/string representation to a odin date object
 	/// @param excel_date double representation of the date that excel can understand
 	/// @return odin date object
 	inline oa::time::Date ToDateObj(const XlVariant& date_var)
 	{
 		return std::visit(util::XlVarToDateVisitor{}, date_var);
+	}
+
+	inline oa::time::Date HandleMatDate(const XlDictionary& dict)
+	{
+		if(auto val = std::get_if<std::string>(&dict["Mat_Date"]))
+		{
+			if(oa::utils::CheckTenorStr(*val))
+			{
+				auto start_date = ToDateObj(dict["Start_Date"]);
+				return start_date.AddTenor(*val);
+			}
+		}
+		return ToDateObj(dict["Mat_Date"]);
+
 	}
 }
 #endif // !XL_UTILS_H_

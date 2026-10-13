@@ -128,7 +128,7 @@ namespace oxl {
 		{
 			CFGen::Options opt{};
 			auto start_date = xl_api::ToDateObj(dictionary["Start_Date"]);
-			auto mat_date = xl_api::ToDateObj(dictionary["Mat_Date"]);
+			auto mat_date = xl_api::HandleMatDate(dictionary);
 			auto notional = std::get<double>(dictionary["Notional"]);
 			auto rate = std::get<double>(dictionary["Rate"]);
 			auto day_cnt_frac = oa::time::MapInputToDayCountEnum(std::get<std::string>(dictionary["Day_Count_Frac"]));
