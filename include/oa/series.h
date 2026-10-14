@@ -1337,7 +1337,7 @@ auto to_string(const series::value_proxy<T>& vp)
   return std::move(ss).str();
 }
 
-// TODO: formatting options should move to st_format.h
+// TODO: formatting options + padding helpers should move to st_format.h
 
 // TODO: document
 class st_format {
@@ -1481,6 +1481,40 @@ private:
 };
 
 /**
+ * Class representing an amount of whitespace padding.
+ */
+class padding {
+public:
+  /**
+   * Ctor.
+   *
+   * @param n Number of padding characters
+   */
+  constexpr padding(std::size_t n) noexcept : n_{n} {}
+
+  /**
+   * Return the padding width.
+   */
+  constexpr auto size() const noexcept { return n_; }
+
+private:
+  std::size_t n_;
+};
+
+/**
+ * Write the specified amount of whitespace padding to the output stream.
+ *
+ * @param out Output stream
+ * @param pad Padding specification
+ */
+inline auto& operator<<(std::ostream& out, const padding& pad)
+{
+  for (std::size_t i = 0u; i < pad.size(); i++)
+    out.put(' ');
+  return out;
+}
+
+/**
  * Write the `series` to the output stream.
  *
  * The `series` is formatted similar to a `pandas.Series` with a `RangeIndex`.
@@ -1566,21 +1600,13 @@ inline auto& operator<<(std::ostream& out, const series& ser)
   // note: index_strs[i1] is already default-constructed
   if (truncate)
     col_strs[i1] = "... ";
-  // helper for whitespace padding
-  auto pad = [&out](std::size_t n)
-  {
-    for (std::size_t i = 0u; i < n; i++)
-      out.put(' ');
-  };
   // write values to stream with padding
   // note: use the lengths of index_strs and col_strs
   for (std::size_t i = 0u; i < index_strs.size(); i++) {
     // index + padding + separating 4 spaces
-    out << index_strs[i];
-    pad(4u + index_width - index_strs[i].size());
+    out << index_strs[i] << padding{4u + index_width - index_strs[i].size()};
     // padding + value + newline
-    pad(col_width - col_strs[i].size());
-    out << col_strs[i] << '\n';
+    out << padding{col_width - col_strs[i].size()} << col_strs[i] << '\n';
   }
   // if series has name, print name
   if (!ser.name().empty())
