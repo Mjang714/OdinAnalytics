@@ -1563,10 +1563,9 @@ inline auto& operator<<(std::ostream& out, const series& ser)
     col_width = (std::max)(col_width, col_strs[j].size());
   }
   // if truncating, fill in index i1 with the appropriate filler value
-  if (truncate) {
-    index_strs[i1] = "";
+  // note: index_strs[i1] is already default-constructed
+  if (truncate)
     col_strs[i1] = "... ";
-  }
   // helper for whitespace padding
   auto pad = [&out](std::size_t n)
   {
