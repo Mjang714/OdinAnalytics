@@ -1603,10 +1603,11 @@ inline auto& operator<<(std::ostream& out, const series& ser)
   // write values to stream with padding
   // note: use the lengths of index_strs and col_strs
   for (std::size_t i = 0u; i < index_strs.size(); i++) {
-    // index + padding + separating 4 spaces
-    out << index_strs[i] << padding{4u + index_width - index_strs[i].size()};
-    // padding + value + newline
-    out << padding{col_width - col_strs[i].size()} << col_strs[i] << '\n';
+    out <<
+      // index + padding + separating 4 spaces
+      index_strs[i] << padding{4u + index_width - index_strs[i].size()} <<
+      // padding + value + newline
+      padding{col_width - col_strs[i].size()} << col_strs[i] << '\n';
   }
   // if series has name, print name
   if (!ser.name().empty())
