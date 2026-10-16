@@ -501,8 +501,7 @@ private:
    */
   template <typename R>
   static constexpr bool is_value_convertible_range =
-    std::convertible_to<std::ranges::range_value_t<R>, series_object> ||
-    std::is_same_v<std::ranges::range_value_t<R>, long>;
+    std::convertible_to<std::ranges::range_value_t<R>, series_object>;
 
   /**
    * Visitor type for copying values to new, compatible storage.
