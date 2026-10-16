@@ -26,6 +26,8 @@
 #include <variant>
 #include <vector>
 
+#include "oa/warnings.h"
+
 namespace oa {
 
 /**
@@ -534,7 +536,10 @@ private:
       // if convertible
       if constexpr (std::convertible_to<std::ranges::range_value_t<U>, T>) {
         storage_type out(std::ranges::size(data));
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4244)
         std::ranges::copy(data, std::ranges::begin(out));
+OA_MSVC_WARNING_POP()
         // note: direct-init since C++17 so not a copy
         return out;
       }
@@ -1024,7 +1029,10 @@ private:
       >;
       // required value type is same as current
       if constexpr (std::is_same_v<V, RV>)
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4244)
         value<V>() = std::forward<T>(v);
+OA_MSVC_WARNING_POP()
       // required value type requires promotion/conversion
       else {
         // re-allocate + modify storage
