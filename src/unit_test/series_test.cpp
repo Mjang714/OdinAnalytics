@@ -762,6 +762,119 @@ using series_modify_test_types_t = typename series_modify_test_types<void>::type
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Template type for `series` modification through the data view.
+ *
+ * This is used only to disambiguate test case indexing.
+ *
+ * @tparam I Input index
+ */
+template <std::size_t I>
+struct series_view_modify_test {};
+
+// series_view_modify_test inputs. each input is (index, value, type, initfunc)
+// tuple where the series returned by initfunc is assigned value at the index
+// and the assigned value is later checked through its value_proxy, accessing
+// the data buffer using the series_type value given by type
+constexpr auto series_view_modify_test_inputs = std::make_tuple(
+  std::tuple{
+    0u, 8, oa::series_type::float64,
+    [] { return oa::series{1., 2., 3., 4.}; }
+  },
+  std::tuple{
+    2u, 12.f, oa::series_type::float64,
+    [] { return oa::series{2., 4., 6., 8.}; }
+  },
+  std::tuple{
+    1u, 133, oa::series_type::int64,
+    [] { return oa::series{1ll, 2ll, 3ll, 4ll}; }
+  },
+  std::tuple{
+    2u, 222, oa::series_type::float64,
+    [] { return oa::series{22., 44., 66., 88., 100.}; }
+  },
+  std::tuple{
+    1u, 888, oa::series_type::float32,
+    [] { return oa::series{1.f, 3.f, 5.f, 7.f, 9.f}; }
+  },
+  std::tuple{
+    2u, "hello", oa::series_type::string,
+    [] { return oa::series{"the", "quick", "brown", "fox", "jumped"}; }
+  },
+  std::tuple{
+    1u, "burger", oa::series_type::object,
+    [] { return oa::series{1, 14., "hello", "world", 222ll}; }
+  }
+);
+
+/**
+ * Partial specialization for `series` modification through the data view.
+ *
+ * @tparam I Input index
+ */
+template <std::size_t I>
+class SeriesTest<series_view_modify_test<I>> : public SeriesTest<> {
+protected:
+  static_assert(I < std::tuple_size_v<decltype(series_view_modify_test_inputs)>);
+
+  /**
+   * Check that the modified `series` has the expected modified value.
+   */
+  void operator()() const
+  {
+    // input reference + unpacked values
+    // note: strutured bindings are not constexpr until C++26
+    constexpr auto& input = std::get<I>(series_view_modify_test_inputs);
+    constexpr auto i = std::get<0>(input);
+    constexpr auto v = std::get<1>(input);
+    constexpr auto type = std::get<2>(input);
+    constexpr auto f = std::get<3>(input);
+    // create series + modify value through view
+    // note: although s is not a type template the SeriesTest instantiation
+    // itself is type-dependent so s indirectly is also type dependent. in the
+    // typical use case the "template" keyword is not necessary for at<T>()
+    auto s = f();
+    s.template at<oa::series_value_type_t<type>>(i) = v;
+    // check if modified value is correct via value proxy
+    EXPECT_EQ(v, s[i]);
+  }
+};
+
+/**
+ * Traits type to create the `series_view_modify_test` test types.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct series_view_modify_test_types {};
+
+/**
+ * Partial specialization for a `std::index_sequence<Is...>`.
+ *
+ * @tparam Is Indices 0 through `std::size(series_view_modify_test_inputs)` - 1
+ */
+template <std::size_t... Is>
+struct series_view_modify_test_types<std::index_sequence<Is...>> {
+  using type = ::testing::Types<series_view_modify_test<Is>...>;
+};
+
+/**
+ * `void` specialization using the size of `series_view_modify_test_inputs`.
+ */
+template <>
+struct series_view_modify_test_types<void> : series_view_modify_test_types<
+  std::make_index_sequence<
+    std::tuple_size_v<decltype(series_view_modify_test_inputs)>
+  > > {};
+
+/**
+ * Types alias for `::testing::Types<series_view_modify_test<Is>...>`.
+ */
+using series_view_modify_test_types_t =
+  typename series_view_modify_test_types<void>::type;
+
+////////////////////////////////////////////////////////////////////////////////
+
 // input types
 TYPED_TEST_SUITE(
   SeriesTest,
@@ -797,7 +910,8 @@ TYPED_TEST_SUITE(
       series_iter_traits_test_types_t,
       series_value_proxy_test_types_t,
       series_stream_test_types_t,
-      series_modify_test_types_t
+      series_modify_test_types_t,
+      series_view_modify_test_types_t
     >
   )
 );
