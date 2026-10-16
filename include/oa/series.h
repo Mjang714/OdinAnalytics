@@ -156,6 +156,11 @@ inline auto& operator<<(std::ostream& out, series_type type)
  * `std::string` convertible types are converted to `std::string`. Finally,
  * conversion to `series_object` is considered, accepting `std::monostate`.
  *
+ * @note On LLP64 platforms like Windows `closest_series_type_t<long>` will be
+ *  `std::int32_t`, which is unfortunately considered a narrowing conversion.
+ *  `long` also cannot be correctly converted to `series_object` despite it
+ *  being possible to convert `long` to `long long`. May be a VS 2022 bug.
+ *
  * @tparam T Value type
  */
 template <typename T>
@@ -917,35 +922,113 @@ public:
 
     // TODO: add operator std::string_view()
 
+private:
+    /**
+     * Helper traits to check if the common type of `T` and `U` is `T`.
+     *
+     * @tparam T Target type
+     * @tparam U Candidate type
+     */
+    template <typename T, typename U, typename = void>
+    struct is_common_with_first : std::false_type {};
+
+    /**
+     * Partial specialization when `std::common_type_t<T, U>` is `T`.
+     *
+     * @tparam T Target type
+     * @tparam U Candidate type
+     */
+    template <typename T, typename U>
+    struct is_common_with_first<
+      T, U, std::enable_if_t<std::is_same_v<T, std::common_type_t<T, U>>> >
+      : std::true_type {};
+
+    /**
+     * Indicate if the common type of `T` and `U` is `T`.
+     *
+     * @tparam T Target type
+     * @tparam U Candidate type
+     */
+    template <typename T, typename U>
+    static constexpr bool is_common_with_first_v =
+      is_common_with_first<T, U>::value;
+
+    /**
+     * Value assignment and re-allocation helper.
+     *
+     * If the incoming type matches or can be promoted to the current series
+     * value type, forwarding assignment, made explicit for `std::string`, is
+     * performed. Otherwise, storage is re-allocated, existing elements are
+     * promoted to the closest series type to `T`, and then assignment is done.
+     *
+     * @tparam type `series_type` value
+     * @tparam T type
+     *
+     * @param v Value to assign
+     */
+    template <series_type type, typename T>
+    auto assign(T&& v)
+    {
+      // current series value type
+      using V = series_value_type_t<type>;
+      // get "closest" series type for T
+      using U = closest_series_type_t<std::decay_t<T>>;
+      // if type matches or can be promoted (U -> V)
+      if constexpr (is_common_with_first_v<V, U>)
+        value<V>() = std::forward<T>(v);
+      // handle case where we need to widen V -> U
+      else {
+        // re-allocate + modify storage
+        std::vector<U> new_data(s_->size());
+        std::ranges::copy(s_->data_, new_data.begin());
+        new_data[i_] = U{std:forward<T>(v)};
+        s_->data_ = std::move(new_data);
+      }
+      // done
+      return *this;
+    }
+
+public:
     /**
      * Assign a new value through the value proxy.
      *
-     * This member is conditionally enabled when the owning series can be
-     * modified and when the parent `series` is non-const.
+     * This member is enabled when the owning `series` is non-const. If the new
+     * value is the same or can be converted to the current value type, the
+     * corresponding element is assigned. Otherwise, if current value type is
+     * convertible to the closest series type for decayed `T`, storage is
+     * re-allocated, values are copied, and the new value is assigned.
      *
      * @note Member is rvalue reference qualified to disable value modification
      *  through a direct-initialized instance of the `value_proxy`.
      *
      * @tparam T type
+     *
+     * @param v Value to assign
      */
     template <typename T>
     requires (!std::is_const_v<S>)
-    auto& operator=(T&& new_val) &&
+    auto& operator=(T&& v) &&
     {
-      // get "closest" series type for T
-      using U = closest_series_type_t<std::decay_t<T>>;
-      // if type matches we can set directly
-      // note: enable explicit conversions by calling list-init
-      if (type() == to_series_type<U>()) {
-        value<U>() = U{std::forward<T>(new_val)};
-        return *this;
+      // if type matches or can be promoted
+      switch (type()) {
+      case series_type::int32:
+        return assign<series_type::int32>(std::forward<T>(v));
+      case series_type::int64:
+        return assign<series_type::int64>(std::forward<T>(v));
+      case series_type::float32:
+        return assign<series_type::float32>(std::forward<T>(v));
+      case series_type::float64:
+        return assign<series_type::float64>(std::forward<T>(v));
+      case series_type::string:
+        return assign<series_type::string>(std::forward<T>(v));
+      case series_type::object:
+        return assign<series_type::object>(std::forward<T>(v));
+      default:
+        throw std::runtime_error{
+          "cannot assign value to index " + std::to_string(i_) +
+          " for series of type " + to_string(type())
+        };
       }
-      // otherwise re-allocate + modify new series storage
-      // note: enable explicit conversions by calling list-init
-      std::vector<U> new_data(s_->size());
-      new_data[i_] = U{std::forward<T>(new_val)};
-      s_->data_ = std::move(new_data);
-      return *this;
     }
 
     /**
