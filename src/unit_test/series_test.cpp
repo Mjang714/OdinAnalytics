@@ -661,6 +661,107 @@ using series_stream_test_types_t = typename series_stream_test_types<void>::type
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Template type for `series` modification + reallocation tests.
+ *
+ * This is used only to disambiguate test case indexing.
+ *
+ * @tparam I Input index
+ */
+template <std::size_t I>
+struct series_modify_test {};
+
+// series_modify_test inputs. each input is a (index, value, type, initfunc)
+// tuple, where the series returned by initfunc is assigned value at the index
+// and the assigned value + the resulting series type are checked
+constexpr auto series_modify_test_inputs = std::make_tuple(
+  std::tuple{
+    2u, 14., oa::series_type::float64,
+    [] { return oa::series{1, 2, 3, 4, 5}; }
+  },
+  std::tuple{
+    3u, "hello world", oa::series_type::object,
+    [] { return oa::series{1., 3., 5., 7., 9.}; }
+  },
+  std::tuple{
+    2u, 123, oa::series_type::int64,
+    [] { return oa::series{2ll, 4ll, 6ll, 8ll}; }
+  },
+  std::tuple{
+    1u, 111ll, oa::series_type::float64,
+    [] { return oa::series{3., 1., 4., 1., 5., 9.}; }
+  },
+  std::tuple{
+    2u, 222ll, oa::series_type::float32,
+    [] { return oa::series{1.f, 22.f, 333.f, 4444.f}; }
+  },
+  // TODO: may be surprising to end users
+  std::tuple{
+    4u, 2.71, oa::series_type::float64,
+    [] { return oa::series{1.f, 2.f, 3.f, 4.f, 5.f}; }
+  }
+);
+
+/**
+ * Partial specialization for `series` modification + reallocation tests.
+ *
+ * @tparam I Input index
+ */
+template <std::size_t I>
+class SeriesTest<series_modify_test<I>> : public SeriesTest<> {
+protected:
+  static_assert(I < std::tuple_size_v<decltype(series_modify_test_inputs)>);
+
+  /**
+   * Check that the modified `series` has the expected type and modified value.
+   */
+  void operator()() const
+  {
+    // unpack input
+    auto [i, v, type, f] = std::get<I>(series_modify_test_inputs);
+    // create series + modify value
+    auto s = f();
+    s[i] = v;
+    // check if series type + modified value is correct
+    EXPECT_EQ(type, s.type());
+    EXPECT_EQ(v, s[i]);
+  }
+};
+
+/**
+ * Traits type to create the `series_modify_test` test types.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct series_modify_test_types {};
+
+/**
+ * Partial specialization for a `std::index_sequence<Is...>`.
+ *
+ * @tparam Is Indices 0 through `std::size(series_modify_test_inputs)` - 1
+ */
+template <std::size_t... Is>
+struct series_modify_test_types<std::index_sequence<Is...>> {
+  using type = ::testing::Types<series_modify_test<Is>...>;
+};
+
+/**
+ * `void` specialization using the size of `series_modify_test_inputs`.
+ */
+template <>
+struct series_modify_test_types<void> : series_modify_test_types<
+  std::make_index_sequence<
+    std::tuple_size_v<decltype(series_modify_test_inputs)>
+  > > {};
+
+/**
+ * Types alias for `::testing::Types<series_modify_test<Is>...>`.
+ */
+using series_modify_test_types_t = typename series_modify_test_types<void>::type;
+
+////////////////////////////////////////////////////////////////////////////////
+
 // input types
 TYPED_TEST_SUITE(
   SeriesTest,
@@ -695,7 +796,8 @@ TYPED_TEST_SUITE(
       series_init_test_types_t,
       series_iter_traits_test_types_t,
       series_value_proxy_test_types_t,
-      series_stream_test_types_t
+      series_stream_test_types_t,
+      series_modify_test_types_t
     >
   )
 );

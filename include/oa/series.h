@@ -504,6 +504,48 @@ private:
     std::convertible_to<std::ranges::range_value_t<R>, series_object> ||
     std::is_same_v<std::ranges::range_value_t<R>, long>;
 
+  /**
+   * Visitor type for copying values to new, compatible storage.
+   *
+   * This is an essential operation for re-allocating the `series` storage when
+   * type widening is required, e.g. setting a `std::string` on `float` data.
+   * Although this obviously a large performance hit, we still allow this
+   * operation to provide increased usage flexibility.
+   *
+   * @tparam T Target value type
+   */
+  template <typename T>
+  class realloc_visitor {
+  public:
+    using storage_type = std::vector<T>;
+
+    /**
+     * Return new, compatible storage from the `series` storage.
+     *
+     * Values are copied and converted as necessary. An exception is thrown if
+     * there is no possible conversion to the target value type.
+     *
+     * @tparam U Column storage type
+     *
+     * @param data Column storage
+     */
+    template <typename U>
+    storage_type operator()(const U& data) const
+    {
+      // if convertible
+      if constexpr (std::convertible_to<std::ranges::range_value_t<U>, T>) {
+        storage_type out(std::ranges::size(data));
+        std::ranges::copy(data, std::ranges::begin(out));
+        // note: direct-init since C++17 so not a copy
+        return out;
+      }
+      // not convertible
+      // note: necessary since operator() must compile for all alternatives
+      else
+        throw std::runtime_error{"cannot reallocate storage to desired type"};
+    }
+  };
+
 public:
   /**
    * Ctor.
@@ -967,21 +1009,28 @@ private:
      * @param v Value to assign
      */
     template <series_type type, typename T>
-    auto assign(T&& v)
+    auto& assign(T&& v)
     {
       // current series value type
       using V = series_value_type_t<type>;
       // get "closest" series type for T
       using U = closest_series_type_t<std::decay_t<T>>;
-      // if type matches or can be promoted (U -> V)
-      if constexpr (is_common_with_first_v<V, U>)
+      // required series value type to accommodate U
+      using RV = std::conditional_t<
+        // if U can be promoted to V, use V
+        is_common_with_first_v<V, U>,
+        V,
+        // if V can be promoted to U, use U, otherwise series_object
+        std::conditional_t<is_common_with_first_v<U, V>, U, series_object>
+      >;
+      // required value type is same as current
+      if constexpr (std::is_same_v<V, RV>)
         value<V>() = std::forward<T>(v);
-      // handle case where we need to widen V -> U
+      // required value type requires promotion/conversion
       else {
         // re-allocate + modify storage
-        std::vector<U> new_data(s_->size());
-        std::ranges::copy(s_->data_, new_data.begin());
-        new_data[i_] = U{std:forward<T>(v)};
+        auto new_data = std::visit(realloc_visitor<RV>{}, s_->data_);
+        new_data[i_] = RV{std::forward<T>(v)};
         s_->data_ = std::move(new_data);
       }
       // done
