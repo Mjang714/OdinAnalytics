@@ -22,10 +22,12 @@
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
 #include <utility>
 #include <variant>
 #include <vector>
 
+#include "oa/rtti.h"
 #include "oa/warnings.h"
 
 namespace oa {
@@ -351,7 +353,11 @@ private:
       if constexpr (is_aliasable<U>)
         return &data[i_];
       else
-        throw std::runtime_error{"cannot address buffer with specified type"};
+        throw std::runtime_error{
+          "cannot address " +
+          std::string{type_name(typeid(std::ranges::range_value_t<U>))} +
+          " buffer as " + std::string{type_name(typeid(T))}
+        };
     }
 
   private:
@@ -384,13 +390,16 @@ private:
         return static_cast<T>(v);
       // note: can't do anything with std::monostate if T is not series_object
       else if constexpr (std::is_same_v<U, std::monostate>)
-        throw std::runtime_error{"cannot convert std::monostate to target type"};
+        throw std::runtime_error{
+          "cannot convert std::monostate to target type " +
+          std::string{type_name(typeid(T))}
+        };
       // can't do anything with non-convertible types
       // note: can use to_series_type<U>() to support remaining types
       else
         throw std::runtime_error{
-          "cannot convert " + std::string{to_string(to_series_type<U>())} +
-          " to target type"
+          "cannot convert " + std::string{type_name(typeid(U))} +
+          " to target type " + std::string{type_name(typeid(T))}
         };
     }
   };
@@ -546,7 +555,11 @@ OA_MSVC_WARNING_POP()
       // not convertible
       // note: necessary since operator() must compile for all alternatives
       else
-        throw std::runtime_error{"cannot reallocate storage to desired type"};
+        throw std::runtime_error{
+          "cannot reallocate " +
+          std::string{type_name(typeid(std::ranges::range_value_t<U>))} +
+          " storage as " + std::string{type_name(typeid(T))} + " storage"
+        };
     }
   };
 
@@ -764,6 +777,44 @@ public:
   }
 
   /**
+   * Return a reference to the specified element in te series data.
+   *
+   * The specified C++ value type must match that of the storage. If not, an
+   * exception is thrown to indicate the type mismatch.
+   *
+   * @note It is more performant to call `view<T>()` and then manipulate the
+   *  returned `std::span<T>` instead of repeatedly calling `at<T>()`.
+   *
+   * @tparam T Value type
+   *
+   * @param i Element index
+   */
+  template <typename T>
+  auto& at(std::size_t i)
+  {
+    return view<T>()[i];
+  }
+
+  /**
+   * Return a const reference to the specified element in the series data.
+   *
+   * The specified C++ value type must match that of the storage. If not, an
+   * exception is thrown to indicate the type mismatch.
+   *
+   * @note It is more performant to call `view<T>()` and then manipulate the
+   *  returned `std::span<const T>` instead of repeatedly calling `at<T>()`.
+   *
+   * @tparam T Value type
+   *
+   * @param i Element index
+   */
+  template <typename T>
+  auto& at(std::size_t i) const
+  {
+    return view<T>()[i];
+  }
+
+  /**
    * Value proxy template type.
    *
    * Since the backing storage of the series is of variable type itself we need
@@ -859,12 +910,10 @@ public:
      * loss when converting from signed/unsigned, etc.
      *
      * @tparam T Arithmetic type
-     *
-     * @param name Name of type to show in exception
      */
     template <typename T>
     requires (std::is_arithmetic_v<T>)
-    auto as(const char* name = "T") const
+    auto as() const
     {
       switch (type()) {
       case series_type::int32:
@@ -879,7 +928,8 @@ public:
         return object_value<T>();
       default:
         throw std::runtime_error{
-          "cannot convert " + std::string{to_string(type())} + " to " + name
+          "cannot convert " + std::string{to_string(type())} + " to " +
+          std::string{type_name(typeid(T))}
         };
       }
     }
@@ -892,7 +942,7 @@ public:
      */
     operator int() const
     {
-      return as<int>("int");
+      return as<int>();
     }
 
     /**
@@ -902,7 +952,7 @@ public:
      */
     operator long() const
     {
-      return as<long>("long");
+      return as<long>();
     }
 
     /**
@@ -912,7 +962,7 @@ public:
      */
     operator long long() const
     {
-      return as<long long>("long long");
+      return as<long long>();
     }
 
     /**
@@ -922,7 +972,7 @@ public:
      */
     operator float() const
     {
-      return as<float>("float");
+      return as<float>();
     }
 
     /**
@@ -932,7 +982,7 @@ public:
      */
     operator double() const
     {
-      return as<double>("double");
+      return as<double>();
     }
 
     // TODO: add unsigned conversions + suppress resulting compiler warnings
