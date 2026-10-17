@@ -13,7 +13,7 @@ TEST_ACTION=
 PARSE_ACTION=
 # CTest arguments
 # note: by default we are already using -j$(nproc)
-CTEST_ARGS="-j$(nproc)"
+CTEST_ARGS="-j$(nproc) --output-on-failure"
 # default build directory
 BUILD_DIR=build
 
@@ -31,7 +31,13 @@ print_usage() {
     echo
     echo "CTest will run \$(nproc) tests in parallel by default unless the "
     echo "-j, --parallel argument is provided. To print short progress output "
-    echo "the -p, --progress option can be specified."
+    echo "the -p, --progress option can be specified. On test failure, the"
+    echo "failing test's output will be displayed for ease of debugging."
+    echo
+    echo "In particular, CTest is invoked with GTEST_COLOR=yes to encourage"
+    echo "GoogleTest runners to use SGR escape sequences for color terminal"
+    echo "output. CTest itself may not be able to preserve the color codes"
+    echo "depending on the CTest version, e.g. when on Windows."
     echo
     echo "Options:"
     echo "  -h,  --help                     Print this usage"
@@ -118,7 +124,7 @@ main() {
     then
         print_usage
     else
-        ctest --test-dir "$BUILD_DIR" $CTEST_ARGS
+        GTEST_COLOR=yes ctest --test-dir "$BUILD_DIR" $CTEST_ARGS
     fi
     # use last command exit status as return
     return $?
