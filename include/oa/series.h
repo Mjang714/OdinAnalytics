@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "oa/rtti.h"
+#include "oa/table_format.h"
 #include "oa/warnings.h"
 
 namespace oa {
@@ -1526,185 +1527,8 @@ auto to_string(const series::value_proxy<T>& vp)
   return std::move(ss).str();
 }
 
-// TODO: formatting options + padding helpers should move to st_format.h
-
-// TODO: document
-class st_format {
-public:
-  /**
-   * Default ctor.
-   */
-  st_format() noexcept = default;
-
-  /**
-   * Return the thread-local `st_format` instance.
-   */
-  static auto& instance() noexcept
-  {
-    thread_local st_format fmt;
-    return fmt;
-  }
-
-  /**
-   * Set the max number of rows to print.
-   */
-  static auto& max_rows(std::optional<std::size_t> v) noexcept
-  {
-    instance().max_rows_ = std::move(v);
-    return instance();
-  }
-
-  /**
-   * Get the max number of rows to print.
-   *
-   * If unset then there is no limit to the number of printed rows.
-   */
-  static auto& max_rows() noexcept
-  {
-    return instance().max_rows_;
-  }
-
-  /**
-   * Set the max number of columns to print.
-   */
-  static auto& max_cols(std::optional<std::size_t> v) noexcept
-  {
-    instance().max_cols_ = std::move(v);
-    return instance();
-  }
-
-  /**
-   * Get the max number of columns to print.
-   *
-   * If unset, a truncated view of the columns is printed.
-   *
-   * @todo Consider if we should detect the terminal width for this.
-   */
-  static auto& max_cols() noexcept
-  {
-    return instance().max_cols_;
-  }
-
-  /**
-   * Indicate if truncation is needed given the number of rows to print.
-   *
-   * Returns `true` if `n` exceeds the greater of 10 or `max_rows()`.
-   *
-   * @param n Number of rows to print
-   */
-  static bool truncate_rows(std::size_t n) noexcept
-  {
-    // no limit, so no truncation
-    if (!max_rows())
-      return false;
-    // otherwise, return result of comparison
-    return n > (std::max)(std::size_t{10u}, *max_rows());
-  }
-
-private:
-  std::optional<std::size_t> max_rows_{50u};
-  std::optional<std::size_t> max_cols_;
-};
-
 /**
- * RAII `st_format` context class.
- *
- * This class can have its members set to modify the thread-local `st_format`
- * settings, restoring the original formatting settings on destruction.
- */
-class st_format_context {
-public:
-  /**
-   * Default ctor.
-   *
-   * The formatting settings are populated using `st_format::instance()`.
-   */
-  st_format_context() noexcept : fmt_{st_format::instance()} {}
-
-  /**
-   * Dtor.
-   *
-   * Reset the formatting settings to the previously captured settings.
-   */
-  ~st_format_context()
-  {
-    st_format::instance() = fmt_;
-  }
-
-  /**
-   * Set the max number of rows to print.
-   */
-  auto& max_rows(std::optional<std::size_t> v) noexcept
-  {
-    st_format::max_rows(std::move(v));
-    return *this;
-  }
-
-  /**
-   * Get the max number of rows to print.
-   */
-  auto& max_rows() const noexcept
-  {
-    return st_format::max_rows();
-  }
-
-  /**
-   * Set the max number of columns to print.
-   */
-  auto& max_cols(std::optional<std::size_t> v) noexcept
-  {
-    st_format::max_cols(std::move(v));
-    return *this;
-  }
-
-  /**
-   * Get the max number of columns to print.
-   */
-  auto& max_cols() const noexcept
-  {
-    return st_format::max_cols();
-  }
-
-private:
-  st_format fmt_;
-};
-
-/**
- * Class representing an amount of whitespace padding.
- */
-class padding {
-public:
-  /**
-   * Ctor.
-   *
-   * @param n Number of padding characters
-   */
-  constexpr padding(std::size_t n) noexcept : n_{n} {}
-
-  /**
-   * Return the padding width.
-   */
-  constexpr auto size() const noexcept { return n_; }
-
-private:
-  std::size_t n_;
-};
-
-/**
- * Write the specified amount of whitespace padding to the output stream.
- *
- * @param out Output stream
- * @param pad Padding specification
- */
-inline auto& operator<<(std::ostream& out, const padding& pad)
-{
-  for (std::size_t i = 0u; i < pad.size(); i++)
-    out.put(' ');
-  return out;
-}
-
-/**
- * Write the `series` to the output stream.
+ * Write the `series` to the table formatter's output stream.
  *
  * The `series` is formatted similar to a `pandas.Series` with a `RangeIndex`.
  * For example, `oa::series{1, 2, 3}` would be printed as:
@@ -1743,13 +1567,16 @@ inline auto& operator<<(std::ostream& out, const padding& pad)
  * Name: big_test, Length: 10000, dtype: float32
  * @endcode
  *
- * @param out Output stream
+ * @param fmt Stream formatter
  * @param ser Series to write
  */
-inline auto& operator<<(std::ostream& out, const series& ser)
+inline auto& operator<<(const table_formatter& fmt, const series& ser)
 {
+  // output stream + formatting options
+  auto& out = fmt.stream();
+  auto& opts = fmt.options();
   // indicate if truncated representation is printed
-  bool truncate = st_format::truncate_rows(ser.size());
+  bool truncate = opts.excess_rows(ser.size());
   // print width of index column + string representations
   // note: truncated size has 5 begin, 5 end rows, with ... separating
   std::size_t index_width = 0u;
@@ -1806,6 +1633,29 @@ inline auto& operator<<(std::ostream& out, const series& ser)
     out << "Length: " << ser.size() << ", ";
   // print data type + finish
   return out << "dtype: " << ser.type();
+}
+
+/**
+ * Write the `series` to the output stream.
+ *
+ * This delegates to the table formatter `operator<<` with default options. To
+ * stream the `series` with non-default options one can first stream an
+ * appropriate `table_format_options`. For example, to disable truncation:
+ *
+ * @code{.cc}
+ * out <<
+ *   table_format_options{}
+ *     .max_rows({})
+ *     .max_cols({}) <<
+ *   ser << std::endl;
+ * @endcode
+ *
+ * @param out Output stream
+ * @param ser Series to write
+ */
+inline auto& operator<<(std::ostream& out, const series& ser)
+{
+  return out << table_format_options{} << ser;
 }
 
 }  // namespace oa
