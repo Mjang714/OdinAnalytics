@@ -54,7 +54,7 @@ namespace oa {
  *
  * @param name Possibly-mangled null-terminated type name
  */
-inline const char* demangle(const char* name) noexcept(!OA_HAS_ITANIUM_ABI)
+inline const char* demangle(const char* name)
 {
 #if OA_HAS_ITANIUM_ABI
   // local deleter type that uses std::free()
@@ -96,7 +96,7 @@ inline const char* demangle(const char* name) noexcept(!OA_HAS_ITANIUM_ABI)
  *
  * @param info Type info object, e.g. from using `typeid`
  */
-inline auto type_name(const std::type_info& info) noexcept(!OA_HAS_ITANIUM_ABI)
+inline auto type_name(const std::type_info& info)
 {
   return std::string_view{demangle(info.name())};
 }
