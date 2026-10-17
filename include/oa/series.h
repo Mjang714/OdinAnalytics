@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "oa/rtti.h"
-#include "oa/table_format.h"
+#include "oa/st_format.h"
 #include "oa/warnings.h"
 
 namespace oa {
@@ -1570,7 +1570,7 @@ auto to_string(const series::value_proxy<T>& vp)
  * @param fmt Stream formatter
  * @param ser Series to write
  */
-inline auto& operator<<(const table_formatter& fmt, const series& ser)
+inline auto& operator<<(const st_formatter& fmt, const series& ser)
 {
   // output stream + formatting options
   auto& out = fmt.stream();
@@ -1640,11 +1640,11 @@ inline auto& operator<<(const table_formatter& fmt, const series& ser)
  *
  * This delegates to the table formatter `operator<<` with default options. To
  * stream the `series` with non-default options one can first stream an
- * appropriate `table_format_options`. For example, to disable truncation:
+ * appropriate `st_format_options`. For example, to disable truncation:
  *
  * @code{.cc}
  * out <<
- *   table_format_options{}
+ *   st_format_options{}
  *     .max_rows({})
  *     .max_cols({}) <<
  *   ser << std::endl;
@@ -1655,7 +1655,7 @@ inline auto& operator<<(const table_formatter& fmt, const series& ser)
  */
 inline auto& operator<<(std::ostream& out, const series& ser)
 {
-  return out << table_format_options{} << ser;
+  return out << st_format_options{} << ser;
 }
 
 }  // namespace oa
