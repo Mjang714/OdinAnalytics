@@ -24,9 +24,9 @@
 #include <typeinfo>  // for well-formed typeid() usage
 #include <utility>
 
-#include <boost/core/demangle.hpp>
 #include <gtest/gtest.h>
 
+#include "oa/rtti.h"
 #include "oa/warnings.h"
 
 // GTEST_SKIP compatibility macro for pre-1.10 Google Test versions
@@ -359,8 +359,7 @@ auto make_result(R res, const F& /*comp*/, const Ts&... values)
   // otherwise, use generic RTTI-based invocable formatting
   else
     return ::testing::AssertionFailure() << "result of: " << prefix <<
-      boost::core::demangle(typeid(F).name()) << "{}(" <<
-      delimited{", ", values...} << ")";
+      type_name(typeid(F)) << "{}(" << delimited{", ", values...} << ")";
 }
 
 }  // namespace detail

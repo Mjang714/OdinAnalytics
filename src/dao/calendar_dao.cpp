@@ -9,12 +9,11 @@
 #include "helpers/str_utils/str_utils.h"
 #include "helpers/utils.h"
 #include "oa/config/paths.h"
-#include "oa/platform.h"
-#include "oa/rtti.h"
+#include "oa/features.h"
 
-#if OA_HAS_CPP20_FORMAT
+#if OA_HAS_CXX20_FORMAT
 #include <format>
-#endif  // !OA_HAS_CPP20_FORMAT
+#endif  // !OA_HAS_CXX20_FORMAT
 
 namespace oa::dao
 {
@@ -35,7 +34,7 @@ namespace oa::dao
 		if (!std::filesystem::is_regular_file(cal_file_path))
 		{
 			throw std::invalid_argument{
-#if OA_HAS_CPP20_FORMAT
+#if OA_HAS_CXX20_FORMAT
 				std::format(
 					"{}:{}",
 					"File not found "+ region + ".hol",
@@ -44,7 +43,7 @@ namespace oa::dao
 #else
 				"File not found " + region + ".hol:" + std::string{__FILE__} +
 				"line " + std::to_string(__LINE__) + " " + std::string{__func__}
-#endif  // !OA_HAS_CPP20_FORMAT
+#endif  // !OA_HAS_CXX20_FORMAT
 			};
 		}
 
@@ -53,7 +52,7 @@ namespace oa::dao
 		if (!raw_calendar_data.is_open())
 		{
 			throw std::runtime_error{
-#if OA_HAS_CPP20_FORMAT
+#if OA_HAS_CXX20_FORMAT
 				std::format(
 					"{}:{}",
 					"Calendar file cannot be open " + region + ".hol",
@@ -63,7 +62,7 @@ namespace oa::dao
 				"Calendar file cannot be open " + region + ".hol:" +
 				std::string{__FILE__} + " line " + std::to_string(__LINE__) +
 				" " + std::string{__func__}
-#endif  // !OA_HAS_CPP20_FORMAT
+#endif  // !OA_HAS_CXX20_FORMAT
 			};
 		}
 
@@ -86,7 +85,7 @@ namespace oa::dao
 					else
 					{
 						throw std::runtime_error{
-#if OA_HAS_CPP20_FORMAT
+#if OA_HAS_CXX20_FORMAT
 							std::format(
 								"{}:{}",
 								region + ".hol has an invalid weekend integer " + file_line,
@@ -96,7 +95,7 @@ namespace oa::dao
 							region + ".hol has an invalid weekend integer " + file_line +
 							std::string{__FILE__} + " line " + std::to_string(__LINE__) +
 							" " + std::string{__func__}
-#endif  // !OA_HAS_CPP20_FORMAT
+#endif  // !OA_HAS_CXX20_FORMAT
 						};
 					}
 				}

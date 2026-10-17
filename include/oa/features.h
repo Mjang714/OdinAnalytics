@@ -34,4 +34,15 @@
 #define OA_HAS_CXX20_FORMAT 0
 #endif  // OA_HAS_CXX20_FORMAT
 
+// check if compiler follows the Itanium ABI
+#ifdef __has_include
+#if __has_include(<cxxabi.h>)
+#define OA_HAS_ITANIUM_ABI 1
+#endif  // __has_include(<cxxabi.h>)
+#endif  // __has_include
+
+#ifndef OA_HAS_ITANIUM_ABI
+#define OA_HAS_ITANIUM_ABI 0
+#endif  // OA_HAS_ITANIUM_ABI
+
 #endif  // OA_FEATURES_H_
