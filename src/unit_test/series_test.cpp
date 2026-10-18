@@ -20,8 +20,10 @@
 
 #include <gtest/gtest.h>
 
-#include "oa/common.h"         // OA_IDENTITY()
-#include "oa/testing/gtest.h"  // oa::testing::merge_test_types_t
+#include "oa/common.h"             // OA_IDENTITY()
+#include "oa/st_format.h"
+#include "oa/testing/gtest.h"      // oa::testing::merge_test_types_t
+#include "oa/testing/range_gen.h"
 
 namespace {
 
@@ -490,13 +492,29 @@ public:
   /**
    * Ctor.
    *
+   * The formatting options are default-initialized.
+   *
    * @param f `series` creation function
-   * @param s Expected `operator<<` output
+   * @param expected Expected `operator<<` output
    */
   constexpr series_stream_test_input(
     oa::series (*f)(),
     std::string_view expected) noexcept
     : f_{f}, expected_{expected}
+  {}
+
+  /**
+   * Ctor.
+   *
+   * @param f `series` creation function
+   * @param opts `series` and `table` formatting options
+   * @param expected Expected `operator<<` output
+   */
+  constexpr series_stream_test_input(
+    oa::series (*f)(),
+    oa::st_format_options opts,
+    std::string_view expected) noexcept
+    : f_{f}, opts_{std::move(opts)}, expected_{expected}
   {}
 
   /**
@@ -508,12 +526,18 @@ public:
   }
 
   /**
+   * Return the formatting options to use.
+   */
+  constexpr auto& opts() const noexcept { return opts_; }
+
+  /**
    * Return the expected `operator<<` output.
    */
-  auto expected() const noexcept { return expected_; }
+  constexpr auto expected() const noexcept { return expected_; }
 
 private:
   oa::series (*f_)();
+  oa::st_format_options opts_;
   std::string_view expected_;
 };
 
@@ -584,10 +608,9 @@ constexpr series_stream_test_input series_stream_test_inputs[] = {
   {
     []
     {
-      // fill vector exceeding max print rows
-      std::vector<float> vs(100u);
-      for (auto i = 0u; i < vs.size(); i++)
-        vs[i] = 2.141f * (i + 1);
+      // generate fill vector exceeding max print rows
+      oa::testing::range_gen gen{100u, [](auto i) { return 2.141f * (i + 1); }};
+      std::vector vs(gen.begin(), gen.end());
       // move into storage
       return oa::series{"movef", std::move(vs)};
     },
@@ -603,6 +626,38 @@ constexpr series_stream_test_input series_stream_test_inputs[] = {
     "98    211.959\n"
     "99      214.1\n"
     "Name: movef, Length: 100, dtype: float32"
+  },
+  // forced truncation test
+  {
+    []
+    {
+      // generate vector for 20 rows which doesn't exceed default max print
+      // note: cast as i is a std::size_t and we want int value type
+      oa::testing::range_gen gen{
+        20u,
+        [](auto i) { return static_cast<int>(20u - i); }
+      };
+      std::vector vs(gen.begin(), gen.end());
+      // move into storage
+      return oa::series{std::move(vs)};
+    },
+    // options set to set max_rows to 15 to force truncation
+    // note: max_cols has no effect on streaming a series
+    oa::st_format_options{}
+      .max_rows(15)
+      .max_cols(10),
+    "0       20\n"
+    "1       19\n"
+    "2       18\n"
+    "3       17\n"
+    "4       16\n"
+    "      ... \n"
+    "15       5\n"
+    "16       4\n"
+    "17       3\n"
+    "18       2\n"
+    "19       1\n"
+    "Length: 20, dtype: int32"
   }
 };
 
@@ -621,9 +676,15 @@ protected:
    */
   void operator()() const
   {
+    // input object
     constexpr auto& input = series_stream_test_inputs[I];
+    // write to stream for comparison, using operator<< directly if the
+    // formatting options are defaulted to check that operator<< is implemented
     std::stringstream ss;
-    ss << input();
+    if constexpr (input.opts() == oa::st_format_options{})
+      ss << input();
+    else
+      ss << input.opts() << input();
     // note: view() new in C++20
     EXPECT_EQ(input.expected(), ss.view());
   }
