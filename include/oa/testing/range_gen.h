@@ -28,6 +28,43 @@ template <typename F>
 concept range_gen_fn = std::invocable<F> || std::invocable<F, std::size_t>;
 
 /**
+ * `std::iota` projection invocable for the `range_gen`.
+ *
+ * This provides a non-anonymous invocable type for `range_gen` CTAD.
+ *
+ * @tparam T type
+ */
+template <typename T>
+requires (std::convertible_to<std::size_t, T>)
+class iota_proj {
+public:
+  /**
+   * Ctor.
+   *
+   * @note Made `explicit` to prevent implicit conversion from `std::size_t`
+   *  which causes ambiguity in `range_gen` ctor overload selection.
+   *
+   * @param v Starting value
+   */
+  explicit iota_proj(T v = {}) noexcept(std::is_nothrow_move_constructible_v<T>)
+    : v_{std::move(v)}
+  {}
+
+  /**
+   * Return the starting value plus the given index converted to `T`.
+   *
+   * @param i Index value
+   */
+  auto operator()(std::size_t i) const noexcept(std::is_arithmetic_v<T>)
+  {
+    return v_ + static_cast<T>(i);
+  }
+
+private:
+  T v_;
+};
+
+/**
  * Range generator object.
  *
  * This takes the number of values to generate as well as a nullary or unary
@@ -60,6 +97,9 @@ private:
 
   /**
    * Partial specialization for a unary invocable taking an index value.
+   *
+   * @note Technically should use `std::size_t&` as the invocation is on a
+   *  non-const lvalue reference to a `std::size_t`.
    *
    * @tparam T Unary invocable
    */
@@ -195,6 +235,24 @@ public:
   /**
    * Ctor.
    *
+   * This provides functionality similar to `std::iota` where the value type of
+   * the range to initialize is deduced from `std::decay_t<T>` itself.
+   *
+   * @tparam T Arithmetic type or other convertible from `std::size_t`
+   *
+   * @param n Number of elements to generate
+   * @param v Value of first element
+   */
+  template <typename T>
+  requires (std::convertible_to<std::size_t, T>)
+  range_gen(std::size_t n, T&& v) : range_gen{n, iota_proj{std::forward<T>(v)}}
+  {}
+
+  /**
+   * Ctor.
+   *
+   * @tparam G Nullary or unary invocable
+   *
    * @param n Number of elements to generate
    * @param f Nullary or unary invocable
    */
@@ -228,16 +286,27 @@ private:
 };
 
 /**
- * User-defined deduction guide for the `range_gen`.
+ * User-defined deduction guide for `range_gen`.
  *
  * This supports defining the `F` member as either an lvalue reference to a
  * possibly const-qualified type or simply a value type based on whether an
  * lvalue or rvalue was provided to the forwarding reference.
  *
- * @tparam F Nullary o runary invocable value or reference type
+ * @tparam F Nullary or unary invocable value or reference type
  */
 template <range_gen_fn F>
 range_gen(std::size_t, F&&) -> range_gen<F>;
+
+/**
+ * User-defined deduction guide for `range_gen`.
+ *
+ * This supports the `std::iota`-like ctor overload with `iota_proj<T>`.
+ *
+ * @tparam T Arithmetic type or other convertible from `std::size_t`
+ */
+template <typename T>
+requires (std::convertible_to<std::size_t, T>)
+range_gen(std::size_t, T&&) -> range_gen<iota_proj<std::decay_t<T>>>;
 
 }  // namespace testing
 }  // namespace oa
