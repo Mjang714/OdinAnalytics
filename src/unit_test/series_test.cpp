@@ -936,6 +936,88 @@ using series_view_modify_test_types_t =
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Template type for `series` modification through an iterator.
+ *
+ * This is used only to disambiguate test case indexing.
+ *
+ * @tparam I Input index
+ */
+template <std::size_t I>
+struct series_iter_modify_test {};
+
+// series_iter_modify_test inputs. members are (index, value, type, initfunc)
+// tuples, where the series returned by initfunc is assigned value at the new
+// iterator begin() + index. assigned value + series type are then checked
+// note: currently uses the same inputs as series_modify_test
+constexpr auto series_iter_modify_test_inputs = series_modify_test_inputs;
+
+/**
+ * Partial specialization for `series` modification through an iterator.
+ *
+ * @tparam I Input index
+ */
+template <std::size_t I>
+class SeriesTest<series_iter_modify_test<I>> : public SeriesTest<> {
+protected:
+  static_assert(I < std::tuple_size_v<decltype(series_iter_modify_test_inputs)>);
+
+  /**
+   * Modify the `series` through the appropriate iterator + check values.
+   *
+   * Both dereference through `operator*` and `operator[]` are tested.
+   */
+  void operator()() const
+  {
+    // unpack input
+    // note: structured bindings not constexpr until C++26
+    auto [i, v, type, f] = std::get<I>(series_iter_modify_test_inputs);
+    // create series + modify through iterator at offset i
+    auto s = f();
+    auto begin = s.begin();
+    *(begin + i) = v;
+    // check series type + value from iterator
+    // note: uses iterator operator[] for variety
+    EXPECT_EQ(type, s.type());
+    EXPECT_EQ(v, begin[i]);
+  }
+};
+
+/**
+ * Traits type to create the `series_iter_modify_test` test types.
+ *
+ * @tparam T type
+ */
+template <typename T>
+struct series_iter_modify_test_types {};
+
+/**
+ * Partial specialization for a `std::index_sequence<Is...>`.
+ *
+ * @tparam Is Indices 0 through `std::size(series_iter_modify_test_inputs)` - 1
+ */
+template <std::size_t... Is>
+struct series_iter_modify_test_types<std::index_sequence<Is...>> {
+  using type = ::testing::Types<series_iter_modify_test<Is>...>;
+};
+
+/**
+ * `void` specialization using the size of `series_iter_modify_test_inputs`.
+ */
+template <>
+struct series_iter_modify_test_types<void> : series_iter_modify_test_types<
+  std::make_index_sequence<
+    std::tuple_size_v<decltype(series_iter_modify_test_inputs)>
+  > > {};
+
+/**
+ * Types alias for `::testing::Types<series_iter_modify_test<Is>...>`.
+ */
+using series_iter_modify_test_types_t =
+  typename series_iter_modify_test_types<void>::type;
+
+////////////////////////////////////////////////////////////////////////////////
+
 // input types
 TYPED_TEST_SUITE(
   SeriesTest,
@@ -972,7 +1054,8 @@ TYPED_TEST_SUITE(
       series_value_proxy_test_types_t,
       series_stream_test_types_t,
       series_modify_test_types_t,
-      series_view_modify_test_types_t
+      series_view_modify_test_types_t,
+      series_iter_modify_test_types_t
     >
   )
 );
