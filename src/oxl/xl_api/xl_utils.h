@@ -154,7 +154,7 @@ namespace oxl::xl_api
 
 	inline oa::time::Date HandleMatDate(const XlDictionary& dict)
 	{
-		if(auto val = std::get_if<std::string>(&dict["Mat_Date"]))
+		if (auto val = std::get_if<std::string>(&dict["Mat_Date"]))
 		{
 			if(oa::utils::CheckTenorStr(*val))
 			{
