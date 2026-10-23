@@ -162,3 +162,130 @@ def test_main(modname: str, args: Iterable[str] | None = None):
         defaultTest=argn.test_case,
         verbosity=argn.verbose
     )
+
+
+def enable_param_test(cls: unittest.TestCase) -> unittest.TestCase:
+    """unittest ``TestCase`` decorator to enable parametrized tests.
+
+    One missing feature in the ``unittest`` module is the ability to have tests
+    parametrized on different test inputs. This is something that is supported
+    by some other testing frameworks, e.g. GoogleTest for C++, where one can
+    define a test and then separately register tests for different inputs.
+
+    Although ``unittest`` has the ``subTest()`` context manager to enable
+    per-iteration subtests in a single test, the overall test method is still
+    considered a single test; ``subTest()`` just prevents aborting the test on
+    the first ``subTest()`` failure. Therefore, to register a separate test for
+    each value-parametrized test input, this class decorator can be used.
+
+    This should be used in conjunction with the ``@parameters`` decorator which
+    allows decoration of a ``test_*`` method with its inputs. For example:
+
+    .. code:: python
+
+       @enable_param_test
+       class TestAdd(unittest.TestCase):
+
+           # standard unittest test
+           def test_one(self):
+               self.assertEqual(2, 1 + 1)
+
+           # value-parametrized test rewritten into 4 separate tests
+           @parameters((2, 4), (5, 7), (6, 8), (11, 13))
+           def test_two(self, input: int, expected: int):
+               self.assertEqual(expected, input + 2)
+
+    See the ``@parameters`` docstring for details on how to write such tests.
+
+    Parameters
+    ----------
+    cls : unittest.TestCase
+        Test case class to decorate and rewrite parametrized tests for
+    """
+    # get current attributes in cls
+    # note: copy to freeze any changes although not strictly necessary
+    mems = [mem for mem in cls.__dict__]
+    # for each attribute
+    for mem in mems:
+        attr = getattr(cls, mem)
+        # param test function has the _param_list member
+        if mem.startswith("test_") and hasattr(attr, "_param_list"):
+            for i, args in enumerate(getattr(attr, "_param_list")):
+
+                # note: using kwarg capture trick to avoid late binding, which
+                # makes it appear as if the last value of each name is used
+                def _test(self, test=attr, args=args):
+                    # if args is a tuple, unpack
+                    if isinstance(args, tuple):
+                        test(self, *args)
+                    # otherwise pass as a single argument for convenience
+                    else:
+                        test(self, args)
+
+                # add new test for the given argument[s]
+                setattr(cls, f"{mem}_{i}", _test)
+            # remove original test function
+            delattr(cls, mem)
+    return cls
+
+
+def parameters(*args):
+    """unittest test function decorator to enable parametrized test rewriting.
+
+    This decorator should be used to provide the input parameters for a test
+    function in a ``unittest.TestCase`` subclass as illustrated in the
+    ``@enable_param_test`` docstring. For a test function ``test_func()``, each
+    input parameter in ``@parameters`` will result in a new test function
+    ``test_func_[i]()``, for values of ``i`` being 0, 1, etc. taking only
+    ``self`` as a parameter being added to the test class, with the original
+    ``test_func()`` being removed from the test class.
+
+    To support test functions that may require multiple parameters, e.g. an
+    input value(s) and an expected output, one can pass a tuple as a parameter,
+    which will be unpacked into the arguments of each generated test function.
+    This means, however, that if the test function takes a single tuple as a
+    parameter, that the tuple needs to be wrapped in another tuple, e.g.
+
+    .. code:: python
+
+       class TestSub(unittest.TestCase):
+
+           @parameters(((1, 0),), ((4, 3),), ((5, 4),))
+           def test_one(self, param: tuple[int, int]):
+               input, expected = param
+               self.assertEqual(expected, input - 1)
+
+    Of course, in this case it would be easier to have two parameters, e.g.
+
+    .. code:: python
+
+       class TestSub(unittest.TestCase):
+
+           @parameters((1, 0), (4, 3), (5, 4))
+           def test_one(self, input: int, expected: int):
+               self.assertEqual(expected, input - 1)
+
+    One could also choose to use lists for the parameters to avoid unpacking:
+
+    .. code:: python
+
+       class TestSub(unittest.TestCase):
+
+           @parameters([1, 0], [4, 3], [5, 4])
+           def test_one(self, param: list[int, int]):
+               input, expected = param
+               self.assertEqual(expected, input - 1)
+
+    In this case, however, just having more than one parameter is preferred.
+
+    Parameters
+    ----------
+    *args
+        Inputs for each individual test case
+    """
+
+    def wrapper(f):
+        f._param_list = args
+        return f
+
+    return wrapper

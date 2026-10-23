@@ -152,6 +152,12 @@ if(TARGET oa_config_py)
     add_dependencies(oa_config_py_tests oa_config_py)
 endif()
 
+# oa_time_py tests
+if(TARGET oa_time_py)
+    oa_unittest_discover_tests(oa_time_py_tests TESTS oa_time_test.py)
+    add_dependencies(oa_time_py_tests oa_time_py)
+endif()
+
 # oa_r_testutils: OA R test helpers package
 if(R_FOUND)
     oa_r_package(
