@@ -135,6 +135,255 @@ else()
     message(STATUS "Benchmark version: None")
 endif()
 
+# find OpenBLAS
+#
+# note: this is the preferred [C]BLAS/LAPACK[E] implementation due to the
+# permissive licensing + portability compared to e.g. Intel MKL
+#
+# note: up through version 0.3.34, OpenBLAS's lapack.h inappropriately uses
+# function prototypes returning lapack_int instead of void. this causes havoc
+# when mixed with libraries like Armadillo that declare the correct prototypes
+# that have void as the return type. fortunately, this issue is fixed in the
+# OpenBLAS trunk as of commit bbac7dfb82100b33af1f1390ac3c14e50ad8b65f
+#
+find_package(OpenBLAS 0.3.33)
+if(OpenBLAS_FOUND)
+    message(STATUS "OpenBLAS version: ${OpenBLAS_VERSION}")
+    # print config for more details
+    # library type, either static *or* shared
+    # note: OpenBLAS_(static|shared)_FOUND only TRUE if requested + found
+    get_target_property(openblas_libtype OpenBLAS::OpenBLAS TYPE)
+    if(openblas_libtype STREQUAL "STATIC_LIBRARY")
+        message(STATUS "OpenBLAS static: Yes")
+        set(OA_OPENBLAS_STATIC TRUE)
+    elseif(openblas_libtype STREQUAL "SHARED_LIBRARY")
+        message(STATUS "OpenBLAS static: No")
+        set(OA_OPENBLAS_STATIC FALSE)
+    endif()
+    unset(openblas_libtype)
+    # threading
+    if(OpenBLAS_serial_FOUND)
+        message(STATUS "OpenBLAS threads: None")
+    # note: generic build on Windows has pthread component
+    elseif(OpenBLAS_pthread_FOUND)
+        if(WIN32)
+            message(STATUS "OpenBLAS threads: Win32")
+        else()
+            message(STATUS "OpenBLAS threads: POSIX")
+        endif()
+    elseif(OpenBLAS_openmp_FOUND)
+        message(STATUS "OpenBLAS threads: OpenMP")
+    endif()
+    # print all OpenBLAS CPU features from the config header
+    # note: OpenBLAS has as bug where OpenBLAS_INCLUDE_DIR is empty because it
+    # uses the OpenBLAS::OpenBLAS INCLUDE_DIRECTORIES property, not the
+    # INTERFACE_INCLUDE_DIRECTORIES property that it should be using
+    # note: empty for generic build on Windows
+    file(
+        STRINGS "${OpenBLAS_INCLUDE_DIRS}/openblas_config.h" openblas_haves
+        REGEX "#define[ \t]+OPENBLAS_HAVE_[A-Z0-9_]+"
+    )
+    # strip #define OPENBLAS_HAVE_ prefixes + join with spaces
+    list(TRANSFORM openblas_haves REPLACE "#define[ \t]+OPENBLAS_HAVE_" "")
+    list(JOIN openblas_haves " " openblas_haves)
+    # print + clean up
+    if(openblas_haves)
+        message(STATUS "OpenBLAS features: ${openblas_haves}")
+    endif()
+    unset(openblas_haves)
+    # add interface target to encapsulate OpenBLAS usage requirements
+    add_library(OA::OpenBLAS INTERFACE IMPORTED)
+    target_link_libraries(OA::OpenBLAS INTERFACE OpenBLAS::OpenBLAS)
+    # enable integration with oa/features.h library feature macros
+    target_compile_definitions(OA::OpenBLAS INTERFACE OA_USE_OPENBLAS)
+    # when static and on Linux we may need to link against libgfortran
+    # TODO: by default this is a dynamic link + libquadmath is also dynamically
+    # linked. may need to consider how to static link these two
+    if(OA_OPENBLAS_STATIC AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_link_libraries(OA::OpenBLAS INTERFACE gfortran)
+    endif()
+    #
+    # for MSVC, in C++ mode, the C99 _Complex is not available, and _FComplex
+    # and _DComplex were removed in Windows 10 SDK from <complex.h> unless one
+    # defines _CRT_USE_C_COMPLEX_H. in C++, we typically want std::complex for
+    # native C++ functionality, so we use LAPACK_COMPLEX_CUSTOM for this.
+    #
+    # TODO: consider just defining HAVE_LAPACK_CONFIG_H to enable inclusion of
+    # lapacke_config.h to provide some cross-platform functionality
+    #
+    if(MSVC)
+        target_compile_definitions(
+            OA::OpenBLAS INTERFACE
+            # indicate using custom complex types with LAPACK
+            LAPACK_COMPLEX_CUSTOM
+            # note: for strict CBLAS compatibility these could be void, but
+            # that causes problems with some LAPACKE functions that take these
+            # types by value, as void is an incomplete type
+            lapack_complex_float=std::complex<float>
+            lapack_complex_double=std::complex<double>
+            # define lapack_complex_(float|double)_(real|imag) macros since
+            # these are lost when defining LAPACK_COMPLEX_CUSTOM
+            "lapack_complex_float_real(z)=(z).real()"
+            "lapack_complex_float_imag(z)=(z).imag()"
+            "lapack_complex_double_real(z)=(z).real()"
+            "lapack_complex_double_imag(z)=(z).imag()"
+            #
+            # FIXME:
+            #
+            # defining __EMSCRIPTEN__ disables the lapack.h definition of
+            # LAPACK_FORTRAN_STRLEN_END, i.e. using the LAPACK function
+            # prototypes that don't have the "hidden" length arguments at the
+            # end of the functions with const char* arguments. this is required
+            # for Armadillo interop as Armadillo wrongly const-qualifies the
+            # cgeevx, zgeevx info params in armadillo_bits/def_lapack.hpp, but
+            # only for the signatures where ARMA_USE_FORTRAN_HIDDEN_ARGS is
+            # defined, i.e. the signatures without the "hidden" length args.
+            #
+            # it is, of course, a hack to pretend that we are the Emscripten
+            # compiler when we are using MSVC, so this bug needs to be reported
+            # to Armadillo and fixed for the next 15.6.x release.
+            #
+            __EMSCRIPTEN__
+        )
+        # force include <complex> since LAPACK_COMPLEX_CUSTOM gets rid of the
+        # <complex> includes when compiling in C++ mode
+        # note: /FI actually includes <complex> as "complex"
+        target_compile_options(OA::OpenBLAS INTERFACE /FIcomplex)
+    endif()
+    # FIXME: until OpenBLAS has a new tagged version that fixes the lapack.h
+    # functions returning int instead of void we ensure that our vendored copy
+    # of the fixed lapack.h is force-included to prevent including the broken
+    # lapack.h provided by OpenBLAS 0.3.22 through 0.3.34. we accomplish this
+    # by using an absolute path for the include to the vendored lapack.h
+    set(
+        openblas_vendor_root
+        "${CMAKE_CURRENT_SOURCE_DIR}/vendor/OpenBLAS-bbac7df"
+    )
+    set(
+        openblas_lapack_vendor_include
+        "${openblas_vendor_root}/lapack-netlib/LAPACKE/include"
+    )
+    if(MSVC)
+        target_compile_options(
+            OA::OpenBLAS INTERFACE
+            # note: must force-include *after* <complex> is force-included
+            # since we are using std::complex for lapack_complex_(float|double)
+            /FI"${openblas_lapack_vendor_include}/lapack.h"
+        )
+    # note: assumes GNU-like compiler
+    else()
+        target_compile_options(
+            OA::OpenBLAS INTERFACE
+            -include "${openblas_lapack_vendor_include}/lapack.h"
+        )
+    endif()
+else()
+    message(STATUS "OpenBLAS version: None")
+endif()
+
+# find Eigen 3 and above
+#
+# note: Eigen cannot be used with external BLAS or LAPACKE that have correct
+# function prototypes because the declarations Eigen internally provides are
+# either broken (BLAS) or incorrectly const-qualified (LAPACKE)
+#
+# note: Eigen versions before 5.0 had LAPACK functions return int instead of
+# void which is inconsistent with the expected translations of Fortran to C
+#
+# note: in Eigen/src/misc/blas.h for Eigen < 5.0.0, BLASLONG is a typedef of
+# long long only when __WIN64__ is defined. MSVC no longer seems to define this
+# when compiling in 64-bit mode (_WIN64 is the correct macro) so we would have
+# to manually define __WIN64__ when compiling with MSVC. fortunately, Eigen
+# 5.0.0 removes this problematic typedef so one doesn't need to explicitly
+# define __WIN64__ ourselves during compilation.
+#
+find_package(Eigen3 5.0)
+if(Eigen3_FOUND)
+    message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
+    # add interface library to collect our own usage requirements
+    add_library(OA::Eigen3 INTERFACE IMPORTED)
+    target_link_libraries(OA::Eigen3 INTERFACE Eigen3::Eigen)
+    # enable integration with oa/features.h library feature macros
+    target_compile_definitions(OA::Eigen3 INTERFACE OA_USE_EIGEN3)
+    # prefer to use /bigobj with MSVC due to template code bloat
+    # TODO: maybe enable globally for the project or just for ols_demo
+    if(MSVC)
+        target_compile_options(OA::Eigen3 INTERFACE /bigobj)
+    endif()
+    #
+    # note:
+    #
+    # no use of external BLAS or LAPACKE with Eigen for several reasons.
+    #
+    # first, Eigen/src/misc/blas.h has incorrect prototypes for complex-valued
+    # BLAS functions like cherk as all complex-valued types are reduced to
+    # their real-valued types. also, unlike with Armadillo, we don't have any
+    # backdoor macros to use to redefine the complex types, so it's best to
+    # avoid EIGEN_USE_BLAS usage. in either way, Eigen's own performance is
+    # comparable in benchmarks, so not big loss.
+    #
+    # we have a similar issue with EIGEN_USE_LAPACKE, as the provided
+    # Eigen/src/misc/lapacke.h is the Intel LAPACKE header which allows the
+    # correct use of custom complex types, but has incorrect const qualifiers
+    # for char*, double*, etc. in some areas, and doesn't support the "hidden"
+    # LAPACK arguments like the actual LAPACK lapack.h header does. so again,
+    # we cannot use EIGEN_USE_LAPACKE when used together with Armadillo or even
+    # when including the lapacke.h provided by OpenBLAS.
+    #
+else()
+    message(STATUS "Eigen3 version: None")
+endif()
+
+# find Armadillo
+# note: this uses our custom find module to work around CMake's FindArmadillo
+# and the actual Armadillo project's CMake config script
+find_package(Armadillo 15.6)
+if(Armadillo_FOUND)
+    message(STATUS "Armadillo version: ${Armadillo_VERSION}")
+    # we create our own INTERFACE target for better control
+    add_library(OA::Armadillo INTERFACE IMPORTED)
+    target_link_libraries(OA::Armadillo INTERFACE Armadillo::Armadillo)
+    # enable integration with oa/features.h library feature macros
+    target_compile_definitions(OA::Armadillo INTERFACE OA_USE_ARMADILLO)
+    # if OpenBLAS found add to the link interface
+    if(OpenBLAS_FOUND)
+        message(STATUS "Armadillo BLAS: OpenBLAS")
+        message(STATUS "Armadillo LAPACK: OpenBLAS")
+        # strictly speaking the Armadillo def_lapack.hpp and def_blas.hpp
+        # headers define blas_cxf and blas_cxd as void to adhere to CBLAS
+        # conventions. fortunately, we can use ARMA_USE_MKL_TYPES to enable
+        # defining complex types similar to using LAPACK_COMPLEX_CUSTOM
+        target_compile_definitions(OA::Armadillo INTERFACE ARMA_USE_MKL_TYPES)
+        # for MSVC use std::complex and also use the function prototypes that
+        # don't have the "hidden" length arguments because cgeevz, zgeevx in
+        # def_lapack.hpp have info incorrectly const-qualified. see above for
+        # why __EMSCRIPTEN__ is defined on Windows for OpenBLAS usage
+        if(MSVC)
+            target_compile_definitions(
+                OA::Armadillo INTERFACE
+                MKL_Complex8=std::complex<float>
+                MKL_Complex16=std::complex<double>
+                ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
+            )
+        # for GNU-like compilers use the _Complex extension
+        else()
+            target_compile_definitions(
+                OA::Armadillo INTERFACE
+                "MKL_Complex8=float _Complex"
+                "MKL_Complex16=double _Complex"
+            )
+        endif()
+        # propagate any OpenBLAS usage requirements we defined
+        target_link_libraries(OA::Armadillo INTERFACE OA::OpenBLAS)
+    # note: no other LAPACK alternative yet
+    else()
+        message(STATUS "Armadillo BLAS: None")
+        message(STATUS "Armadillo LAPACK: None")
+    endif()
+else()
+    message(STATUS "Armadillo version: None")
+endif()
+
 # look for Excel 2013 XLL SDK
 # note: we don't actually need the GENERIC sample XLL but it is a nice example
 if(WIN32)

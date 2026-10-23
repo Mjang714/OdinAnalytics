@@ -4,3 +4,5 @@
 *.sh text eol=lf
 *.bat text eol=crlf
 *.vcxproj text eol=crlf
+# ignore vendored code
+/vendor/ linguist-vendored
