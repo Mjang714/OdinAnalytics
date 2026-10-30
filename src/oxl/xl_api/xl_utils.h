@@ -159,7 +159,6 @@ namespace oxl::xl_api
 			return ToDateObj(dict["Start_Date"]) + *val;
 		}
 		return ToDateObj(dict["Mat_Date"]);
-
 	}
 }
 #endif // !XL_UTILS_H_
