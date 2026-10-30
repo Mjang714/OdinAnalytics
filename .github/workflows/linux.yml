@@ -115,7 +115,7 @@ jobs:
       - name: Test
         run: |
           chmod +x check.sh
-          ./check.sh -Ct --output-on-failure
+          ./check.sh
       # install Runtime and Development components separately
       # note: only good as a smoke test. need sudo due to /usr/local install
       - name: Install Runtime
