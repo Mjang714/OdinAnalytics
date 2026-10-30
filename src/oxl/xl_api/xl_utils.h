@@ -156,11 +156,7 @@ namespace oxl::xl_api
 	{
 		if (auto val = std::get_if<std::string>(&dict["Mat_Date"]))
 		{
-			if (oa::utils::CheckTenorStr(*val))
-			{
-				auto start_date = ToDateObj(dict["Start_Date"]);
-				return start_date.AddTenor(*val);
-			}
+			return ToDateObj(dict["Start_Date"]) + *val;
 		}
 		return ToDateObj(dict["Mat_Date"]);
 
