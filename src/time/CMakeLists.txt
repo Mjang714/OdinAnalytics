@@ -51,3 +51,15 @@ install(
 oa_pdb_install(oa_time CONFIGURATIONS Debug COMPONENT Development)
 oa_embed_version_info(oa_time DESCRIPTION "OA Time Library")
 oa_check_version_info(oa_time)
+
+# oa_time_py: SWIG module with oa_time.py module wrapper
+if(SWIG_python_FOUND AND Python3_FOUND AND Python3_Development_FOUND)
+    oa_swig_module(oa_time_py LANGUAGE python MODULE module.i CXX DOXYGEN)
+    target_link_libraries(oa_time_py PRIVATE Python3::Module oa_sil oa_time)
+    # suppress warnings caused by the SWIG-generated C++
+    if(MSVC)
+        target_compile_options(oa_time_py PRIVATE /wd4456)
+    endif()
+else()
+    message(STATUS "Skipping oa_time_py (requires SWIG + Python libraries)")
+endif()

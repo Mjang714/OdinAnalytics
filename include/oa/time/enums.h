@@ -34,7 +34,11 @@ namespace oa::time
 		kDecember = 12
 	};
 
-	enum class Tenors
+	// note: use fixed char type since SWIG wraps the char members into str and
+	// our typemap code only initializes the Python enum.Enum using str if the
+	// scoped enum's underlying type is char. in particular, if no underlying
+	// type is specified for the scoped enum, the underlying type will be int
+	enum class Tenors : char
 	{
 		kDays = 'D',
 		kWeeks = 'W',

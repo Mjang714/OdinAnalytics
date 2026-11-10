@@ -38,11 +38,25 @@ The C++ unit tests and the Excel add-in will be omitted from the configured
 build if their dependencies are not satisfied. In addition, the XLL add-in will
 never be built on a non-Windows platform, as XLLs are Windows-specific.
 
+To build the Odin Python or R bindings the following are needed:
+
+* [SWIG] >= 4.0
+* Python >= 3.10
+* R >= 4.1
+
+If SWIG is available, only the bindings that correspond to available target
+language development headers + libraries will be built, e.g. if only Python
+development headers are available, only Python SWIG bindings are generated. On
+Windows, owing to the different ABI of the [R Windows toolchain], no SWIG R
+extensions are generated.
+
 [CMake]: https://cmake.org/cmake/help/latest/
 [Boost]: https://www.boost.org/
 [Magic Enum]: https://github.com/Neargye/magic_enum
 [GoogleTest]: https://github.com/google/googletest
 [Excel 2013 XLL SDK]: https://learn.microsoft.com/en-us/office/client-developer/excel/welcome-to-the-excel-software-development-kit
+[SWIG]: https://www.swig.org/
+[R Windows toolchain]: https://cran.r-project.org/bin/windows/Rtools/rtools45/rtools.html
 
 If your dependencies are not installed in system locations the standard CMake
 [`<PackageName>_ROOT`][package_root] variables can be defined for
