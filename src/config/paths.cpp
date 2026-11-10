@@ -34,7 +34,7 @@
 #include <string>
 #include <system_error>
 
-#include "oa/rtti.h"
+#include "oa/ctti.h"
 
 namespace oa {
 namespace config {
