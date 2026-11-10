@@ -22,12 +22,20 @@ on:
       - "solutions/**"
       # README.md doesn't affect CMake build either
       - README.md
+      # windows.yml doesn't affect Linux workflow
+      - .github/workflows/windows.yml
   # run on manual request
   workflow_dispatch:
 
 env:
   # Magic Enum version
   MAGIC_ENUM_VERSION: 0.9.7
+  # OpenBLAS version
+  OPENBLAS_VERSION: 0.3.33
+  # Eigen3 version
+  EIGEN3_VERSION: 5.0.0
+  # Armadillo version
+  ARMADILLO_VERSION: 15.6.0
 
 jobs:
   # only one job which is the build job
@@ -92,6 +100,45 @@ jobs:
           sudo apt install libbenchmark-dev
           echo -n "Benchmark version: "
           apt-cache show libbenchmark-dev | grep Version | sed -E 's/Version:\s+//g'
+      # note: although available through apt we want a more recent version.
+      # the CMake build will also build a static OpenBLAS library by default
+      # note: do build in temp dir so we don't clutter up the workspace dir
+      - name: Install OpenBLAS
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://github.com/OpenMathLib/OpenBLAS.git
+          cd OpenBLAS
+          git checkout v${{ env.OPENBLAS_VERSION }}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+          cmake --build build -j
+          sudo cmake --install build
+      # note: although available through apt we need a specific minimum version
+      # note: we skip as much of the build as possible
+      - name: Install Eigen3
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://gitlab.com/libeigen/eigen.git
+          cd eigen
+          git checkout ${{ env.EIGEN3_VERSION }}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DEIGEN_BUILD_TESTING=OFF \
+            -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF \
+            -DEIGEN_BUILD_DOC=OFF -DEIGEN_BUILD_DEMOS=OFF
+          cmake --build build -j
+          sudo cmake --install build
+      # note: although available through apt we want a more recent version
+      # note: HEADER_ONLY disables libarmadillo wrapper compilation
+      # note: need to explicitly indicate OpenBLAS provides LAPACK functions
+      - name: Install Armadillo
+        run: |
+          cd ${{ runner.temp }}
+          git clone https://gitlab.com/armadillo-lib/armadillo-code.git
+          cd armadillo-code
+          git checkout ${{ env.ARMADILLO_VERSION }}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DHEADER_ONLY=ON -DOPENBLAS_PROVIDES_LAPACK=ON
+          cmake --build build -j
+          sudo cmake --install build
       # note: oddly, the ubuntu-22.04 runner already has R installed, and
       # although it reports the correct 4.1.2-ubuntu2 version, it actually has
       # R 4.6.0 installed, which seems like an error on GitHub's part

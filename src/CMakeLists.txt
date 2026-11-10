@@ -64,3 +64,86 @@ if(benchmark_FOUND)
 else()
     message(STATUS "Skipping isdigit_bench (requires Benchmark)")
 endif()
+
+# ols_demo: OLS regression demo program
+#
+# this showcases the use of different linear algebra libraries and matrix
+# factorizations to solve a noisy linear least-squares problem.
+#
+# note: Eigen3 is very heavy on the compiler and its use in this program can
+# cause compilation to take several minutes. with GCC the time is longer, and
+# in particular, the BDCSVD Eigen3 module can cause ld to hang
+#
+if(OpenBLAS_FOUND OR Eigen3_FOUND)
+    add_executable(ols_demo ols_demo.cpp)
+    target_link_libraries(ols_demo PRIVATE oa_core)
+    # link against OpenBLAS, Eigen3, Armadillo if available + update backends
+    # note: link OpenBLAS last for best chance of resolving symbols
+    if(Armadillo_FOUND)
+        target_link_libraries(ols_demo PRIVATE OA::Armadillo)
+        list(APPEND ols_backends Armadillo)
+    endif()
+    if(Eigen3_FOUND)
+        target_link_libraries(ols_demo PRIVATE OA::Eigen3)
+        list(APPEND ols_backends Eigen3)
+    endif()
+    if(OpenBLAS_FOUND)
+        target_link_libraries(ols_demo PRIVATE OA::OpenBLAS)
+        list(APPEND ols_backends LAPACKE)
+    endif()
+    # -h, --help test
+    add_test(NAME ols_demo_h COMMAND ols_demo -h)
+    add_test(NAME ols_demo_help COMMAND ols_demo --help)
+    set_tests_properties(
+        ols_demo_h ols_demo_help PROPERTIES
+        PASS_REGULAR_EXPRESSION "Usage: ols_demo"
+    )
+    # grid of tests
+    foreach(backend ${ols_backends})
+        string(TOLOWER ${backend} lower_backend)
+        # methods
+        foreach(method QR SVD)
+            string(TOLOWER ${method} lower_method)
+            # float formats
+            foreach(ffmt f32 f64)
+                set(
+                    ols_test_name
+                    ols_demo_${lower_backend}_${lower_method}_${ffmt}
+                )
+                add_test(
+                    NAME ${ols_test_name}
+                    COMMAND ols_demo -f ${ffmt} -b ${backend} -m ${method}
+                )
+                set_tests_properties(
+                    ${ols_test_name} PROPERTIES
+                    PASS_REGULAR_EXPRESSION
+"OLS backend: ${backend}[^\r\n]*\r?\nOLS method: ${method}\r?\nusing ${ffmt}"
+                )
+            endforeach()
+        endforeach()
+    endforeach()
+else()
+    message(STATUS "Skipping ols_demo (requires OpenBLAS or Eigen3)")
+endif()
+
+# spline_demo: natural cubic spline demo program
+#
+# this showcases the use of different linear algebra libraries applied to
+# solving the tridiagonal linear system required to compute the coefficients
+# (second derivatives) required for a natural cubic spline.
+#
+if(Eigen3_FOUND)
+    add_executable(spline_demo spline_demo.cpp)
+    target_link_libraries(spline_demo PRIVATE oa_core OA::Eigen3)
+    # -h, --help test
+    add_test(NAME spline_demo_h COMMAND spline_demo -h)
+    add_test(NAME spline_demo_help COMMAND spline_demo --help)
+    set_tests_properties(
+        spline_demo_h spline_demo_help PROPERTIES
+        PASS_REGULAR_EXPRESSION "Usage: spline_demo"
+    )
+    # smoke test
+    add_test(NAME spline_demo COMMAND spline_demo)
+else()
+    message(STATUS "Skipping spline_demo (requires Eigen3)")
+endif()
