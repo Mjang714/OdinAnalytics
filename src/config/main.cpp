@@ -294,6 +294,9 @@ bool parse_activate_args(cli_options& opts, int argc, char** argv)
 }
 #endif  // _WIN32
 
+// MSVC emits C4702 as the i post-increment will never be evaluated
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4702)
 /**
  * Parse incoming command-line options for the `info` command.
  *
@@ -310,6 +313,7 @@ bool parse_info_args(cli_options& opts, int argc, char** argv)
   opts.command(config_cmd::info);
   // iterate for options
   for (int i = 1; i < argc; i++) {
+OA_MSVC_WARNING_POP()
     // convenience arg view
     std::string_view arg{argv[i]};
     // -h, --help short-circuit
@@ -495,7 +499,7 @@ int activate(const cli_options& opts)
       // get version info for the other oa-config
       oa::config::version_info info{path / (progname + ".exe")};
       // remove path from list + update it to the next
-      std::cout << "activate: marking for removal OA " << info.version() <<
+      std::cout << "activate: found existing OA " << info.version() <<
         " [" << path.parent_path().string() << "]" << std::endl;
       it = path_list.erase(it);
     }
@@ -530,7 +534,11 @@ int activate(const cli_options& opts)
     REG_EXPAND_SZ,                                       // dwType
     reinterpret_cast<const BYTE*>(path_string.c_str()),  // lpData
     // note: need to include the size in bytes of the L'\0'
+// MSVC emits C4267 due to narrowing from size_t to DWORD
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4267)
     sizeof(WCHAR) * (path_string.size() + 1)             // cbData
+OA_MSVC_WARNING_POP()
   );
   if (reg_err) {
     std::cerr << "Error: RegSetValueExW(): " <<
