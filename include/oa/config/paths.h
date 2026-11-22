@@ -50,6 +50,18 @@ std::filesystem::path library_dir();
 OA_CONFIG_API
 std::filesystem::path data_dir();
 
+/**
+ * Return the directory location of the Odin installation root.
+ *
+ * This function looks at the last directory component of `library_dir()` to
+ * determine the installation root. If on Windows and the component is `bin` or
+ * if not on Windows and the component is `lib`, `library_dir().parent_path()`
+ * will be returned. Otherwise, as is the case when the `oa_config` library is
+ * in the build directory, an empty path object is returned.
+ */
+OA_CONFIG_API
+std::filesystem::path install_dir();
+
 // TODO: can add specific function for calendars directory
 
 }  // namespace config
