@@ -100,6 +100,10 @@ bool IsPath(PyObject* obj) noexcept
  *
  * On error the returned `path` is empty, i.e. `empty()` returns `true`.
  *
+ * @todo Consider allowing an empty path to be returned if `None` is specified.
+ *  This would better emulate the use of an empty `std::filesystem::path` as a
+ *  "missing" value since `pathlib.Path` is always nonempty.
+ *
  * @param obj Python object
  */
 std::filesystem::path ToPath(PyObject* obj)
@@ -179,24 +183,34 @@ OA_FILESYSTEM_PATH_CHECK(const std::filesystem::path&)
 
 /**
  * Typemap to convert a `std::filesystem::path` into a `pathlib.Path`.
+ *
+ * If the `std::filesystem::path` is empty `None` is returned instead.
  */
 %typemap(out) std::filesystem::path {
-  // create Python string from path (use native encoding)
-  oa::py_object str{$1.c_str()};
-  if (!str)
-    SWIG_fail;
-  // import pathlib.Path
-  auto path_class = oa::pathlib::Path();
-  if (!path_class)
-    SWIG_fail;
-  // invoke string as argument to pathlib.Path
+  // if empty, return None
+  if ($1.empty()) {
+    $result = Py_None;
+    Py_INCREF($result);
+  }
+  // otherwise, return pathlib.Path
+  else {
+    // create Python string from path (use native encoding)
+    oa::py_object str{$1.c_str()};
+    if (!str)
+      SWIG_fail;
+    // import pathlib.Path
+    auto path_class = oa::pathlib::Path();
+    if (!path_class)
+      SWIG_fail;
+    // invoke string as argument to pathlib.Path
 %#if OA_PY_VERSION_IS(>=, 3, 9)
-  $result = PyObject_CallOneArg(path_class, str);
+    $result = PyObject_CallOneArg(path_class, str);
 %#else
-  // without PyObject_CallOneArg() we have to use Py_BuildValue()
-  oa::py_object tup{Py_BuildValue("(O)", str.get())};
-  if (!tup)
-    SWIG_fail;
-  $result = PyObject_CallObject(path_class, tup);
+    // without PyObject_CallOneArg() we have to use Py_BuildValue()
+    oa::py_object tup{Py_BuildValue("(O)", str.get())};
+    if (!tup)
+      SWIG_fail;
+    $result = PyObject_CallObject(path_class, tup);
 %#endif  // !OA_PY_VERSION_IS(>=, 3, 9)
+  }
 }
