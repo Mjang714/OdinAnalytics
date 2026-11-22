@@ -16,6 +16,7 @@ int main()
   std::cout <<
     "OA version: " << OA_VERSION << "\n" <<
     "OA libdir: " << oa::config::library_dir() << "\n" <<
-    "OA datadir: " << oa::config::data_dir() << "\n" << std::flush;
+    "OA datadir: " << oa::config::data_dir() << "\n" <<
+    "OA rootdir: " << oa::config::install_dir() << "\n" << std::flush;
   return EXIT_SUCCESS;
 }
