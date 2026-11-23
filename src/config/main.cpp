@@ -500,16 +500,10 @@ int activate(const cli_options& opts)
   for (auto it = path_list.begin(); it != path_list.end();) {
     // create a new path object from the *expanded* path
     std::filesystem::path path{expand_path(it->c_str())};
-    // check if directory is another installation's bin directory. this is true
-    // if oa-config.exe exists in this particular directory
-    if (std::filesystem::exists(path / (progname + ".exe"))) {
-      // get version info for the other oa-config
-      oa::config::version_info info{path / (progname + ".exe")};
-      // remove path from list + update it to the next
-      std::cout << "activate: found existing OA " << info.version() <<
-        " [" << path.parent_path().string() << "]" << std::endl;
+    // check if directory is another installation's bin directory by looking
+    // for the presence of oa-config.exe, and if so, remove this path
+    if (std::filesystem::exists(path / (progname + ".exe")))
       it = path_list.erase(it);
-    }
     // not another installation
     else {
       // if the path does not exist, print an informational message. we can't
