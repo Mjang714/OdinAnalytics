@@ -28,6 +28,7 @@
 #endif  // _WIN32
 #include <climits>
 #include <cstdlib>
+#include <exception>
 #include <filesystem>
 #include <iostream>
 #ifdef _WIN32
