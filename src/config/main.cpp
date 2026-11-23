@@ -376,6 +376,42 @@ bool parse_args(cli_options& opts, int argc, char** argv)
 
 #ifdef _WIN32
 /**
+ * Expand any environment variable references in a wide string path.
+ *
+ * On Windows environment variable references take the form `%MYVAR%`, for
+ * example `%USERPROFILE%`, and can be expanded using the Win32 function
+ * `ExpandEnvironmentStringsW()`. We choose to use the wide string version
+ * since on Windows `wchar_t` is the native path string character type and
+ * because `ExpandEnvironmentStringsA()` documentation says in the output
+ * buffer space for an extra character is needed after the null terminator,
+ * which is a bit strange, and prevents use of `std::string` as a buffer.
+ *
+ * @param path Path string with unexpanded environment variable references
+ */
+auto expand_path(LPCWSTR path)
+{
+  // get expanded path length (includes terminator)
+  // note: use fixed-size small buffer as despite documentation saying lpDst
+  // can be nullptr, we instead get a access violation from reading nullptr
+  std::wstring exp_path(64, L'\0');
+  auto exp_size = ExpandEnvironmentStringsW(path, exp_path.data(), 64);
+  if (!exp_size)
+    throw std::system_error{
+      static_cast<int>(GetLastError()), std::system_category(),
+      "ExpandEnvironmentStringsW()"
+    };
+  // re-allocate new string to exact size + populate
+  exp_path = std::wstring(exp_size - 1, L'\0');
+  if (!ExpandEnvironmentStringsW(path, exp_path.data(), exp_size))
+    throw std::system_error{
+      static_cast<int>(GetLastError()), std::system_category(),
+      "ExpandEnvironmentStringsW()"
+    };
+  // return expanded path
+  return exp_path;
+}
+
+/**
  * Activate the OA installation specified.
  *
  * `opts.root()` must be a valid OA installation directory.
@@ -397,11 +433,8 @@ int activate(const cli_options& opts)
     &path_key                         // phkResult
   );
   // check errors
-  if (reg_err) {
-    std::cerr << "Error: RegOpenKeyA(): " <<
-      std::system_category().message(reg_err) << std::endl;
-    return EXIT_FAILURE;
-  }
+  if (reg_err)
+    throw std::system_error{reg_err, std::system_category(), "RegOpenKeyA()"};
   // add scoping guard to ensure key is closed
   oa::scope_exit path_key_g{[path_key] { RegCloseKey(path_key); }};
   // get the size of HKEY_CURRENT_USER\Environment\Path (includes terminator)
@@ -421,11 +454,8 @@ int activate(const cli_options& opts)
     &path_size                            // pcbData
   );
   // check errors
-  if (reg_err) {
-    std::cerr << "Error: RegGetValueW(): " <<
-      std::system_category().message(reg_err) << std::endl;
-    return EXIT_FAILURE;
-  }
+  if (reg_err)
+    throw std::system_error{reg_err, std::system_category(), "RegGetValueW()"};
   // allocate + populate string for the PATH value
   // note: can reduce size by 1 since std::wstring buffer is null terminated.
   // we also have to divide path_size by sizeof(wchar_t) since it is in bytes
@@ -441,11 +471,8 @@ int activate(const cli_options& opts)
     &path_size                            // pcbData
   );
   // check errors
-  if (reg_err) {
-    std::cerr << "Error: RegGetValueW(): " <<
-      std::system_category().message(reg_err) << std::endl;
-    return EXIT_FAILURE;
-  }
+  if (reg_err)
+    throw std::system_error{reg_err, std::system_category(), "RegGetValueW()"};
   // iterate through semicolon-separated path strings to build list of paths
   // note: the path strings may have unexpanded environment variable references
   std::list<std::wstring> path_list;
@@ -470,29 +497,8 @@ int activate(const cli_options& opts)
   // need to be removed from PATH to prevent use of the wrong installation. we
   // also need to expand each path string for correct path matching
   for (auto it = path_list.begin(); it != path_list.end();) {
-    // get expanded path length (includes terminator)
-    // note: ExpandEnvironmentStringsA() documentation says that and extra char
-    // is needed after the terminating null as well which is weird
-    // note: use fixed-size small buffer as despite documentation saying lpDst
-    // can be nullptr, we instead get a access violation from reading nullptr
-    std::wstring exp_path(64, L'\0');
-    auto exp_size = ExpandEnvironmentStringsW(it->c_str(), exp_path.data(), 64);
-    if (!exp_size) {
-      std::cerr << "Error: ExpandEnvironmentStringsW(): " <<
-        std::system_category().message(static_cast<int>(GetLastError())) <<
-        std::endl;
-      return EXIT_FAILURE;
-    }
-    // re-allocate new string to exact size + populate
-    exp_path = std::wstring(exp_size - 1, L'\0');
-    if (!ExpandEnvironmentStringsW(it->c_str(), exp_path.data(), exp_size)) {
-      std::cerr << "Error: ExpandEnvironmentStringsW(): " <<
-        std::system_category().message(static_cast<int>(GetLastError())) <<
-        std::endl;
-      return EXIT_FAILURE;
-    }
     // create a new path object from the *expanded* path
-    std::filesystem::path path{exp_path};
+    std::filesystem::path path{expand_path(it->c_str())};
     // check if directory is another installation's bin directory. this is true
     // if oa-config.exe exists in this particular directory
     if (std::filesystem::exists(path / (progname + ".exe"))) {
@@ -540,11 +546,8 @@ OA_MSVC_WARNING_DISABLE(4267)
     sizeof(WCHAR) * (path_string.size() + 1)             // cbData
 OA_MSVC_WARNING_POP()
   );
-  if (reg_err) {
-    std::cerr << "Error: RegSetValueExW(): " <<
-      std::system_category().message(reg_err) << std::endl;
-    return EXIT_FAILURE;
-  }
+  if (reg_err)
+    throw std::system_error{reg_err, std::system_category(), "RegSetValueExW()"};
   // get version info for activated oa-config
   oa::config::version_info info{opts.root() / "bin" / (progname + ".exe")};
   std::cout << "activate: activated OA " << info.version() << " [" <<
@@ -611,7 +614,7 @@ int print_info(const cli_options& opts)
 
 }  // namespace
 
-int main(int argc, char** argv)
+int main(int argc, char** argv) try
 {
   // parse command-line arguments
   cli_options opts;
@@ -639,7 +642,7 @@ int main(int argc, char** argv)
     if (!ret)
       throw std::system_error{
         static_cast<int>(GetLastError()), std::system_category(),
-        "MessageBoxA() failed"
+        "MessageBoxA()"
       };
     // success
     return EXIT_SUCCESS;
@@ -668,4 +671,8 @@ int main(int argc, char** argv)
       std::endl;
     return EXIT_FAILURE;
   }
+}
+catch (const std::exception& exc) {
+  std::cerr << "Exception: " << exc.what() << std::endl;
+  return EXIT_FAILURE;
 }
