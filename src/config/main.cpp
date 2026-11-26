@@ -28,6 +28,9 @@
 #endif  // _WIN32
 #include <climits>
 #include <cstdlib>
+#ifdef _WIN32
+#include <cstring>                   // std::memcpy()
+#endif  // _WIN32
 #include <exception>
 #include <filesystem>
 #include <iostream>
@@ -37,6 +40,9 @@
 #include <string>
 #include <string_view>
 #include <system_error>
+#ifdef _WIN32
+#include <type_traits>               // std::type_identity_t<>
+#endif  // _WIN32
 #include <utility>
 
 #include "oa/config/paths.h"
@@ -257,12 +263,12 @@ bool parse_activate_args(cli_options& opts, int argc, char** argv)
     else if (opts.root().empty()) {
       // if it doesn't exist or is not a directory, error
       if (!std::filesystem::exists(arg)) {
-        std::cerr << "Error: activate: " << arg << " does not exist" <<
+        std::cerr << "Error [activate]: " << arg << " does not exist" <<
           std::endl;
         return false;
       }
       if (!std::filesystem::is_directory(arg)) {
-        std::cerr << "Error: activate: " << arg << " is not a directory" <<
+        std::cerr << "Error [activate]: " << arg << " is not a directory" <<
           std::endl;
         return false;
       }
@@ -271,7 +277,7 @@ bool parse_activate_args(cli_options& opts, int argc, char** argv)
     }
     // otherwise, root already set
     else {
-      std::cerr << "Error: activate: More than one install root provided" <<
+      std::cerr << "Error [activate]: More than one install root provided" <<
         std::endl;
       return false;
     }
@@ -281,12 +287,12 @@ bool parse_activate_args(cli_options& opts, int argc, char** argv)
     opts.root(oa::config::install_dir());
   // empty, no activation possible
   if (opts.root().empty()) {
-    std::cerr << "Error: activate: No installation root available" << std::endl;
+    std::cerr << "Error [activate]: No installation root available" << std::endl;
     return false;
   }
   // if no oa-config in bin directory of other root, invalid installation
   if (!std::filesystem::exists(opts.root() / "bin" / (progname + ".exe"))) {
-    std::cerr << "Error: activate: Invalid OA installation root " <<
+    std::cerr << "Error [activate]: Invalid OA installation root " <<
       opts.root().string() << std::endl;
     return false;
   }
@@ -324,7 +330,7 @@ OA_MSVC_WARNING_POP()
     }
     // unknown option
     else {
-      std::cerr << "Error: info: Unknown option " << arg << std::endl;
+      std::cerr << "Error [info]: Unknown option " << arg << std::endl;
       return false;
     }
   }
@@ -413,37 +419,47 @@ auto expand_path(LPCWSTR path)
 }
 
 /**
- * Activate the OA installation specified.
+ * Return the `HKEY` associated with `HKEY_CURRENT_USER\Environment`.
  *
- * `opts.root()` must be a valid OA installation directory.
- *
- * @param opts Command-line options
- * @returns `EXIT_SUCCESS` or `EXIT_FAILURE`
+ * The registry key has `KEY_QUERY_VALUE` and `KEY_SET_VALUE` permissions and
+ * so can be used for querying or setting the value(s).
  */
-int activate(const cli_options& opts)
+auto hkcu_environment_key()
 {
-  // error status for registry functions
-  LSTATUS reg_err;
   // get the HKEY_CURRENT_USER\Environment key
-  HKEY path_key;
-  reg_err = RegOpenKeyExA(
+  HKEY key;
+  auto err = RegOpenKeyExA(
     HKEY_CURRENT_USER,                // hKey
     "Environment",                    // lpSubKey
     0,                                // ulOptions
     KEY_QUERY_VALUE | KEY_SET_VALUE,  // samDesired
-    &path_key                         // phkResult
+    &key                             // phkResult
   );
   // check errors
-  if (reg_err)
-    throw std::system_error{reg_err, std::system_category(), "RegOpenKeyA()"};
-  // add scoping guard to ensure key is closed
-  oa::scope_exit path_key_g{[path_key] { RegCloseKey(path_key); }};
+  if (err)
+    throw std::system_error{err, std::system_category(), "RegOpenKeyA()"};
+  return key;
+}
+
+/**
+ * Return the `Path` value associated with `HKEY_CURRENT_USER\Environment`.
+ *
+ * The `PATH` string will be returned as a `std::wstring`, in unexpanded form,
+ * from the `REG_EXPAND_SZ` stored in the `Path` value.
+ *
+ * @note The `PATH` string seems to typically have an extra null terminator, so
+ *  calling `back()` on the returned `std::wstring` gives `L'\0'`.
+ *
+ * @param path_key `HKEY_CURRENT_USER\Environment` registry key
+ */
+auto hkcu_path_string(HKEY path_key)
+{
   // get the size of HKEY_CURRENT_USER\Environment\Path (includes terminator)
   // note: using RegGetValueW() since Path should be of type REG_EXPAND_SZ, we
   // we would like the string to be null-terminated for std::wstring, and
   // because on Windows the native path character type is wchar_t
   DWORD path_size;
-  reg_err = RegGetValueW(
+  auto err = RegGetValueW(
     path_key,                             // hKey
     nullptr,                              // lpSubKey
     L"Path",                              // lpValue
@@ -455,13 +471,13 @@ int activate(const cli_options& opts)
     &path_size                            // pcbData
   );
   // check errors
-  if (reg_err)
-    throw std::system_error{reg_err, std::system_category(), "RegGetValueW()"};
+  if (err)
+    throw std::system_error{err, std::system_category(), "RegGetValueW()"};
   // allocate + populate string for the PATH value
   // note: can reduce size by 1 since std::wstring buffer is null terminated.
   // we also have to divide path_size by sizeof(wchar_t) since it is in bytes
-  std::wstring path_string(path_size / sizeof(WCHAR) - 1u, L'?');
-  reg_err = RegGetValueW(
+  std::wstring path_string(path_size / sizeof(WCHAR) - 1u, L'\0');
+  err = RegGetValueW(
     path_key,                             // hKey
     nullptr,                              // lpSubKey
     L"Path",                              // lpValue
@@ -472,8 +488,51 @@ int activate(const cli_options& opts)
     &path_size                            // pcbData
   );
   // check errors
-  if (reg_err)
-    throw std::system_error{reg_err, std::system_category(), "RegGetValueW()"};
+  if (err)
+    throw std::system_error{err, std::system_category(), "RegGetValueW()"};
+  return path_string;
+}
+
+/**
+ * Update the `Path` value associated with `HKEY_CURRENT_USER\Environment`.
+ *
+ * The new `PATH` string *must* be null terminated as `RegSetValueExW()`
+ * includes the null terminator bytes in its `cbData` parameter.
+ *
+ * @param path_key `HKEY_CURRENT_USER\Environment` registry key
+ * @param path_str Semicolon-separated string for `PATH`
+ */
+void hkcu_update_path(HKEY path_key, const std::wstring& path_str)
+{
+  // update PATH
+  auto err = RegSetValueExW(
+    path_key,                                         // hKey
+    L"Path",                                          // lpValueName
+    0,                                                // Reserved
+    REG_EXPAND_SZ,                                    // dwType
+    reinterpret_cast<const BYTE*>(path_str.c_str()),  // lpData
+    // note: need to include the size in bytes of the L'\0'
+// MSVC emits C4267 due to narrowing from size_t to DWORD
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4267)
+    sizeof(WCHAR) * (path_str.size() + 1)             // cbData
+OA_MSVC_WARNING_POP()
+  );
+  if (err)
+    throw std::system_error{err, std::system_category(), "RegSetValueExW()"};
+}
+
+/**
+ * Return a `std::list` of the wide string directories in the `PATH` string.
+ *
+ * Each of the directory strings may have unexpanded environment variable
+ * references. This function also correctly avoids making any extra trailing
+ * null terminators become part of the last directory component.
+ *
+ * @param path_string `PATH` string from `HKEY_CURRENT_USER\Environment`
+ */
+auto hkcu_path_list(const std::wstring& path_string)
+{
   // iterate through semicolon-separated path strings to build list of paths
   // note: the path strings may have unexpanded environment variable references
   std::list<std::wstring> path_list;
@@ -494,6 +553,63 @@ int activate(const cli_options& opts)
     if (it != path_string.end())
       it++;
   }
+  return path_list;
+}
+
+/**
+ * Return a delimited string from the string values in a `std::list`.
+ *
+ * This uses the efficient method of determining the total size first before
+ * allocating once and then using `std::memcpy()` to copy bytes.
+ *
+ * @tparam C Character type
+ *
+ * @param list List of values
+ * @param delim Delimiter between each value
+ */
+template <typename C>
+auto to_delimited_string(
+  const std::list<std::basic_string<C>>& list,
+  std::type_identity_t<C> delim)
+{
+  // determine total number of characters needed (including delimiter)
+  std::size_t size = 0u;
+  for (auto it = list.begin(); it != list.end(); it++) {
+    if (it != list.begin())
+      size += 1u;
+    size += it->size();
+  }
+  // allocate string + get pointer to data for std::memcpy()
+  std::basic_string<C> str(size, C{});
+  auto out = str.data();
+  // copy elements
+  for (auto it = list.begin(); it != list.end(); out += it->size(), it++) {
+    if (it != list.begin())
+      *out++ = delim;
+    std::memcpy(out, it->c_str(), sizeof(C) * it->size());
+  }
+  // done
+  return str;
+}
+
+/**
+ * Activate the OA installation specified.
+ *
+ * `opts.root()` must be a valid OA installation directory.
+ *
+ * @param opts Command-line options
+ * @returns `EXIT_SUCCESS` or `EXIT_FAILURE`
+ */
+int activate(const cli_options& opts)
+{
+  // get the HKEY_CURRENT_USER\Environment key + add scoping guard
+  auto path_key = hkcu_environment_key();
+  oa::scope_exit path_key_g{[path_key] { RegCloseKey(path_key); }};
+  // get the unexpanded string associated with the PATH value
+  auto path_string = hkcu_path_string(path_key);
+  // get list of paths from semicolon-separated path strings
+  // note: the path strings may have unexpanded environment variable references
+  auto path_list = hkcu_path_list(path_string);
   // start looking for existing active OA installations. these directory paths
   // need to be removed from PATH to prevent use of the wrong installation. we
   // also need to expand each path string for correct path matching
@@ -516,33 +632,11 @@ int activate(const cli_options& opts)
       it++;
     }
   }
-  // reset path_string + append all new elements and opts.root() / bin to it
-  path_string = {};
-  for (auto it = path_list.begin(); it != path_list.end(); it++) {
-    if (it != path_list.begin())
-      path_string += L";";
-    path_string += it->c_str();
-  }
-  // only add semicolon if not empty
-  if (path_string.size())
-    path_string += L";";
-  path_string += (opts.root() / "bin").wstring();
+  // append opts.root() / bin to list + convert to semicolon-separated string
+  path_list.push_back((opts.root() / "bin").wstring());
+  path_string = to_delimited_string(path_list, L';');
   // update PATH
-  reg_err = RegSetValueExW(
-    path_key,                                            // hKey
-    L"Path",                                             // lpValueName
-    0,                                                   // Reserved
-    REG_EXPAND_SZ,                                       // dwType
-    reinterpret_cast<const BYTE*>(path_string.c_str()),  // lpData
-    // note: need to include the size in bytes of the L'\0'
-// MSVC emits C4267 due to narrowing from size_t to DWORD
-OA_MSVC_WARNING_PUSH()
-OA_MSVC_WARNING_DISABLE(4267)
-    sizeof(WCHAR) * (path_string.size() + 1)             // cbData
-OA_MSVC_WARNING_POP()
-  );
-  if (reg_err)
-    throw std::system_error{reg_err, std::system_category(), "RegSetValueExW()"};
+  hkcu_update_path(path_key, path_string);
   // get version info for activated oa-config
   oa::config::version_info info{opts.root() / "bin" / (progname + ".exe")};
   std::cout << "activate: activated OA " << info.version() << " [" <<
