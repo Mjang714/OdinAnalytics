@@ -55,7 +55,7 @@ add_test(NAME oa_config_help COMMAND oa_config_exe --help)
 set_tests_properties(
     oa_config_h
     oa_config_help PROPERTIES
-    PASS_REGULAR_EXPRESSION "Usage: oa-config"
+    LABELS "oa-config" PASS_REGULAR_EXPRESSION "Usage: oa-config"
 )
 # -v, --version tests
 add_test(NAME oa_config_v COMMAND oa_config_exe -v)
@@ -63,23 +63,56 @@ add_test(NAME oa_config_version COMMAND oa_config_exe --version)
 set_tests_properties(
     oa_config_v
     oa_config_version PROPERTIES
-    PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
+    LABELS "oa-config" PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
+)
+# ensure info accepts -h, --help
+add_test(NAME oa_config_info_h COMMAND oa_config_exe info -h)
+add_test(NAME oa_config_info_help COMMAND oa_config_exe info --help)
+set_tests_properties(
+    oa_config_info_h
+    oa_config_info_help PROPERTIES
+    LABELS "oa-config" PASS_REGULAR_EXPRESSION "Usage: oa-config"
 )
 # info test
 # note: not installed, so install root and components should not be present
 add_test(NAME oa_config_info COMMAND oa_config_exe info)
 set_tests_properties(
     oa_config_info PROPERTIES
+    LABELS "oa-config"
     PASS_REGULAR_EXPRESSION
     "OA install root:[ ]+NOT INSTALLED\nOA components:[ ]+NOT INSTALLED"
 )
-# activate tests
+# info with extra args
+add_test(NAME oa_config_info_badarg COMMAND oa_config_exe info badarg)
+set_tests_properties(
+    oa_config_info_badarg PROPERTIES
+    LABELS "oa-config"
+    PASS_REGULAR_EXPRESSION "Error \\[info\\]: Unknown option"
+)
+# activate/deactivate tests
 if(WIN32)
+    # ensure [de]activate accepts -h, --help
+    add_test(NAME oa_config_activate_h COMMAND oa_config_exe activate -h)
+    add_test(NAME oa_config_activate_help COMMAND oa_config_exe activate --help)
+    add_test(NAME oa_config_deactivate_h COMMAND oa_config_exe deactivate -h)
+    add_test(
+        NAME oa_config_deactivate_help
+        COMMAND oa_config_exe deactivate --help
+    )
+    set_tests_properties(
+        oa_config_activate_h
+        oa_config_activate_help
+        oa_config_deactivate_h
+        oa_config_deactivate_help PROPERTIES
+        LABELS "oa-config" PASS_REGULAR_EXPRESSION "Usage: oa-config"
+    )
     # activate "own" distribution
     # note: not installed, so should give an error about no installation root
+    # note: not running deactivate directly to avoid doing the registry update
     add_test(NAME oa_config_activate COMMAND oa_config_exe activate)
     set_tests_properties(
         oa_config_activate PROPERTIES
+        LABELS "oa-config"
         PASS_REGULAR_EXPRESSION "No installation root available"
     )
     # activate nonexistent directory
@@ -89,7 +122,7 @@ if(WIN32)
     )
     set_tests_properties(
         oa_config_activate_nodir PROPERTIES
-        PASS_REGULAR_EXPRESSION "does not exist"
+        LABELS "oa-config" PASS_REGULAR_EXPRESSION "does not exist"
     )
     # activate directory that isn't an OA installation
     add_test(
@@ -98,7 +131,18 @@ if(WIN32)
     )
     set_tests_properties(
         oa_config_activate_baddir PROPERTIES
+        LABELS "oa-config"
         PASS_REGULAR_EXPRESSION "Invalid OA installation root"
+    )
+    # too many args to deactivate
+    add_test(
+        NAME oa_config_deactivate_badarg
+        COMMAND oa_config_exe deactivate badarg
+    )
+    set_tests_properties(
+        oa_config_deactivate_badarg PROPERTIES
+        LABELS "oa-config"
+        PASS_REGULAR_EXPRESSION "Error \\[deactivate\\]: Unknown option"
     )
 endif()
 
