@@ -84,7 +84,9 @@ const auto program_usage = "Usage: " + progname + " [-h] [cmd [OPTIONS...]]\n"
   "  activate [PATH]    Activate the specified OA installation by modifying\n"
   "                     the user's PATH registry entry. If specified, PATH\n"
   "                     must be the root of an OA installation. Otherwise,\n"
-  "                     the currently used installation is [re]activated."
+  "                     the currently used installation is [re]activated.\n"
+  "\n"
+  "  deactivate         Deactivate the active OA installation (if any)"
 #endif  // _WIN32
   ;
 
@@ -130,6 +132,7 @@ OA_GNU_WARNING_POP()
 enum class config_cmd {
   none,
   activate,
+  deactivate,
   info
 };
 
@@ -144,6 +147,7 @@ constexpr auto to_string(config_cmd v) noexcept
 #define CONFIG_CMD_CASE(x) case config_cmd::x: return #x;
   CONFIG_CMD_CASE(none)
   CONFIG_CMD_CASE(activate)
+  CONFIG_CMD_CASE(deactivate)
   CONFIG_CMD_CASE(info)
 #undef CONFIG_CMD_CASE
   default:
@@ -242,8 +246,8 @@ private:
  * Parse incoming command-line options for the `activate` command.
  *
  * @param opts Command-line options to fill
- * @param argc Argument count from `activate`
- * @param argv Argument vector for `activate` where `argv[0]` is `"activate"`
+ * @param argc Argument count for `activate`
+ * @param argv Argument vector where `argv[0]` is `"activate"`
  * @returns `true` on success, `false` on error
  */
 bool parse_activate_args(cli_options& opts, int argc, char** argv)
@@ -272,8 +276,9 @@ bool parse_activate_args(cli_options& opts, int argc, char** argv)
           std::endl;
         return false;
       }
-      // update root (use absolute path)
-      opts.root(std::filesystem::absolute(arg));
+      // update root
+      // note: we will make this an absolute path later
+      opts.root(arg);
     }
     // otherwise, root already set
     else {
@@ -296,6 +301,42 @@ bool parse_activate_args(cli_options& opts, int argc, char** argv)
       opts.root().string() << std::endl;
     return false;
   }
+  // use absolute path for root + return
+  opts.root(std::filesystem::absolute(opts.root()));
+  return true;
+}
+
+// MSVC emits C4702 as the i post-increment will never be evaluated
+OA_MSVC_WARNING_PUSH()
+OA_MSVC_WARNING_DISABLE(4702)
+/**
+ * Parse incoming command-line options for the `deactivate` command.
+ *
+ * @param opts Command-line options to fill
+ * @param argc Argument count for `deactivate`
+ * @param argv Argument vector where `argv[0]` is `"deactivate"`
+ * @returns `true` on success, `false` on error
+ */
+bool parse_deactivate_args(cli_options& opts, int argc, char** argv)
+{
+  // set command
+  opts.command(config_cmd::deactivate);
+  // iterate for options
+  for (int i = 1; i < argc; i++) {
+OA_MSVC_WARNING_POP()
+    // convenience arg view
+    std::string_view arg{argv[i]};
+    // -h, --help short-circuit
+    if (arg == "-h" || arg == "--help") {
+      opts.help(true);
+      return true;
+    }
+    // unknown option
+    else {
+      std::cerr << "Error [deactivate]: Unknown option " << arg << std::endl;
+      return false;
+    }
+  }
   // success
   return true;
 }
@@ -311,7 +352,7 @@ OA_MSVC_WARNING_DISABLE(4702)
  *
  * @param opts Command-line options to fill
  * @param argc Argument count for `info`
- * @param argv Argument vector for `info` where `argv[0]` is `"info"`
+ * @param argv Argument vector where `argv[0]` is `"info"`
  * @returns `true` on success, `false` on error
  */
 bool parse_info_args(cli_options& opts, int argc, char** argv)
@@ -367,6 +408,9 @@ bool parse_args(cli_options& opts, int argc, char** argv)
     // activate command
     else if (arg == "activate")
       return parse_activate_args(opts, argc - i, argv + i);
+    // deactivate command
+    else if (arg == "deactivate")
+      return parse_deactivate_args(opts, argc - i, argv + i);
 #endif  // _WIN32
     // info command
     else if (arg == "info")
@@ -598,7 +642,7 @@ auto to_delimited_string(
  * `opts.root()` must be a valid OA installation directory.
  *
  * @param opts Command-line options
- * @returns `EXIT_SUCCESS` or `EXIT_FAILURE`
+ * @returns `EXIT_SUCCESS`
  */
 int activate(const cli_options& opts)
 {
@@ -626,7 +670,7 @@ int activate(const cli_options& opts)
       // tell if this is a bad OA installation root or some other PATH
       // directory, so we just tell the user what we've found
       if (!std::filesystem::is_directory(path))
-        std::cout << "activate: warning: " << path.string() <<
+        std::cout << "Warning: " << path.string() <<
           " is not an extant directory" << std::endl;
       // advance
       it++;
@@ -639,8 +683,58 @@ int activate(const cli_options& opts)
   hkcu_update_path(path_key, path_string);
   // get version info for activated oa-config
   oa::config::version_info info{opts.root() / "bin" / (progname + ".exe")};
-  std::cout << "activate: activated OA " << info.version() << " [" <<
-    opts.root().string() << "]" << std::endl;
+  std::cout << "[*] OA " << info.version() << " [" << opts.root().string() <<
+    "]" << std::endl;
+  return EXIT_SUCCESS;
+}
+
+/**
+ * Deactivate all OA installations.
+ *
+ * @returns `EXIT_SUCCESS`
+ */
+int deactivate(const cli_options& /*opts*/)
+{
+  // get the HKEY_CURRENT_USER\Environment key + add scoping guard
+  auto path_key = hkcu_environment_key();
+  oa::scope_exit path_key_g{[path_key] { RegCloseKey(path_key); }};
+  // get the unexpanded string associated with the PATH value
+  auto path_string = hkcu_path_string(path_key);
+  // get list of paths from semicolon-separated path strings
+  // note: path strings may have unexpanded environment variable references
+  auto path_list = hkcu_path_list(path_string);
+  // iterate through PATH strings + track count of deactivated installations
+  auto n_active = 0u;
+  for (auto it = path_list.begin(); it != path_list.end();) {
+    // create a new path object from the *expanded* path
+    std::filesystem::path path{expand_path(it->c_str())};
+    // oa-config.exe in the directory so treat as an existing installation
+    if (std::filesystem::exists(path / (progname + ".exe"))) {
+      // erase from list + update active count
+      it = path_list.erase(it);
+      n_active++;
+      // print info from the installation's oa-config.exe
+      oa::config::version_info info{path / (progname + ".exe")};
+      // note: use parent_path() since the path is the bin directory
+      std::cout << "[ ] OA " << info.version() << " [" <<
+        path.parent_path().string() << "]" << std::endl;
+    }
+    // not another installation
+    else {
+      // if the path does not exist, print an informational message
+      if (!std::filesystem::is_directory(path))
+        std::cout << "Warning: " << path.string() <<
+          " is not an extant directory" << std::endl;
+      // advance
+      it++;
+    }
+  }
+  // convert to semicolon-separated string + update PATH
+  path_string = to_delimited_string(path_list, L';');
+  hkcu_update_path(path_key, path_string);
+  // courtesy message if there were no active installations
+  if (!n_active)
+    std::cout << "No active OA installations" << std::endl;
   return EXIT_SUCCESS;
 }
 #endif  // _WIN32
@@ -651,15 +745,15 @@ int activate(const cli_options& opts)
  * The format will look something like the following:
  *
  * @code
- * OA version: 0.1.0-728e52a
- * OA architecture: 64-bit
- * OA compiler ABI: MSVC C++ ABI
- * OA install root: <install path>
- * OA components: Development, Runtime
+ * OA version:       0.1.0-728e52a
+ * OA architecture:  64-bit
+ * OA compiler ABI:  MSVC C++ ABI
+ * OA install root:  <install path>
+ * OA components:    Development, Runtime
  * @endcode
  *
  * @param opts Command-line options
- * @returns `EXIT_SUCCESS` or `EXIT_FAILURE`
+ * @returns `EXIT_SUCCESS`
  */
 int print_info(const cli_options& opts)
 {
@@ -752,6 +846,8 @@ int main(int argc, char** argv) try
 #ifdef _WIN32
   case config_cmd::activate:
     return activate(opts);
+  case config_cmd::deactivate:
+    return deactivate(opts);
 #endif  // _WIN32
   case config_cmd::info:
     return print_info(opts);
