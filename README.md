@@ -203,8 +203,7 @@ development with CMake.
 
 If the Development component is installed via `cmake --install`, Odin provides
 some C++ headers for downstream development and CMake `find_package` support.
-For example, in a `CMakeLists.txt`, one can do the following to locate an
-installation:
+For example, in a `CMakeLists.txt`, one can do the following:
 
 ```cmake
 find_package(OA 0.1.0 REQUIRED)
@@ -231,8 +230,8 @@ int main()
 }
 ```
 
-We can add the following lines to our `CMakeLists.txt` to compile, link, and
-add a simple [CTest] test for the `date_test` executable:
+We can add the following to our `CMakeLists.txt` to compile, link, and add a
+[CTest] test for the `date_test` executable:
 
 ```cmake
 add_executable(date_test date_test.cpp)
