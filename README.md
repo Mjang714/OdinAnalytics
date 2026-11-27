@@ -87,13 +87,19 @@ Run `./build.sh --help` for a brief usage summary.
 If C++ unit tests were built they can be run in parallel using [CTest] with
 
 ```bash
-ctest --test-dir build -j$(nproc) --progress
+./check.sh -p
 ```
 
 To install Odin into a given install root, e.g. `/opt/OdinAnalytics`, use
 
 ```bash
 cmake --install build --prefix /opt/OdinAnalytics
+```
+
+You can verify your installation by using the ``oa-config`` configuration tool:
+
+```bash
+/opt/OdinAnalytics/bin/oa-config info
 ```
 
 See the corresponding section for details on
@@ -147,6 +153,12 @@ To install the Odin x64 Release build to a given install root, e.g.
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release
 ```
 
+You can verify your installation by using the ``oa-config`` configuration tool:
+
+```shell
+C:\OdinAnalytics\bin\oa-config info
+```
+
 See the corresponding section for details on
 [per-component installation](#per-component-installation).
 
@@ -169,15 +181,16 @@ the list of available install components is the following:
 
 Name | Description
 ---- | -----------
-Runtime | Required runtime libraries and static data
+Runtime | Required runtime libraries, tools, and static data
 Development | Optional add-on C++ development headers + CMake config files
 
 [cmake_install]: https://cmake.org/cmake/help/latest/manual/cmake.1.html#install-a-project
 
 The Runtime component is always required as it includes all Odin libraries,
-static data required by the library, and on Windows, the `oxl` Excel add-in.
-For example, after building 64-bit Release artifacts in `build_windows_x64`,
-one can install just the Runtime component into `C:\OdinAnalytics` with:
+static data required by the library, ``oa-config``, and on Windows, the `oxl`
+Excel add-in. For example, after building 64-bit Release artifacts in
+`build_windows_x64`, one can install just the Runtime component into
+`C:\OdinAnalytics` with:
 
 ```shell
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --component Runtime
