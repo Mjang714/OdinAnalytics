@@ -14,6 +14,7 @@ from oa_config import (
     VersionInfo,
     __file__ as oa_config_path,
     data_dir,
+    install_dir,
     library_dir,
     library_path
 )
@@ -33,6 +34,14 @@ class TestPaths(unittest.TestCase):
         """
         path = data_dir()
         self.assertEqual(_oa_config_dir, path)
+
+    def test_install_dir(self):
+        """Test that ``install_dir()`` works as expected.
+
+        Since the built artifacts are not installed the path should be empty
+        and so None will be returned instead of a ``pathlib.Path`` instance.
+        """
+        self.assertIsNone(install_dir())
 
     def test_library_dir(self):
         """Test that ``library_dir()`` works as expected.

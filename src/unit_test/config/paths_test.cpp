@@ -96,4 +96,14 @@ TEST_F(ConfigPathsTest, DataDirTest)
   EXPECT_EQ(self_dir(), oa::config::data_dir());
 }
 
+/**
+ * Test that the installation root directory is as expected.
+ *
+ * The unit test runner isn't installed so the root path is empty.
+ */
+TEST_F(ConfigPathsTest, InstallDirTest)
+{
+  EXPECT_EQ(std::filesystem::path{}, oa::config::install_dir());
+}
+
 }  // namespace

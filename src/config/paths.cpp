@@ -126,5 +126,24 @@ std::filesystem::path data_dir()
   return (std::filesystem::exists(share_dir)) ? share_dir : lib_dir;
 }
 
+std::filesystem::path install_dir()
+{
+  // get last directory component of library_dir()
+  auto dir = library_dir().filename();
+  // expected installation root subdirectory DLLs are located in
+  constexpr auto libdir =
+#if defined(_WIN32)
+    "bin"
+#else
+    "lib"
+#endif  // !defined(_WIN32)
+    ;
+  // if bin on Windows or otherwise lib, return parent, else empty path
+  if (dir == libdir)
+    return library_dir().parent_path();
+  else
+    return {};
+}
+
 }  // namespace config
 }  // namespace oa

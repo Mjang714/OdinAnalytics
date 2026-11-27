@@ -35,6 +35,117 @@ oa_pdb_install(oa_config CONFIGURATIONS Debug COMPONENT Development)
 oa_embed_version_info(oa_config DESCRIPTION "OA Configuration Library")
 oa_check_version_info(oa_config)
 
+# oa_config_exe: OA configuration tool
+add_executable(oa_config_exe main.cpp)
+target_link_libraries(oa_config_exe PRIVATE oa_config oa_core)
+# on Windows need advapi32 + kernel32
+if(WIN32)
+    target_link_libraries(oa_config_exe PRIVATE advapi32 kernel32)
+endif()
+# use snake-case style for executables
+set_target_properties(oa_config_exe PROPERTIES OUTPUT_NAME "oa-config")
+oa_embed_version_info(oa_config_exe DESCRIPTION "OA Configuration Tool")
+oa_check_version_info(oa_config_exe)
+# install rule for oa_config_exe + ensure relocatable install by setting RPATH
+install(TARGETS oa_config_exe COMPONENT Runtime)
+set_target_properties(oa_config_exe PROPERTIES INSTALL_RPATH "$ORIGIN/../lib")
+# -h, --help tests
+add_test(NAME oa_config_h COMMAND oa_config_exe -h)
+add_test(NAME oa_config_help COMMAND oa_config_exe --help)
+set_tests_properties(
+    oa_config_h
+    oa_config_help PROPERTIES
+    LABELS "oa-config" PASS_REGULAR_EXPRESSION "Usage: oa-config"
+)
+# -v, --version tests
+add_test(NAME oa_config_v COMMAND oa_config_exe -v)
+add_test(NAME oa_config_version COMMAND oa_config_exe --version)
+set_tests_properties(
+    oa_config_v
+    oa_config_version PROPERTIES
+    LABELS "oa-config" PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
+)
+# ensure info accepts -h, --help
+add_test(NAME oa_config_info_h COMMAND oa_config_exe info -h)
+add_test(NAME oa_config_info_help COMMAND oa_config_exe info --help)
+set_tests_properties(
+    oa_config_info_h
+    oa_config_info_help PROPERTIES
+    LABELS "oa-config" PASS_REGULAR_EXPRESSION "Usage: oa-config"
+)
+# info test
+# note: not installed, so install root and components should not be present
+add_test(NAME oa_config_info COMMAND oa_config_exe info)
+set_tests_properties(
+    oa_config_info PROPERTIES
+    LABELS "oa-config"
+    PASS_REGULAR_EXPRESSION
+    "OA install root:[ ]+NOT INSTALLED\nOA components:[ ]+NOT INSTALLED"
+)
+# info with extra args
+add_test(NAME oa_config_info_badarg COMMAND oa_config_exe info badarg)
+set_tests_properties(
+    oa_config_info_badarg PROPERTIES
+    LABELS "oa-config"
+    PASS_REGULAR_EXPRESSION "Error \\[info\\]: Unknown option"
+)
+# activate/deactivate tests
+if(WIN32)
+    # ensure [de]activate accepts -h, --help
+    add_test(NAME oa_config_activate_h COMMAND oa_config_exe activate -h)
+    add_test(NAME oa_config_activate_help COMMAND oa_config_exe activate --help)
+    add_test(NAME oa_config_deactivate_h COMMAND oa_config_exe deactivate -h)
+    add_test(
+        NAME oa_config_deactivate_help
+        COMMAND oa_config_exe deactivate --help
+    )
+    set_tests_properties(
+        oa_config_activate_h
+        oa_config_activate_help
+        oa_config_deactivate_h
+        oa_config_deactivate_help PROPERTIES
+        LABELS "oa-config" PASS_REGULAR_EXPRESSION "Usage: oa-config"
+    )
+    # activate "own" distribution
+    # note: not installed, so should give an error about no installation root
+    # note: not running deactivate directly to avoid doing the registry update
+    add_test(NAME oa_config_activate COMMAND oa_config_exe activate)
+    set_tests_properties(
+        oa_config_activate PROPERTIES
+        LABELS "oa-config"
+        PASS_REGULAR_EXPRESSION "No installation root available"
+    )
+    # activate nonexistent directory
+    add_test(
+        NAME oa_config_activate_nodir
+        COMMAND oa_config_exe activate nonexistent_directory
+    )
+    set_tests_properties(
+        oa_config_activate_nodir PROPERTIES
+        LABELS "oa-config" PASS_REGULAR_EXPRESSION "does not exist"
+    )
+    # activate directory that isn't an OA installation
+    add_test(
+        NAME oa_config_activate_baddir
+        COMMAND oa_config_exe activate "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+    set_tests_properties(
+        oa_config_activate_baddir PROPERTIES
+        LABELS "oa-config"
+        PASS_REGULAR_EXPRESSION "Invalid OA installation root"
+    )
+    # too many args to deactivate
+    add_test(
+        NAME oa_config_deactivate_badarg
+        COMMAND oa_config_exe deactivate badarg
+    )
+    set_tests_properties(
+        oa_config_deactivate_badarg PROPERTIES
+        LABELS "oa-config"
+        PASS_REGULAR_EXPRESSION "Error \\[deactivate\\]: Unknown option"
+    )
+endif()
+
 # oa_dumpver: prints version info embedded in OA binaries
 # note: although provided for testing purposes this could be useful in general
 add_executable(oa_dumpver dumpver.cpp)

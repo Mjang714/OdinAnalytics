@@ -87,13 +87,19 @@ Run `./build.sh --help` for a brief usage summary.
 If C++ unit tests were built they can be run in parallel using [CTest] with
 
 ```bash
-ctest --test-dir build -j$(nproc) --progress
+./check.sh -p
 ```
 
 To install Odin into a given install root, e.g. `/opt/OdinAnalytics`, use
 
 ```bash
 cmake --install build --prefix /opt/OdinAnalytics
+```
+
+You can verify the installation by using the `oa-config` configuration tool:
+
+```bash
+/opt/OdinAnalytics/bin/oa-config info
 ```
 
 See the corresponding section for details on
@@ -147,8 +153,21 @@ To install the Odin x64 Release build to a given install root, e.g.
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release
 ```
 
-See the corresponding section for details on
-[per-component installation](#per-component-installation).
+You can verify the installation by using the `oa-config` configuration tool:
+
+```shell
+C:\OdinAnalytics\bin\oa-config info
+```
+
+To "activate" the installation by modifying your user `PATH`, use:
+
+```shell
+C:\OdinAnalytics\bin\oa-config activate
+```
+
+See the corresponding sections for details on
+[per-component installation](#per-component-installation) and
+[activation](#activation).
 
 ## Per-Component Installation
 
@@ -157,11 +176,8 @@ See the corresponding section for details on
 > [!NOTE]
 >
 > The Development component is incomplete and only provides a few C++ headers
-> for downstream consumption. Future work will involve migrating as many
-> headers into a proper namespaced include structure for downstream consumption
-> and finalizing CMake [`find_package`][find_package] support.
-
-[find_package]: https://cmake.org/cmake/help/latest/command/find_package.html
+> for downstream consumption. Future work involves migrating some headers into
+> a proper namespaced include structure.
 
 Odin supports per-component installation via [`cmake --install`][cmake_install]
 to enable more fine-grained control over what needs to be installed. Currently
@@ -169,15 +185,16 @@ the list of available install components is the following:
 
 Name | Description
 ---- | -----------
-Runtime | Required runtime libraries and static data
-Development | Optional add-on C++ development headers + CMake config files
+Runtime | Required runtime libraries, tools, and static data
+Development | Optional add-on C++ development headers, CMake config files, etc.
 
 [cmake_install]: https://cmake.org/cmake/help/latest/manual/cmake.1.html#install-a-project
 
-The Runtime component is always required as it includes all Odin libraries,
-static data required by the library, and on Windows, the `oxl` Excel add-in.
-For example, after building 64-bit Release artifacts in `build_windows_x64`,
-one can install just the Runtime component into `C:\OdinAnalytics` with:
+The Runtime component is always required as it includes ``oa-config``, all Odin
+libraries, static data required by the libraries, and on Windows, the `oxl`
+Excel add-in. For example, after building 64-bit Release artifacts in
+`build_windows_x64`, one can install just the Runtime component into
+`C:\OdinAnalytics` with:
 
 ```shell
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --component Runtime
@@ -186,10 +203,30 @@ cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --c
 The Development component (currently incomplete) is an optional add-on that
 includes C++ headers for downstream developer consumption and any other C++
 development components, e.g. a CMake `find_package` package config file,
-developer tools, etc. For example, after building 64-bit Release artifacts in
-`build_windows_x64`, one can install the Development component into
-`C:\OdinAnalytics` with:
+[PDB][PDB] symbol files, developer tools, etc. For example, after building
+64-bit Release artifacts in `build_windows_x64`, one can install the
+Development component into `C:\OdinAnalytics` with:
 
 ```shell
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --component Development
 ```
+
+## Activation
+
+On Windows, the `oa-config` configuration tool provides the `activate`
+sub-command that is used to "activate" either the installation the `oa-config`
+executable belongs to or another installation rooted elsewhere. "Activation"
+involves modifying the current user's `PATH` registry value so that the
+specified installation's `bin` directory is part of `PATH` while removing `bin`
+directories from other Odin installations to avoid conflicts. This facilitates
+use of the `oxl` XLL add-in from Excel, as after activation, Excel can be
+launched "normally" from the taskbar with the ability to appropriately locate
+any Odin DLLs required by `oxl` for its initial and subsequent loads.
+
+In general, this is a useful feature for integrating with GUI applications that
+may use Odin libraries, and enables the relevant `oa-config` and `oa-dumpver`
+binaries to be invoked directly as commands in a command shell.
+
+`oa-config` also provides the opposite `deactivate` sub-command that removes
+all Odin `bin` directories from the current user's `PATH` to ensure
+subsequently launched applications cannot locate any Odin DLLs.
