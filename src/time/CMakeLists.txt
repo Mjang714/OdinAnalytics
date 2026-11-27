@@ -38,7 +38,7 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(oa_time INTERFACE OA_TIME_DLL)
 endif()
 # link against dependencies
-target_link_libraries(oa_time PUBLIC oa_helpers)
+target_link_libraries(oa_time PRIVATE oa_helpers)
 # install rule for oa_time
 install(
     TARGETS oa_time
