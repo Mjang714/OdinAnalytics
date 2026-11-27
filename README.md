@@ -228,6 +228,5 @@ may use Odin libraries, and enables the relevant `oa-config` and `oa-dumpver`
 binaries to be invoked directly as commands in a command shell.
 
 `oa-config` also provides the opposite `deactivate` sub-command that removes
-all Odin `bin` directories from the current user's `PATH` and is therefore
-useful for ensuring subsequently launched applications will no longer be able
-to locate any Odin DLLs.
+all Odin `bin` directories from the current user's `PATH` to ensure
+subsequently launched applications cannot locate any Odin DLLs.
