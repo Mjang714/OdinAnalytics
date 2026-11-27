@@ -177,7 +177,7 @@ See the corresponding sections for details on
 >
 > The Development component is incomplete and only provides a few C++ headers
 > for downstream consumption. Future work involves migrating some headers into
-> a namespaced include structure for downstream consumption.
+> a proper namespaced include structure.
 
 Odin supports per-component installation via [`cmake --install`][cmake_install]
 to enable more fine-grained control over what needs to be installed. Currently
@@ -186,7 +186,7 @@ the list of available install components is the following:
 Name | Description
 ---- | -----------
 Runtime | Required runtime libraries, tools, and static data
-Development | Optional add-on C++ development headers + CMake config files
+Development | Optional add-on C++ development headers, CMake config files, etc.
 
 [cmake_install]: https://cmake.org/cmake/help/latest/manual/cmake.1.html#install-a-project
 
