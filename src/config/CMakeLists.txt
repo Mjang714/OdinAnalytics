@@ -54,7 +54,7 @@ add_test(NAME oa_dumpver_help COMMAND oa_dumpver --help)
 set_tests_properties(
     oa_dumpver_h
     oa_dumpver_help PROPERTIES
-    PASS_REGULAR_EXPRESSION "Usage: oa-dumpver"
+    LABELS "oa-dumpver" PASS_REGULAR_EXPRESSION "Usage: oa-dumpver"
 )
 # -v, --version tests
 add_test(NAME oa_dumpver_v COMMAND oa_dumpver -v)
@@ -62,12 +62,13 @@ add_test(NAME oa_dumpver_version COMMAND oa_dumpver --version)
 set_tests_properties(
     oa_dumpver_v
     oa_dumpver_version PROPERTIES
-    PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
+    LABELS "oa-dumpver" PASS_REGULAR_EXPRESSION "${ODIN_VERSION}"
 )
 # test error reported if run with no arguments
 add_test(NAME oa_dumpver COMMAND oa_dumpver)
 set_tests_properties(
     oa_dumpver PROPERTIES
+    LABELS "oa-dumpver"
     PASS_REGULAR_EXPRESSION "Missing required value for FILE argument"
 )
 # check that oa-dumpver doesn't crash on incorrect file types by feeding its
@@ -76,6 +77,7 @@ add_test(
     NAME oa_dumpver_cpp_input
     COMMAND oa_dumpver "${CMAKE_CURRENT_SOURCE_DIR}/dumpver.cpp"
 )
+set_tests_properties(oa_dumpver_cpp_input PROPERTIES LABELS "oa-dumpver")
 if(WIN32)
     set_tests_properties(
         oa_dumpver_cpp_input PROPERTIES
