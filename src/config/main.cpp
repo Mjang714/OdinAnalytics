@@ -444,8 +444,8 @@ auto expand_path(LPCWSTR path)
   // get expanded path length (includes terminator)
   // note: use fixed-size small buffer as despite documentation saying lpDst
   // can be nullptr, we instead get a access violation from reading nullptr
-  std::wstring exp_path(64, L'\0');
-  auto exp_size = ExpandEnvironmentStringsW(path, exp_path.data(), 64);
+  std::wstring exp_path(32, L'\0');
+  auto exp_size = ExpandEnvironmentStringsW(path, exp_path.data(), 32);
   if (!exp_size)
     throw std::system_error{
       static_cast<int>(GetLastError()), std::system_category(),
@@ -489,10 +489,13 @@ auto hkcu_environment_key()
  * Return the `Path` value associated with `HKEY_CURRENT_USER\Environment`.
  *
  * The `PATH` string will be returned as a `std::wstring`, in unexpanded form,
- * from the `REG_EXPAND_SZ` stored in the `Path` value.
- *
- * @note The `PATH` string seems to typically have an extra null terminator, so
- *  calling `back()` on the returned `std::wstring` gives `L'\0'`.
+ * from the `REG_EXPAND_SZ` stored in the `Path` value. This function also
+ * discards any data after the first null terminator seen, which mirrors how
+ * one would see `PATH` entries in the Environment Variables dialog. Note that,
+ * however, the actual registry binary data might have additional bytes after a
+ * sequence of zeroes, either due to intentional or unintentional error, and
+ * these bytes would *not* be visible by most graphical viewers or to any
+ * application that relies on null-terminated strings.
  *
  * @param path_key `HKEY_CURRENT_USER\Environment` registry key
  */
@@ -502,6 +505,8 @@ auto hkcu_path_string(HKEY path_key)
   // note: using RegGetValueW() since Path should be of type REG_EXPAND_SZ, we
   // we would like the string to be null-terminated for std::wstring, and
   // because on Windows the native path character type is wchar_t
+  // note: this does *not* check if the string data is already null-terminated
+  // and blindly adds an extra sizeof(WCHAR) bytes to be safe
   DWORD path_size;
   auto err = RegGetValueW(
     path_key,                             // hKey
@@ -519,7 +524,7 @@ auto hkcu_path_string(HKEY path_key)
     throw std::system_error{err, std::system_category(), "RegGetValueW()"};
   // allocate + populate string for the PATH value
   // note: can reduce size by 1 since std::wstring buffer is null terminated.
-  // we also have to divide path_size by sizeof(wchar_t) since it is in bytes
+  // we also have to divide path_size by sizeof(WCHAR) since it is in bytes
   std::wstring path_string(path_size / sizeof(WCHAR) - 1u, L'\0');
   err = RegGetValueW(
     path_key,                             // hKey
@@ -534,6 +539,12 @@ auto hkcu_path_string(HKEY path_key)
   // check errors
   if (err)
     throw std::system_error{err, std::system_category(), "RegGetValueW()"};
+  // resize to first L'\0'. we do this to ensure there aren't embedded nulls in
+  // the middle of our registry data, as any applications that expect null-
+  // terminated strings, or any graphical viewers, won't see those bytes
+  path_size = 0u;
+  for (auto it = path_string.c_str(); *it != L'\0'; path_size++, it++);
+  path_string.resize(path_size);
   return path_string;
 }
 
@@ -570,8 +581,9 @@ OA_MSVC_WARNING_POP()
  * Return a `std::list` of the wide string directories in the `PATH` string.
  *
  * Each of the directory strings may have unexpanded environment variable
- * references. This function also correctly avoids making any extra trailing
- * null terminators become part of the last directory component.
+ * references which should be expanded using `expand_path()`.
+ *
+ * @note This function will not strip out any embedded `L'\0'` characters.
  *
  * @param path_string `PATH` string from `HKEY_CURRENT_USER\Environment`
  */
@@ -580,12 +592,7 @@ auto hkcu_path_list(const std::wstring& path_string)
   // iterate through semicolon-separated path strings to build list of paths
   // note: the path strings may have unexpanded environment variable references
   std::list<std::wstring> path_list;
-  for (
-    auto it = path_string.begin();
-    // note: break early if null terminator is encountered. for some reason
-    // using RegGetValueW() on PATH gives us a string with an extra null
-    it != path_string.end() && *it != L'\0';
-  ) {
+  for (auto it = path_string.begin(); it != path_string.end();) {
     // get end of next path string + copy to std::wstring for null termination
     auto end = std::find(it, path_string.end(), L';');
     std::wstring cur_path(it, end);
