@@ -33,11 +33,15 @@ add_executable(oa_print_dirs oa_print_dirs.cpp)
 target_link_libraries(oa_print_dirs PRIVATE OA::oa_config)
 
 # smoke test for oa_print_dirs
-# note: on Windows ensure that the installed DLLs are locatable by using cmake
-# -E env as the semicolons in PATH make it hard to use set_tests_proprties().
-# we don't copy the dependent DLLs to the oa_print_dirs directory because that
-# results in the oa::config:: path functions being loaded from the copied DLLs
-# and thus returning values that correspond to a non-installed distribution.
+#
+# note:
+#
+# on Windows ensure that the installed DLLs are locatable by using cmake -E env
+# as the semicolons in PATH make it hard to use set_tests_proprties(). we don't
+# copy the dependent DLLs to the oa_print_dirs directory because that results
+# in the oa::config:: path functions being loaded from the copied DLLs and thus
+# returning values that correspond to a non-installed distribution.
+#
 if(WIN32)
     add_test(
         NAME oa_print_dirs
