@@ -191,6 +191,9 @@ Development component into `C:\OdinAnalytics` with:
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --component Development
 ```
 
+See the section on [development](#development) for an example of Odin C++
+development with CMake.
+
 ## Development
 
 > [!NOTE]
