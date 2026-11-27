@@ -42,7 +42,9 @@ if(WIN32)
     add_test(
         NAME oa_print_dirs
         # note: quote entire PATH=<value> to ensure it is passed as one string
-        COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH};${OA_ROOT}/bin" --
+        # and prepend ${OA_ROOT}/bin to ensure the right installation is used
+        # if the bin directory of another OA installlation is on PATH
+        COMMAND ${CMAKE_COMMAND} -E env "PATH=${OA_ROOT}/bin;$ENV{PATH}" --
                 $<TARGET_FILE:oa_print_dirs>
     )
 else()
