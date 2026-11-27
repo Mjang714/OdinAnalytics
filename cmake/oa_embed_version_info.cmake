@@ -147,14 +147,19 @@ endfunction()
 #
 # This function uses add_test() to add a test that calls oa-dumpver on the
 # specified target's output file and then checks that all the retrieved version
-# information matches what has been configured during the build.
+# information matches what has been configured during the build. The test will
+# have the oa-dumpver label attached to it to assist with test filtering.
 #
 # The target's OA_DESCRIPTION property is read to get the description text.
 #
 # Arguments:
-#   target      Library or executable target with embedded version info
+#   target                  Library or executable target with version info
+#                           embedded via oa_embed_version_info()
+#
+#   [LABELS labels...]      Additional labels to set on the CTest test
 #
 function(oa_check_version_info target)
+    cmake_parse_arguments(ARG "" "" "LABELS" ${ARGN})
     # get OA_DESCRIPTION property from target for description text
     get_target_property(description ${target} OA_DESCRIPTION)
     # use ODIN_(MAJOR|MINOR|PATCH)_VERSION values to construct 64-bit hex value
@@ -193,6 +198,14 @@ function(oa_check_version_info target)
     )
     set_tests_properties(
         ${target}_version_check PROPERTIES
+        LABELS "oa-dumpver"
         PASS_REGULAR_EXPRESSION "${test_regex}"
     )
+    # add any additional optional test labels
+    if(ARG_LABELS)
+        set_property(
+            TEST ${target}_version_check APPEND
+            PROPERTY LABELS ${ARG_LABELS}
+        )
+    endif()
 endfunction()
