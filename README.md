@@ -186,8 +186,8 @@ Development | Optional add-on C++ development headers + CMake config files
 
 [cmake_install]: https://cmake.org/cmake/help/latest/manual/cmake.1.html#install-a-project
 
-The Runtime component is always required as it includes all Odin libraries,
-static data required by the library, ``oa-config``, and on Windows, the `oxl`
+The Runtime component is always required as it includes ``oa-config``, all Odin
+libraries, static data required by the libraries, and on Windows, the `oxl`
 Excel add-in. For example, after building 64-bit Release artifacts in
 `build_windows_x64`, one can install just the Runtime component into
 `C:\OdinAnalytics` with:
