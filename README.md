@@ -96,7 +96,7 @@ To install Odin into a given install root, e.g. `/opt/OdinAnalytics`, use
 cmake --install build --prefix /opt/OdinAnalytics
 ```
 
-You can verify your installation by using the ``oa-config`` configuration tool:
+You can verify the installation by using the `oa-config` configuration tool:
 
 ```bash
 /opt/OdinAnalytics/bin/oa-config info
@@ -153,14 +153,21 @@ To install the Odin x64 Release build to a given install root, e.g.
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release
 ```
 
-You can verify your installation by using the ``oa-config`` configuration tool:
+You can verify the installation by using the `oa-config` configuration tool:
 
 ```shell
 C:\OdinAnalytics\bin\oa-config info
 ```
 
-See the corresponding section for details on
-[per-component installation](#per-component-installation).
+To "activate" the installation by modifying your user `PATH`, use:
+
+```shell
+C:\OdinAnalytics\bin\oa-config activate
+```
+
+See the corresponding sections for details on
+[per-component installation](#per-component-installation) and
+[activation](#activation).
 
 ## Per-Component Installation
 
@@ -169,9 +176,8 @@ See the corresponding section for details on
 > [!NOTE]
 >
 > The Development component is incomplete and only provides a few C++ headers
-> for downstream consumption. Future work will involve migrating as many
-> headers into a proper namespaced include structure for downstream consumption
-> and finalizing CMake [`find_package`][find_package] support.
+> for downstream consumption. Future work will involve migrating many headers
+> into a proper namespaced include structure for downstream consumption.
 
 [find_package]: https://cmake.org/cmake/help/latest/command/find_package.html
 
@@ -206,3 +212,19 @@ developer tools, etc. For example, after building 64-bit Release artifacts in
 ```shell
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --component Development
 ```
+
+## Activation
+
+On Windows, the `oa-config` configuration tool provides the `activate`
+sub-command that is used to "activate" either the installation the `oa-config`
+executable belongs to or another installation rooted elsewhere. "Activation"
+involves modifying the current user's `PATH` registry value so that the
+specified installation's `bin` directory is part of `PATH` while removing `bin`
+directories from other Odin installations to avoid conflicts. This facilitates
+use of the `oxl` XLL add-in from Excel, as after activation, Excel can be
+launched "normally" from the taskbar with the ability to appropriately locate
+any Odin DLLs required by `oxl` for its initial and subsequent loads.
+
+In general, this is a useful feature for integrating with GUI applications that
+may use Odin libraries, and enables the relevant `oa-config` and `oa-dumpver`
+binaries to be invoked directlry as commands in a command shell.
