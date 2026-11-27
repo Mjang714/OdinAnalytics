@@ -87,7 +87,7 @@ Run `./build.sh --help` for a brief usage summary.
 If C++ unit tests were built they can be run in parallel using [CTest] with
 
 ```bash
-ctest --test-dir build -j$(nproc) --progress
+./check.sh -p
 ```
 
 To install Odin into a given install root, e.g. `/opt/OdinAnalytics`, use
@@ -157,11 +157,8 @@ See the corresponding section for details on
 > [!NOTE]
 >
 > The Development component is incomplete and only provides a few C++ headers
-> for downstream consumption. Future work will involve migrating as many
-> headers into a proper namespaced include structure for downstream consumption
-> and finalizing CMake [`find_package`][find_package] support.
-
-[find_package]: https://cmake.org/cmake/help/latest/command/find_package.html
+> for downstream consumption. Future work involves migrating some headers into
+> a proper namespaced include structure.
 
 Odin supports per-component installation via [`cmake --install`][cmake_install]
 to enable more fine-grained control over what needs to be installed. Currently
@@ -169,13 +166,13 @@ the list of available install components is the following:
 
 Name | Description
 ---- | -----------
-Runtime | Required runtime libraries and static data
-Development | Optional add-on C++ development headers + CMake config files
+Runtime | Required runtime libraries, tools, and static data
+Development | Optional add-on C++ development headers, CMake config files, etc.
 
 [cmake_install]: https://cmake.org/cmake/help/latest/manual/cmake.1.html#install-a-project
 
 The Runtime component is always required as it includes all Odin libraries,
-static data required by the library, and on Windows, the `oxl` Excel add-in.
+static data required by the libraries, and on Windows, the `oxl` Excel add-in.
 For example, after building 64-bit Release artifacts in `build_windows_x64`,
 one can install just the Runtime component into `C:\OdinAnalytics` with:
 
@@ -186,10 +183,60 @@ cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --c
 The Development component (currently incomplete) is an optional add-on that
 includes C++ headers for downstream developer consumption and any other C++
 development components, e.g. a CMake `find_package` package config file,
-developer tools, etc. For example, after building 64-bit Release artifacts in
-`build_windows_x64`, one can install the Development component into
-`C:\OdinAnalytics` with:
+[PDB][PDB] symbol files, developer tools, etc. For example, after building
+64-bit Release artifacts in `build_windows_x64`, one can install the
+Development component into `C:\OdinAnalytics` with:
 
 ```shell
 cmake --install build_windows_x64 --prefix C:\OdinAnalytics --config Release --component Development
 ```
+
+See the section on [development](#development) for an example of Odin C++
+development with CMake.
+
+## Development
+
+> [!NOTE]
+>
+> The Development component is incomplete and provides only a few C++ headers
+> for downstream consumption.
+
+If the Development component is installed via `cmake --install`, Odin provides
+some C++ headers for downstream development and CMake `find_package` support.
+For example, in a `CMakeLists.txt`, one can do the following:
+
+```cmake
+find_package(OA 0.1.0 REQUIRED)
+```
+
+As usual, setting `OA_ROOT` or [`CMAKE_PREFIX_PATH`][CMAKE_PREFIX_PATH] can be
+used to locate an appropriate installation. Now, suppose we have a simple C++
+program that prints the string representation of a date object:
+
+[CMAKE_PREFIX_PATH]: https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html
+
+```cpp
+// date_test.cpp
+#include <cstdlib>
+#include <iostream>
+
+#include <oa/time/date.h>
+
+int main()
+{
+  oa::time::Date date{2024, 8, 5};
+  std::cout << date << std::endl;
+  return EXIT_SUCCESS;
+}
+```
+
+We can add the following to our `CMakeLists.txt` to compile, link, and add a
+[CTest] test for the `date_test` executable:
+
+```cmake
+add_executable(date_test date_test.cpp)
+target_link_libraries(date_test PRIVATE OA::oa_time)
+add_test(NAME date_test COMMAND date_test)
+```
+
+Currently, CMake is the only supported build system for C++ development.
